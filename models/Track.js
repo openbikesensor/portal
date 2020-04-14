@@ -9,7 +9,16 @@ var TrackSchema = new mongoose.Schema({
   description: String,
   body: String,
   numEvents: {type: Number, default: 0},
-  author: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }
+  comments: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Comment' }],
+  author: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+  points: [ { 
+     date: String,
+     time : String,
+     latitude: Number,
+     longitude: Number,
+     d1: Number,
+     d2: Number,
+     flag: Number }]
 }, {timestamps: true});
 
 TrackSchema.plugin(uniqueValidator, {message: 'is already taken'});
@@ -34,6 +43,7 @@ TrackSchema.methods.toJSONFor = function(user){
     body: this.body,
     createdAt: this.createdAt,
     updatedAt: this.updatedAt,
+    points: this.points,
     visibleForAll: user ? user.areTracksVisibleForAll : false,
     author: this.author.toProfileJSONFor(user)
   };

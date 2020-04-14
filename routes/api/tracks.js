@@ -153,6 +153,66 @@ router.post('/', auth.required, function(req, res, next) {
     if (!user) { return res.sendStatus(401); }
 
     var track = new Track(req.body.track);
+      console.log(track.body);
+        var num=0;
+        var start=0;
+        var end=0;
+       // console.log("len"+track.body.length);
+        while(end < track.body.length)
+        {
+           start = end;
+           while(track.body[end]!=";" && track.body[end]!="\n" && end < track.body.length)
+           {
+               end++;
+           }
+           var token = track.body.substr(start,end-start);
+      //console.log(token);
+      //console.log("num:"+num);
+      //console.log("end:"+end);
+           end++;
+           if(num == 0)
+           {
+               track.points.push( {date: "dummy"} );
+           }
+            if(num==0)
+            {
+               track.points[track.points.length - 1].date = token;
+               num++;
+            }
+            else if(num==1)
+            {
+               track.points[track.points.length - 1].time = token;
+               num++;
+            }
+            else if(num==2)
+            {
+               track.points[track.points.length - 1].latitude = token;
+               num++;
+            }
+            else if(num==3)
+            {
+               track.points[track.points.length - 1].longitude = token;
+               num++;
+            }
+            else if(num==4)
+            {
+               track.points[track.points.length - 1].d1 = token;
+               num++;
+            }
+            else if(num==5)
+            {
+               track.points[track.points.length - 1].d2 = token;
+               num++;
+            }
+            else if(num==6)
+            {
+               track.points[track.points.length - 1].flag = token;
+               num=0;
+            }
+        }
+
+      console.log("TLen"+track.points.length);
+
 
     track.author = user;
 
@@ -167,13 +227,72 @@ router.post('/add', auth.optional, function(req, res, next) {
       console.log("Add");
 if(true)
 {
-      console.log(req.body);
-      console.log(req.payload);
+      //console.log(req.payload);
   User.findById(req.body.id).then(function(user){
     if (!user) { return res.sendStatus(401); }
 
     var track = new Track(req.body.track);
+      console.log(track.body);
+        var num=0;
+        var start=0;
+        var end=0;
+       // console.log("len"+track.body.length);
+        while(end < track.body.length)
+        {
+           start = end;
+           while(track.body[end]!=";" && track.body[end]!="\n" && end < track.body.length)
+           {
+               end++;
+           }
+           var token = track.body.substr(start,end-start);
+      //console.log(token);
+      //console.log("num:"+num);
+      //console.log("end:"+end);
+           end++;
+           if(num == 0)
+           {
+               track.points.push( {date: "dummy"} );
+           }
+            if(num==0)
+            {
+               track.points[track.points.length - 1].date = token;
+               num++;
+            }
+            else if(num==1)
+            {
+               track.points[track.points.length - 1].time = token;
+               num++;
+            }
+            else if(num==2)
+            {
+               track.points[track.points.length - 1].latitude = token;
+               num++;
+            }
+            else if(num==3)
+            {
+               track.points[track.points.length - 1].longitude = token;
+               num++;
+            }
+            else if(num==4)
+            {
+               track.points[track.points.length - 1].d1 = token;
+               num++;
+            }
+            else if(num==5)
+            {
+               track.points[track.points.length - 1].d2 = token;
+               num++;
+            }
+            else if(num==6)
+            {
+               track.points[track.points.length - 1].flag = token;
+               num=0;
+            }
+        }
 
+      console.log("TLen"+track.points.length);
+
+      //console.log(track.points[0].date);
     track.author = user;
 
     return track.save().then(function(){
