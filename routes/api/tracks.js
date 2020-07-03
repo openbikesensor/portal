@@ -12,19 +12,27 @@ function addPointsToTrack(track,trackPart)
   var num = 0;
   var start = 0;
   var end = 0;
-  // console.log("len"+track.body.length);
+  //console.log("len"+trackPart.body.length);
   while (end < trackPart.body.length) {
     start = end;
-    while (track.body[end] != ";" && trackPart.body[end] != "\n" && end < trackPart.body.length) {
+    while (trackPart.body[end] != ";" && trackPart.body[end] != "$" && end < trackPart.body.length) {
       end++;
     }
+    if(trackPart.body[end] == "$") // $ is replacing \n as newlines are not allowed in json strings
+    {
+        num=0;
+    }
+    if(end < trackPart.body.length)
+    {
     var token = trackPart.body.substr(start, end - start);
+    end++;
+    if(token.length>0)
+    {
     //console.log(token);
     //console.log("num:"+num);
     //console.log("end:"+end);
-    end++;
     if (num == 0) {
-      track.points.push({ date: "dummy" });
+      track.points.push({ date: "dummy", time: "", latitude: "", longitude: "", d1: "", d2: "", flag: ""});
     }
     if (num == 0) {
       track.points[track.points.length - 1].date = token;
@@ -35,11 +43,21 @@ function addPointsToTrack(track,trackPart)
       num++;
     }
     else if (num == 2) {
-      track.points[track.points.length - 1].latitude = token;
+      var f = parseFloat(token);
+      if(isNaN(f))
+      {
+          f = parseFloat(token.substring(0,10));
+      }
+      track.points[track.points.length - 1].latitude = f;
       num++;
     }
     else if (num == 3) {
-      track.points[track.points.length - 1].longitude = token;
+      var f = parseFloat(token);
+      if(isNaN(f))
+      {
+          f = parseFloat(token.substring(0,10));
+      }
+      track.points[track.points.length - 1].longitude = f;
       num++;
     }
     else if (num == 4) {
@@ -52,7 +70,9 @@ function addPointsToTrack(track,trackPart)
     }
     else if (num == 6) {
       track.points[track.points.length - 1].flag = token;
-      num = 0;
+      num++;
+    }
+    }
     }
   }
 }
@@ -121,7 +141,7 @@ router.get('/', auth.optional, function(req, res, next) {
         .sort({createdAt: 'desc'})
         .populate('author')
         .exec(),
-      Track.count(query).exec(),
+      Track.countDocuments(query).exec(),
       req.payload ? User.findById(req.payload.id) : null,
     ]).then(function(results){
       var tracks = results[0];
@@ -160,7 +180,7 @@ router.get('/feed', auth.required, function(req, res, next) {
         .skip(Number(offset))
         .populate('author')
         .exec(),
-      Track.count({ author: {$in: user.following}})
+      Track.countDocuments({ author: {$in: user.following}})
     ]).then(function(results){
       var tracks = results[0];
       var tracksCount = results[1];
@@ -181,7 +201,7 @@ router.get('/feed', auth.required, function(req, res, next) {
         .skip(Number(offset))
         .populate('author')
         .exec(),
-      Track.count({ author: {$in: req.payload.id}})
+      Track.countDocuments({ author: {$in: req.payload.id}})
     ]).then(function(results){
       var tracks = results[0];
       var tracksCount = results[1];
@@ -282,19 +302,19 @@ router.post('/add', auth.optional, function(req, res, next) {
   User.findById(req.body.id).then(function (user) {
     if (!user) { return res.sendStatus(401); }
 
-    var trackPart = new Track(req.body.track);
     var track = null;
     if (currentTracks.has(req.body.id))
       track = currentTracks.get(req.body.id);
     if (track) {
-      addPointsToTrack(track, trackPart);
+      addPointsToTrack(track, req.body.track);
       console.log("TLen" + track.points.length);
       track.author = user;
     }
 
     //return track.save().then(function(){
     //  console.log(track.author);
-    return res.json({ track: track.toJSONFor(user) });
+    //return res.json({ track: track.toJSONFor(user) });
+      return res.sendStatus(200);
     //});
   }).catch(next);
 });
@@ -319,7 +339,7 @@ router.post('/begin', auth.optional, function (req, res, next) {
 
     //return track.save().then(function () {
     //  console.log(track.author);
-      return res.json({ track: track.toJSONFor(user) });
+      return res.sendStatus(200);
     //});
   }).catch(next);
 });
@@ -330,21 +350,25 @@ router.post('/end', auth.optional, function (req, res, next) {
   User.findById(req.body.id).then(function (user) {
     if (!user) { return res.sendStatus(401); }
 
-    var trackPart = new Track(req.body.track);
     var track = null;
     if (currentTracks.has(req.body.id))
       track = currentTracks.get(req.body.id);
+    else
+      track = new Track(req.body.track);
     if (track) {
-      addPointsToTrack(track, trackPart);
+      addPointsToTrack(track, req.body.track);
       track.author = user;
-      console.log("TLen" + track.points.length);
     }
 
-    track = currentTracks.delete(req.body.id); // we are done with this track, it is complete
+    currentTracks.delete(req.body.id); // we are done with this track, it is complete
+    track.author = user;
 
+      //console.log(track);
+      //console.log("user:"+user);
     return track.save().then(function () {
-      console.log(track.author);
-      return res.json({ track: track.toJSONFor(user) });
+      console.log("TLen" + track.points.length);
+      console.log("successfulSave:");
+      return res.sendStatus(200);
     });
   }).catch(next);
 });
@@ -381,7 +405,7 @@ router.put('/:track', auth.required, function(req, res, next) {
         req.track.tagList = req.body.track.tagList
       }
 
-      req.track.save().then(function(track){
+      req.body.track.save().then(function(track){
         return res.json({track: track.toJSONFor(user)});
       }).catch(next);
     } else {
