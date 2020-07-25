@@ -11,14 +11,19 @@ var TrackSchema = new mongoose.Schema({
   numEvents: {type: Number, default: 0},
   comments: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Comment' }],
   author: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+//Date;Time;Latitude;Longitude;Course;Speed;Right;Left;Confirmed;insidePrivacyArea
   points: [ { 
      date: String,
      time : String,
      latitude: Number,
      longitude: Number,
+     course: Number,
+     speed: Number,
      d1: Number,
      d2: Number,
-     flag: Number }]
+     flag: Number,
+     private: Number
+     }]
 }, {timestamps: true});
 
 TrackSchema.plugin(uniqueValidator, {message: 'is already taken'});

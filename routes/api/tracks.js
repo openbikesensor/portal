@@ -32,7 +32,7 @@ function addPointsToTrack(track,trackPart)
     //console.log("num:"+num);
     //console.log("end:"+end);
     if (num == 0) {
-      track.points.push({ date: "dummy", time: "", latitude: "", longitude: "", d1: "", d2: "", flag: ""});
+      track.points.push({ date: "dummy", time: "", latitude: "", longitude: "", course: "", speed: "", d1: "", d2: "", flag: "", private: ""});
     }
     if (num == 0) {
       track.points[track.points.length - 1].date = token;
@@ -61,15 +61,37 @@ function addPointsToTrack(track,trackPart)
       num++;
     }
     else if (num == 4) {
-      track.points[track.points.length - 1].d1 = token;
+      var f = parseFloat(token);
+      if(isNaN(f))
+      {
+          f = parseFloat(token.substring(0,10));
+      }
+      track.points[track.points.length - 1].course = f;
       num++;
     }
     else if (num == 5) {
-      track.points[track.points.length - 1].d2 = token;
+      var f = parseFloat(token);
+      if(isNaN(f))
+      {
+          f = parseFloat(token.substring(0,10));
+      }
+      track.points[track.points.length - 1].speed = f;
       num++;
     }
     else if (num == 6) {
+      track.points[track.points.length - 1].d1 = token;
+      num++;
+    }
+    else if (num == 7) {
+      track.points[track.points.length - 1].d2 = token;
+      num++;
+    }
+    else if (num == 8) {
       track.points[track.points.length - 1].flag = token;
+      num++;
+    }
+    else if (num == 9) {
+      track.points[track.points.length - 1].private = token;
       num++;
     }
     }
