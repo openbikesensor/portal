@@ -1,7 +1,9 @@
 var mongoose = require('mongoose');
+var uniqueValidator = require('mongoose-unique-validator');
+var slug = require('slug');
 
 var TrackDataSchema = new mongoose.Schema({
-//Date;Time;Latitude;Longitude;Course;Speed;Right;Left;Confirmed;insidePrivacyArea
+  slug: {type: String, lowercase: true, unique: true},
   points: [ { 
      date: String,
      time : String,
@@ -15,5 +17,18 @@ var TrackDataSchema = new mongoose.Schema({
      private: Number
      }]
 }, {timestamps: true});
+
+TrackDataSchema.plugin(uniqueValidator, {message: 'is already taken'});
+
+TrackDataSchema.pre('validate', function(next){
+  if(!this.slug)  {
+    this.slugify();
+  }
+  next();
+});
+
+TrackDataSchema.methods.slugify = function() {
+  this.slug = slug("td") + '-' + (Math.random() * Math.pow(36, 6) | 0).toString(36);
+};
 
 mongoose.model('TrackData', TrackDataSchema);
