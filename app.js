@@ -37,6 +37,7 @@ if(isProduction){
   mongoose.set('debug', true);
 }
 
+require('./models/TrackData');
 require('./models/User');
 require('./models/Track');
 require('./models/Comment');

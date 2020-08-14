@@ -1,5 +1,6 @@
 var router = require('express').Router();
 var mongoose = require('mongoose');
+var TrackData = mongoose.model('TrackData');
 var Track = mongoose.model('Track');
 var Comment = mongoose.model('Comment');
 var User = mongoose.model('User');
@@ -7,24 +8,24 @@ var auth = require('../auth');
 var currentTracks = new Map();
 
 
-function addPointsToTrack(track,trackPart)
+function addPointsToTrack(track,body, trackPart)
 {
   var num = 0;
   var start = 0;
   var end = 0;
-  //console.log("len"+trackPart.body.length);
-  while (end < trackPart.body.length) {
+ console.log("len"+body.length);
+  while (end < body.length) {
     start = end;
-    while (trackPart.body[end] != ";" && trackPart.body[end] != "$" && end < trackPart.body.length) {
+    while (body[end] != ";" && body[end] != "$" && end < body.length) {
       end++;
     }
-    if(trackPart.body[end] == "$") // $ is replacing \n as newlines are not allowed in json strings
+    if(body[end] == "$") // $ is replacing \n as newlines are not allowed in json strings
     {
         num=0;
     }
-    if(end < trackPart.body.length)
+    if(end < body.length)
     {
-    var token = trackPart.body.substr(start, end - start);
+    var token = body.substr(start, end - start);
     end++;
     if(token.length>0)
     {
@@ -32,14 +33,14 @@ function addPointsToTrack(track,trackPart)
     //console.log("num:"+num);
     //console.log("end:"+end);
     if (num == 0) {
-      track.points.push({ date: "dummy", time: "", latitude: "", longitude: "", course: "", speed: "", d1: "", d2: "", flag: "", private: ""});
+      track.trackData.points.push({ date: "dummy", time: "", latitude: "", longitude: "", course: "", speed: "", d1: "", d2: "", flag: "", private: ""});
     }
     if (num == 0) {
-      track.points[track.points.length - 1].date = token;
+      track.trackData.points[track.trackData.points.length - 1].date = token;
       num++;
     }
     else if (num == 1) {
-      track.points[track.points.length - 1].time = token;
+      track.trackData.points[track.trackData.points.length - 1].time = token;
       num++;
     }
     else if (num == 2) {
@@ -48,7 +49,7 @@ function addPointsToTrack(track,trackPart)
       {
           f = parseFloat(token.substring(0,10));
       }
-      track.points[track.points.length - 1].latitude = f;
+      track.trackData.points[track.trackData.points.length - 1].latitude = f;
       num++;
     }
     else if (num == 3) {
@@ -57,7 +58,7 @@ function addPointsToTrack(track,trackPart)
       {
           f = parseFloat(token.substring(0,10));
       }
-      track.points[track.points.length - 1].longitude = f;
+      track.trackData.points[track.trackData.points.length - 1].longitude = f;
       num++;
     }
     else if (num == 4) {
@@ -66,7 +67,7 @@ function addPointsToTrack(track,trackPart)
       {
           f = parseFloat(token.substring(0,10));
       }
-      track.points[track.points.length - 1].course = f;
+      track.trackData.points[track.trackData.points.length - 1].course = f;
       num++;
     }
     else if (num == 5) {
@@ -75,23 +76,23 @@ function addPointsToTrack(track,trackPart)
       {
           f = parseFloat(token.substring(0,10));
       }
-      track.points[track.points.length - 1].speed = f;
+      track.trackData.points[track.trackData.points.length - 1].speed = f;
       num++;
     }
     else if (num == 6) {
-      track.points[track.points.length - 1].d1 = token;
+      track.trackData.points[track.trackData.points.length - 1].d1 = token;
       num++;
     }
     else if (num == 7) {
-      track.points[track.points.length - 1].d2 = token;
+      track.trackData.points[track.trackData.points.length - 1].d2 = token;
       num++;
     }
     else if (num == 8) {
-      track.points[track.points.length - 1].flag = token;
+      track.trackData.points[track.trackData.points.length - 1].flag = token;
       num++;
     }
     else if (num == 9) {
-      track.points[track.points.length - 1].private = token;
+      track.trackData.points[track.trackData.points.length - 1].private = token;
       num++;
     }
     }
@@ -169,6 +170,7 @@ router.get('/', auth.optional, function(req, res, next) {
       var tracks = results[0];
       var tracksCount = results[1];
       var user = results[2];
+      console.log(tracks);
 
       return res.json({
         tracks: tracks.map(function(track){
@@ -247,11 +249,12 @@ router.post('/', auth.required, function(req, res, next) {
     if (!user) { return res.sendStatus(401); }
 
     var track = new Track(req.body.track);
+      track.trackData = new TrackData();
       console.log(track.body);
         var num=0;
         var start=0;
         var end=0;
-       // console.log("len"+track.body.length);
+        console.log("len"+track.body.length);
         while(end < track.body.length)
         {
            start = end;
@@ -260,60 +263,67 @@ router.post('/', auth.required, function(req, res, next) {
                end++;
            }
            var token = track.body.substr(start,end-start);
-      //console.log(token);
-      //console.log("num:"+num);
-      //console.log("end:"+end);
+      console.log(token);
+      console.log("num:"+num);
+      console.log("end:"+end);
            end++;
            if(num == 0)
            {
-               track.points.push( {date: "dummy"} );
+               track.trackData.points.push( {date: "dummy"} );
            }
             if(num==0)
             {
-               track.points[track.points.length - 1].date = token;
+               track.trackData.points[track.trackData.points.length - 1].date = token;
                num++;
             }
             else if(num==1)
             {
-               track.points[track.points.length - 1].time = token;
+               track.trackData.points[track.trackData.points.length - 1].time = token;
                num++;
             }
             else if(num==2)
             {
-               track.points[track.points.length - 1].latitude = token;
+               track.trackData.points[track.trackData.points.length - 1].latitude = token;
                num++;
             }
             else if(num==3)
             {
-               track.points[track.points.length - 1].longitude = token;
+               track.trackData.points[track.trackData.points.length - 1].longitude = token;
                num++;
             }
             else if(num==4)
             {
-               track.points[track.points.length - 1].d1 = token;
+               track.trackData.points[track.trackData.points.length - 1].d1 = token;
                num++;
             }
             else if(num==5)
             {
-               track.points[track.points.length - 1].d2 = token;
+               track.trackData.points[track.trackData.points.length - 1].d2 = token;
                num++;
             }
             else if(num==6)
             {
-               track.points[track.points.length - 1].flag = token;
+               track.trackData.points[track.trackData.points.length - 1].flag = token;
                num=0;
             }
         }
 
-      console.log("TLen"+track.points.length);
+      console.log("TLen"+track.trackData.points.length);
 
 
     track.author = user;
+    track.trackData.save(function (err){
+    if(err){
+      console.log("failed to save trackData");
+      return handleError(err);
+    }
+    });
 
     return track.save().then(function(){
       console.log(track.author);
       return res.json({track: track.toJSONFor(user)});
     });
+    return res.json({track: track.toJSONFor(user)});
   }).catch(next);
 });
 
@@ -328,8 +338,8 @@ router.post('/add', auth.optional, function(req, res, next) {
     if (currentTracks.has(req.body.id))
       track = currentTracks.get(req.body.id);
     if (track) {
-      addPointsToTrack(track, req.body.track);
-      console.log("TLen" + track.points.length);
+      addPointsToTrack(track, req.body, req.body.track);
+      console.log("TLen" + track.trackData.points.length);
       track.author = user;
     }
 
@@ -350,13 +360,18 @@ router.post('/begin', auth.optional, function (req, res, next) {
     if(currentTracks.has(req.body.id))
         currentTracks.delete(req.body.id); // delete old parts if there are leftovers
     var track = new Track(req.body.track);
+    track.trackData = new TrackData();
     currentTracks.set(req.body.id, track);
 
-    addPointsToTrack(track, track);
+  console.log("addToTrack"+req.body);
+    
+    addPointsToTrack(track, track.body, track);
 
-    console.log("TLen" + track.points.length);
+      console.log("TLen" + track);
+      console.log("TLen" + track.trackData);
+    console.log("TLen" + track.trackData.points.length);
 
-    //console.log(track.points[0].date);
+    //console.log(track.trackData.points[0].date);
     track.author = user;
 
     //return track.save().then(function () {
@@ -374,11 +389,17 @@ router.post('/end', auth.optional, function (req, res, next) {
 
     var track = null;
     if (currentTracks.has(req.body.id))
+    {
       track = currentTracks.get(req.body.id);
+      addPointsToTrack(track, req.body, req.body.track);
+    }
     else
+    {
       track = new Track(req.body.track);
+      track.trackData = new TrackData();
+      addPointsToTrack(track, track.body, req.body.track);
+    }
     if (track) {
-      addPointsToTrack(track, req.body.track);
       track.author = user;
     }
 
@@ -388,7 +409,15 @@ router.post('/end', auth.optional, function (req, res, next) {
       //console.log(track);
       //console.log("user:"+user);
     return track.save().then(function () {
-      console.log("TLen" + track.points.length);
+      console.log("TLen" + track);
+      console.log("TLen" + track.trackData);
+      console.log("TLen" + track.trackData.points.length);
+    track.trackData.save(function (err){
+    if(err){
+      console.log("failed to save trackData");
+    }
+      });
+
       console.log("successfulSave:");
       return res.sendStatus(200);
     });
