@@ -12,7 +12,6 @@ var TrackSchema = new mongoose.Schema({
   numEvents: {type: Number, default: 0},
   comments: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Comment' }],
   author: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-//Date;Time;Latitude;Longitude;Course;Speed;Right;Left;Confirmed;insidePrivacyArea
   trackData: { type: mongoose.Schema.Types.ObjectId, ref: 'TrackData' },
 }, {timestamps: true});
 
