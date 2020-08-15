@@ -20,7 +20,7 @@ function addPointsToTrack(track,body)
   var num = 0;
   var start = 0;
   var end = 0;
- console.log("len"+body.length);
+ //console.log("len"+body.length);
   while (end < body.length) {
     start = end;
     while (body[end] != ";" && body[end] != "$" && end < body.length) {
@@ -187,7 +187,7 @@ router.get('/', auth.optional, function(req, res, next) {
       var tracks = results[0];
       var tracksCount = results[1];
       var user = results[2];
-      console.log(tracks);
+      //console.log(tracks);
 
       return res.json({
         tracks: tracks.map(function(track){
@@ -277,7 +277,7 @@ router.post('/', auth.required, function(req, res, next) {
     });
 
     return track.save().then(function(){
-      console.log(track.author);
+      //console.log(track.author);
       return res.json({track: track.toJSONFor(user)});
     });
     return res.json({track: track.toJSONFor(user)});
@@ -285,7 +285,7 @@ router.post('/', auth.required, function(req, res, next) {
 });
 
 router.post('/add', auth.optional, function(req, res, next) {
-  console.log("Add");
+  //console.log("Add");
 
   //console.log(req.payload);
   User.findById(req.body.id).then(function (user) {
@@ -294,10 +294,15 @@ router.post('/add', auth.optional, function(req, res, next) {
     var ti = null;
     if (currentTracks.has(req.body.id))
       ti = currentTracks.get(req.body.id);
+      
+    //console.log("TI" + ti);
+    //console.log("TILen" + ti.trackData.points.length);
+    //console.log("TITrack" + ti.track);
+    //console.log("Body" + req.body.track.body);
     if (ti.track) {
-      addPointsToTrack(ti, req.body);
-      console.log("TLen" + ti.trackData.points.length);
-      track.author = user;
+      addPointsToTrack(ti, req.body.track.body);
+      //console.log("TLen" + ti.trackData.points.length);
+      ti.track.author = user;
     }
 
     //return track.save().then(function(){
@@ -309,7 +314,7 @@ router.post('/add', auth.optional, function(req, res, next) {
 });
 
 router.post('/begin', auth.optional, function (req, res, next) {
-  console.log("Begin");
+  //console.log("Begin");
   //console.log(req.payload);
   User.findById(req.body.id).then(function (user) {
     if (!user) { return res.sendStatus(401); }
@@ -320,16 +325,16 @@ router.post('/begin', auth.optional, function (req, res, next) {
     ti.track.trackData = ti.trackData._id; 
     currentTracks.set(req.body.id, ti);
 
-  console.log("addToTrack"+req.body);
+  //console.log("addToTrack"+req.body);
     
     addPointsToTrack(ti, ti.track.body);
 
-      console.log("TLen" + track);
-      console.log("TLen" + track.trackData);
-    console.log("TLen" + track.trackData.points.length);
+      //console.log("TLen" + ti.track);
+      //console.log("TLen" + ti.trackData);
+    //console.log("TLen" + ti.trackData.points.length);
 
     //console.log(track.trackData.points[0].date);
-    track.author = user;
+    ti.track.author = user;
 
     //return track.save().then(function () {
     //  console.log(track.author);
@@ -339,7 +344,7 @@ router.post('/begin', auth.optional, function (req, res, next) {
 });
 
 router.post('/end', auth.optional, function (req, res, next) {
-  console.log("End");
+  //console.log("End");
   //console.log(req.payload);
   User.findById(req.body.id).then(function (user) {
     if (!user) { return res.sendStatus(401); }
@@ -348,7 +353,7 @@ router.post('/end', auth.optional, function (req, res, next) {
     if (currentTracks.has(req.body.id))
     {
       ti = currentTracks.get(req.body.id);
-      addPointsToTrack(ti, req.body);
+      addPointsToTrack(ti, req.body.track.body);
     }
     else
     {
@@ -366,9 +371,9 @@ router.post('/end', auth.optional, function (req, res, next) {
       //console.log(track);
       //console.log("user:"+user);
     return ti.track.save().then(function () {
-      console.log("TLen" + ti.track);
-      console.log("TLen" + ti.trackData);
-      console.log("TLen" + ti.trackData.points.length);
+      //console.log("TLen" + ti.track);
+      //console.log("TLen" + ti.trackData);
+      //console.log("TLen" + ti.trackData.points.length);
     ti.trackData.save(function (err){
     if(err){
       console.log("failed to save trackData"+err.toString());
@@ -523,9 +528,9 @@ router.delete('/:track/comments/:comment', auth.required, function(req, res, nex
 // return an track's trackData
 router.get('/:track/TrackData', auth.optional, function(req, res, next){
   Promise.resolve(req.payload ? User.findById(req.payload.id) : null).then(function(user){
-    console.log("requestTrackData"+req.track);
+    //console.log("requestTrackData"+req.track);
     TrackData.findById(req.track.trackData,function(err,trackData){
-      console.log({trackData: trackData});
+      //console.log({trackData: trackData});
       return res.json({trackData: trackData});
     });
   }).catch(next);
