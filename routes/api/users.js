@@ -29,6 +29,9 @@ router.put('/user', auth.required, function(req, res, next){
     if(typeof req.body.user.image !== 'undefined'){
       user.image = req.body.user.image;
     }
+    if(typeof req.body.user.areTracksVisibleForAll !== 'undefined'){
+      user.areTracksVisibleForAll = req.body.user.areTracksVisibleForAll;
+    }
     if(typeof req.body.user.password !== 'undefined'){
       user.setPassword(req.body.user.password);
     }

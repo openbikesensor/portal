@@ -188,12 +188,18 @@ router.get('/', auth.optional, function(req, res, next) {
       var tracksCount = results[1];
       var user = results[2];
       //console.log(tracks);
-
+      var retTracks = [];
+      for (t of tracks) {
+        console.log(t);
+        if (t.author.areTracksVisibleForAll || t.author == user) {
+          retTracks.push(t);
+        }
+      }
       return res.json({
-        tracks: tracks.map(function(track){
-          return track.toJSONFor(user);
+        tracks: retTracks.map(function(track){
+             return track.toJSONFor(user);
         }),
-        tracksCount: tracksCount
+        tracksCount: retTracks.length
       });
     });
   }).catch(next);

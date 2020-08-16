@@ -36,8 +36,7 @@ TrackSchema.methods.toJSONFor = function(user){
     description: this.description,
     createdAt: this.createdAt,
     updatedAt: this.updatedAt,
-    points: this.points,
-    visibleForAll: user ? user.areTracksVisibleForAll : false,
+    visibleForAll: this.author ? this.author.areTracksVisibleForAll : false,
     author: this.author.toProfileJSONFor(user)
   };
 };

@@ -47,6 +47,7 @@ UserSchema.methods.toAuthJSON = function(){
     token: this.generateJWT(),
     bio: this.bio,
     image: this.image,
+    areTracksVisibleForAll: this.areTracksVisibleForAll,
     apiKey: this._id
   };
 };
@@ -79,9 +80,9 @@ UserSchema.methods.isFavorite = function(id){
   });
 };
 
-//UserSchema.methods.areTracksVisibleForAll = function(id){
-//  return this.areTracksVisibleForAll();
-//};
+UserSchema.methods.isTrackVisible = function(id){
+  return this.areTracksVisibleForAll();
+};
 
 
 UserSchema.methods.follow = function(id){
