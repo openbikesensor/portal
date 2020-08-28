@@ -32,7 +32,7 @@ router.put('/user', auth.required, function(req, res, next){
     if(typeof req.body.user.areTracksVisibleForAll !== 'undefined'){
       user.areTracksVisibleForAll = req.body.user.areTracksVisibleForAll;
     }
-    if(typeof req.body.user.password !== 'undefined'){
+    if(typeof req.body.user.password !== 'undefined' && req.body.user.password !='' ){
       user.setPassword(req.body.user.password);
     }
 

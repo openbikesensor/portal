@@ -180,6 +180,7 @@ router.get('/', auth.optional, function(req, res, next) {
         .skip(Number(offset))
         .sort({createdAt: 'desc'})
         .populate('author')
+        .where('visibleForAll || author == user')
         .exec(),
       Track.countDocuments(query).exec(),
       req.payload ? User.findById(req.payload.id) : null,
