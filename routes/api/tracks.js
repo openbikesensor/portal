@@ -180,7 +180,7 @@ router.get('/', auth.optional, function(req, res, next) {
         .skip(Number(offset))
         .sort({createdAt: 'desc'})
         .populate('author')
-        .where('visibleForAll || author == user')
+        .where('visible').equals(true)
         .exec(),
       Track.countDocuments(query).exec(),
       req.payload ? User.findById(req.payload.id) : null,
@@ -191,10 +191,10 @@ router.get('/', auth.optional, function(req, res, next) {
       //console.log(tracks);
       var retTracks = [];
       for (t of tracks) {
-        console.log(t);
-        if (t.author.areTracksVisibleForAll || t.author == user) {
+        //console.log(t);
+        //if (t.author.areTracksVisibleForAll || t.author == user) {
           retTracks.push(t);
-        }
+        //}
       }
       return res.json({
         tracks: retTracks.map(function(track){
@@ -277,6 +277,7 @@ router.post('/', auth.required, function(req, res, next) {
     track.trackData = trackData._id;
      
     track.author = user;
+    track.visible = track.author.areTracksVisibleForAll;
     trackData.save(function (err){
     if(err){
       console.log("failed to save trackData");
@@ -422,10 +423,12 @@ router.put('/:track', auth.required, function(req, res, next) {
       }
 
       if(typeof req.body.track.tagList !== 'undefined'){
-        req.track.tagList = req.body.track.tagList
+        req.track.tagList = req.body.track.tagList;
       }
+      req.track.visible = req.body.track.visible;
+      console.log("saving track");
 
-      req.body.track.save().then(function(track){
+      req.track.save().then(function(track){
         return res.json({track: track.toJSONFor(user)});
       }).catch(next);
     } else {

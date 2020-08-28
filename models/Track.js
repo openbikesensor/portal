@@ -9,6 +9,7 @@ var TrackSchema = new mongoose.Schema({
   title: String,
   description: String,
   body: String,
+  visible: Boolean,
   numEvents: {type: Number, default: 0},
   comments: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Comment' }],
   author: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
@@ -37,6 +38,7 @@ TrackSchema.methods.toJSONFor = function(user){
     createdAt: this.createdAt,
     updatedAt: this.updatedAt,
     visibleForAll: this.author ? this.author.areTracksVisibleForAll : false,
+    visible: this.visible,
     author: this.author.toProfileJSONFor(user)
   };
 };
