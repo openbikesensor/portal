@@ -66,6 +66,10 @@ function addPointsToTrack(track,body)
       {
           f = parseFloat(token.substring(0,10));
       }
+      if(isNaN(f))
+      {
+        f=0.0;
+      }
       track.trackData.points[track.trackData.points.length - 1].latitude = f;
       num++;
     }
@@ -74,6 +78,10 @@ function addPointsToTrack(track,body)
       if(isNaN(f))
       {
           f = parseFloat(token.substring(0,10));
+      }
+      if(isNaN(f))
+      {
+        f=0.0;
       }
       track.trackData.points[track.trackData.points.length - 1].longitude = f;
       num++;
@@ -84,6 +92,10 @@ function addPointsToTrack(track,body)
       {
           f = parseFloat(token.substring(0,10));
       }
+      if(isNaN(f))
+      {
+        f=0.0;
+      }
       track.trackData.points[track.trackData.points.length - 1].course = f;
       num++;
     }
@@ -92,6 +104,10 @@ function addPointsToTrack(track,body)
       if(isNaN(f))
       {
           f = parseFloat(token.substring(0,10));
+      }
+      if(isNaN(f))
+      {
+        f=0.0;
       }
       track.trackData.points[track.trackData.points.length - 1].speed = f;
       num++;
