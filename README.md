@@ -28,3 +28,10 @@ Uploading a track to the local server requires multiple steps, as uploading is n
 - In each of the three requests add your user id in the "Pre-request script" tab as the value for the "UserId" variable
 - As tracks have to be split into smaller parts to get a working upload from the sensor you have to run the three requests in the order of: begin -> add -> end
 - View your freshly uploaded track at (http://localhost:4200) -> Home -> Your feed
+
+### Sending E-Mails
+By default in development mode mails are not sent, but instead the mail data is logged to the console. This can be overriden with the `--devSendMails` flag if you start the application like so: `npm run dev -- --devSendMails`.
+
+Mails are also always sent in production mode!
+
+For actually sending e-mails the user and password for the SMTP server need to be specified as environment variables. The username is read from `MAILUSER`, and the password is read from `MAILPW`, so in local development startup would like something like this (at least in Linux): `MAILUSER=myuser MAILPW=supersecurepassword npm run dev -- --devSendMails`.
