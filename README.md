@@ -34,4 +34,4 @@ By default in development mode mails are not sent, but instead the mail data is 
 
 Mails are also always sent in production mode!
 
-For actually sending e-mails the user and password for the SMTP server need to be specified as environment variables. The username is read from `MAILUSER`, and the password is read from `MAILPW`, so in local development startup would like something like this (at least in Linux): `MAILUSER=myuser MAILPW=supersecurepassword npm run dev -- --devSendMails`.
+For actually sending e-mails the mailserver, sender, user and password for the SMTP server need to be specified as environment variables. The username is read from `MAILUSER`, and the password is read from `MAILPW`, Mailserver is read from 'MAILSERVER' and the sender name from 'MAILSENDER', so in local development startup would like something like this (at least in Linux): `MAILSERVER=mail.my-domain.de MAILSENDER=noreply@whatever.de MAILUSER=myuser MAILPW=supersecurepassword npm run dev -- --devSendMails`.
