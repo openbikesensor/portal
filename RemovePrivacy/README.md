@@ -1,4 +1,6 @@
-Use: for file in obsfiles/*.csv; do ./filter.sh "${file}"; done
+Use:
+
+    for file in obsfiles/*.csv; do ./filter.sh "${file}"; done
 
 Keep in mind:
 Diese Art ist sehr umständlich und langsam.
