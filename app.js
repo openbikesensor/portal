@@ -30,12 +30,9 @@ if (!isProduction) {
   app.use(errorhandler());
 }
 
-if (isProduction) {
-  mongoose.connect('mongodb://localhost/obs');
-} else {
-  mongoose.connect('mongodb://localhost/obsTest');
-  mongoose.set('debug', true);
-}
+const mongodbUrl = process.env.MONGODB_URL || (isProduction ? 'mongodb://localhost/obs' : 'mongodb://localhost/obsTest')
+mongoose.connect(mongodbUrl);
+mongoose.set('debug', !isProduction);
 
 require('./models/TrackData');
 require('./models/User');
