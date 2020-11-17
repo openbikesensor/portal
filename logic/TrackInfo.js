@@ -1,11 +1,8 @@
-
 class TrackInfo {
-  constructor(track,trackData)
-  {
+  constructor(track, trackData) {
     this.track = track;
     this.trackData = trackData;
   }
 }
 
-
-module.exports = TrackInfo
+module.exports = TrackInfo;
