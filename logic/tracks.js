@@ -1,8 +1,23 @@
+function _parseFloat(token) {
+  var f = parseFloat(token);
+  if (isNaN(f)) {
+    f = parseFloat(token.substring(0, 10));
+  }
+  if (isNaN(f)) {
+    f = 0.0;
+  }
+  return f;
+}
+
 module.exports.addPointsToTrack = function addPointsToTrack(track, body) {
   var num = 0;
   var start = 0;
   var end = 0;
-  //console.log("len"+body.length);
+
+  // reference to the array we will mutate
+  var points = track.trackData.points;
+  var currentPoint;
+
   while (end < body.length) {
     start = end;
     while (body[end] != ';' && body[end] != '$' && end < body.length) {
@@ -15,11 +30,8 @@ module.exports.addPointsToTrack = function addPointsToTrack(track, body) {
     if (end < body.length) {
       var token = body.substr(start, end - start);
       end++;
-      if (token.length > 0) {
-        //console.log(token);
-        //console.log("num:"+num);
-        //console.log("end:"+end);
 
+      if (token.length > 0) {
         if (num == 0 && token == 'Date') {
           // we have a header line, ignore it for now, TODO parse it
           if (end < body.length) {
@@ -30,77 +42,65 @@ module.exports.addPointsToTrack = function addPointsToTrack(track, body) {
             num = 100;
           }
         }
-        if (num == 0) {
-          track.trackData.points.push({
-            date: 'dummy',
-            time: '',
-            latitude: '',
-            longitude: '',
-            course: '',
-            speed: '',
-            d1: '',
-            d2: '',
-            flag: '',
-            private: '',
-          });
-          track.trackData.points[track.trackData.points.length - 1].date = token;
-          num++;
-        } else if (num == 1) {
-          track.trackData.points[track.trackData.points.length - 1].time = token;
-          num++;
-        } else if (num == 2) {
-          var f = parseFloat(token);
-          if (isNaN(f)) {
-            f = parseFloat(token.substring(0, 10));
-          }
-          if (isNaN(f)) {
-            f = 0.0;
-          }
-          track.trackData.points[track.trackData.points.length - 1].latitude = f;
-          num++;
-        } else if (num == 3) {
-          var f = parseFloat(token);
-          if (isNaN(f)) {
-            f = parseFloat(token.substring(0, 10));
-          }
-          if (isNaN(f)) {
-            f = 0.0;
-          }
-          track.trackData.points[track.trackData.points.length - 1].longitude = f;
-          num++;
-        } else if (num == 4) {
-          var f = parseFloat(token);
-          if (isNaN(f)) {
-            f = parseFloat(token.substring(0, 10));
-          }
-          if (isNaN(f)) {
-            f = 0.0;
-          }
-          track.trackData.points[track.trackData.points.length - 1].course = f;
-          num++;
-        } else if (num == 5) {
-          var f = parseFloat(token);
-          if (isNaN(f)) {
-            f = parseFloat(token.substring(0, 10));
-          }
-          if (isNaN(f)) {
-            f = 0.0;
-          }
-          track.trackData.points[track.trackData.points.length - 1].speed = f;
-          num++;
-        } else if (num == 6) {
-          track.trackData.points[track.trackData.points.length - 1].d1 = token;
-          num++;
-        } else if (num == 7) {
-          track.trackData.points[track.trackData.points.length - 1].d2 = token;
-          num++;
-        } else if (num == 8) {
-          track.trackData.points[track.trackData.points.length - 1].flag = token;
-          num++;
-        } else if (num == 9) {
-          track.trackData.points[track.trackData.points.length - 1].private = token;
-          num++;
+
+        switch (num) {
+          case 0:
+            currentPoint = {
+              date: 'dummy',
+              time: '',
+              latitude: '',
+              longitude: '',
+              course: '',
+              speed: '',
+              d1: '',
+              d2: '',
+              flag: '',
+              private: '',
+            };
+
+            points.push(currentPoint);
+
+            currentPoint.date = token;
+            break;
+
+          case 1:
+            currentPoint.time = token;
+            break;
+
+          case 2:
+            currentPoint.latitude = _parseFloat(token);
+            break;
+
+          case 3:
+            currentPoint.longitude = _parseFloat(token);
+            break;
+
+          case 4:
+            currentPoint.course = _parseFloat(token);
+            break;
+
+          case 5:
+            currentPoint.speed = _parseFloat(token);
+            break;
+
+          case 6:
+            currentPoint.d1 = token;
+            break;
+
+          case 7:
+            currentPoint.d2 = token;
+            break;
+
+          case 8:
+            currentPoint.flag = token;
+            break;
+
+          case 9:
+            currentPoint.private = token;
+            break;
         }
+
+        num++;
       }
     }
   }
