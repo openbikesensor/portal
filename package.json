@@ -8,6 +8,7 @@
     "start": "node ./app.js",
     "dev": "nodemon ./app.js",
     "mongo:stop": "docker stop realworld-mongo && docker rm realworld-mongo",
+    "autoformat": "prettier --write logic",
     "test": "jest"
   },
   "repository": {
@@ -41,9 +42,18 @@
   },
   "devDependencies": {
     "newman": "^5.2.0",
-    "nodemon": "^2.0.4"
+    "nodemon": "^2.0.4",
+    "prettier": "^2.1.2"
   },
   "jest": {
     "modulePathIgnorePatterns": ["local"]
+  },
+  "prettier": {
+    "useTabs": false,
+    "trailingComma": "all",
+    "tabWidth": 2,
+    "semi": true,
+    "singleQuote": true,
+    "printWidth": 120
   }
 }
