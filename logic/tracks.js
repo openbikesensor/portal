@@ -52,103 +52,37 @@ function detectFormat(body) {
     return Number(match[2]);
   }
 
+  if (/^Date;Time/.test(firstLine)) {
+    return 1;
+  }
+
   return 'invalid';
 }
 
 function* parseObsver1(body) {
-  let num = 0;
-  let start = 0;
-  let end = 0;
-
-  let currentPoint;
-
-  while (end < body.length) {
-    start = end;
-    while (body[end] !== ';' && body[end] !== '$' && end < body.length) {
-      end++;
-    }
-    if (body[end] === '$') {
-      if (currentPoint) {
-        yield currentPoint;
-      }
-      // $ is replacing \n as newlines are not allowed in json strings
-      num = 0;
-    }
-    if (end < body.length) {
-      const token = body.substr(start, end - start);
-      end++;
-
-      if (token.length > 0) {
-        if (num === 0 && token === 'Date') {
-          // we have a header line, ignore it for now, TODO parse it
-          if (end < body.length) {
-            while (body[end] !== ';' && body[end] !== '$' && end < body.length) {
-              end++;
-            }
-            start = end;
-            num = 100;
-          }
-        }
-
-        switch (num) {
-          case 0:
-            currentPoint = {
-              date: token,
-              time: '',
-              latitude: '',
-              longitude: '',
-              course: '',
-              speed: '',
-              d1: '',
-              d2: '',
-              flag: '',
-              private: '',
-            };
-            break;
-
-          case 1:
-            currentPoint.time = token;
-            break;
-
-          case 2:
-            currentPoint.latitude = _parseFloat(token);
-            break;
-
-          case 3:
-            currentPoint.longitude = _parseFloat(token);
-            break;
-
-          case 4:
-            currentPoint.course = _parseFloat(token);
-            break;
-
-          case 5:
-            currentPoint.speed = _parseFloat(token);
-            break;
-
-          case 6:
-            currentPoint.d1 = token;
-            break;
-
-          case 7:
-            currentPoint.d2 = token;
-            break;
-
-          case 8:
-            currentPoint.flag = token;
-            break;
-
-          case 9:
-            currentPoint.private = token;
-            break;
-        }
-
-        num++;
-      }
-    }
+  if (body.indexOf('\n') < body.length - 1) {
+    body = body.replace(/\$/g, '\n');
   }
-  if (currentPoint) {
-    yield currentPoint;
+
+  for (const record of csvParse(body, {
+    delimiter: ';',
+    encoding: 'utf8',
+    columns: ['date', 'time', 'latitude', 'longitude', 'course', 'speed', 'd1', 'd2', 'flag', 'private'],
+    relax_column_count: true,
+    cast(value, { column }) {
+      if (/latitude|longitude|course|speed/.test(column)) {
+        return _parseFloat(value);
+      } else {
+        return value;
+      }
+    },
+  })) {
+    if (record.date === 'Date') {
+      // ignore header line
+      continue;
+    }
+
+    yield record;
   }
 }
 
