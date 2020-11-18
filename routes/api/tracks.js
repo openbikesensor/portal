@@ -87,11 +87,11 @@ router.get('/', auth.optional, function (req, res, next) {
         req.payload ? User.findById(req.payload.id) : null,
       ]).then(function (results) {
         const tracks = results[0];
-        const tracksCount = results[1];
+        // const tracksCount = results[1];
         const user = results[2];
         // console.log(tracks);
         const retTracks = [];
-        for (t of tracks) {
+        for (const t of tracks) {
           // console.log(t);
           // if (t.author.areTracksVisibleForAll || t.author == user) {
           retTracks.push(t);
@@ -124,7 +124,7 @@ router.get('/feed', auth.required, function (req, res, next) {
     if (!user) {
       return res.sendStatus(401);
     }
-    if (user.following != '') {
+    if (user.following !== '') {
       Promise.all([
         Track.find({ author: { $in: user.following } })
           .limit(Number(limit))
@@ -193,7 +193,6 @@ router.post('/', auth.required, function (req, res, next) {
         // console.log(track.author);
         return res.json({ track: track.toJSONFor(user) });
       });
-      return res.json({ track: track.toJSONFor(user) });
     })
     .catch(next);
 });
@@ -272,12 +271,12 @@ router.post('/end', auth.optional, function (req, res, next) {
         return res.sendStatus(401);
       }
 
-      const track = null;
+      let ti;
       if (currentTracks.has(req.body.id)) {
         ti = currentTracks.get(req.body.id);
         addPointsToTrack(ti, req.body.track.body);
       } else {
-        var ti = new TrackInfo(new Track(req.body.track), new TrackData());
+        ti = new TrackInfo(new Track(req.body.track), new TrackData());
         ti.track.trackData = ti.trackData._id;
         addPointsToTrack(ti, ti.track.body);
       }
