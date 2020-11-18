@@ -35,3 +35,11 @@ node_modules
 .node_repl_history
 
 .idea
+
+# Storage place for local files, such as developer database etc.
+local/
+
+# We don't include this file in favor of package-lock.json -- we cannot have
+# both, because then developers will only update one of them and they'll
+# contradict. For now, npm shall be the canonical default (compare README.md).
+yarn.lock
