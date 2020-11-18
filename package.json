@@ -8,7 +8,7 @@
     "start": "node ./app.js",
     "dev": "nodemon ./app.js",
     "mongo:stop": "docker stop realworld-mongo && docker rm realworld-mongo",
-    "autoformat": "eslint --fix logic",
+    "autoformat": "eslint --fix logic routes/api/tracks.js",
     "test": "jest"
   },
   "repository": {
