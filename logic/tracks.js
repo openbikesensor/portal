@@ -1,5 +1,5 @@
 function _parseFloat(token) {
-  var f = parseFloat(token);
+  let f = parseFloat(token);
   if (isNaN(f)) {
     f = parseFloat(token.substring(0, 10));
   }
@@ -10,32 +10,32 @@ function _parseFloat(token) {
 }
 
 module.exports.addPointsToTrack = function addPointsToTrack(track, body) {
-  var num = 0;
-  var start = 0;
-  var end = 0;
+  let num = 0;
+  let start = 0;
+  let end = 0;
 
   // reference to the array we will mutate
-  var points = track.trackData.points;
-  var currentPoint;
+  const points = track.trackData.points;
+  let currentPoint;
 
   while (end < body.length) {
     start = end;
-    while (body[end] != ';' && body[end] != '$' && end < body.length) {
+    while (body[end] !== ';' && body[end] !== '$' && end < body.length) {
       end++;
     }
-    if (body[end] == '$') {
+    if (body[end] === '$') {
       // $ is replacing \n as newlines are not allowed in json strings
       num = 0;
     }
     if (end < body.length) {
-      var token = body.substr(start, end - start);
+      const token = body.substr(start, end - start);
       end++;
 
       if (token.length > 0) {
-        if (num == 0 && token == 'Date') {
+        if (num === 0 && token === 'Date') {
           // we have a header line, ignore it for now, TODO parse it
           if (end < body.length) {
-            while (body[end] != ';' && body[end] != '$' && end < body.length) {
+            while (body[end] !== ';' && body[end] !== '$' && end < body.length) {
               end++;
             }
             start = end;

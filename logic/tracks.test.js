@@ -1,7 +1,7 @@
-var { addPointsToTrack } = require('./tracks');
-var TrackInfo = require('./TrackInfo');
+const { addPointsToTrack } = require('./tracks');
+const TrackInfo = require('./TrackInfo');
 
-var { test1 } = require('./_tracks_testdata');
+const { test1 } = require('./_tracks_testdata');
 
 describe('addPointsToTrack', () => {
   it('is a function', () => {
@@ -11,7 +11,7 @@ describe('addPointsToTrack', () => {
   it('works on the sample data with an empty track', () => {
     const trackInfo = new TrackInfo({}, { points: [] });
     addPointsToTrack(trackInfo, test1);
-    var points = trackInfo.trackData.points;
+    const points = trackInfo.trackData.points;
     expect(points).toHaveLength(324);
     expect(points[0]).toEqual({
       date: '12.07.2020',
