@@ -8,7 +8,7 @@
     "start": "node ./app.js",
     "dev": "nodemon ./app.js",
     "mongo:stop": "docker stop realworld-mongo && docker rm realworld-mongo",
-    "autoformat": "prettier --write logic",
+    "autoformat": "eslint --fix logic",
     "test": "jest"
   },
   "repository": {
@@ -41,12 +41,22 @@
     "underscore": "^1.11.0"
   },
   "devDependencies": {
+    "eslint": "^7.13.0",
+    "eslint-config-prettier": "^6.15.0",
+    "eslint-config-standard": "^16.0.2",
+    "eslint-plugin-import": "^2.22.1",
+    "eslint-plugin-jest": "^24.1.3",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-prettier": "^3.1.4",
+    "eslint-plugin-promise": "^4.2.1",
     "newman": "^5.2.0",
     "nodemon": "^2.0.4",
     "prettier": "^2.1.2"
   },
   "jest": {
-    "modulePathIgnorePatterns": ["local"]
+    "modulePathIgnorePatterns": [
+      "local"
+    ]
   },
   "prettier": {
     "useTabs": false,
@@ -55,5 +65,27 @@
     "semi": true,
     "singleQuote": true,
     "printWidth": 120
+  },
+  "eslintConfig": {
+    "extends": [
+      "standard",
+      "prettier"
+    ],
+    "plugins": [
+      "jest",
+      "prettier"
+    ],
+    "env": {
+      "browser": false,
+      "node": true,
+      "jest/globals": true
+    },
+    "rules": {
+      "prettier/prettier": "error",
+      "standard/array-bracket-even-spacing": 0,
+      "standard/computed-property-even-spacing": 0,
+      "standard/object-curly-even-spacing": 0
+    },
+    "root": true
   }
 }
