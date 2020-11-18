@@ -313,43 +313,47 @@ router.get('/:track', auth.optional, function (req, res, next) {
     .then(function (results) {
       const user = results[0];
 
-      return res.json({ track: req.track.toJSONFor(user) });
+      return res.json({ track: req.track.toJSONFor(user, { body: true }) });
     })
     .catch(next);
 });
 
 // update track
-router.put('/:track', auth.required, function (req, res, next) {
-  User.findById(req.payload.id).then(function (user) {
-    if (req.track.author._id.toString() === req.payload.id.toString()) {
-      if (typeof req.body.track.title !== 'undefined') {
-        req.track.title = req.body.track.title;
-      }
+router.put('/:track', auth.required, async function (req, res, next) {
+  const user = await User.findById(req.payload.id);
 
-      if (typeof req.body.track.description !== 'undefined') {
-        req.track.description = req.body.track.description;
-      }
+  if (req.track.author._id.toString() !== req.payload.id.toString()) {
+    return res.sendStatus(403);
+  }
 
-      if (typeof req.body.track.body !== 'undefined') {
-        req.track.body = req.body.track.body;
-      }
+  if (typeof req.body.track.title !== 'undefined') {
+    req.track.title = req.body.track.title;
+  }
 
-      if (typeof req.body.track.tagList !== 'undefined') {
-        req.track.tagList = req.body.track.tagList;
-      }
-      req.track.visible = req.body.track.visible;
-      console.log('saving track');
+  if (typeof req.body.track.description !== 'undefined') {
+    req.track.description = req.body.track.description;
+  }
 
-      req.track
-        .save()
-        .then(function (track) {
-          return res.json({ track: track.toJSONFor(user) });
-        })
-        .catch(next);
-    } else {
-      return res.sendStatus(403);
+  if (req.body.track.body?.trim()) {
+    req.track.body = req.body.track.body.trim();
+
+    let trackData = await TrackData.findById(req.track.trackData);
+    if (!trackData) {
+      trackData = new TrackData();
+      req.track.trackData = trackData._id;
     }
-  });
+    trackData.points = [];
+    addPointsToTrack({ trackData }, req.track.body);
+    await trackData.save();
+  }
+
+  if (typeof req.body.track.tagList !== 'undefined') {
+    req.track.tagList = req.body.track.tagList;
+  }
+  req.track.visible = req.body.track.visible;
+
+  const track = await req.track.save();
+  return res.json({ track: track.toJSONFor(user) });
 });
 
 // delete track

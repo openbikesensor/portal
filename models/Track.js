@@ -30,7 +30,7 @@ TrackSchema.methods.slugify = function() {
   this.slug = slug(this.title) + '-' + (Math.random() * Math.pow(36, 6) | 0).toString(36);
 };
 
-TrackSchema.methods.toJSONFor = function(user){
+TrackSchema.methods.toJSONFor = function (user, include) {
   return {
     slug: this.slug,
     title: this.title,
@@ -39,7 +39,8 @@ TrackSchema.methods.toJSONFor = function(user){
     updatedAt: this.updatedAt,
     visibleForAll: this.author ? this.author.areTracksVisibleForAll : false,
     visible: this.visible,
-    author: this.author.toProfileJSONFor(user)
+    author: this.author.toProfileJSONFor(user),
+    ...(include?.body ? { body: this.body } : {}),
   };
 };
 
