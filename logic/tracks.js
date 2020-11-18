@@ -11,7 +11,18 @@ function _parseFloat(token) {
   return f;
 }
 
+function replaceDollarNewlinesHack(body) {
+  // see if we are using the hack with $ as newlines, replace them for the csv parser
+  if (body.endsWith('$')) {
+    return body.replace(/\$/g, '\n');
+  }
+
+  return body;
+}
+
 function addPointsToTrack(trackInfo, body, format = null) {
+  body = replaceDollarNewlinesHack(body);
+
   const detectedFormat = format != null ? format : detectFormat(body);
 
   let parser;
@@ -60,10 +71,6 @@ function detectFormat(body) {
 }
 
 function* parseObsver1(body) {
-  if (body.indexOf('\n') < body.length - 1) {
-    body = body.replace(/\$/g, '\n');
-  }
-
   for (const record of csvParse(body, {
     delimiter: ';',
     encoding: 'utf8',
