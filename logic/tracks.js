@@ -46,6 +46,8 @@ function addPointsToTrack(trackInfo, body, format = null) {
 }
 
 function detectFormat(body) {
+  body = replaceDollarNewlinesHack(body)
+
   if (!body.length) {
     return 'invalid';
   }
@@ -53,7 +55,9 @@ function detectFormat(body) {
   const firstLinebreakIndex = body.indexOf('\n');
 
   if (firstLinebreakIndex === -1) {
-    return 1;
+    // We need at least one linebreak in the whole file, to separate header and
+    // data. If the file contains no header, it is in valid.
+    return 'invalid'
   }
 
   const firstLine = body.substring(0, firstLinebreakIndex);
@@ -63,6 +67,8 @@ function detectFormat(body) {
     return Number(match[2]);
   }
 
+  // If we have no metadata line, but start immediately with a header, it is
+  // format version 1.
   if (/^Date;Time/.test(firstLine)) {
     return 1;
   }
