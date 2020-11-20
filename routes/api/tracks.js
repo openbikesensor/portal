@@ -8,14 +8,7 @@ const auth = require('../auth');
 const currentTracks = new Map();
 const TrackInfo = require('../../logic/TrackInfo');
 const { addPointsToTrack } = require('../../logic/tracks');
-
-const wrapRoute = (fn) => async (req, res, next) => {
-  try {
-    return await fn(req, res);
-  } catch (err) {
-    next(err);
-  }
-};
+const wrapRoute = require('../../_helpers/wrapRoute');
 
 // Preload track objects on routes with ':track'
 router.param('track', async (req, res, next, slug) => {
@@ -296,42 +289,46 @@ router.get(
 );
 
 // update track
-router.put('/:track', auth.required, async function (req, res, next) {
-  const user = await User.findById(req.payload.id);
+router.put(
+  '/:track',
+  auth.required,
+  wrapRoute(async (req, res) => {
+    const user = await User.findById(req.payload.id);
 
-  if (req.track.author._id.toString() !== req.payload.id.toString()) {
-    return res.sendStatus(403);
-  }
-
-  if (typeof req.body.track.title !== 'undefined') {
-    req.track.title = req.body.track.title;
-  }
-
-  if (typeof req.body.track.description !== 'undefined') {
-    req.track.description = req.body.track.description;
-  }
-
-  if (req.body.track.body && req.body.track.body.trim()) {
-    req.track.body = req.body.track.body.trim();
-
-    let trackData = await TrackData.findById(req.track.trackData);
-    if (!trackData) {
-      trackData = new TrackData();
-      req.track.trackData = trackData._id;
+    if (req.track.author._id.toString() !== req.payload.id.toString()) {
+      return res.sendStatus(403);
     }
-    trackData.points = [];
-    addPointsToTrack({ trackData }, req.track.body);
-    await trackData.save();
-  }
 
-  if (typeof req.body.track.tagList !== 'undefined') {
-    req.track.tagList = req.body.track.tagList;
-  }
-  req.track.visible = req.body.track.visible;
+    if (typeof req.body.track.title !== 'undefined') {
+      req.track.title = req.body.track.title;
+    }
 
-  const track = await req.track.save();
-  return res.json({ track: track.toJSONFor(user) });
-});
+    if (typeof req.body.track.description !== 'undefined') {
+      req.track.description = req.body.track.description;
+    }
+
+    if (req.body.track.body && req.body.track.body.trim()) {
+      req.track.body = req.body.track.body.trim();
+
+      let trackData = await TrackData.findById(req.track.trackData);
+      if (!trackData) {
+        trackData = new TrackData();
+        req.track.trackData = trackData._id;
+      }
+      trackData.points = [];
+      addPointsToTrack({ trackData }, req.track.body);
+      await trackData.save();
+    }
+
+    if (typeof req.body.track.tagList !== 'undefined') {
+      req.track.tagList = req.body.track.tagList;
+    }
+    req.track.visible = req.body.track.visible;
+
+    const track = await req.track.save();
+    return res.json({ track: track.toJSONFor(user) });
+  }),
+);
 
 // delete track
 router.delete(

@@ -1,6 +1,4 @@
-module.exports = validateRequest;
-
-function validateRequest(req, next, schema) {
+const validateRequest = (schema) => (req, res, next) => {
   console.log('validateRequest');
 
   const options = {
@@ -16,4 +14,6 @@ function validateRequest(req, next, schema) {
     req.body = value;
     next();
   }
-}
+};
+
+module.exports = validateRequest;

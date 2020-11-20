@@ -31,14 +31,9 @@ ArticleSchema.methods.slugify = function () {
   this.slug = slug(this.title) + '-' + ((Math.random() * Math.pow(36, 6)) | 0).toString(36);
 };
 
-ArticleSchema.methods.updateFavoriteCount = function () {
-  const article = this;
-
-  return User.count({ favorites: { $in: [article._id] } }).then(function (count) {
-    article.favoritesCount = count;
-
-    return article.save();
-  });
+ArticleSchema.methods.updateFavoriteCount = async function () {
+  this.favoritesCount = await User.count({ favorites: { $in: [this._id] } });
+  return await this.save();
 };
 
 ArticleSchema.methods.toJSONFor = function (user) {

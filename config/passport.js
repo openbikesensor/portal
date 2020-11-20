@@ -9,20 +9,21 @@ passport.use(
       usernameField: 'user[email]',
       passwordField: 'user[password]',
     },
-    function (email, password, done) {
-      User.findOne({ email: email })
-        .then(function (user) {
-          if (!user || !user.validPassword(password)) {
-            return done(null, false, { errors: { 'email or password': 'is invalid' } });
-          }
+    async function (email, password, done) {
+      try {
+        const user = await User.findOne({ email: email });
+        if (!user || !user.validPassword(password)) {
+          return done(null, false, { errors: { 'email or password': 'is invalid' } });
+        }
 
-          if (user && user.needsEmailValidation) {
-            return done(null, false, { errors: { 'E-Mail-Bestätigung': 'noch nicht erfolgt' } });
-          }
+        if (user.needsEmailValidation) {
+          return done(null, false, { errors: { 'E-Mail-Bestätigung': 'noch nicht erfolgt' } });
+        }
 
-          return done(null, user);
-        })
-        .catch(done);
+        return done(null, user);
+      } catch (err) {
+        done(err);
+      }
     },
   ),
 );
