@@ -9,6 +9,7 @@
     "dev": "nodemon ./app.js",
     "mongo:stop": "docker stop realworld-mongo && docker rm realworld-mongo",
     "autoformat": "eslint --fix .",
+    "lint": "eslint .",
     "test": "jest"
   },
   "repository": {
