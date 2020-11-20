@@ -1,4 +1,4 @@
-﻿const crypto = require('crypto');
+const crypto = require('crypto');
 const mongoose = require('mongoose');
 const sendEmail = require('../_helpers/send-email');
 const User = mongoose.model('User');
@@ -36,7 +36,9 @@ async function register(params, origin) {
 async function verifyEmail({ token }) {
   const account = await User.findOne({ verificationToken: token });
 
-  if (!account) throw 'Verification failed';
+  if (!account) {
+    throw Error('Verification failed');
+  }
 
   account.needsEmailValidation = false;
   account.verificationToken = undefined;
@@ -70,7 +72,9 @@ async function validateResetToken({ token }) {
     'resetToken.expires': { $gt: Date.now() },
   });
 
-  if (!account) throw 'Invalid token';
+  if (!account) {
+    throw Error('Invalid token');
+  }
 }
 
 async function resetPassword({ token, password }) {
@@ -79,7 +83,9 @@ async function resetPassword({ token, password }) {
     'resetToken.expires': { $gt: Date.now() },
   });
 
-  if (!account) throw 'Invalid token';
+  if (!account) {
+    throw Error('Invalid token');
+  }
 
   // update password and remove reset token
   account.setPassword(password);

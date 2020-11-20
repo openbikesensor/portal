@@ -1,11 +1,8 @@
-const http = require('http');
 const path = require('path');
-const methods = require('methods');
 const express = require('express');
 const bodyParser = require('body-parser');
 const session = require('express-session');
 const cors = require('cors');
-const passport = require('passport');
 const errorhandler = require('errorhandler');
 const mongoose = require('mongoose');
 
@@ -22,7 +19,7 @@ app.use(bodyParser.json({ limit: '50mb' }));
 app.use(bodyParser.urlencoded({ limit: '50mb', extended: false }));
 
 app.use(require('method-override')());
-app.use(express.static(__dirname + '/public'));
+app.use(express.static(path.join(__dirname, 'public')));
 
 app.use(session({ secret: 'obsobs', cookie: { maxAge: 60000 }, resave: false, saveUninitialized: false }));
 
@@ -82,6 +79,7 @@ app.use(function (err, req, res, next) {
 });
 
 // finally, let's start our server...
-var server = app.listen(process.env.PORT || 3000, function () {
-  console.log('Listening on port ' + server.address().port);
+const port = process.env.PORT || 3000;
+app.listen(port, () => {
+  console.log('Listening on port ' + port);
 });
