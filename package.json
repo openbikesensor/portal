@@ -8,7 +8,7 @@
     "start": "node ./app.js",
     "dev": "nodemon ./app.js",
     "mongo:stop": "docker stop realworld-mongo && docker rm realworld-mongo",
-    "autoformat": "eslint --fix logic routes/api/tracks.js",
+    "autoformat": "eslint --fix .",
     "test": "jest"
   },
   "repository": {
@@ -87,6 +87,12 @@
       "standard/computed-property-even-spacing": 0,
       "standard/object-curly-even-spacing": 0
     },
-    "root": true
+    "root": true,
+    "ignorePatterns": [
+      "postman-examples/**",
+      "public/**",
+      "node_modules",
+      "local"
+    ]
   }
 }
