@@ -1,31 +1,48 @@
-var mongoose = require('mongoose');
-var uniqueValidator = require('mongoose-unique-validator');
-var crypto = require('crypto');
-var jwt = require('jsonwebtoken');
-var secret = require('../config').secret;
+const mongoose = require('mongoose');
+const uniqueValidator = require('mongoose-unique-validator');
+const crypto = require('crypto');
+const jwt = require('jsonwebtoken');
+const secret = require('../config').secret;
 
-var UserSchema = new mongoose.Schema({
-  username: { type: String, lowercase: true, unique: true, required: [true, "can't be blank"], match: [/^[a-zA-Z0-9]+$/, 'is invalid'], index: true },
-  email: { type: String, lowercase: true, unique: true, required: [true, "can't be blank"], match: [/\S+@\S+\.\S+/, 'is invalid'], index: true },
-  bio: String,
-  image: String,
-  favorites: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Article' }],
-  following: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
-  areTracksVisibleForAll: Boolean,
-  hash: String,
-  salt: String,
-  needsEmailValidation: Boolean,
-  verificationToken: String,
-  resetToken: {
-    token: String,
-    expires: Date
-  }
-}, { timestamps: true });
+const UserSchema = new mongoose.Schema(
+  {
+    username: {
+      type: String,
+      lowercase: true,
+      unique: true,
+      required: [true, "can't be blank"],
+      match: [/^[a-zA-Z0-9]+$/, 'is invalid'],
+      index: true,
+    },
+    email: {
+      type: String,
+      lowercase: true,
+      unique: true,
+      required: [true, "can't be blank"],
+      match: [/\S+@\S+\.\S+/, 'is invalid'],
+      index: true,
+    },
+    bio: String,
+    image: String,
+    favorites: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Article' }],
+    following: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+    areTracksVisibleForAll: Boolean,
+    hash: String,
+    salt: String,
+    needsEmailValidation: Boolean,
+    verificationToken: String,
+    resetToken: {
+      token: String,
+      expires: Date,
+    },
+  },
+  { timestamps: true },
+);
 
 UserSchema.plugin(uniqueValidator, { message: 'ist bereits vergeben. Sorry!' });
 
 UserSchema.methods.validPassword = function (password) {
-  var hash = crypto.pbkdf2Sync(password, this.salt, 10000, 512, 'sha512').toString('hex');
+  const hash = crypto.pbkdf2Sync(password, this.salt, 10000, 512, 'sha512').toString('hex');
   return this.hash === hash;
 };
 
@@ -35,15 +52,18 @@ UserSchema.methods.setPassword = function (password) {
 };
 
 UserSchema.methods.generateJWT = function () {
-  var today = new Date();
-  var exp = new Date(today);
+  const today = new Date();
+  const exp = new Date(today);
   exp.setDate(today.getDate() + 60);
 
-  return jwt.sign({
-    id: this._id,
-    username: this.username,
-    exp: parseInt(exp.getTime() / 1000),
-  }, secret);
+  return jwt.sign(
+    {
+      id: this._id,
+      username: this.username,
+      exp: parseInt(exp.getTime() / 1000),
+    },
+    secret,
+  );
 };
 
 UserSchema.methods.toAuthJSON = function () {
@@ -54,7 +74,7 @@ UserSchema.methods.toAuthJSON = function () {
     bio: this.bio,
     image: this.image,
     areTracksVisibleForAll: this.areTracksVisibleForAll,
-    apiKey: this._id
+    apiKey: this._id,
   };
 };
 
@@ -63,7 +83,7 @@ UserSchema.methods.toProfileJSONFor = function (user) {
     username: this.username,
     bio: this.bio,
     image: this.image || 'https://static.productionready.io/images/smiley-cyrus.jpg',
-    following: user ? user.isFollowing(this._id) : false
+    following: user ? user.isFollowing(this._id) : false,
   };
 };
 
@@ -89,7 +109,6 @@ UserSchema.methods.isFavorite = function (id) {
 UserSchema.methods.isTrackVisible = function (id) {
   return this.areTracksVisibleForAll();
 };
-
 
 UserSchema.methods.follow = function (id) {
   if (this.following.indexOf(id) === -1) {

@@ -1,18 +1,18 @@
-var http = require('http'),
-  path = require('path'),
-  methods = require('methods'),
-  express = require('express'),
-  bodyParser = require('body-parser'),
-  session = require('express-session'),
-  cors = require('cors'),
-  passport = require('passport'),
-  errorhandler = require('errorhandler'),
-  mongoose = require('mongoose');
+const http = require('http');
+const path = require('path');
+const methods = require('methods');
+const express = require('express');
+const bodyParser = require('body-parser');
+const session = require('express-session');
+const cors = require('cors');
+const passport = require('passport');
+const errorhandler = require('errorhandler');
+const mongoose = require('mongoose');
 
-var isProduction = process.env.NODE_ENV === 'production';
+const isProduction = process.env.NODE_ENV === 'production';
 
 // Create global app object
-var app = express();
+const app = express();
 
 app.use(cors());
 
@@ -30,7 +30,8 @@ if (!isProduction) {
   app.use(errorhandler());
 }
 
-const mongodbUrl = process.env.MONGODB_URL || (isProduction ? 'mongodb://localhost/obs' : 'mongodb://localhost/obsTest')
+const mongodbUrl =
+  process.env.MONGODB_URL || (isProduction ? 'mongodb://localhost/obs' : 'mongodb://localhost/obsTest');
 mongoose.connect(mongodbUrl);
 mongoose.set('debug', !isProduction);
 
@@ -44,7 +45,7 @@ app.use(require('./routes'));
 
 /// catch 404 and forward to error handler
 app.use(function (req, res, next) {
-  var err = new Error('Not Found');
+  const err = new Error('Not Found');
   err.status = 404;
   next(err);
 });
@@ -60,10 +61,10 @@ if (!isProduction) {
     res.status(err.status || 500);
 
     res.json({
-      'errors': {
+      errors: {
         message: err.message,
-        error: err
-      }
+        error: err,
+      },
     });
   });
 }
@@ -73,10 +74,10 @@ if (!isProduction) {
 app.use(function (err, req, res, next) {
   res.status(err.status || 500);
   res.json({
-    'errors': {
+    errors: {
       message: err.message,
-      error: {}
-    }
+      error: {},
+    },
   });
 });
 

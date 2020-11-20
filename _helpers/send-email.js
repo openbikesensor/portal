@@ -9,7 +9,10 @@ async function sendEmail({ to, subject, html, from = config.emailFrom }) {
     await transporter.sendMail({ from, to, subject, html });
   } else {
     console.log({
-      to, subject, html, from
+      to,
+      subject,
+      html,
+      from,
     });
   }
 }

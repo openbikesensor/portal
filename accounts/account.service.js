@@ -1,7 +1,7 @@
-﻿const crypto = require("crypto");
+﻿const crypto = require('crypto');
 const mongoose = require('mongoose');
 const sendEmail = require('../_helpers/send-email');
-var User = mongoose.model('User');
+const User = mongoose.model('User');
 
 module.exports = {
   register,
@@ -54,12 +54,11 @@ async function forgotPassword({ email }, origin) {
   // create reset token that expires after 24 hours
   account.resetToken = {
     token: randomTokenString(),
-    expires: new Date(Date.now() + 24 * 60 * 60 * 1000)
+    expires: new Date(Date.now() + 24 * 60 * 60 * 1000),
   };
   await account.save();
 
   console.log('forgotPassword account saved', account);
-
 
   // send email
   await sendPasswordResetEmail(account, origin);
@@ -68,7 +67,7 @@ async function forgotPassword({ email }, origin) {
 async function validateResetToken({ token }) {
   const account = await User.findOne({
     'resetToken.token': token,
-    'resetToken.expires': { $gt: Date.now() }
+    'resetToken.expires': { $gt: Date.now() },
   });
 
   if (!account) throw 'Invalid token';
@@ -77,13 +76,13 @@ async function validateResetToken({ token }) {
 async function resetPassword({ token, password }) {
   const account = await User.findOne({
     'resetToken.token': token,
-    'resetToken.expires': { $gt: Date.now() }
+    'resetToken.expires': { $gt: Date.now() },
   });
 
   if (!account) throw 'Invalid token';
 
   // update password and remove reset token
-  account.setPassword(password)
+  account.setPassword(password);
   account.resetToken = undefined;
   await account.save();
 }
@@ -108,7 +107,7 @@ async function sendVerificationEmail(account, origin) {
     subject: 'Sign-up Verification API - Verify Email',
     html: `<h4>Verify Email</h4>
                <p>Thanks for registering!</p>
-               ${message}`
+               ${message}`,
   });
 }
 
@@ -125,7 +124,7 @@ async function sendAlreadyRegisteredEmail(email, origin) {
     subject: 'Sign-up Verification API - Email Already Registered',
     html: `<h4>Email Already Registered</h4>
                <p>Your email <strong>${email}</strong> is already registered.</p>
-               ${message}`
+               ${message}`,
   });
 }
 
@@ -144,6 +143,6 @@ async function sendPasswordResetEmail(account, origin) {
     to: account.email,
     subject: 'Sign-up Verification API - Reset Password',
     html: `<h4>Reset Password Email</h4>
-               ${message}`
+               ${message}`,
   });
 }

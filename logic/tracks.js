@@ -2,17 +2,17 @@ const csvParse = require('csv-parse/lib/sync');
 
 function _parseFloat(token) {
   if (typeof token !== 'string') {
-    return null
+    return null;
   }
 
-  token = token.trim()
+  token = token.trim();
 
   if (token === '') {
-    return null
+    return null;
   }
 
   if (/^nan$/i.test(token)) {
-    return null
+    return null;
   }
 
   let f = parseFloat(token);
@@ -29,27 +29,27 @@ function _parseFloat(token) {
 }
 
 function _parseInt(token) {
-  const asFloat = parseFloat(token)
+  const asFloat = parseFloat(token);
   if (asFloat !== null) {
-    return Math.floor(asFloat)
-  } else{
-    return asFloat
+    return Math.floor(asFloat);
+  } else {
+    return asFloat;
   }
 }
 
 function _parseString(token) {
   if (typeof token !== 'string') {
-    return null
+    return null;
   }
   // This time we do not trim -- because we assume that the quoting mechanism
   // from CSV might have kicked in and we actually want the spacing around the
   // token.
 
   if (token === '') {
-    return null
+    return null;
   }
 
-  return token
+  return token;
 }
 
 function replaceDollarNewlinesHack(body) {
@@ -87,7 +87,7 @@ function addPointsToTrack(trackInfo, body, format = null) {
 }
 
 function detectFormat(body) {
-  body = replaceDollarNewlinesHack(body)
+  body = replaceDollarNewlinesHack(body);
 
   if (!body.length) {
     return 'invalid';
@@ -98,7 +98,7 @@ function detectFormat(body) {
   if (firstLinebreakIndex === -1) {
     // We need at least one linebreak in the whole file, to separate header and
     // data. If the file contains no header, it is in valid.
-    return 'invalid'
+    return 'invalid';
   }
 
   const firstLine = body.substring(0, firstLinebreakIndex);
@@ -161,17 +161,17 @@ function* parseObsver1(body) {
 
     if (!record.latitude && !record.longitude) {
       // invalid record, make sure lat/lng say `null` instead of `0`
-      record.latitude = null
-      record.longitude = null
+      record.latitude = null;
+      record.longitude = null;
     }
 
     // in old format, 255 or 999 means "no measurement"
     if (record.d1 === 255 || record.d1 === 999) {
-      record.d1 = null
+      record.d1 = null;
     }
 
     if (record.d2 === 255 || record.d2 === 999) {
-      record.d2 = null
+      record.d2 = null;
     }
 
     yield record;
