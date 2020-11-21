@@ -153,6 +153,21 @@ function* parseObsver1(body) {
       continue;
     }
 
+    if (!record.latitude && !record.longitude) {
+      // invalid record, make sure lat/lng say `null` instead of `0`
+      record.latitude = null
+      record.longitude = null
+    }
+
+    // in old format, 255 or 999 means "no measurement"
+    if (record.d1 === 255 || record.d1 === 999) {
+      record.d1 = null
+    }
+
+    if (record.d2 === 255 || record.d2 === 999) {
+      record.d2 = null
+    }
+
     yield record;
   }
 }
