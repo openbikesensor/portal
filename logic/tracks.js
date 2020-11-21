@@ -73,6 +73,13 @@ function detectFormat(body) {
     return 1;
   }
 
+  // If we immediately start with data (a date, formatted as DD.MM.YYYY), then
+  // we have an old OBS not sending the header. It must therefore be old
+  // format, too.
+  if (/^[0-9]{2}\.[0-9]{2}\.[0-9]{4};/.test(firstLine)) {
+    return 1;
+  }
+
   return 'invalid';
 }
 
