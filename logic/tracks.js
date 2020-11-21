@@ -108,6 +108,12 @@ function detectFormat(body) {
     return Number(match[2]);
   }
 
+  // If we have no metadata line, but start immediately with a header, AND it contains
+  // `;Rus`, it is a version 2
+  if (/^Date;Time.*;Rus/.test(firstLine)) {
+    return 2;
+  }
+
   // If we have no metadata line, but start immediately with a header, it is
   // format version 1.
   if (/^Date;Time/.test(firstLine)) {
@@ -223,13 +229,13 @@ function* parseObsver2(body) {
 
       switch (type) {
         case 'int':
-          return parseInt(value);
+          return _parseInt(value);
 
         case 'float':
-          return parseFloat(value);
+          return _parseFloat(value);
 
         case 'string':
-          return value;
+          return _parseString(value);
       }
     },
   })) {
