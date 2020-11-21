@@ -141,6 +141,21 @@ router.get(
   }),
 );
 
+async function readFile(file) {
+  let fileContent = '';
+
+  file.on('data', function (data) {
+    fileContent += data;
+  });
+
+  await new Promise((resolve, reject) => {
+    file.on('end', resolve);
+    file.on('error', reject);
+  });
+
+  return fileContent;
+}
+
 async function getMultipartOrJsonBody(req, mapJsonBody = (x) => x) {
   const fileInfo = {};
   let body;
@@ -149,18 +164,7 @@ async function getMultipartOrJsonBody(req, mapJsonBody = (x) => x) {
     body = {};
 
     req.busboy.on('file', async function (fieldname, file, filename, encoding, mimetype) {
-      let fileContent = '';
-
-      file.on('data', function (data) {
-        fileContent += data;
-      });
-
-      await new Promise((resolve, reject) => {
-        file.on('end', resolve);
-        file.on('error', reject);
-      });
-
-      body[fieldname] = fileContent;
+      body[fieldname] = await readFile(file);
       fileInfo[fieldname] = { filename, encoding, mimetype };
     });
 
@@ -174,8 +178,15 @@ async function getMultipartOrJsonBody(req, mapJsonBody = (x) => x) {
       req.busboy.on('finish', resolve);
       req.busboy.on('error', reject);
     });
-  } else {
+  } else if (req.headers['content-type'] === 'application/json') {
     body = mapJsonBody(req.body);
+  } else {
+    body = { body: await readFile(req), ...req.query };
+    fileInfo.body = {
+      mimetype: req.headers['content-type'],
+      filename: req.headers['content-disposition'],
+      encoding: req.headers['content-encoding'],
+    };
   }
 
   return { body, fileInfo };
