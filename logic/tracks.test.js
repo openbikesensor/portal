@@ -1,17 +1,14 @@
-const { addPointsToTrack, parseObsver1, detectFormat, parseObsver2, replaceDollarNewlinesHack } = require('./tracks');
-const TrackInfo = require('./TrackInfo');
+const { parseTrackPoints, parseObsver1, detectFormat, parseObsver2, replaceDollarNewlinesHack } = require('./tracks');
 
 const { test1, test2, test3 } = require('./_tracks_testdata');
 
-describe('addPointsToTrack', () => {
+describe('parseTrackPoints', () => {
   it('is a function', () => {
-    expect(typeof addPointsToTrack).toBe('function');
+    expect(typeof parseTrackPoints).toBe('function');
   });
 
   it('works on the sample data with an empty track', () => {
-    const trackInfo = new TrackInfo({}, { points: [] });
-    addPointsToTrack(trackInfo, test1);
-    const points = trackInfo.trackData.points;
+    const points = Array.from(parseTrackPoints(test1));
     expect(points).toHaveLength(324);
     expect(points[0]).toEqual({
       date: '12.07.2020',

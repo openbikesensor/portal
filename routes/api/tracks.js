@@ -6,7 +6,7 @@ const Comment = mongoose.model('Comment');
 const User = mongoose.model('User');
 const auth = require('../auth');
 const currentTracks = new Map();
-const { addPointsToTrack } = require('../../logic/tracks');
+const { parseTrackPoints } = require('../../logic/tracks');
 const wrapRoute = require('../../_helpers/wrapRoute');
 
 // Preload track objects on routes with ':track'
@@ -155,8 +155,7 @@ router.post(
     track.trackData = trackData._id;
 
     if (req.body.track.body && req.body.track.body.trim()) {
-      trackData.points = [];
-      addPointsToTrack({ trackData }, track.body);
+      trackData.points = Array.from(parseTrackPoints(track.body));
     }
 
     track.author = user;
@@ -242,7 +241,7 @@ router.post(
     }
 
     const trackData = await TrackData.findById(track.trackData);
-    addPointsToTrack({ trackData }, track.body);
+    trackData.points = Array.from(parseTrackPoints(track.body));
     await trackData.save();
 
     // We are done with this track, it is complete.
@@ -292,8 +291,7 @@ router.put(
         trackData = new TrackData();
         req.track.trackData = trackData._id;
       }
-      trackData.points = [];
-      addPointsToTrack({ trackData }, req.track.body);
+      trackData.points = Array.from(parseTrackPoints(req.track.body));
       await trackData.save();
     }
 

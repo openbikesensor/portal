@@ -61,7 +61,7 @@ function replaceDollarNewlinesHack(body) {
   return body;
 }
 
-function addPointsToTrack(trackInfo, body, format = null) {
+function* parseTrackPoints(body, format = null) {
   body = replaceDollarNewlinesHack(body);
 
   const detectedFormat = format != null ? format : detectFormat(body);
@@ -80,10 +80,7 @@ function addPointsToTrack(trackInfo, body, format = null) {
       break;
   }
 
-  const points = trackInfo.trackData.points;
-  for (const newPoint of parser(body)) {
-    points.push(newPoint);
-  }
+  yield* parser(body);
 }
 
 function detectFormat(body) {
@@ -257,4 +254,4 @@ function* parseObsver2(body) {
   }
 }
 
-module.exports = { addPointsToTrack, detectFormat, parseObsver1, parseObsver2, replaceDollarNewlinesHack };
+module.exports = { parseTrackPoints, detectFormat, parseObsver1, parseObsver2, replaceDollarNewlinesHack };
