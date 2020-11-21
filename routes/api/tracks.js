@@ -332,6 +332,11 @@ router.get(
       req.payload ? User.findById(req.payload.id) : null,
       req.track.populate('author').execPopulate(),
     ]);
+
+    if (!req.track.visible && req.track.author._id.toString() !== req.payload?.id?.toString()) {
+      return res.sendStatus(403);
+    }
+
     return res.json({ track: req.track.toJSONFor(user, { body: true }) });
   }),
 );
