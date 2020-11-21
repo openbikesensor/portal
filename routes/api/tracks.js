@@ -6,7 +6,6 @@ const Comment = mongoose.model('Comment');
 const User = mongoose.model('User');
 const auth = require('../auth');
 const currentTracks = new Map();
-const TrackInfo = require('../../logic/TrackInfo');
 const { addPointsToTrack } = require('../../logic/tracks');
 const wrapRoute = require('../../_helpers/wrapRoute');
 
@@ -175,30 +174,26 @@ router.post(
   '/add',
   auth.optional,
   wrapRoute(async (req, res) => {
-    // console.log("Add");
-
-    // console.log(req.payload);
     const user = await User.findById(req.body.id);
 
     if (!user) {
       return res.sendStatus(401);
     }
 
-    let ti = null;
-    if (currentTracks.has(req.body.id)) ti = currentTracks.get(req.body.id);
-
-    // console.log("TI" + ti);
-    // console.log("TILen" + ti.trackData.points.length);
-    // console.log("TITrack" + ti.track);
-    // console.log("Body" + req.body.track.body);
-    if (ti.track) {
-      addPointsToTrack(ti, req.body.track.body);
-      // console.log("TLen" + ti.trackData.points.length);
-      ti.track.author = user;
+    if (!currentTracks.has(user.id)) {
+      throw new Error('current user has no active track, start one with POST to /tracks/begin');
     }
 
-    // await track.save()
-    // return res.json({ track: track.toJSONFor(user) });
+    const trackId = currentTracks.get(user.id);
+
+    const track = await Track.findById(trackId);
+    if (!track) {
+      throw new Error('current user active track is gone, retry upload');
+    }
+
+    track.body += req.body.track.body;
+    await track.save();
+
     return res.sendStatus(200);
   }),
 );
@@ -207,32 +202,20 @@ router.post(
   '/begin',
   auth.optional,
   wrapRoute(async (req, res) => {
-    // console.log("Begin");
-    // console.log(req.payload);
     const user = await User.findById(req.body.id);
 
     if (!user) {
       return res.sendStatus(401);
     }
 
-    if (currentTracks.has(req.body.id)) currentTracks.delete(req.body.id); // delete old parts if there are leftovers
-    const ti = new TrackInfo(new Track(req.body.track), new TrackData());
-    ti.track.trackData = ti.trackData._id;
-    currentTracks.set(req.body.id, ti);
+    const track = new Track(req.body.track);
+    const trackData = new TrackData();
+    track.trackData = trackData._id;
+    track.author = user;
 
-    // console.log("addToTrack"+req.body);
+    // remember which is the actively building track for this user
+    currentTracks.set(user.id, track._id);
 
-    addPointsToTrack(ti, ti.track.body);
-
-    // console.log("TLen" + ti.track);
-    // console.log("TLen" + ti.trackData);
-    // console.log("TLen" + ti.trackData.points.length);
-
-    // console.log(track.trackData.points[0].date);
-    ti.track.author = user;
-
-    // await track.save()
-    // console.log(track.author);
     return res.sendStatus(200);
   }),
 );
@@ -242,34 +225,28 @@ router.post(
   auth.optional,
   wrapRoute(async (req, res) => {
     const user = await User.findById(req.body.id);
+
     if (!user) {
       return res.sendStatus(401);
     }
 
-    let ti;
-    if (currentTracks.has(req.body.id)) {
-      ti = currentTracks.get(req.body.id);
-      addPointsToTrack(ti, req.body.track.body);
-    } else {
-      ti = new TrackInfo(new Track(req.body.track), new TrackData());
-      ti.track.trackData = ti.trackData._id;
-      addPointsToTrack(ti, ti.track.body);
-    }
-    if (ti.track) {
-      ti.track.author = user;
+    if (!currentTracks.has(user.id)) {
+      throw new Error('current user has no active track, start one with POST to /tracks/begin');
     }
 
-    currentTracks.delete(req.body.id); // we are done with this track, it is complete
-    ti.track.author = user;
+    const trackId = currentTracks.get(user.id);
 
-    // console.log(track);
-    // console.log("user:"+user);
-    await ti.track.save();
+    const track = await Track.findById(trackId);
+    if (!track) {
+      throw new Error('current user active track is gone, retry upload');
+    }
 
-    // console.log("TLen" + ti.track);
-    // console.log("TLen" + ti.trackData);
-    // console.log("TLen" + ti.trackData.points.length);
-    await ti.trackData.save();
+    const trackData = await TrackData.findById(track.trackData);
+    addPointsToTrack({ trackData }, track.body);
+    await trackData.save();
+
+    // We are done with this track, it is complete.
+    currentTracks.delete(user.id);
 
     return res.sendStatus(200);
   }),
