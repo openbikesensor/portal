@@ -4,6 +4,7 @@ const TrackData = mongoose.model('TrackData');
 const Track = mongoose.model('Track');
 const Comment = mongoose.model('Comment');
 const User = mongoose.model('User');
+const busboy = require('connect-busboy');
 const auth = require('../auth');
 const currentTracks = new Map();
 const { parseTrackPoints } = require('../../logic/tracks');
@@ -140,9 +141,50 @@ router.get(
   }),
 );
 
+async function getMultipartOrJsonBody(req, mapJsonBody = (x) => x) {
+  const fileInfo = {};
+  let body;
+
+  if (req.busboy) {
+    body = {};
+
+    req.busboy.on('file', async function (fieldname, file, filename, encoding, mimetype) {
+      let fileContent = '';
+
+      file.on('data', function (data) {
+        fileContent += data;
+      });
+
+      await new Promise((resolve, reject) => {
+        file.on('end', resolve);
+        file.on('error', reject);
+      });
+
+      body[fieldname] = fileContent;
+      fileInfo[fieldname] = { filename, encoding, mimetype };
+    });
+
+    req.busboy.on('field', (key, value) => {
+      body[key] = value;
+    });
+
+    req.pipe(req.busboy);
+
+    await new Promise((resolve, reject) => {
+      req.busboy.on('finish', resolve);
+      req.busboy.on('error', reject);
+    });
+  } else {
+    body = mapJsonBody(req.body);
+  }
+
+  return { body, fileInfo };
+}
+
 router.post(
   '/',
   auth.required,
+  busboy(), // parse multipart body
   wrapRoute(async (req, res) => {
     const user = await User.findById(req.payload.id);
 
@@ -150,18 +192,24 @@ router.post(
       return res.sendStatus(401);
     }
 
-    const track = new Track(req.body.track);
+    const { body } = await getMultipartOrJsonBody(req, (body) => body.track);
+
+    const track = new Track(body);
     const trackData = new TrackData();
     track.trackData = trackData._id;
+    track.author = user;
 
-    if (req.body.track.body && req.body.track.body.trim()) {
+    if (track.body) {
+      track.body = track.body.trim();
+    }
+
+    if (track.body) {
       trackData.points = Array.from(parseTrackPoints(track.body));
     }
 
-    track.author = user;
     track.visible = track.author.areTracksVisibleForAll;
-    await trackData.save();
 
+    await trackData.save();
     await track.save();
 
     // console.log(track.author);
@@ -280,6 +328,7 @@ router.get(
 // update track
 router.put(
   '/:track',
+  busboy(),
   auth.required,
   wrapRoute(async (req, res) => {
     const user = await User.findById(req.payload.id);
@@ -288,16 +337,18 @@ router.put(
       return res.sendStatus(403);
     }
 
-    if (typeof req.body.track.title !== 'undefined') {
-      req.track.title = req.body.track.title;
+    const { body } = await getMultipartOrJsonBody(req, (body) => body.track);
+
+    if (typeof body.title !== 'undefined') {
+      req.track.title = body.title;
     }
 
-    if (typeof req.body.track.description !== 'undefined') {
-      req.track.description = req.body.track.description;
+    if (typeof body.description !== 'undefined') {
+      req.track.description = body.description;
     }
 
-    if (req.body.track.body && req.body.track.body.trim()) {
-      req.track.body = req.body.track.body.trim();
+    if (body && body.trim()) {
+      req.track.body = body.body.trim();
 
       let trackData = await TrackData.findById(req.track.trackData);
       if (!trackData) {
@@ -308,10 +359,10 @@ router.put(
       await trackData.save();
     }
 
-    if (typeof req.body.track.tagList !== 'undefined') {
-      req.track.tagList = req.body.track.tagList;
+    if (typeof body.tagList !== 'undefined') {
+      req.track.tagList = body.tagList;
     }
-    req.track.visible = req.body.track.visible;
+    req.track.visible = body.visible;
 
     const track = await req.track.save();
     return res.json({ track: track.toJSONFor(user) });
