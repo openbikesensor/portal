@@ -1,14 +1,55 @@
 const csvParse = require('csv-parse/lib/sync');
 
 function _parseFloat(token) {
+  if (typeof token !== 'string') {
+    return null
+  }
+
+  token = token.trim()
+
+  if (token === '') {
+    return null
+  }
+
+  if (/^nan$/i.test(token)) {
+    return null
+  }
+
   let f = parseFloat(token);
+
   if (isNaN(f)) {
     f = parseFloat(token.substring(0, 10));
   }
+
   if (isNaN(f)) {
     f = 0.0;
   }
+
   return f;
+}
+
+function _parseInt(token) {
+  const asFloat = parseFloat(token)
+  if (asFloat !== null) {
+    return Math.floor(asFloat)
+  } else{
+    return asFloat
+  }
+}
+
+function _parseString(token) {
+  if (typeof token !== 'string') {
+    return null
+  }
+  // This time we do not trim -- because we assume that the quoting mechanism
+  // from CSV might have kicked in and we actually want the spacing around the
+  // token.
+
+  if (token === '') {
+    return null
+  }
+
+  return token
 }
 
 function replaceDollarNewlinesHack(body) {
@@ -87,13 +128,23 @@ function* parseObsver1(body) {
   for (const record of csvParse(body, {
     delimiter: ';',
     encoding: 'utf8',
+    // We specify  different column names here, as the order of columns was
+    // always the same, but their naming was different. By enforicing these
+    // column names we don't have to translate between them. Then we just
+    // ignore the first line (or any line that starts with "Date;").
+    // Original header usually is:
+    // Date;Time;Latitude;Longitude;Course;Speed;Right;Left;Confirmed;insidePrivacyArea
     columns: ['date', 'time', 'latitude', 'longitude', 'course', 'speed', 'd1', 'd2', 'flag', 'private'],
     relax_column_count: true,
     cast(value, { column }) {
-      if (/latitude|longitude|course|speed/.test(column)) {
+      if (['latitude', 'longitude', 'course', 'speed'].includes(column)) {
         return _parseFloat(value);
+      } else if (['d1', 'd2', 'flag'].includes(column)) {
+        return _parseInt(value);
+      } else if (column === 'private') {
+        return Boolean(_parseInt(value));
       } else {
-        return value;
+        return _parseString(value);
       }
     },
   })) {
