@@ -162,7 +162,7 @@ router.post(
     const trackData = new TrackData();
     track.trackData = trackData._id;
 
-    if (req.body.track.body?.trim()) {
+    if (req.body.track.body && req.body.track.body.trim()) {
       trackData.points = [];
       addPointsToTrack({ trackData }, track.body);
     }
@@ -311,7 +311,7 @@ router.put('/:track', auth.required, async function (req, res, next) {
     req.track.description = req.body.track.description;
   }
 
-  if (req.body.track.body?.trim()) {
+  if (req.body.track.body && req.body.track.body.trim()) {
     req.track.body = req.body.track.body.trim();
 
     let trackData = await TrackData.findById(req.track.trackData);

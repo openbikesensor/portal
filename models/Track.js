@@ -40,7 +40,7 @@ TrackSchema.methods.toJSONFor = function (user, include) {
     visibleForAll: this.author ? this.author.areTracksVisibleForAll : false,
     visible: this.visible,
     author: this.author.toProfileJSONFor(user),
-    ...(include?.body ? { body: this.body } : {}),
+    ...(include && include.body ? { body: this.body } : {}),
   };
 };
 
