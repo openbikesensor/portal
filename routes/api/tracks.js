@@ -162,6 +162,11 @@ router.post(
     const trackData = new TrackData();
     track.trackData = trackData._id;
 
+    if (req.body.track.body?.trim()) {
+      trackData.points = [];
+      addPointsToTrack({ trackData }, track.body);
+    }
+
     track.author = user;
     track.visible = track.author.areTracksVisibleForAll;
     await trackData.save();
