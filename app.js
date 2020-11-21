@@ -5,6 +5,7 @@ const session = require('express-session');
 const cors = require('cors');
 const errorhandler = require('errorhandler');
 const mongoose = require('mongoose');
+const auth = require('./routes/auth');
 
 const isProduction = process.env.NODE_ENV === 'production';
 
@@ -12,6 +13,7 @@ const isProduction = process.env.NODE_ENV === 'production';
 const app = express();
 
 app.use(cors());
+app.use(auth.getUserIdMiddleware);
 
 // Normal express config defaults
 app.use(require('morgan')('dev'));
