@@ -1,7 +1,7 @@
-const { addPointsToTrack, parseObsver1, detectFormat, parseObsver2 } = require('./tracks');
+const { addPointsToTrack, parseObsver1, detectFormat, parseObsver2, replaceDollarNewlinesHack } = require('./tracks');
 const TrackInfo = require('./TrackInfo');
 
-const { test1, test2 } = require('./_tracks_testdata');
+const { test1, test2, test3 } = require('./_tracks_testdata');
 
 describe('addPointsToTrack', () => {
   it('is a function', () => {
@@ -16,33 +16,33 @@ describe('addPointsToTrack', () => {
     expect(points[0]).toEqual({
       date: '12.07.2020',
       time: '09:02:59',
-      latitude: 0,
-      longitude: 0,
+      latitude: null,
+      longitude: null,
       course: 0,
       speed: 0,
-      d1: '255',
-      d2: '255',
-      flag: '0',
-      private: '0',
+      d1: null,
+      d2: null,
+      flag: 0,
+      private: false,
     });
   });
 });
 
 describe('parseObsver1', () => {
   it('can parse sample data', () => {
-    const points = Array.from(parseObsver1(test1));
+    const points = Array.from(parseObsver1(replaceDollarNewlinesHack(test1)));
     expect(points).toHaveLength(324);
     expect(points[0]).toEqual({
       date: '12.07.2020',
       time: '09:02:59',
-      latitude: 0,
-      longitude: 0,
+      latitude: null,
+      longitude: null,
       course: 0,
       speed: 0,
-      d1: '255',
-      d2: '255',
-      flag: '0',
-      private: '0',
+      d1: null,
+      d2: null,
+      flag: 0,
+      private: false,
     });
   });
 });
@@ -87,6 +87,7 @@ describe('detectFormat', () => {
 
   it('detects format 2', () => {
     expect(detectFormat(test2)).toBe(2);
+    expect(detectFormat(test3)).toBe(2);
   });
 
   it('detects invalid format', () => {

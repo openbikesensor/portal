@@ -54,7 +54,7 @@ function _parseString(token) {
 
 function replaceDollarNewlinesHack(body) {
   // see if we are using the hack with $ as newlines, replace them for the csv parser
-  if (body.endsWith('$')) {
+  if (body.endsWith('$') || /insidePrivacyArea;\$/.test(body)) {
     return body.replace(/\$/g, '\n');
   }
 
@@ -257,4 +257,4 @@ function* parseObsver2(body) {
   }
 }
 
-module.exports = { addPointsToTrack, detectFormat, parseObsver1, parseObsver2 };
+module.exports = { addPointsToTrack, detectFormat, parseObsver1, parseObsver2, replaceDollarNewlinesHack };
