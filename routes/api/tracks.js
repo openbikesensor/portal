@@ -184,6 +184,9 @@ router.post(
     track.trackData = trackData._id;
     track.author = user;
 
+    await track.save()
+    await trackData.save();
+
     // remember which is the actively building track for this user
     currentTracks.set(user.id, track._id);
 
@@ -239,6 +242,9 @@ router.post(
     if (!track) {
       throw new Error('current user active track is gone, retry upload');
     }
+
+    track.body += req.body.track.body;
+    await track.save();
 
     const trackData = await TrackData.findById(track.trackData);
     trackData.points = Array.from(parseTrackPoints(track.body));
