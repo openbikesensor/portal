@@ -170,6 +170,28 @@ router.post(
 );
 
 router.post(
+  '/begin',
+  auth.optional,
+  wrapRoute(async (req, res) => {
+    const user = await User.findById(req.body.id);
+
+    if (!user) {
+      return res.sendStatus(401);
+    }
+
+    const track = new Track(req.body.track);
+    const trackData = new TrackData();
+    track.trackData = trackData._id;
+    track.author = user;
+
+    // remember which is the actively building track for this user
+    currentTracks.set(user.id, track._id);
+
+    return res.sendStatus(200);
+  }),
+);
+
+router.post(
   '/add',
   auth.optional,
   wrapRoute(async (req, res) => {
@@ -192,28 +214,6 @@ router.post(
 
     track.body += req.body.track.body;
     await track.save();
-
-    return res.sendStatus(200);
-  }),
-);
-
-router.post(
-  '/begin',
-  auth.optional,
-  wrapRoute(async (req, res) => {
-    const user = await User.findById(req.body.id);
-
-    if (!user) {
-      return res.sendStatus(401);
-    }
-
-    const track = new Track(req.body.track);
-    const trackData = new TrackData();
-    track.trackData = trackData._id;
-    track.author = user;
-
-    // remember which is the actively building track for this user
-    currentTracks.set(user.id, track._id);
 
     return res.sendStatus(200);
   }),
