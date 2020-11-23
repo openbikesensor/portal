@@ -14,6 +14,7 @@ const app = express();
 
 app.use(cors());
 app.use(auth.getUserIdMiddleware);
+app.use(auth.loadUserMiddleware);
 
 // Normal express config defaults
 app.use(require('morgan')('dev'));
