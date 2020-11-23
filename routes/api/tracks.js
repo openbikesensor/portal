@@ -47,7 +47,7 @@ router.get(
   '/',
   auth.optional,
   wrapRoute(async (req, res) => {
-    const query = {};
+    const query = { visible: true };
     let limit = 20;
     let offset = 0;
 
@@ -79,14 +79,7 @@ router.get(
     }
 
     const results = await Promise.all([
-      Track.find(query)
-        .limit(Number(limit))
-        .skip(Number(offset))
-        .sort({ createdAt: 'desc' })
-        .populate('author')
-        .where('visible')
-        .equals(true)
-        .exec(),
+      Track.find(query).limit(Number(limit)).skip(Number(offset)).sort({ createdAt: 'desc' }).populate('author').exec(),
       Track.countDocuments(query).exec(),
       req.payload ? User.findById(req.payload.id) : null,
     ]);
