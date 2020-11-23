@@ -335,7 +335,7 @@ router.get(
       req.track.populate('author').execPopulate(),
     ]);
 
-    if (!req.track.visible && req.track.author._id.toString() !== req.payload?.id?.toString()) {
+    if (!req.track.visible && (!req.payload || req.track.author._id.toString() !== req.payload.id.toString())) {
       return res.sendStatus(403);
     }
 
@@ -365,7 +365,7 @@ router.put(
       req.track.description = body.description;
     }
 
-    if (body && body.trim()) {
+    if (body.body && body.body.trim()) {
       req.track.body = body.body.trim();
 
       let trackData = await TrackData.findById(req.track.trackData);
