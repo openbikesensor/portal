@@ -15,7 +15,7 @@ function getTokenFromHeader(req) {
 
 const jwtOptional = jwt({
   secret: secret,
-  userProperty: 'payload',
+  userProperty: 'authInfo',
   credentialsRequired: false,
   getToken: getTokenFromHeader,
   algorithms: ['HS256'],
@@ -27,19 +27,20 @@ async function getUserIdMiddleware(req, res, next) {
     const [tokenType, token] = (authorization && authorization.split(' ')) || [];
 
     if (tokenType === 'Token' || tokenType === 'Bearer') {
+      // only parse the token as jwt if it looks like one, otherwise we get an error
       return jwtOptional(req, res, next);
     } else if (tokenType === 'OBSUserId') {
-      req.payload = { id: token.trim() };
+      req.authInfo = { id: token.trim() };
       next();
     } else if (!authorization && req.body && req.body.id && req.body.id.length === 24) {
       const user = await User.findById(req.body.id);
       if (user) {
-        req.payload = { id: user.id };
+        req.authInfo = { id: user.id };
         req.user = user;
       }
       next();
     } else {
-      req.payload = null;
+      req.authInfo = null;
       next();
     }
   } catch (err) {
@@ -49,8 +50,8 @@ async function getUserIdMiddleware(req, res, next) {
 
 async function loadUserMiddleware(req, res, next) {
   try {
-    if (req.payload && req.payload.id) {
-      req.user = await User.findById(req.payload.id);
+    if (req.authInfo && req.authInfo.id) {
+      req.user = await User.findById(req.authInfo.id);
 
       if (!req.user) {
         return res.sendStatus(401);
@@ -65,7 +66,7 @@ async function loadUserMiddleware(req, res, next) {
 
 module.exports = {
   required(req, res, next) {
-    if (!req.payload) {
+    if (!req.authInfo) {
       return res.sendStatus(403);
     } else {
       return next();
