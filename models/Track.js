@@ -32,6 +32,22 @@ TrackSchema.methods.slugify = function () {
   this.slug = slug(this.title) + '-' + ((Math.random() * Math.pow(36, 6)) | 0).toString(36);
 };
 
+TrackSchema.methods.isVisibleTo = function (user) {
+  if (this.visible) {
+    return true;
+  }
+
+  if (!user) {
+    return false;
+  }
+
+  if (user._id.toString() === this.author._id.toString()) {
+    return true;
+  }
+
+  return false;
+};
+
 TrackSchema.methods.toJSONFor = function (user, include) {
   return {
     slug: this.slug,

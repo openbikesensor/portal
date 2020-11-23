@@ -24,16 +24,7 @@ router.get(
   '/:username',
   auth.optional,
   wrapRoute(async (req, res) => {
-    if (!req.payload) {
-      return res.json({ profile: req.profile.toProfileJSONFor(false) });
-    }
-
-    const user = await User.findById(req.payload.id);
-    if (!user) {
-      return res.json({ profile: req.profile.toProfileJSONFor(false) });
-    }
-
-    return res.json({ profile: req.profile.toProfileJSONFor(user) });
+    return res.json({ profile: req.profile.toProfileJSONFor(req.user) });
   }),
 );
 
@@ -41,14 +32,7 @@ router.post(
   '/:username/follow',
   auth.required,
   wrapRoute(async (req, res) => {
-    const profileId = req.profile._id;
-
-    const user = await User.findById(req.payload.id);
-    if (!user) {
-      return res.sendStatus(401);
-    }
-
-    await user.follow(profileId);
+    await req.user.follow(req.profile._id);
     return res.json({ profile: req.profile.toProfileJSONFor(user) });
   }),
 );
@@ -57,14 +41,7 @@ router.delete(
   '/:username/follow',
   auth.required,
   wrapRoute(async (req, res) => {
-    const profileId = req.profile._id;
-
-    const user = User.findById(req.payload.id);
-    if (!user) {
-      return res.sendStatus(401);
-    }
-
-    await user.unfollow(profileId);
+    await req.user.unfollow(req.profile._id);
     return res.json({ profile: req.profile.toProfileJSONFor(user) });
   }),
 );

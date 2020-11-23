@@ -78,16 +78,13 @@ router.get(
       query._id = { $in: [] };
     }
 
-    const results = await Promise.all([
+    const [tracks, tracksCount] = await Promise.all([
       Track.find(query).limit(Number(limit)).skip(Number(offset)).sort({ createdAt: 'desc' }).populate('author').exec(),
       Track.countDocuments(query).exec(),
-      req.payload ? User.findById(req.payload.id) : null,
     ]);
 
-    const [tracks, tracksCount, user] = results;
-
     return res.json({
-      tracks: tracks.map((track) => track.toJSONFor(user)),
+      tracks: tracks.map((track) => track.toJSONFor(req.user)),
       tracksCount,
     });
   }),
@@ -108,13 +105,7 @@ router.get(
       offset = req.query.offset;
     }
 
-    const user = await User.findById(req.payload.id);
-
-    if (!user) {
-      return res.sendStatus(401);
-    }
-
-    const showByUserIds = [req.payload.id, ...(user.following || [])];
+    const showByUserIds = [req.user.id, ...(req.user.following || [])];
 
     const [tracks, tracksCount] = await Promise.all([
       Track.find({ author: { $in: showByUserIds } })
@@ -127,7 +118,7 @@ router.get(
 
     return res.json({
       tracks: tracks.map(function (track) {
-        return track.toJSONFor(user);
+        return track.toJSONFor(req.user);
       }),
       tracksCount: tracksCount,
     });
@@ -190,18 +181,12 @@ router.post(
   auth.required,
   busboy(), // parse multipart body
   wrapRoute(async (req, res) => {
-    const user = await User.findById(req.payload.id);
-
-    if (!user) {
-      return res.sendStatus(401);
-    }
-
     const { body } = await getMultipartOrJsonBody(req, (body) => body.track);
 
     const track = new Track(body);
     const trackData = new TrackData();
     track.trackData = trackData._id;
-    track.author = user;
+    track.author = req.user;
 
     if (track.body) {
       track.body = track.body.trim();
@@ -218,31 +203,25 @@ router.post(
     await track.save();
 
     // console.log(track.author);
-    return res.json({ track: track.toJSONFor(user) });
+    return res.json({ track: track.toJSONFor(req.user) });
   }),
 );
 
 router.post(
   '/begin',
-  auth.optional,
+  auth.required,
   wrapRoute(async (req, res) => {
-    const user = await User.findById(req.body.id);
-
-    if (!user) {
-      return res.sendStatus(401);
-    }
-
     const track = new Track(req.body.track);
     const trackData = new TrackData();
     track.trackData = trackData._id;
-    track.author = user;
+    track.author = req.user;
     track.uploadedByUserAgent = normalizeUserAgent(req.headers['user-agent']);
 
     await track.save();
     await trackData.save();
 
     // remember which is the actively building track for this user
-    currentTracks.set(user.id, track._id);
+    currentTracks.set(req.user.id, track._id);
 
     return res.sendStatus(200);
   }),
@@ -250,19 +229,13 @@ router.post(
 
 router.post(
   '/add',
-  auth.optional,
+  auth.required,
   wrapRoute(async (req, res) => {
-    const user = await User.findById(req.body.id);
-
-    if (!user) {
-      return res.sendStatus(401);
-    }
-
-    if (!currentTracks.has(user.id)) {
+    if (!currentTracks.has(req.user.id)) {
       throw new Error('current user has no active track, start one with POST to /tracks/begin');
     }
 
-    const trackId = currentTracks.get(user.id);
+    const trackId = currentTracks.get(req.user.id);
 
     const track = await Track.findById(trackId);
     if (!track) {
@@ -278,20 +251,14 @@ router.post(
 
 router.post(
   '/end',
-  auth.optional,
+  auth.required,
   wrapRoute(async (req, res) => {
-    const user = await User.findById(req.body.id);
-
-    if (!user) {
-      return res.sendStatus(401);
-    }
-
     let track;
     let trackData;
 
-    if (currentTracks.has(user.id)) {
+    if (currentTracks.has(req.user.id)) {
       // the file is less than 100 lines
-      const trackId = currentTracks.get(user.id);
+      const trackId = currentTracks.get(req.user.id);
       track = await Track.findById(trackId);
       if (!track) {
         throw new Error('current user active track is gone, retry upload');
@@ -303,7 +270,7 @@ router.post(
       track = new Track(req.body.track);
       trackData = new TrackData();
       track.trackData = trackData._id;
-      track.author = user;
+      track.author = req.user;
     }
 
     trackData.points = Array.from(parseTrackPoints(track.body));
@@ -312,7 +279,7 @@ router.post(
     await trackData.save();
 
     // We are done with this track, it is complete.
-    currentTracks.delete(user.id);
+    currentTracks.delete(req.user.id);
 
     return res.sendStatus(200);
   }),
@@ -323,16 +290,11 @@ router.get(
   '/:track',
   auth.optional,
   wrapRoute(async (req, res) => {
-    const [user] = await Promise.all([
-      req.payload ? User.findById(req.payload.id) : null,
-      req.track.populate('author').execPopulate(),
-    ]);
-
-    if (!req.track.visible && (!req.payload || req.track.author._id.toString() !== req.payload.id.toString())) {
+    if (!req.track.isVisibleTo(req.user)) {
       return res.sendStatus(403);
     }
 
-    return res.json({ track: req.track.toJSONFor(user, { body: true }) });
+    return res.json({ track: req.track.toJSONFor(req.user, { body: true }) });
   }),
 );
 
@@ -342,9 +304,7 @@ router.put(
   busboy(),
   auth.required,
   wrapRoute(async (req, res) => {
-    const user = await User.findById(req.payload.id);
-
-    if (req.track.author._id.toString() !== req.payload.id.toString()) {
+    if (req.track.author._id.toString() !== req.user.id.toString()) {
       return res.sendStatus(403);
     }
 
@@ -377,7 +337,7 @@ router.put(
     req.track.visible = body.visible;
 
     const track = await req.track.save();
-    return res.json({ track: track.toJSONFor(user) });
+    return res.json({ track: track.toJSONFor(req.user) });
   }),
 );
 
@@ -386,11 +346,7 @@ router.delete(
   '/:track',
   auth.required,
   wrapRoute(async (req, res) => {
-    const user = await User.findById(req.payload.id);
-    if (!user) {
-      return res.sendStatus(401);
-    }
-    if (req.track.author._id.toString() === req.payload.id.toString()) {
+    if (req.track.author._id.toString() === req.user.id.toString()) {
       await TrackData.findByIdAndDelete(req.track.trackData);
       await req.track.remove();
       return res.sendStatus(204);
@@ -407,14 +363,9 @@ router.post(
   wrapRoute(async (req, res) => {
     const trackId = req.track._id;
 
-    const user = await User.findById(req.payload.id);
-    if (!user) {
-      return res.sendStatus(401);
-    }
-
-    await user.favorite(trackId);
+    await req.user.favorite(trackId);
     const track = await req.track.updateFavoriteCount();
-    return res.json({ track: track.toJSONFor(user) });
+    return res.json({ track: track.toJSONFor(req.user) });
   }),
 );
 
@@ -425,14 +376,9 @@ router.delete(
   wrapRoute(async (req, res) => {
     const trackId = req.track._id;
 
-    const user = await User.findById(req.payload.id);
-    if (!user) {
-      return res.sendStatus(401);
-    }
-
-    await user.unfavorite(trackId);
+    await req.user.unfavorite(trackId);
     const track = await req.track.updateFavoriteCount();
-    return res.json({ track: track.toJSONFor(user) });
+    return res.json({ track: track.toJSONFor(req.user) });
   }),
 );
 
@@ -441,7 +387,9 @@ router.get(
   '/:track/comments',
   auth.optional,
   wrapRoute(async (req, res) => {
-    const user = await Promise.resolve(req.payload ? User.findById(req.payload.id) : null);
+    if (!req.track.isVisibleTo(req.user)) {
+      return res.sendStatus(403);
+    }
 
     await req.track
       .populate({
@@ -459,7 +407,7 @@ router.get(
 
     return res.json({
       comments: req.track.comments.map(function (comment) {
-        return comment.toJSONFor(user);
+        return comment.toJSONFor(req.user);
       }),
     });
   }),
@@ -470,21 +418,16 @@ router.post(
   '/:track/comments',
   auth.required,
   wrapRoute(async (req, res) => {
-    const user = await User.findById(req.payload.id);
-    if (!user) {
-      return res.sendStatus(401);
-    }
-
     const comment = new Comment(req.body.comment);
     comment.track = req.track;
-    comment.author = user;
+    comment.author = req.user;
 
     await comment.save();
 
     req.track.comments.push(comment);
 
     await req.track.save();
-    return res.json({ comment: comment.toJSONFor(user) });
+    return res.json({ comment: comment.toJSONFor(req.user) });
   }),
 );
 
@@ -492,7 +435,7 @@ router.delete(
   '/:track/comments/:comment',
   auth.required,
   wrapRoute(async (req, res) => {
-    if (req.comment.author.toString() === req.payload.id.toString()) {
+    if (req.comment.author.toString() === req.user.id.toString()) {
       req.track.comments.remove(req.comment._id);
       await req.track.save();
       await Comment.find({ _id: req.comment._id }).remove();
@@ -508,6 +451,10 @@ router.get(
   '/:track/TrackData',
   auth.optional,
   wrapRoute(async (req, res) => {
+    if (!req.track.isVisibleTo(req.user)) {
+      return res.sendStatus(403);
+    }
+
     // console.log("requestTrackData"+req.track);
     const trackData = await TrackData.findById(req.track.trackData);
     // console.log({trackData: trackData});

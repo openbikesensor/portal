@@ -9,12 +9,7 @@ router.get(
   '/user',
   auth.required,
   wrapRoute(async (req, res) => {
-    const user = await User.findById(req.payload.id);
-    if (!user) {
-      return res.sendStatus(401);
-    }
-
-    return res.json({ user: user.toAuthJSON() });
+    return res.json({ user: req.user.toAuthJSON() });
   }),
 );
 
@@ -22,10 +17,7 @@ router.put(
   '/user',
   auth.required,
   wrapRoute(async (req, res) => {
-    const user = await User.findById(req.payload.id);
-    if (!user) {
-      return res.sendStatus(401);
-    }
+    const user = req.user;
 
     // only update fields that were actually passed...
     if (typeof req.body.user.username !== 'undefined') {
