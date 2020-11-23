@@ -1,4 +1,11 @@
-const { parseTrackPoints, parseObsver1, detectFormat, parseObsver2, replaceDollarNewlinesHack } = require('./tracks');
+const {
+  detectFormat,
+  normalizeUserAgent,
+  parseObsver1,
+  parseObsver2,
+  parseTrackPoints,
+  replaceDollarNewlinesHack,
+} = require('./tracks');
 
 const { test1, test2, test3 } = require('./_tracks_testdata');
 
@@ -90,5 +97,46 @@ describe('detectFormat', () => {
   it('detects invalid format', () => {
     expect(detectFormat('foobar\nbaz')).toBe('invalid');
     expect(detectFormat('')).toBe('invalid');
+  });
+});
+
+describe('normalizeUserAgent', () => {
+  it('is a function', () => {
+    expect(typeof normalizeUserAgent).toBe('function');
+  });
+
+  it('ignores falsy values', () => {
+    expect(normalizeUserAgent(null)).toBe(null);
+    expect(normalizeUserAgent('')).toBe(null);
+  });
+
+  it('ignores normal browser agents', () => {
+    const browserAgents = [
+      'Mozilla/5.0 (Linux; Android 6.0.1; Nexus 6P Build/MMB29P) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/47.0.2526.83 Mobile Safari/537.36',
+      'Mozilla/5.0 (Linux; Android 6.0; HTC One M9 Build/MRA58K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.98 Mobile Safari/537.3',
+      'Mozilla/5.0 (Linux; Android 8.0.0; SM-G960F Build/R16NW) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/62.0.3202.84 Mobile Safari/537.36',
+      'Mozilla/5.0 (iPhone; CPU iPhone OS 11_0 like Mac OS X) AppleWebKit/604.1.38 (KHTML, like Gecko) Version/11.0 Mobile/15A5370a Safari/604.1',
+      'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:15.0) Gecko/20100101 Firefox/15.0.1',
+    ];
+
+    for (const browserAgent of browserAgents) {
+      expect(normalizeUserAgent(browserAgent)).toBe(null);
+    }
+  });
+
+  it('detects OBS versions', () => {
+    const agents = ['OBS/123', 'OBS/2', 'OBS/1.2.3.4.5-rc123'];
+
+    for (const agent of agents) {
+      expect(normalizeUserAgent(agent)).toBe(agent);
+    }
+  });
+
+  it('extracts OBS versions from extended formats', () => {
+    const agents = ['foo OBS/123', 'OBS/123 bar', 'foo OBS/123 bar'];
+
+    for (const agent of agents) {
+      expect(normalizeUserAgent(agent)).toBe('OBS/123');
+    }
   });
 });

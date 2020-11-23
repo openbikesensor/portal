@@ -7,7 +7,7 @@ const User = mongoose.model('User');
 const busboy = require('connect-busboy');
 const auth = require('../auth');
 const currentTracks = new Map();
-const { parseTrackPoints } = require('../../logic/tracks');
+const { parseTrackPoints, normalizeUserAgent } = require('../../logic/tracks');
 const wrapRoute = require('../../_helpers/wrapRoute');
 
 // Preload track objects on routes with ':track'
@@ -216,6 +216,7 @@ router.post(
 
     if (track.body) {
       trackData.points = Array.from(parseTrackPoints(track.body));
+      track.uploadedByUserAgent = normalizeUserAgent(req.headers['user-agent']);
     }
 
     track.visible = track.author.areTracksVisibleForAll;
@@ -242,6 +243,7 @@ router.post(
     const trackData = new TrackData();
     track.trackData = trackData._id;
     track.author = user;
+    track.uploadedByUserAgent = normalizeUserAgent(req.headers['user-agent']);
 
     await track.save();
     await trackData.save();
@@ -372,6 +374,7 @@ router.put(
         req.track.trackData = trackData._id;
       }
       trackData.points = Array.from(parseTrackPoints(req.track.body));
+      req.track.uploadedByUserAgent = normalizeUserAgent(req.headers['user-agent']);
       await trackData.save();
     }
 
