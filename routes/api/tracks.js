@@ -184,7 +184,7 @@ router.post(
     track.trackData = trackData._id;
     track.author = user;
 
-    await track.save()
+    await track.save();
     await trackData.save();
 
     // remember which is the actively building track for this user
@@ -232,22 +232,29 @@ router.post(
       return res.sendStatus(401);
     }
 
-    if (!currentTracks.has(user.id)) {
-      throw new Error('current user has no active track, start one with POST to /tracks/begin');
+    let track;
+    let trackData;
+
+    if (currentTracks.has(user.id)) {
+      // the file is less than 100 lines
+      const trackId = currentTracks.get(user.id);
+      track = await Track.findById(trackId);
+      if (!track) {
+        throw new Error('current user active track is gone, retry upload');
+      }
+
+      track.body += req.body.track.body;
+      trackData = await TrackData.findById(track.trackData);
+    } else {
+      track = new Track(req.body.track);
+      trackData = new TrackData();
+      track.trackData = trackData._id;
+      track.author = user;
     }
 
-    const trackId = currentTracks.get(user.id);
-
-    const track = await Track.findById(trackId);
-    if (!track) {
-      throw new Error('current user active track is gone, retry upload');
-    }
-
-    track.body += req.body.track.body;
-    await track.save();
-
-    const trackData = await TrackData.findById(track.trackData);
     trackData.points = Array.from(parseTrackPoints(track.body));
+
+    await track.save();
     await trackData.save();
 
     // We are done with this track, it is complete.
