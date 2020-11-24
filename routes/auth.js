@@ -22,7 +22,8 @@ const jwtOptional = jwt({
 
 function getUserIdMiddleware(req, res, next) {
   try {
-    const [tokenType, token] = req.headers.authorization.split(' ') || [];
+    const authorization = req.headers.authorization;
+    const [tokenType, token] = (authorization && authorization.split(' ')) || [];
 
     if (tokenType === 'Token' || tokenType === 'Bearer') {
       return jwtOptional(req, res, next);
