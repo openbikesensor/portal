@@ -254,4 +254,31 @@ function* parseObsver2(body) {
   }
 }
 
-module.exports = { parseTrackPoints, detectFormat, parseObsver1, parseObsver2, replaceDollarNewlinesHack };
+/**
+ * This function normalizes a User-Agent header for storage in the database. It
+ * make sure that we only store the user-agent if it matches the pattern
+ * `OBS/*`, and extracts that part of the user agent, if it contains more
+ * information. This is the only part we are interested in, the
+ * remainder is too privacy sensitive to keep.
+ */
+function normalizeUserAgent(userAgent) {
+  if (!userAgent) {
+    return null;
+  }
+
+  const match = userAgent.match(/\bOBS\/[^\s]+/);
+  if (match) {
+    return match[0];
+  }
+
+  return null;
+}
+
+module.exports = {
+  detectFormat,
+  normalizeUserAgent,
+  parseObsver1,
+  parseObsver2,
+  parseTrackPoints,
+  replaceDollarNewlinesHack,
+};

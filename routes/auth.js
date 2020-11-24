@@ -2,30 +2,52 @@ const jwt = require('express-jwt');
 const secret = require('../config').secret;
 
 function getTokenFromHeader(req) {
-  if (
-    (req.headers.authorization && req.headers.authorization.split(' ')[0] === 'Token') ||
-    (req.headers.authorization && req.headers.authorization.split(' ')[0] === 'Bearer')
-  ) {
-    return req.headers.authorization.split(' ')[1];
+  const authorization = req.headers.authorization;
+  const [tokenType, token] = (authorization && authorization.split(' ')) || [];
+
+  if (tokenType === 'Token' || tokenType === 'Bearer') {
+    return token;
   }
 
   return null;
 }
 
-const auth = {
-  required: jwt({
-    secret: secret,
-    userProperty: 'payload',
-    getToken: getTokenFromHeader,
-    algorithms: ['HS256'],
-  }),
-  optional: jwt({
-    secret: secret,
-    userProperty: 'payload',
-    credentialsRequired: false,
-    getToken: getTokenFromHeader,
-    algorithms: ['HS256'],
-  }),
-};
+const jwtOptional = jwt({
+  secret: secret,
+  userProperty: 'payload',
+  credentialsRequired: false,
+  getToken: getTokenFromHeader,
+  algorithms: ['HS256'],
+});
 
-module.exports = auth;
+function getUserIdMiddleware(req, res, next) {
+  try {
+    const [tokenType, token] = req.headers.authorization.split(' ') || [];
+
+    if (tokenType === 'Token' || tokenType === 'Bearer') {
+      return jwtOptional(req, res, next);
+    } else if (tokenType === 'OBSUserId') {
+      req.payload = { id: token.trim() };
+      next();
+    } else {
+      req.payload = null;
+      next();
+    }
+  } catch (err) {
+    next(err);
+  }
+}
+
+module.exports = {
+  required(req, res, next) {
+    if (!req.payload) {
+      return res.sendStatus(403);
+    } else {
+      return next();
+    }
+  },
+  optional(req, res, next) {
+    return next();
+  },
+  getUserIdMiddleware,
+};

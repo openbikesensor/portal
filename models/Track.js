@@ -9,6 +9,7 @@ const TrackSchema = new mongoose.Schema(
     description: String,
     body: String,
     visible: Boolean,
+    uploadedByUserAgent: String,
     numEvents: { type: Number, default: 0 },
     comments: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Comment' }],
     author: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
