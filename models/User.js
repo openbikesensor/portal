@@ -24,7 +24,6 @@ const schema = new mongoose.Schema(
     },
     bio: String,
     image: String,
-    favorites: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Track' }],
     following: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
     areTracksVisibleForAll: Boolean,
     hash: String,
@@ -86,19 +85,6 @@ class User extends mongoose.Model {
       image: this.image || 'https://static.productionready.io/images/smiley-cyrus.jpg',
       following: user ? user.isFollowing(this._id) : false,
     };
-  }
-
-  async favorite(id) {
-    if (this.favorites.indexOf(id) === -1) {
-      this.favorites.push(id);
-    }
-
-    return await this.save();
-  }
-
-  async unfavorite(id) {
-    this.favorites.remove(id);
-    return await this.save();
   }
 
   follow(id) {

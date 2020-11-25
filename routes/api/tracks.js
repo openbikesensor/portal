@@ -63,19 +63,10 @@ router.get(
       query.tagList = { $in: [req.query.tag] };
     }
 
-    const [author, favoriter] = await Promise.all([
-      req.query.author ? User.findOne({ username: req.query.author }) : null,
-      req.query.favorited ? User.findOne({ username: req.query.favorited }) : null,
-    ]);
+    const author = req.query.author ? await User.findOne({ username: req.query.author }) : null
 
     if (author) {
       query.author = author._id;
-    }
-
-    if (favoriter) {
-      query._id = { $in: favoriter.favorites };
-    } else if (req.query.favorited) {
-      query._id = { $in: [] };
     }
 
     const [tracks, tracksCount] = await Promise.all([
@@ -360,32 +351,6 @@ router.delete(
     } else {
       return res.sendStatus(403);
     }
-  }),
-);
-
-// Favorite an track
-router.post(
-  '/:track/favorite',
-  auth.required,
-  wrapRoute(async (req, res) => {
-    const trackId = req.track._id;
-
-    await req.user.favorite(trackId);
-    const track = await req.track.updateFavoriteCount();
-    return res.json({ track: track.toJSONFor(req.user) });
-  }),
-);
-
-// Unfavorite an track
-router.delete(
-  '/:track/favorite',
-  auth.required,
-  wrapRoute(async (req, res) => {
-    const trackId = req.track._id;
-
-    await req.user.unfavorite(trackId);
-    const track = await req.track.updateFavoriteCount();
-    return res.json({ track: track.toJSONFor(req.user) });
   }),
 );
 
