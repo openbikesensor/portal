@@ -10,22 +10,31 @@ const currentTracks = new Map();
 const { parseTrackPoints, normalizeUserAgent } = require('../../logic/tracks');
 const wrapRoute = require('../../_helpers/wrapRoute');
 
-// Preload track objects on routes with ':track'
-router.param('track', async (req, res, next, slug) => {
-  try {
-    const track = await Track.findOne({ slug }).populate('author');
+function preloadByParam(target, getValueFromParam) {
+  return async (req, res, next, paramValue) => {
+    try {
+      const value = await getValueFromParam(paramValue);
 
-    if (!track) {
-      return res.sendStatus(404);
+      if (!value) {
+        return res.sendStatus(404);
+      }
+
+      req[target] = value;
+      return next();
+    } catch (err) {
+      return next(err);
     }
+  };
+}
 
-    req.track = track;
-
-    return next();
-  } catch (err) {
-    return next(err);
-  }
-});
+router.param(
+  'track',
+  preloadByParam('track', (slug) => Track.findOne({ slug }).populate('author')),
+);
+router.param(
+  'comment',
+  preloadByParam('comment', (id) => Comment.findById(id)),
+);
 
 router.param('comment', async (req, res, next, id) => {
   try {
@@ -63,7 +72,7 @@ router.get(
       query.tagList = { $in: [req.query.tag] };
     }
 
-    const author = req.query.author ? await User.findOne({ username: req.query.author }) : null
+    const author = req.query.author ? await User.findOne({ username: req.query.author }) : null;
 
     if (author) {
       query.author = author._id;
