@@ -197,7 +197,11 @@ router.post(
       track.uploadedByUserAgent = normalizeUserAgent(req.headers['user-agent']);
     }
 
-    track.visible = track.author.areTracksVisibleForAll;
+    if (body.visible != null) {
+      track.visible = Boolean(body.visible);
+    } else {
+      track.visible = track.author.areTracksVisibleForAll;
+    }
 
     await trackData.save();
     await track.save();
@@ -311,11 +315,15 @@ router.put(
     const { body } = await getMultipartOrJsonBody(req, (body) => body.track);
 
     if (typeof body.title !== 'undefined') {
-      req.track.title = body.title;
+      req.track.title = (body.title || '').trim() || null;
     }
 
     if (typeof body.description !== 'undefined') {
-      req.track.description = body.description;
+      req.track.description = (body.description || '').trim() || null;
+    }
+
+    if (body.visible != null) {
+      req.track.visible = Boolean(body.visible);
     }
 
     if (body.body && body.body.trim()) {
@@ -334,7 +342,6 @@ router.put(
     if (typeof body.tagList !== 'undefined') {
       req.track.tagList = body.tagList;
     }
-    req.track.visible = body.visible;
 
     const track = await req.track.save();
     return res.json({ track: track.toJSONFor(req.user) });
