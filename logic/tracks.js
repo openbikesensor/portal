@@ -1,4 +1,5 @@
 const csvParse = require('csv-parse/lib/sync');
+const csvStringify = require('csv-stringify/lib/sync');
 
 function _parseFloat(token) {
   if (typeof token !== 'string') {
@@ -29,7 +30,8 @@ function _parseFloat(token) {
 }
 
 function _parseInt(token) {
-  const asFloat = parseFloat(token);
+  const asFloat = _parseFloat(token);
+
   if (asFloat !== null) {
     return Math.floor(asFloat);
   } else {
@@ -274,6 +276,28 @@ function normalizeUserAgent(userAgent) {
   return null;
 }
 
+function buildObsver1(points) {
+  return csvStringify(points, {
+    columns: [
+      { key: 'date', header: 'Date' },
+      { key: 'time', header: 'Time' },
+      { key: 'latitude', header: 'Latitude' },
+      { key: 'longitude', header: 'Longitude' },
+      { key: 'course', header: 'Course' },
+      { key: 'speed', header: 'Speed' },
+      { key: 'd1', header: 'Right' },
+      { key: 'd2', header: 'Left' },
+      { key: 'flag', header: 'Confirmed' },
+      { key: 'private', header: 'insidePrivacyArea' },
+    ],
+    cast: {
+      boolean: (v) => (v ? '1' : '0'),
+    },
+    delimiter: ';',
+    header: true,
+  });
+}
+
 module.exports = {
   detectFormat,
   normalizeUserAgent,
@@ -281,4 +305,5 @@ module.exports = {
   parseObsver2,
   parseTrackPoints,
   replaceDollarNewlinesHack,
+  buildObsver1,
 };

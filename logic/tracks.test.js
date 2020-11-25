@@ -1,4 +1,5 @@
 const {
+  buildObsver1,
   detectFormat,
   normalizeUserAgent,
   parseObsver1,
@@ -138,5 +139,33 @@ describe('normalizeUserAgent', () => {
     for (const agent of agents) {
       expect(normalizeUserAgent(agent)).toBe('OBS/123');
     }
+  });
+});
+
+describe('buildObsver1', () => {
+  it('is a function', () => {
+    expect(typeof normalizeUserAgent).toBe('function');
+  });
+
+  it('transforms properly back and forth', () => {
+    const inputString = replaceDollarNewlinesHack(test1);
+
+    const points1 = Array.from(parseObsver1(inputString));
+    const builtString = buildObsver1(points1);
+    const points2 = Array.from(parseObsver1(builtString));
+
+    expect(points2).toEqual(points1);
+  });
+
+  it('produces a header', () => {
+    const builtString = buildObsver1([]);
+    expect(builtString).toBe('Date;Time;Latitude;Longitude;Course;Speed;Right;Left;Confirmed;insidePrivacyArea\n');
+  });
+
+  it('produces empty rows', () => {
+    const builtString = buildObsver1([{}]);
+    expect(builtString).toBe(
+      'Date;Time;Latitude;Longitude;Course;Speed;Right;Left;Confirmed;insidePrivacyArea\n;;;;;;;;;\n',
+    );
   });
 });
