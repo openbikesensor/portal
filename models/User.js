@@ -24,7 +24,7 @@ const UserSchema = new mongoose.Schema(
     },
     bio: String,
     image: String,
-    favorites: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Article' }],
+    favorites: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Track' }],
     following: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
     areTracksVisibleForAll: Boolean,
     hash: String,
@@ -131,4 +131,4 @@ UserSchema.methods.isFollowing = function (id) {
 
 mongoose.model('User', UserSchema);
 
-module.exports = mongoose.model('User')
+module.exports = mongoose.model('User');
