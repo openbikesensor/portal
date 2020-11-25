@@ -33,7 +33,7 @@ router.post(
   auth.required,
   wrapRoute(async (req, res) => {
     await req.user.follow(req.profile._id);
-    return res.json({ profile: req.profile.toProfileJSONFor(user) });
+    return res.json({ profile: req.profile.toProfileJSONFor(req.user) });
   }),
 );
 
@@ -42,7 +42,7 @@ router.delete(
   auth.required,
   wrapRoute(async (req, res) => {
     await req.user.unfollow(req.profile._id);
-    return res.json({ profile: req.profile.toProfileJSONFor(user) });
+    return res.json({ profile: req.profile.toProfileJSONFor(req.user) });
   }),
 );
 

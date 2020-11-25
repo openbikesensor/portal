@@ -1,7 +1,5 @@
-const mongoose = require('mongoose');
 const router = require('express').Router();
 const passport = require('passport');
-const User = mongoose.model('User');
 const wrapRoute = require('../../_helpers/wrapRoute');
 const auth = require('../auth');
 
