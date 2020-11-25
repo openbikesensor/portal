@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 const uniqueValidator = require('mongoose-unique-validator');
 const slug = require('slug');
 
-const TrackSchema = new mongoose.Schema(
+const schema = new mongoose.Schema(
   {
     slug: { type: String, lowercase: true, unique: true },
     title: String,
@@ -18,9 +18,9 @@ const TrackSchema = new mongoose.Schema(
   { timestamps: true },
 );
 
-TrackSchema.plugin(uniqueValidator, { message: 'is already taken' });
+schema.plugin(uniqueValidator, { message: 'is already taken' });
 
-TrackSchema.pre('validate', function (next) {
+schema.pre('validate', function (next) {
   if (!this.slug) {
     this.slugify();
   }
@@ -28,38 +28,42 @@ TrackSchema.pre('validate', function (next) {
   next();
 });
 
-TrackSchema.methods.slugify = function () {
-  this.slug = slug(this.title) + '-' + ((Math.random() * Math.pow(36, 6)) | 0).toString(36);
-};
-
-TrackSchema.methods.isVisibleTo = function (user) {
-  if (this.visible) {
-    return true;
+class Track extends mongoose.Model {
+  slugify() {
+    this.slug = slug(this.title) + '-' + ((Math.random() * Math.pow(36, 6)) | 0).toString(36);
   }
 
-  if (!user) {
+  isVisibleTo(user) {
+    if (this.visible) {
+      return true;
+    }
+
+    if (!user) {
+      return false;
+    }
+
+    if (user._id.toString() === this.author._id.toString()) {
+      return true;
+    }
+
     return false;
   }
 
-  if (user._id.toString() === this.author._id.toString()) {
-    return true;
+  toJSONFor(user, include) {
+    return {
+      slug: this.slug,
+      title: this.title,
+      description: this.description,
+      createdAt: this.createdAt,
+      updatedAt: this.updatedAt,
+      visibleForAll: this.author ? this.author.areTracksVisibleForAll : false,
+      visible: this.visible,
+      author: this.author.toProfileJSONFor(user),
+      ...(include && include.body ? { body: this.body } : {}),
+    };
   }
+}
 
-  return false;
-};
+mongoose.model(Track, schema);
 
-TrackSchema.methods.toJSONFor = function (user, include) {
-  return {
-    slug: this.slug,
-    title: this.title,
-    description: this.description,
-    createdAt: this.createdAt,
-    updatedAt: this.updatedAt,
-    visibleForAll: this.author ? this.author.areTracksVisibleForAll : false,
-    visible: this.visible,
-    author: this.author.toProfileJSONFor(user),
-    ...(include && include.body ? { body: this.body } : {}),
-  };
-};
-
-mongoose.model('Track', TrackSchema);
+module.exports = Track;

@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-const CommentSchema = new mongoose.Schema(
+const schema = new mongoose.Schema(
   {
     body: String,
     author: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
@@ -9,14 +9,17 @@ const CommentSchema = new mongoose.Schema(
   { timestamps: true },
 );
 
-// Requires population of author
-CommentSchema.methods.toJSONFor = function (user) {
-  return {
-    id: this._id,
-    body: this.body,
-    createdAt: this.createdAt,
-    author: this.author.toProfileJSONFor(user),
-  };
-};
+class Comment extends mongoose.Model {
+  toJSONFor(user) {
+    return {
+      id: this._id,
+      body: this.body,
+      createdAt: this.createdAt,
+      author: this.author.toProfileJSONFor(user),
+    };
+  }
+}
 
-mongoose.model('Comment', CommentSchema);
+mongoose.model(Comment, schema);
+
+module.exports = Comment;
