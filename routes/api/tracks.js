@@ -105,15 +105,10 @@ router.get(
       offset = req.query.offset;
     }
 
-    const showByUserIds = [req.user.id, ...(req.user.following || [])];
-
+    const query = { author: req.user.id };
     const [tracks, tracksCount] = await Promise.all([
-      Track.find({ author: { $in: showByUserIds } })
-        .limit(Number(limit))
-        .skip(Number(offset))
-        .populate('author')
-        .exec(),
-      Track.countDocuments({ author: { $in: showByUserIds } }),
+      Track.find(query).limit(Number(limit)).skip(Number(offset)).populate('author').exec(),
+      Track.countDocuments(query),
     ]);
 
     return res.json({

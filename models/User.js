@@ -24,7 +24,6 @@ const schema = new mongoose.Schema(
     },
     bio: String,
     image: String,
-    following: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
     areTracksVisibleForAll: Boolean,
     hash: String,
     salt: String,
@@ -83,27 +82,7 @@ class User extends mongoose.Model {
       username: this.username,
       bio: this.bio,
       image: this.image || 'https://static.productionready.io/images/smiley-cyrus.jpg',
-      following: user ? user.isFollowing(this._id) : false,
     };
-  }
-
-  follow(id) {
-    if (this.following.indexOf(id) === -1) {
-      this.following.push(id);
-    }
-
-    return this.save();
-  }
-
-  unfollow(id) {
-    this.following.remove(id);
-    return this.save();
-  }
-
-  isFollowing(id) {
-    return this.following.some(function (followId) {
-      return followId.toString() === id.toString();
-    });
   }
 }
 
