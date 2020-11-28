@@ -4,7 +4,6 @@ const bodyParser = require('body-parser');
 const session = require('express-session');
 const cors = require('cors');
 const errorhandler = require('errorhandler');
-const mongoose = require('mongoose');
 const auth = require('./routes/auth');
 
 const isProduction = process.env.NODE_ENV === 'production';
@@ -30,16 +29,7 @@ if (!isProduction) {
   app.use(errorhandler());
 }
 
-const mongodbUrl =
-  process.env.MONGODB_URL || (isProduction ? 'mongodb://localhost/obs' : 'mongodb://localhost/obsTest');
-mongoose.connect(mongodbUrl);
-mongoose.set('debug', !isProduction);
-
-require('./models/TrackData');
-require('./models/User');
-require('./models/Track');
-require('./models/Comment');
-require('./config/passport');
+require('./db');
 
 app.use(require('./routes'));
 
