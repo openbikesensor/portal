@@ -16,16 +16,7 @@ services:
       context: .
       dockerfile: ./Dockerfile
     volumes:
-      - ./_helpers:/opt/obsAPI/_helpers
-      - ./_middleware:/opt/obsAPI/_middleware
-      - ./accounts:/opt/obsAPI/accounts
-      - ./config:/opt/obsAPI/config
-      - ./data:/opt/obsAPI/data
-      - ./models:/opt/obsAPI/models
-      - ./logic:/opt/obsAPI/logic
-      - ./public:/opt/obsAPI/public
-      - ./routes:/opt/obsAPI/routes
-      - ./app.js:/opt/obsAPI/app.js
+      - ./src:/opt/obsAPI/src
     environment:
       - PORT=3000
       - MONGODB_URL=mongodb://mongo/obsTest

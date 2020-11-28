@@ -5,8 +5,8 @@
   "main": "app.js",
   "scripts": {
     "mongo:start": "docker run --name realworld-mongo -p 27017:27017 mongo & sleep 5",
-    "start": "node ./app.js",
-    "dev": "nodemon ./app.js",
+    "start": "node src/",
+    "dev": "nodemon src/",
     "mongo:stop": "docker stop realworld-mongo && docker rm realworld-mongo",
     "autoformat": "eslint --fix .",
     "lint": "eslint .",
