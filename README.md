@@ -64,23 +64,6 @@ modify the `docker-compose.yaml` to include that URL.
 
 ## Usage
 
-### Uploading a track for test purposes
-
-Uploading a track to the local server requires multiple steps, as uploading is
-not possible via the dummy upload form in the corresponding web app yet:
-
-- Create a user in the web app and copy the user id, which can be found at
-  (http://localhost:4200/settings) as "API key"
-- Import the [Postman](https://www.postman.com) script "add-track.json" from
-  the "postman-examples" into Postman
-- In each of the three requests add your user id in the "Pre-request script"
-  tab as the value for the "UserId" variable
-- As tracks have to be split into smaller parts to get a working upload from
-  the sensor you have to run the three requests in the order of: begin -> add
-  -> end
-- View your freshly uploaded track at (http://localhost:4200) -> Home -> Your
-  feed
-
 ### Sending E-Mails
 
 By default in development mode mails are not sent, but instead the mail data is
