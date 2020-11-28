@@ -62,9 +62,7 @@ This does not work when using docker-compose, in that case, you will have to
 modify the `docker-compose.yaml` to include that URL.
 
 
-## Usage
-
-### Sending E-Mails
+## E-Mail Setup
 
 By default in development mode mails are not sent, but instead the mail data is
 logged to the console. This can be overriden with the `--devSendMails` flag if
