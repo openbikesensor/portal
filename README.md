@@ -99,5 +99,8 @@ SMTP server need to be specified as environment variables:
 
 Full command example:
 
-    MAILSERVER=mail.example.com MAILSENDER=noreply@example.com MAILUSER=my_mail_login
-MAILPW=hunter2 npm run dev -- --devSendMails
+```bash
+MAILSERVER=mail.example.com MAILSENDER=noreply@example.com \
+    MAILUSER=my_mail_login MAILPW=hunter2 \
+    npm run dev -- --devSendMails
+```
