@@ -189,6 +189,8 @@ router.post(
 
     if (track.body) {
       trackData.points = Array.from(parseTrackPoints(track.body));
+      track.numEvents = trackData.countEvents();
+      track.recordedAt = trackData.getRecoredAt();
       track.uploadedByUserAgent = normalizeUserAgent(req.headers['user-agent']);
     }
 
@@ -273,6 +275,8 @@ router.post(
     }
 
     trackData.points = Array.from(parseTrackPoints(track.body));
+    track.numEvents = trackData.countEvents();
+    track.recordedAt = trackData.getRecoredAt();
 
     await track.save();
     await trackData.save();
@@ -330,6 +334,8 @@ router.put(
         req.track.trackData = trackData._id;
       }
       trackData.points = Array.from(parseTrackPoints(req.track.body));
+      req.track.numEvents = trackData.countEvents();
+      req.track.recordedAt = trackData.getRecoredAt();
       req.track.uploadedByUserAgent = normalizeUserAgent(req.headers['user-agent']);
       await trackData.save();
     }

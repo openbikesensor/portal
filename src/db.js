@@ -11,3 +11,5 @@ require('./models/User');
 require('./models/Track');
 require('./models/Comment');
 require('./config/passport');
+
+module.exports = mongoose;

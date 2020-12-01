@@ -35,6 +35,26 @@ class TrackData extends mongoose.Model {
   slugify() {
     this.slug = 'td-' + String((Math.random() * Math.pow(36, 6)) | 0).toString(36);
   }
+
+  countEvents() {
+    return this.points.filter((p) => p.flag).length;
+  }
+
+  getRecoredAt() {
+    const firstPointWithDate = this.points.find((p) => p.date && p.time);
+    if (!firstPointWithDate) {
+      return null;
+    }
+
+    const [day, month, year] = firstPointWithDate.date.split('.');
+    const combinedString = `${year}-${month}-${day} ${firstPointWithDate.time}.000+2000`;
+    const parsedDate = new Date(combinedString);
+    if (isNaN(parsedDate.getDate())) {
+      return null;
+    }
+
+    return parsedDate;
+  }
 }
 
 mongoose.model(TrackData, schema);

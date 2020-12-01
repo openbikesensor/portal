@@ -1,10 +1,5 @@
-const mongoose = require('mongoose');
 const Track = require('../src/models/Track');
-
 const { replaceDollarNewlinesHack, detectFormat, buildObsver1 } = require('../src/logic/tracks');
-
-// connect to database
-require('../src/db');
 
 function shouldRebuildBody(track) {
   if (!track.trackData || !track.trackData.points.length) {
@@ -44,36 +39,23 @@ function shouldRebuildBody(track) {
   return false;
 }
 
-async function main() {
+async function up(next) {
   const query = Track.find().populate('trackData');
   for await (const track of query) {
     const rebuild = shouldRebuildBody(track);
     if (rebuild) {
-      console.log('Rebuilding', track.title, 'with', track.trackData.points.length, 'data points.');
-
       track.body = buildObsver1(track.trackData.points);
-    }
-
-    if (!track.recordedAt) {
-      const firstPointWithDate = track.trackData.points.find((p) => p.date && p.time);
-      if (firstPointWithDate) {
-        const [day, month, year] = firstPointWithDate.date.split('.');
-        const combinedString = `${year}-${month}-${day} ${firstPointWithDate.time}.000+2000`;
-        const parsedDate = new Date(combinedString);
-        if (!isNaN(parsedDate.getDate())) {
-          track.recordedAt = parsedDate;
-        }
-      }
-    }
-
-    if (!track.numEvents) {
-      track.numEvents = track.trackData.countEvents();
     }
 
     await track.save();
   }
+
+  next();
 }
 
-main()
-  .catch((err) => console.error(err))
-  .finally(() => mongoose.connection.close());
+async function down(next) {
+  // nothing to do
+  next();
+}
+
+module.exports = { up, down };
