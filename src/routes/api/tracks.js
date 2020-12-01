@@ -303,7 +303,7 @@ router.put(
   busboy(),
   auth.required,
   wrapRoute(async (req, res) => {
-    if (req.track.author._id.toString() !== req.user.id.toString()) {
+    if (!req.track.author._id.equals(req.user.id)) {
       return res.sendStatus(403);
     }
 
@@ -348,7 +348,7 @@ router.delete(
   '/:track',
   auth.required,
   wrapRoute(async (req, res) => {
-    if (req.track.author._id.toString() === req.user.id.toString()) {
+    if (req.track.author._id.equals(req.user.id)) {
       await TrackData.findByIdAndDelete(req.track.trackData);
       await req.track.remove();
       return res.sendStatus(204);
@@ -411,7 +411,7 @@ router.delete(
   '/:track/comments/:comment',
   auth.required,
   wrapRoute(async (req, res) => {
-    if (req.comment.author.toString() === req.user.id.toString()) {
+    if (req.comment.author.equals(req.user.id)) {
       req.track.comments.remove(req.comment._id);
       await req.track.save();
       await Comment.find({ _id: req.comment._id }).remove();
@@ -433,6 +433,7 @@ router.get(
 
     // console.log("requestTrackData"+req.track);
     const trackData = await TrackData.findById(req.track.trackData);
+
     // console.log({trackData: trackData});
     return res.json({ trackData: trackData });
   }),

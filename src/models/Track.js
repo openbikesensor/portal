@@ -42,7 +42,7 @@ class Track extends mongoose.Model {
       return false;
     }
 
-    if (user._id.toString() === this.author._id.toString()) {
+    if (user._id.equals(this.author._id)) {
       return true;
     }
 
