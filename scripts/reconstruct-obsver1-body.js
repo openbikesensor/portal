@@ -52,8 +52,25 @@ async function main() {
       console.log('Rebuilding', track.title, 'with', track.trackData.points.length, 'data points.');
 
       track.body = buildObsver1(track.trackData.points);
-      await track.save();
     }
+
+    if (!track.recordedAt) {
+      const firstPointWithDate = track.trackData.points.find((p) => p.date && p.time);
+      if (firstPointWithDate) {
+        const [day, month, year] = firstPointWithDate.date.split('.');
+        const combinedString = `${year}-${month}-${day} ${firstPointWithDate.time}.000+2000`;
+        const parsedDate = new Date(combinedString);
+        if (!isNaN(parsedDate.getDate())) {
+          track.recordedAt = parsedDate;
+        }
+      }
+    }
+
+    if (!track.numEvents) {
+      track.numEvents = track.trackData.points.filter((p) => p.flag).length;
+    }
+
+    await track.save();
   }
 }
 

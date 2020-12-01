@@ -10,6 +10,7 @@ const schema = new mongoose.Schema(
     body: String,
     visible: Boolean,
     uploadedByUserAgent: String,
+    recordedAt: Date,
     numEvents: { type: Number, default: 0 },
     comments: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Comment' }],
     author: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
@@ -50,6 +51,7 @@ class Track extends mongoose.Model {
   }
 
   toJSONFor(user, include) {
+    const seePrivateFields = user && user._id.equals(this.author._id);
     return {
       slug: this.slug,
       title: this.title,
@@ -60,6 +62,13 @@ class Track extends mongoose.Model {
       visible: this.visible,
       author: this.author.toProfileJSONFor(user),
       ...(include && include.body ? { body: this.body } : {}),
+      ...(seePrivateFields
+        ? {
+            uploadedByUserAgent: this.uploadedByUserAgent,
+            recordedAt: this.recordedAt,
+            numEvents: this.numEvents,
+          }
+        : {}),
     };
   }
 }
