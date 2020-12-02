@@ -7,7 +7,7 @@ const User = mongoose.model('User');
 const busboy = require('connect-busboy');
 const auth = require('../auth');
 const currentTracks = new Map();
-const { parseTrackPoints, normalizeUserAgent } = require('../../logic/tracks');
+const { normalizeUserAgent } = require('../../logic/tracks');
 const wrapRoute = require('../../_helpers/wrapRoute');
 
 function preloadByParam(target, getValueFromParam) {
@@ -179,8 +179,6 @@ router.post(
     const { body } = await getMultipartOrJsonBody(req, (body) => body.track);
 
     const track = new Track(body);
-    const trackData = new TrackData();
-    track.trackData = trackData._id;
     track.author = req.user;
 
     if (track.body) {
@@ -188,10 +186,10 @@ router.post(
     }
 
     if (track.body) {
-      trackData.points = Array.from(parseTrackPoints(track.body));
-      track.numEvents = trackData.countEvents();
-      track.recordedAt = trackData.getRecoredAt();
-      track.uploadedByUserAgent = normalizeUserAgent(req.headers['user-agent']);
+      // delete existing
+      if (track.trackData) {
+        await TrackData.findByIdAndDelete(track.trackData);
+      }
     }
 
     if (body.visible != null) {
@@ -200,7 +198,6 @@ router.post(
       track.visible = track.author.areTracksVisibleForAll;
     }
 
-    await trackData.save();
     await track.save();
 
     // console.log(track.author);
@@ -213,13 +210,10 @@ router.post(
   auth.required,
   wrapRoute(async (req, res) => {
     const track = new Track(req.body.track);
-    const trackData = new TrackData();
-    track.trackData = trackData._id;
     track.author = req.user;
     track.uploadedByUserAgent = normalizeUserAgent(req.headers['user-agent']);
 
     await track.save();
-    await trackData.save();
 
     // remember which is the actively building track for this user
     currentTracks.set(req.user.id, track._id);
@@ -255,7 +249,6 @@ router.post(
   auth.required,
   wrapRoute(async (req, res) => {
     let track;
-    let trackData;
 
     if (currentTracks.has(req.user.id)) {
       // the file is less than 100 lines
@@ -266,20 +259,11 @@ router.post(
       }
 
       track.body += req.body.track.body;
-      trackData = await TrackData.findById(track.trackData);
     } else {
       track = new Track(req.body.track);
-      trackData = new TrackData();
-      track.trackData = trackData._id;
-      track.author = req.user;
     }
 
-    trackData.points = Array.from(parseTrackPoints(track.body));
-    track.numEvents = trackData.countEvents();
-    track.recordedAt = trackData.getRecoredAt();
-
-    await track.save();
-    await trackData.save();
+    await track.rebuildTrackDataAndSave();
 
     // We are done with this track, it is complete.
     currentTracks.delete(req.user.id);
@@ -297,7 +281,7 @@ router.get(
       return res.sendStatus(403);
     }
 
-    return res.json({ track: req.track.toJSONFor(req.user, { body: true }) });
+    return res.json({ track: req.track.toJSONFor(req.user) });
   }),
 );
 
@@ -307,44 +291,44 @@ router.put(
   busboy(),
   auth.required,
   wrapRoute(async (req, res) => {
-    if (!req.track.author._id.equals(req.user.id)) {
+    const track = req.track;
+
+    if (!track.author._id.equals(req.user.id)) {
       return res.sendStatus(403);
     }
 
     const { body } = await getMultipartOrJsonBody(req, (body) => body.track);
 
     if (typeof body.title !== 'undefined') {
-      req.track.title = (body.title || '').trim() || null;
+      track.title = (body.title || '').trim() || null;
     }
 
     if (typeof body.description !== 'undefined') {
-      req.track.description = (body.description || '').trim() || null;
+      track.description = (body.description || '').trim() || null;
     }
 
     if (body.visible != null) {
-      req.track.visible = Boolean(body.visible);
+      track.visible = Boolean(body.visible);
     }
 
-    if (body.body && body.body.trim()) {
-      req.track.body = body.body.trim();
+    let bodyChanged = false;
 
-      let trackData = await TrackData.findById(req.track.trackData);
-      if (!trackData) {
-        trackData = new TrackData();
-        req.track.trackData = trackData._id;
-      }
-      trackData.points = Array.from(parseTrackPoints(req.track.body));
-      req.track.numEvents = trackData.countEvents();
-      req.track.recordedAt = trackData.getRecoredAt();
-      req.track.uploadedByUserAgent = normalizeUserAgent(req.headers['user-agent']);
-      await trackData.save();
+    if (body.body && body.body.trim()) {
+      track.body = body.body.trim();
+      track.uploadedByUserAgent = normalizeUserAgent(req.headers['user-agent']);
+      bodyChanged = true;
     }
 
     if (typeof body.tagList !== 'undefined') {
-      req.track.tagList = body.tagList;
+      track.tagList = body.tagList;
     }
 
-    const track = await req.track.save();
+    if (bodyChanged) {
+      await track.rebuildTrackDataAndSave();
+    } else {
+      await track.save();
+    }
+
     return res.json({ track: track.toJSONFor(req.user) });
   }),
 );
@@ -437,11 +421,9 @@ router.get(
       return res.sendStatus(403);
     }
 
-    // console.log("requestTrackData"+req.track);
     const trackData = await TrackData.findById(req.track.trackData);
 
-    // console.log({trackData: trackData});
-    return res.json({ trackData: trackData });
+    return res.json({ trackData });
   }),
 );
 

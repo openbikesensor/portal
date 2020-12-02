@@ -4,6 +4,8 @@ const uniqueValidator = require('mongoose-unique-validator');
 const schema = new mongoose.Schema(
   {
     slug: { type: String, lowercase: true, unique: true },
+    numEvents: { type: Number, default: 0 },
+    recordedAt: { type: Date },
     points: [
       {
         date: String,
@@ -54,6 +56,14 @@ class TrackData extends mongoose.Model {
     }
 
     return parsedDate;
+  }
+
+  static createFromPoints(points) {
+    const trackData = new TrackData();
+    trackData.points = points;
+    trackData.numEvents = trackData.countEvents();
+    trackData.recordedAt = trackData.getRecoredAt();
+    return trackData;
   }
 }
 
