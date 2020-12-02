@@ -2,6 +2,8 @@ const mongoose = require('mongoose');
 const uniqueValidator = require('mongoose-unique-validator');
 const turf = require('turf');
 
+const { flow, filter, map, pairwise, reduce } = require('../_helpers/generators');
+
 const schema = new mongoose.Schema(
   {
     slug: { type: String, lowercase: true, unique: true },
@@ -76,12 +78,17 @@ class TrackData extends mongoose.Model {
   }
 
   measureTrackLength() {
-    let totalLength = 0;
-    for (const [a, b] of pairwise(map(this.points, (p) => turf.point([p.longitude, p.latitude])))) {
-      const legLengthMeters = turf.distance(a, b) * 1000;
-      totalLength += legLengthMeters;
-    }
-    return totalLength;
+    return flow(
+      filter((p) => p.latitude != null && p.longitude != null),
+      map((p) => turf.point([p.longitude, p.latitude])),
+      pairwise,
+      map(([a, b]) => turf.distance(a, b) * 1000),
+
+      // Ignore distances between two points that are bigger than 100m, this
+      // must be a gap in the data or a mistake.
+      filter((d) => d <= 100),
+      reduce((c, d) => c + d, 0),
+    )(this.points);
   }
 
   get duration() {
@@ -90,33 +97,6 @@ class TrackData extends mongoose.Model {
     }
 
     return (this.recordedUntil.getTime() - this.recordedAt.getTime()) / 1000;
-  }
-}
-
-function* pairwise(iter) {
-  let last;
-  let firstLoop = true;
-  for (const it of iter) {
-    if (firstLoop) {
-      firstLoop = false;
-    } else {
-      yield [last, it];
-    }
-    last = it;
-  }
-}
-
-function* enumerate(iter) {
-  let i = 0;
-  for (const it of iter) {
-    yield [i, it];
-    i++;
-  }
-}
-
-function* map(iter, fn) {
-  for (const [i, it] of enumerate(iter)) {
-    yield fn(it, i);
   }
 }
 
