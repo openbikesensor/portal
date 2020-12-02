@@ -53,6 +53,10 @@ class Track extends mongoose.Model {
     return false;
   }
 
+  isVisibleToPrivate(user) {
+    return user._id.equals(this.author._id);
+  }
+
   /**
    * Fills the trackData and publicTrackData with references to correct
    * TrackData objects.  For now, this is either the same, or publicTrackData

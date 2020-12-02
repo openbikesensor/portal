@@ -414,14 +414,22 @@ router.delete(
 
 // return an track's trackData
 router.get(
-  '/:track/TrackData',
+  '/:track/data',
   auth.optional,
   wrapRoute(async (req, res) => {
     if (!req.track.isVisibleTo(req.user)) {
       return res.sendStatus(403);
     }
 
-    const trackData = await TrackData.findById(req.track.trackData);
+    let trackData;
+
+    if (req.track.isVisibleToPrivate(req.user)) {
+      trackData = await TrackData.findById(req.track.trackData);
+    } else if (!req.track.publicTrackData) {
+      return res.sendStatus(403);
+    } else {
+      trackData = await TrackData.findById(req.track.publicTrackData);
+    }
 
     return res.json({ trackData });
   }),
