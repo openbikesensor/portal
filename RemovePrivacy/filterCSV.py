@@ -1,11 +1,14 @@
 #!/usr/bin/python
 
 import sys
-import getopt
+import os
 import csv
 import math
 import random
 from haversine import haversine, Unit
+import argparse
+import struct
+
 
 def filter_csv_privacy(input, output, filter, verbose=False):
     with open(input) as file_in:
@@ -17,10 +20,9 @@ def filter_csv_privacy(input, output, filter, verbose=False):
             line_count = 0
             filter_count = 0
             data_count = 0
-            for line in reader:
-                line_count += 1
+            for line_count, line in enumerate(reader):
                 keep_line = True
-                if line_count == 1:
+                if line_count == 0:
                     if "Latitude" in line and "Longitude" in line:
                         ix_lat = line.index("Latitude")
                         ix_lon = line.index("Longitude")
@@ -67,76 +69,119 @@ def move_lat_lon(lat1, lon1, bearing, d):
     return lat2, lon2
 
 
-def main(argv):
-    short_options = "ha:b:r:R:i:o:v"
-    long_options = ["help", "lat=", "lon=", "radius=", "randofs=", "input=", "output=", "verbose"]
-    try:
-        arguments, values = getopt.getopt(argv, short_options, long_options)
-    except getopt.error as err:
-        # Output error, and return with an error code
-        print(str(err))
-        sys.exit(2)
+def read_zones(filename):
+    lat_list = []
+    lon_list = []
+    radius_list = []
+    with open(filename) as file_in:
+        reader = csv.reader(file_in, delimiter=';')
+        for line_nr, line in enumerate(reader):
+            try:
+                lat = float(line[0])
+                lon = float(line[1])
+                radius = float(line[2])
+                lat_list.append(lat)
+                lon_list.append(lon)
+                radius_list.append(radius)
+            except ValueError as e:
+                print("error in line {} of {}: {}".format(line_nr + 1, filename, str(e)))
 
-    lat = None
-    lon = None
-    radius = 100
-    rand_offset = 50
-    filename_out = None
-    filename_in = None
-    verbose = False
-    show_help = False
+    return lat_list, lon_list, radius_list
 
-    for arg, value in arguments:
-        if arg in ("-h", "--help"):
-            show_help = True
-        elif arg in ("-a", "--lat"):
-            lat = float(value)
-        elif arg in ("-b", "--lon"):
-            lon = float(value)
-        elif arg in ("-r", "--radius"):
-            radius = float(value)
-        elif arg in ("-R", "--randofs"):
-            rand_offset = float(value)
-        elif arg in ("-i", "--input"):
-            filename_in = value
-        elif arg in ("-o", "--output"):
-            filename_out = value
-        elif arg in ("-v", "--verbose"):
-            verbose = True
 
-    show_help = show_help or lat is None or lon is None or filename_in is None or filename_out is None
-    if show_help:
-        print("help")
-        print("Reads a CSV file, and remove all lines with coordinates close to a given coordinate.")
-        print("--help -h                   this help")
-        print("--verbose -v                be verbose")
-        print("--input=<filename>          input filename, must be semicolon-separated text file")
-        print("-i <filename>")
-        print("--output=<filename>         output filename, will be the filtered semicolon-separated text file")
-        print("-o <filename>")
-        print("--lat=<decimal number>      latitude of the center of the circle used for filtering, in degree")
-        print("-a <decimal number>")
-        print("--lon=<decimal number>      longitude of the center of the circle used for filtering, in degree")
-        print("-b <decimal number>")
-        print("--radius=<decimal number>   radius of the circle used for filtering, in meters, default: 100")
-        print("-r <decimal number>")
-        print("--randofs=<decimal number>  maximum random displacement of circle center, in percent of radius, default: 50")
-        print("-o <decimal number>")
-        print("Example: python filterCSV.py -i input.csv -o output.csv --lat=1.2345 --lon=-12.3456 --radius=200 --randofs=50")
-        sys.exit(0)
+def zone_random_number_generator(latitude, longitude, secret):
+    """ Creates a pseudo-random number generator.
+    It should be predictable if the 'latitude', 'longitude' and 'secret' is known.
+    It should not be predictable without knowing the 'secret'.
+    It should not behave identical for different zones. """
 
-    if rand_offset is not 0.0:
-        lat_moved, lon_moved = move_lat_lon(lat, lon,
-                                            random.uniform(0.0, 360.0),
-                                            random.uniform(0.0, radius*rand_offset/100.0))
-        if verbose:
-            print("added random offset: moved {} {} to {} {}".format(lat, lon, lat_moved, lon_moved))
+    # create a new instance of the random generator
+    # we will set its seed, and do not want to influence others
+    rng = random.Random()
 
-        lat, lon = lat_moved, lon_moved
+    # collect secret ingredient, latitude and longitude into the seed
+    seed = bytearray(secret, 'utf-8')
+    seed += bytearray(struct.pack("d", latitude))
+    seed += bytearray(struct.pack("d", longitude))
 
-    filter = [{"lat": lat, "lon": lon, "radius": radius, "rand_offset": rand_offset}]
-    filter_csv_privacy(filename_in, filename_out, filter, verbose)
+    # set the seed
+    rng.seed(seed, version=2)
+
+    return rng
+
+
+def move_zone(zone, secret):
+    rng = zone_random_number_generator(zone["lat"], zone["lon"], secret)
+
+    direction = rng.uniform(0.0, 360.0)
+    length = rng.uniform(0.0, zone["radius"] * zone["rand_offset"] / 100.0)
+
+    lat, lon = move_lat_lon(zone["lat"], zone["lon"], direction, length)
+
+    zone_moved = {"lat": lat, "lon": lon, "radius": zone["radius"]}
+    return zone_moved
+
+
+def main():
+    parser = argparse.ArgumentParser(description='filters a OpenBikeSensor CSV file')
+    parser.add_argument('-i', '--input', required=True, action='store',
+                        help='input filename, must be a semicolon-separated text file')
+    parser.add_argument('-o', '--output', required=False, action='store',
+                        help='output filename, will be the filtered semicolon-separated text file')
+    parser.add_argument('-s', '--secret', required=True, action='store', help='secret')
+    parser.add_argument('-z', '--zones', action='store', help='filename of privacy zone list')
+    parser.add_argument('-a', '--lat', action='append', type=float, default=[],
+                        help='latitude of the center of the circle used for filtering, in degree')
+    parser.add_argument('-b', '--lon', action='append', type=float, default=[],
+                        help='longitude of the center of the circle used for filtering, in degree')
+    parser.add_argument('-r', '--radius', action='store', type=float, default=100,
+                        help='radius of the circle used for filtering, in meters, default: 100')
+    parser.add_argument('-R', '--randofs', action='store', type=float, default=50,
+                        help='maximum random displacement of circle center, in percent of radius, default: 50')
+    parser.add_argument('-v', '--verbose', action='store_true', help='be verbose')
+
+    args = parser.parse_args()
+
+    if args.output is None:
+        base, ext = os.path.splitext(args.input)
+        args.output = base + "_cleaned" + ext
+
+    if not len(args.lat) == len(args.lon):
+        print("error: same number of LAT and LON arguments expected")
+        sys.exit(-1)
+    latitude = args.lat
+    longitude = args.lon
+    radius = [args.radius] * len(latitude)
+
+    # read zone coordinates from zone file
+    if args.zones is not None:
+        lat, lon, r = read_zones(args.zones)
+        latitude += lat
+        longitude += lon
+        radius += r
+
+    # compose zones
+    zones = []
+    if args.verbose:
+        print("zone list:")
+        print("{:15s} {:15s} {:10s}   {:15s} {:15s}".format("latitude [deg]", "longitude [deg]", "radius [m]",
+                                                            "lat. original", "lon. original"))
+    for lat, lon, r in zip(latitude, longitude, radius):
+        rand_offset = args.randofs
+
+        zone = {"lat": lat, "lon": lon, "radius": r, "rand_offset": rand_offset}
+
+        zone_moved = move_zone(zone, args.secret)
+
+        if args.verbose:
+            print("{:+15.9f} {:+15.9f} {:10.1f}   {:+15.9f} {:+15.9f}"\
+                  .format(zone_moved["lat"], zone_moved["lon"], zone_moved["radius"],
+                          zone["lat"], zone["lon"]))
+
+        zones.append(zone_moved)
+
+    filter_csv_privacy(args.input, args.output, zones, args.verbose)
 
 
 if __name__ == "__main__":
-    main(sys.argv[1:])
+    main()
