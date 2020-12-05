@@ -8,6 +8,7 @@ import random
 from haversine import haversine, Unit
 import argparse
 import struct
+import urllib.parse
 
 
 def filter_csv_privacy(input, output, filter, verbose=False):
@@ -17,31 +18,53 @@ def filter_csv_privacy(input, output, filter, verbose=False):
         with open(output, 'w') as file_out:
             writer = csv.writer(file_out, delimiter=';')
 
-            line_count = 0
+            header_verified = False
+
             filter_count = 0
             data_count = 0
+            metadata = None
+
             for line_count, line in enumerate(reader):
                 keep_line = True
-                if line_count == 0:
-                    if "Latitude" in line and "Longitude" in line:
-                        ix_lat = line.index("Latitude")
-                        ix_lon = line.index("Longitude")
-                    else:
-                        raise ValueError("header line does not contain 'Longitude' and 'Latitude' fields")
+                if not header_verified:
+                    if line_count >= 2:
+                        raise ValueError('could not verify file header')
+
+                    line_identified = False
+                    if metadata is None:
+                        try:
+                            metadata = urllib.parse.parse_qs(line[0], strict_parsing=True)
+                            line_identified = True
+                        except ValueError:
+                            pass
+
+                    if not line_identified:
+                        # we did not find valid metadata, so check if this is a header line
+                        if "Latitude" in line and "Longitude" in line:
+                            ix_lat = line.index("Latitude")
+                            ix_lon = line.index("Longitude")
+                            header_verified = True
+                        else:
+                            raise ValueError("header line does not contain 'Longitude' and 'Latitude' fields")
                 else:
                     data_count += 1
-                    lon = float(line[ix_lon])
-                    lat = float(line[ix_lat])
+                    valid_coordinates = True
+                    try:
+                        lon = float(line[ix_lon])
+                        lat = float(line[ix_lat])
+                    except ValueError:
+                        valid_coordinates = False
 
-                    for f in filter:
-                        d = haversine((lat, lon),
-                                      (f["lat"], f["lon"]), unit=Unit.METERS)
-                        if d <= f["radius"]:
-                            if verbose:
-                                print("deleting measurement at {} {}, distance to {} {} is {} and below limit of {}"\
-                                      .format(lat, lon, f["lat"], f["lon"], d, f["radius"] ))
-                            keep_line = False
-                            filter_count += 1
+                    if valid_coordinates:
+                        for f in filter:
+                            d = haversine((lat, lon),
+                                          (f["lat"], f["lon"]), unit=Unit.METERS)
+                            if d <= f["radius"]:
+                                if verbose:
+                                    print("deleting measurement at {} {}, distance to {} {} is {} and below limit of {}"\
+                                          .format(lat, lon, f["lat"], f["lon"], d, f["radius"] ))
+                                keep_line = False
+                                filter_count += 1
 
                 if keep_line:
                     writer.writerow(line)
@@ -111,6 +134,10 @@ def zone_random_number_generator(latitude, longitude, secret):
 
 
 def move_zone(zone, secret):
+    if zone["rand_offset"] == 0:
+        # nothing to do
+        return zone
+
     rng = zone_random_number_generator(zone["lat"], zone["lon"], secret)
 
     direction = rng.uniform(0.0, 360.0)
@@ -128,7 +155,7 @@ def main():
                         help='input filename, must be a semicolon-separated text file')
     parser.add_argument('-o', '--output', required=False, action='store',
                         help='output filename, will be the filtered semicolon-separated text file')
-    parser.add_argument('-s', '--secret', required=True, action='store', help='secret')
+    parser.add_argument('-s', '--secret', required=False, action='store', help='secret')
     parser.add_argument('-z', '--zones', action='store', help='filename of privacy zone list')
     parser.add_argument('-a', '--lat', action='append', type=float, default=[],
                         help='latitude of the center of the circle used for filtering, in degree')
@@ -141,6 +168,11 @@ def main():
     parser.add_argument('-v', '--verbose', action='store_true', help='be verbose')
 
     args = parser.parse_args()
+
+    if args.randofs != 0 and args.secret is None:
+        print("Error: please provide a secret phrase using the -s option, or deactivate random offsetting of the zone "
+              "center using -R 0")
+        sys.exit(-1)
 
     if args.output is None:
         base, ext = os.path.splitext(args.input)
@@ -164,7 +196,7 @@ def main():
     zones = []
     if args.verbose:
         print("zone list:")
-        print("{:15s} {:15s} {:10s}   {:15s} {:15s}".format("latitude [deg]", "longitude [deg]", "radius [m]",
+        print("{:>14s} {:>15s} {:>10s}   {:>15s} {:>15s}".format("latitude [deg]", "longitude [deg]", "radius [m]",
                                                             "lat. original", "lon. original"))
     for lat, lon, r in zip(latitude, longitude, radius):
         rand_offset = args.randofs
@@ -174,7 +206,7 @@ def main():
         zone_moved = move_zone(zone, args.secret)
 
         if args.verbose:
-            print("{:+15.9f} {:+15.9f} {:10.1f}   {:+15.9f} {:+15.9f}"\
+            print("{:+14.9f} {:+15.9f} {:10.1f}   {:+15.9f} {:+15.9f}"\
                   .format(zone_moved["lat"], zone_moved["lon"], zone_moved["radius"],
                           zone["lat"], zone["lon"]))
 
