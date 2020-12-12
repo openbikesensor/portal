@@ -3,6 +3,9 @@ const uniqueValidator = require('mongoose-unique-validator');
 const crypto = require('crypto');
 const jwt = require('jsonwebtoken');
 const secret = require('../config').secret;
+const turf = require('turf');
+const { zip } = require('../_helpers/generators');
+const PrivacyZone = require('./PrivacyZone');
 
 const schema = new mongoose.Schema(
   {
@@ -83,6 +86,30 @@ class User extends mongoose.Model {
       bio: this.bio,
       image: this.image || 'https://static.productionready.io/images/smiley-cyrus.jpg',
     };
+  }
+
+  async privatizeTrackPoints(points) {
+    const privacyZones = await PrivacyZone.find({ user: this._id });
+    const centers = privacyZones.map((pz) => turf.point(pz.center.coordinates));
+    const radii = privacyZones.map((pz) => pz.radius);
+
+    const result = [];
+    for (const point of points) {
+      let skip = false;
+      const p = turf.point([point.longitude, point.latitude]);
+      for (const [center, radius] of zip(centers, radii)) {
+        const distanceMeters = turf.distance(p, center) * 1000
+        console.log(distanceMeters);
+        if (distanceMeters <= radius) {
+          skip = true;
+          break;
+        }
+      }
+      if (!skip) {
+        result.push(point);
+      }
+    }
+    return result;
   }
 }
 

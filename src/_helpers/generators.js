@@ -54,6 +54,18 @@ const scan = (fn) =>
 
 const flow = (...reducers) => (input) => reducers.reduce((c, fn) => fn(c), input);
 
+function* zip(...iterables) {
+  const iterators = iterables.map((iterable) => iterable[Symbol.iterator]());
+  while (true) {
+    const results = iterators.map((iterator) => iterator.next());
+    if (results.some((r) => r.done)) {
+      return;
+    }
+
+    yield results.map((r) => r.value);
+  }
+}
+
 module.exports = {
   filter,
   map,
@@ -62,4 +74,5 @@ module.exports = {
   flow,
   reduce,
   scan,
+  zip,
 };

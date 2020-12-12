@@ -4,6 +4,7 @@ router.use('/', require('./users'));
 router.use('/profiles', require('./profiles'));
 router.use('/tracks', require('./tracks'));
 router.use('/tags', require('./tags'));
+router.use('/privacy-zones', require('./privacyZones'));
 router.use('/accounts', require('../../accounts/accounts.controller'));
 
 router.use(function (err, req, res, next) {

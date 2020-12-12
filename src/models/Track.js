@@ -131,12 +131,15 @@ class Track extends mongoose.Model {
 
     const trackData = TrackData.createFromPoints(points);
     await trackData.save();
-
     this.trackData = trackData._id;
 
     if (this.visible) {
       // TODO: create a distinct object with filtered data
-      this.publicTrackData = trackData._id;
+      const { author } = await this.populate('author').execPopulate();
+      const publicPoints = await author.privatizeTrackPoints(points);
+      const publicTrackData = TrackData.createFromPoints(publicPoints);
+      await publicTrackData.save();
+      this.publicTrackData = publicTrackData._id;
     }
 
     await this.save();
