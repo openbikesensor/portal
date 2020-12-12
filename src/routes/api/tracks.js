@@ -414,7 +414,7 @@ router.delete(
 
 // return an track's trackData
 router.get(
-  '/:track/data',
+  ['/:track/data', '/:track/TrackData'],
   auth.optional,
   wrapRoute(async (req, res) => {
     if (!req.track.isVisibleTo(req.user)) {
