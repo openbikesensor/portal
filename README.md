@@ -37,6 +37,19 @@ To stop the database when you're done developing, run (potentially with sudo):
 
     npm run mongo:stop
 
+## Updating
+
+If you run this through cloning the git and setting it up as a systemctl
+service, you can follow this procedure to update the application:
+
+```bash
+sudo systemctl stop obsApp.service
+git pull
+npm install
+npm run migrate:up
+sudo systemctl start obsApp.service
+```
+
 ## Docker setup 
 
 If you have docker and don't want to bother installing Node.js on your machine,
