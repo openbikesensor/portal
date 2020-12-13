@@ -78,7 +78,7 @@ router.get(
     }
 
     const [tracks, tracksCount] = await Promise.all([
-      Track.find(query).limit(Number(limit)).skip(Number(offset)).sort({ createdAt: 'desc' }).populate('author').exec(),
+      Track.find(query).sort('-createdAt').limit(Number(limit)).skip(Number(offset)).sort({ createdAt: 'desc' }).populate('author').exec(),
       Track.countDocuments(query).exec(),
     ]);
 
@@ -106,7 +106,7 @@ router.get(
 
     const query = { author: req.user.id };
     const [tracks, tracksCount] = await Promise.all([
-      Track.find(query).limit(Number(limit)).skip(Number(offset)).populate('author').exec(),
+      Track.find(query).sort('-createdAt').limit(Number(limit)).skip(Number(offset)).populate('author').exec(),
       Track.countDocuments(query),
     ]);
 
