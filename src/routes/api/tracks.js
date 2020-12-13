@@ -359,4 +359,17 @@ router.get(
   }),
 );
 
+// download the original file
+router.get(
+  '/:track/download',
+  auth.optional,
+  wrapRoute(async (req, res) => {
+    if (!req.track.isVisibleTo(req.user)) {
+      return res.sendStatus(403);
+    }
+
+    return res.sendFile(req.track.fullOriginalFilePath)
+  }),
+);
+
 module.exports = router;
