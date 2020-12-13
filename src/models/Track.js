@@ -1,40 +1,70 @@
 const mongoose = require('mongoose');
 const uniqueValidator = require('mongoose-unique-validator');
 const slug = require('slug');
+const path = require('path');
+const sanitize = require('sanitize-filename');
+const fs = require('fs')
 
 const { parseTrackPoints } = require('../logic/tracks');
 
 const TrackData = require('./TrackData');
+
+const DATA_DIR = process.env.DATA_DIR || path.resolve(__dirname, '../../data/')
 
 const schema = new mongoose.Schema(
   {
     slug: { type: String, lowercase: true, unique: true },
     title: String,
     description: String,
-    body: String,
     visible: Boolean,
     uploadedByUserAgent: String,
+    body: String, // deprecated, remove after migration has read it
     comments: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Comment' }],
     author: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     trackData: { type: mongoose.Schema.Types.ObjectId, ref: 'TrackData' },
     publicTrackData: { type: mongoose.Schema.Types.ObjectId, ref: 'TrackData' },
+    originalFileName: {
+      type: String,
+      required: true,
+      validate: {
+        validator: function (v) {
+          // Must be a sane filename, i.e. not change when being sanitized
+          return sanitize(v) === v && v.length > 0 && /.+\.csv$/i.test(v);
+        },
+        message: (props) => `${props.value} is not a valid filename`,
+      },
+    },
+    originalFilePath: String,
   },
   { timestamps: true },
 );
 
 schema.plugin(uniqueValidator, { message: 'is already taken' });
 
-schema.pre('validate', function (next) {
-  if (!this.slug) {
-    this.slugify();
-  }
+schema.pre('validate', async function (next) {
+  try {
+    if (!this.slug) {
+      this.slugify();
+    }
 
-  next();
+    if (!this.originalFilePath) {
+      await this.generateOriginalFilePath();
+    }
+
+    next();
+  } catch (err) {
+    next(err);
+  }
 });
 
 class Track extends mongoose.Model {
   slugify() {
     this.slug = slug(this.title) + '-' + ((Math.random() * Math.pow(36, 6)) | 0).toString(36);
+  }
+
+  async generateOriginalFilePath() {
+    await this.populate('author').execPopulate();
+    this.originalFilePath = path.join('uploads', 'originals', this.author.username, this.slug, this.originalFileName);
   }
 
   isVisibleTo(user) {
@@ -57,6 +87,24 @@ class Track extends mongoose.Model {
     return user && user._id.equals(this.author._id);
   }
 
+  async _ensureDirectoryExists() {
+    if (!this.originalFilePath) {
+      await this.generateOriginalFilePath()
+    }
+
+    const dir = path.join(DATA_DIR, path.dirname(this.originalFilePath))
+    await fs.promises.mkdir(dir, {recursive: true})
+  }
+
+  get fullOriginalFilePath() {
+    return path.join(DATA_DIR, this.originalFilePath)
+  }
+
+  async writeToOriginalFile(fileBody) {
+      await this._ensureDirectoryExists()
+      await fs.promises.writeFile(this.fullOriginalFilePath, fileBody)
+  }
+
   /**
    * Fills the trackData and publicTrackData with references to correct
    * TrackData objects.  For now, this is either the same, or publicTrackData
@@ -76,8 +124,11 @@ class Track extends mongoose.Model {
       await TrackData.findByIdAndDelete(this.publicTrackData);
     }
 
-    // parse the points from the body
-    const points = Array.from(parseTrackPoints(this.body));
+    // Parse the points from the body.
+    // TODO: Stream file contents, if possible
+    const body = await fs.promises.readFile(this.fullOriginalFilePath)
+    const points = Array.from(parseTrackPoints(body));
+
     const trackData = TrackData.createFromPoints(points);
     await trackData.save();
 
@@ -102,7 +153,12 @@ class Track extends mongoose.Model {
       updatedAt: this.updatedAt,
       visible: this.visible,
       author: this.author.toProfileJSONFor(user),
-      ...(includePrivateFields ? { uploadedByUserAgent: this.uploadedByUserAgent } : {}),
+      ...(includePrivateFields
+        ? {
+            uploadedByUserAgent: this.uploadedByUserAgent,
+            originalFileName: this.originalFileName,
+          }
+        : {}),
     };
   }
 }

@@ -175,23 +175,28 @@ router.post(
   auth.required,
   busboy(), // parse multipart body
   wrapRoute(async (req, res) => {
-    const { body } = await getMultipartOrJsonBody(req, (body) => body.track);
+    // Read the whole file into memory. This is not optimal, instead, we should
+    // write the file data directly to the target file. However, we first have
+    // to parse the rest of the track data to know where to place the file.
+    // TODO: Stream into temporary file, then move it later.
+    const { body, fileInfo } = await getMultipartOrJsonBody(req, (body) => body.track);
 
-    const track = new Track(body);
-    track.author = req.user;
+    const {body: fileBody, visible, ...trackBody} = body
 
-    if (body.visible != null) {
-      track.visible = Boolean(body.visible);
-    } else {
-      track.visible = track.author.areTracksVisibleForAll;
-    }
+    const track = new Track({
+      ...trackBody,
+      author: req.user,
+      visible: visible == null ? req.user.areTracksVisibleForAll : Boolean(trackBody.visible)
+    })
+    track.slugify();
 
-    if (track.body) {
-      track.body = track.body.trim();
+    if (fileBody) {
       track.uploadedByUserAgent = normalizeUserAgent(req.headers['user-agent']);
+      track.originalFileName = fileInfo.body ? fileInfo.body.filename : track.slug + '.csv';
+      await track.writeToOriginalFile(fileBody)
       await track.rebuildTrackDataAndSave();
     } else {
-      await track.save();
+      await track.save()
     }
 
     // console.log(track.author);
@@ -224,32 +229,25 @@ router.put(
       return res.sendStatus(403);
     }
 
-    const { body } = await getMultipartOrJsonBody(req, (body) => body.track);
+    const { body: {body: fileBody, ...trackBody}, fileInfo } = await getMultipartOrJsonBody(req, (body) => body.track);
 
-    if (typeof body.title !== 'undefined') {
-      track.title = (body.title || '').trim() || null;
+    if (typeof trackBody.title !== 'undefined') {
+      track.title = (trackBody.title || '').trim() || null;
     }
 
-    if (typeof body.description !== 'undefined') {
-      track.description = (body.description || '').trim() || null;
+    if (typeof trackBody.description !== 'undefined') {
+      track.description = (trackBody.description || '').trim() || null;
     }
 
-    if (body.visible != null) {
-      track.visible = Boolean(body.visible);
+    if (trackBody.visible != null) {
+      track.visible = Boolean(trackBody.visible);
     }
 
-    if (typeof body.tagList !== 'undefined') {
-      track.tagList = body.tagList;
-    }
-
-    if (body.body && body.body.trim()) {
-      // delete existing
-      if (track.trackData) {
-        await TrackData.findByIdAndDelete(track.trackData);
-      }
-
-      track.body = body.body.trim();
+    if (fileBody) {
+      track.originalFileName = fileInfo.body ? fileInfo.body.filename : track.slug + '.csv';
       track.uploadedByUserAgent = normalizeUserAgent(req.headers['user-agent']);
+      await track.writeToOriginalFile(fileBody)
+
       await track.rebuildTrackDataAndSave();
     } else {
       await track.save();

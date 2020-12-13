@@ -64,6 +64,9 @@ function replaceDollarNewlinesHack(body) {
 }
 
 function* parseTrackPoints(body, format = null) {
+  if (body instanceof Buffer) {
+    body = body.toString('utf-8')
+  }
   body = replaceDollarNewlinesHack(body);
 
   const detectedFormat = format != null ? format : detectFormat(body);
