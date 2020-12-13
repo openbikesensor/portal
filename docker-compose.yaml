@@ -17,9 +17,11 @@ services:
       dockerfile: ./Dockerfile
     volumes:
       - ./src:/opt/obsAPI/src
+      - ./local/api-data:/data
     environment:
       - PORT=3000
       - MONGODB_URL=mongodb://mongo/obsTest
+      - UPLOADS_DIR=/data
     links:
       - mongo
     ports:
