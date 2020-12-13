@@ -6,7 +6,6 @@ const Comment = mongoose.model('Comment');
 const User = mongoose.model('User');
 const busboy = require('connect-busboy');
 const auth = require('../auth');
-const currentTracks = new Map();
 const { normalizeUserAgent } = require('../../logic/tracks');
 const wrapRoute = require('../../_helpers/wrapRoute');
 
@@ -197,73 +196,6 @@ router.post(
 
     // console.log(track.author);
     return res.json({ track: track.toJSONFor(req.user) });
-  }),
-);
-
-router.post(
-  '/begin',
-  auth.required,
-  wrapRoute(async (req, res) => {
-    const track = new Track(req.body.track);
-    track.author = req.user;
-    track.uploadedByUserAgent = normalizeUserAgent(req.headers['user-agent']);
-
-    await track.save();
-
-    // remember which is the actively building track for this user
-    currentTracks.set(req.user.id, track._id);
-
-    return res.sendStatus(200);
-  }),
-);
-
-router.post(
-  '/add',
-  auth.required,
-  wrapRoute(async (req, res) => {
-    if (!currentTracks.has(req.user.id)) {
-      throw new Error('current user has no active track, start one with POST to /tracks/begin');
-    }
-
-    const trackId = currentTracks.get(req.user.id);
-
-    const track = await Track.findById(trackId);
-    if (!track) {
-      throw new Error('current user active track is gone, retry upload');
-    }
-
-    track.body += req.body.track.body;
-    await track.save();
-
-    return res.sendStatus(200);
-  }),
-);
-
-router.post(
-  '/end',
-  auth.required,
-  wrapRoute(async (req, res) => {
-    let track;
-
-    if (currentTracks.has(req.user.id)) {
-      // the file is less than 100 lines
-      const trackId = currentTracks.get(req.user.id);
-      track = await Track.findById(trackId);
-      if (!track) {
-        throw new Error('current user active track is gone, retry upload');
-      }
-
-      track.body += req.body.track.body;
-    } else {
-      track = new Track(req.body.track);
-    }
-
-    await track.rebuildTrackDataAndSave();
-
-    // We are done with this track, it is complete.
-    currentTracks.delete(req.user.id);
-
-    return res.sendStatus(200);
   }),
 );
 
