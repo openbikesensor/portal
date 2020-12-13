@@ -64,7 +64,7 @@ class Track extends mongoose.Model {
 
   async generateOriginalFilePath() {
     await this.populate('author').execPopulate();
-    this.originalFilePath = path.join('uploads', 'originals', this.author.username, this.slug, this.originalFileName);
+    this.originalFilePath = path.join('uploads', 'originals', this.author.username, this.slug, 'original.csv');
   }
 
   isVisibleTo(user) {
