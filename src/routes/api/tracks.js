@@ -181,24 +181,19 @@ router.post(
     const track = new Track(body);
     track.author = req.user;
 
-    if (track.body) {
-      track.body = track.body.trim();
-    }
-
-    if (track.body) {
-      // delete existing
-      if (track.trackData) {
-        await TrackData.findByIdAndDelete(track.trackData);
-      }
-    }
-
     if (body.visible != null) {
       track.visible = Boolean(body.visible);
     } else {
       track.visible = track.author.areTracksVisibleForAll;
     }
 
-    await track.save();
+    if (track.body) {
+      track.body = track.body.trim();
+      track.uploadedByUserAgent = normalizeUserAgent(req.headers['user-agent']);
+      await track.rebuildTrackDataAndSave();
+    } else {
+      await track.save();
+    }
 
     // console.log(track.author);
     return res.json({ track: track.toJSONFor(req.user) });
@@ -311,19 +306,18 @@ router.put(
       track.visible = Boolean(body.visible);
     }
 
-    let bodyChanged = false;
-
-    if (body.body && body.body.trim()) {
-      track.body = body.body.trim();
-      track.uploadedByUserAgent = normalizeUserAgent(req.headers['user-agent']);
-      bodyChanged = true;
-    }
-
     if (typeof body.tagList !== 'undefined') {
       track.tagList = body.tagList;
     }
 
-    if (bodyChanged) {
+    if (body.body && body.body.trim()) {
+      // delete existing
+      if (track.trackData) {
+        await TrackData.findByIdAndDelete(track.trackData);
+      }
+
+      track.body = body.body.trim();
+      track.uploadedByUserAgent = normalizeUserAgent(req.headers['user-agent']);
       await track.rebuildTrackDataAndSave();
     } else {
       await track.save();
