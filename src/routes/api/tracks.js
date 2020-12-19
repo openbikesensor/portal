@@ -368,7 +368,7 @@ router.get(
       return res.sendStatus(403);
     }
 
-    return res.sendFile(req.track.fullOriginalFilePath)
+    return res.download(req.track.fullOriginalFilePath)
   }),
 );
 
