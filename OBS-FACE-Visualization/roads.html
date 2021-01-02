@@ -1,0 +1,443 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+      <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/openlayers/openlayers.github.io@master/en/v6.4.3/css/ol.css" type="text/css">
+	<style>
+	  .map {
+	  position: absolute;
+	  width: 100%;
+	  height: 100%;
+	  left: 0px;
+	  top: 0px;
+	  z-index: 0;
+	  }
+	  .overlay{
+	  display: flex;
+	  flex-direction: column;
+	  justify-content: space-around;
+	  position: absolute;
+	  width: 30%;
+	  height: 98%;
+	  left: 1%;
+	  top: 1%;
+	  z-index: 0;
+	  }
+	  .title {
+	  display: flex;
+	  position: relative;
+	  height:10%;
+	  width: 100%;
+	  background-color: #FFFFFF;    			
+	  padding: 5px;
+	  z-index: 0;
+	  }
+	  .title_image {
+	  height: 100%
+	  }
+	  .title_text {
+	  padding: 0px;
+	  height: 100%;
+	  vertical-align: middle;
+ 	  background-color: #FF8080;
+	  }
+	  .caption {
+	  display: flex;
+	  height: 20%;
+	  width: 100%;
+	  background-color: #FFFFFF;    			
+	  padding: 5px;
+ 	  align-items: center;
+	  z-index: 0;
+	  }
+	  .chart {
+	  width: 100%;
+	  height: 30%;
+	  background-color: #FFFFFF;    			
+	  padding: 5px;
+	  z-index: 0;
+	  }    		
+	  .legend {
+	  height: 15%;
+	  width: 100%;
+	  background-color: #FFFFFF;    			
+	  padding: 5px;
+	  z-index: 0;
+	  }
+	  .ol-zoom {
+	  left: unset;
+	  right: 8px;
+	  }
+	</style>
+	<script src="https://cdn.jsdelivr.net/gh/openlayers/openlayers.github.io@master/en/v6.4.3/build/ol.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+	<script src="OBS.js"></script>
+	<title>OpenBikeSensor Visualisierung: Stra&szlig;enabschnitte</title>
+      </head>
+      <body>
+	<div id="map" class="map"></div>
+	<div id="overlay" class="overlay">
+	  <div id="title" class="title">
+	    <div id="title_image"><img src="images/OBS.png" height="100%"></img></div>
+	    <div id="title_text">
+	      <h4>Visualisierung: Stra&szlig;enabschnitte </h4>
+	    </div>
+	  </div>
+	  <div id="chart" class="chart"></div>
+	  <div id="caption" class="caption">
+	  	<b>Bitte einen Streckenabschnitt in der Karte (farbige Linien) anklicken um detailierte Informationen zu erhalten.</b>
+	  	</div>        
+	  <div id="legend" class="legend">
+            <b>Kartenlegende</b><br>
+            Streckenabschnitte werden wie folgt eingefärbt: <br>
+            Anteil der &Uuml;berholenden unter Minimalabstand:
+            <div id="colorbar" class="colorbar"> </div>
+            ohne Messungen: <font color="#808080">grau</font>
+	  </div>		
+	</div>
+
+	<script type="text/javascript">
+	  //			var criterion = "d_mean";
+	  // var criterion = "p_above";
+	  var criterion = "p_below";
+
+	  var hist_xa = 0.0;
+	  var hist_xb = 2.55;
+	  var hist_dx = 0.25;
+	  var hist_n = Math.ceil((hist_xb - hist_xa)/hist_dx);
+
+	  function histogramLabels(){
+	  
+	  var labels = Array(hist_n);    	
+	  for (var i=0; i<hist_n; i++){
+	  var xa = hist_xa + hist_dx * i;
+	  var xb = xa + hist_dx;
+	  var xc = xa + 0.5*hist_dx;
+	  labels[i] = (xa*100).toFixed(0) + "-" + (xb*100).toFixed(0);
+	  }
+
+	  return labels;
+	  }
+
+	  function histogramColors(palette){
+	  
+	  var colors = Array(hist_n);    	
+	  for (var i=0; i<hist_n; i++){
+	  var xc = hist_xa + hist_dx * i;
+	  colors[i] = palette.rgb_hex(xc);
+	  }
+
+	  return colors;
+	  }
+
+	  function histogram(samples){
+	  var binCounts = new Array(hist_n).fill(0);
+
+	  for (var i=0; i<samples.length; i++){
+	  var v = samples[i];
+	  var j = Math.floor((v - hist_xa)/hist_dx);
+	  if (j>=0 && j<hist_n){
+	  binCounts[j]++;
+	  }
+	  }
+
+	  return binCounts;
+	  }
+
+
+	  function annotation_verbose(feature){
+	  var s = "";
+
+	  s += "name: " + feature.get('name') + "\n";
+	  s += "way_id: " + feature.get('way_id') + "\n";
+	  s += "direction: " + feature.get('direction') + "\n";
+	  s += "zone: " + feature.get('zone') + "\n";
+	  s += "valid: " + feature.get('valid') + "\n";
+
+	  d = feature.get('distance_overtaker_limit');
+	  s += "distance_overtaker_limit: " + ((d == null)?"n/a":d.toFixed(2)) + " m \n";
+
+	  s += "<hr></hr>statistics\n";
+
+	  d = feature.get('distance_overtaker_mean');
+	  s += "distance_overtaker_mean: " + ((d == null)?"n/a":d.toFixed(2)) + " m \n";
+
+	  d = feature.get('distance_overtaker_median');
+	  s += "distance_overtaker_median: " + ((d == null)?"n/a":d.toFixed(2)) + " m \n";
+
+	  d = feature.get('distance_overtaker_minimum');
+	  s += "distance_overtaker_minimum: " + ((d == null)?"n/a":d.toFixed(2)) + " m \n";
+
+	  d = feature.get('distance_overtaker_n');
+	  s += "distance_overtaker_n: " + ((d == null)?"n/a":d.toFixed(0)) + "\n";
+
+	  d = feature.get('distance_overtaker_n_above_limit');
+	  s += "distance_overtaker_n_above_limit: " + ((d == null)?"n/a":d.toFixed(0)) + "\n";
+
+	  d = feature.get('distance_overtaker_n_below_limit');
+	  s += "distance_overtaker_n_below_limit: " + ((d == null)?"n/a":d.toFixed(0)) + "\n";
+
+	  var n_below = feature.get('distance_overtaker_n_below_limit');
+	  var n = feature.get('distance_overtaker_n');
+	  var p = n_below / n * 100.0;
+	  s += "overtakers below limit: " + ((p == null)?"n/a":p.toFixed(1)) + " %\n";
+
+	  return s;
+	  }
+
+	  function annotation(feature){
+
+          var s = "<table>";
+          
+          s += "<tr><td>Stra&szlig;enname:</td><td><a href=\"https://www.openstreetmap.org/way/" + feature.get('way_id') + "\" target=\"_blank\">" + feature.get('name') 
+          + "</a></td></tr>";
+          d = feature.get('distance_overtaker_limit');
+          s += "<tr><td>Mindest&uuml;berholabstand:</td><td>" + ((d == null)?"n/a":d.toFixed(2)) + " m </td>";
+
+	  d = feature.get('distance_overtaker_n');
+	  s += "<tr><td>Anzahl Messungen:</td><td>" + ((d == null)?"n/a":d.toFixed(0)) + "</td></tr>";
+
+
+	  var n_below = feature.get('distance_overtaker_n_below_limit');
+	  var n = feature.get('distance_overtaker_n');
+	  var p = n_below / n * 100.0;
+	  s += "<tr><td>Unterschreitung Mindestabstand:</td><td>" + ((p == null)?"n/a":p.toFixed(1)) + "% der &Uuml;berholenden</td></tr>";
+
+	  d = feature.get('distance_overtaker_mean');
+	  s += "<tr><td>Durchschnitt &Uuml;berholabstand:</td><td>" + ((d == null)?"n/a":d.toFixed(2)) + " m </td></tr>";
+
+	  d = feature.get('distance_overtaker_median');
+	  s += "<tr><td>Median &Uuml;berholabstand:</td><td>" + ((d == null)?"n/a":d.toFixed(2)) + " m </td></tr>";
+
+	  d = feature.get('distance_overtaker_minimum');
+	  s += "<tr><td>Minimum &Uuml;berholabstand:</td><td>" + ((d == null)?"n/a":d.toFixed(2)) + " m </td></tr>";
+
+	  s += "</table>";
+
+	  return s;
+	  }
+
+	  function styleFunction(feature, resolution, active=false) {
+	  var n = feature.get('distance_overtaker_n');
+	  var zone = feature.get('zone');
+	  if (zone=="urban"){
+	  palette = paletteUrban;
+	  } else if (zone=="rural"){
+	  palette = paletteRural;
+	  } else {
+	  palette = paletteUrban;
+	  }
+
+	  var valid = feature.get('valid');
+
+	  var color = [0, 0, 0, 255];
+
+	  if (valid){
+	  switch(criterion){
+	  case "d_mean":
+          var d = feature.get('distance_overtaker_mean');
+          color = palette.rgba_css(d)	
+          break;
+	  case "d_median":
+          var d = feature.get('distance_overtaker_median');
+          color = palette.rgba_css(d)		
+          break;
+	  case "d_min":
+          var d = feature.get('distance_overtaker_minimum');
+          color = palette.rgba_css(d)		
+          break;
+	  case "p_above":
+          var n = feature.get('distance_overtaker_n');
+          var a = feature.get('distance_overtaker_n_above_limit');
+          var p = undefined;
+          if (n>0){
+          	p = a/n;
+          }
+	      color = palettePercentage.rgba_css(p*100.0);          
+          break;
+	  case "p_below":
+          var n = feature.get('distance_overtaker_n');
+          var a = feature.get('distance_overtaker_n_below_limit');
+          var p = undefined;
+          if (n>0){
+          	p = a/n;	        
+          }
+          color = palettePercentageInverted.rgba_css(p*100.0);
+          break;
+	  } 
+	} else {
+          color = [128, 128, 128, 255];		
+	  }
+
+
+	  // var width = 2 + 1*Math.log10(n);
+	  var width = active?6:2;
+	  // width =Math.max(2.0, width*1/resolution);
+
+	  var style = new ol.style.Style({
+	  stroke: new ol.style.Stroke({
+	  color: color,
+	  width: width,
+	  })
+	  });
+	  return style;
+	  }
+
+	  var map = new ol.Map({
+	  target: 'map',
+	  layers: [
+	  new ol.layer.Tile({
+	  source: new ol.source.OSM({
+	  url: 'https://tiles.wmflabs.org/bw-mapnik/{z}/{x}/{y}.png',
+	  crossOrigin: null
+	  // url: 'https://{a-c}.tile.openstreetmap.org/{z}/{x}/{y}.png'
+	  })
+	  })
+	  ],
+	  view: new ol.View({
+	  center: ol.proj.fromLonLat([9.1798000, 48.7759000]),
+	  zoom: 13
+	  })
+	  });
+
+
+	  var dataSource = new ol.source.Vector({
+	  format: new ol.format.GeoJSON(),
+	  url: 'json/roads.json'
+	  })
+
+	  var vectorLayer = new ol.layer.Vector({
+	  source: dataSource,
+	  style: styleFunction
+	  });
+
+	  map.addLayer(vectorLayer);
+
+	  var histogramColorsRural = histogramColors(paletteRural).reverse();
+	  var histogramColorsUrban = histogramColors(paletteUrban).reverse();
+
+	  var chartOptions = {
+	  series: [{
+	  name: 'Überholende',
+	  data: Array(hist_n).fill(0)
+	  }],
+	  chart: {
+	  type: 'bar',
+	  height: 350,
+	  animations: {
+	  animateGradually: {
+	  enabled: false
+	  }
+	  }
+	  },
+	  plotOptions: {
+	  bar: {
+	  horizontal: false,
+	  columnWidth: '95%',
+	  endingShape: 'flat',
+	  distributed: true
+	  },
+	  },
+	  dataLabels: {
+	  enabled: true
+	  },
+	  stroke: {
+	  show: false,
+	  },
+	  xaxis: {
+	  title: {
+	  text: 'Überholabstand in Zentimeter'
+	  }, 
+	  categories: histogramLabels().reverse(),
+	  },
+	  yaxis: {
+	  title: {
+	  text: 'Anzahl Überholende'
+	  },
+	  labels: {
+	  show: false
+	  }
+	  },
+	  fill: {
+	  opacity: 1,
+	  },
+	  legend: {
+	  show: false
+	  },
+	  tooltip: {
+	  y: {
+	  formatter: function (val) {
+	  return val
+	  }
+	  }
+	  }
+	  };
+
+	  var chart = new ApexCharts(document.querySelector("#chart"), chartOptions);
+	  chart.render();
+
+
+	var noFeatureActive=true;
+
+	 map.on('singleclick', function(evt) {
+	  	var feature = map.forEachFeatureAtPixel(evt.pixel, 
+	  		function(feature, layer) {
+	  			return feature;
+	  		}); 
+
+		var resolution = map.getView().getResolution();	  
+
+		if (!noFeatureActive){
+    		vectorLayer.getSource().getFeatures().forEach(f=>{
+    			f.setStyle(styleFunction(f, resolution, false));
+    		});
+    		noFeatureActive = true;
+    	}
+
+	  	if (feature && dataSource.hasFeature(feature)){
+		  	console.log(annotation_verbose(feature));
+		  	caption.innerHTML = annotation(feature);
+		  	caption.style.alignItems="flex-start";
+
+		  	var zone = feature.get('zone');
+		  	var colors = undefined;
+	  		switch(zone){
+			case "urban":
+		  		colors = histogramColorsUrban;
+	  			break;
+		  	case "rural":
+		  		colors = histogramColorsRural;
+	  			break;
+	  		default:
+	  			colors = histogramColorsUrban;
+	  		}
+	  
+
+	  		chart.updateOptions({
+	  			colors: colors
+	  		});
+
+	  		var hist = histogram(feature.get('distance_overtaker_measurements')).reverse();
+
+	  		chart.updateSeries([{
+	  			name: 'Überholende',
+	  			data: hist,
+	  		}]);
+
+
+	  		feature.setStyle(styleFunction(feature, resolution, true));
+    		noFeatureActive = false;
+	  	}
+
+	    
+	});
+	  
+	  
+
+
+	  palettePercentageInverted.writeLegend('colorbar', [0, 100.0], '%');
+	</script>
+      </body>
+    </html>
+
+

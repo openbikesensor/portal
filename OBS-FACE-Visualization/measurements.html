@@ -1,0 +1,368 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/openlayers/openlayers.github.io@master/en/v6.4.3/css/ol.css" type="text/css"/>
+  <style>
+    .map {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    left: 0px;
+    top: 0px;
+    z-index: 0;
+    }
+	  .overlay{
+	  display: flex;
+	  flex-direction: column;
+	  justify-content: space-around;
+	  position: absolute;
+	  width: 30%;
+	  height: 98%;
+	  left: 1%;
+	  top: 1%;
+	  z-index: 0;
+	  }
+	  .title {
+	  display: flex;
+	  position: relative;
+	  height:10%;
+	  width: 100%;
+	  background-color: #FFFFFF;    			
+	  padding: 5px;
+	  z-index: 0;
+	  }
+	  .title_image {
+	  height: 100%
+	  }
+	  .title_text {
+	  padding: 0px;
+	  height: 100%;
+	  vertical-align: middle;
+ 	  background-color: #FF8080;
+	  }
+	  .caption {
+	  	display: flex;
+	  height: 50%;
+	  width: 100%;
+	  background-color: #FFFFFF;    			
+	  padding: 5px;
+ 	  align-items: center;
+	  z-index: 0;
+	  }
+	  .legend {
+	  height: 25%;
+	  width: 100%;
+	  background-color: #FFFFFF;    			
+	  padding: 5px;
+	  z-index: 0;
+	  }
+    .ol-zoom {
+    left: unset;
+    right: 8px;
+    }
+  </style>
+  <script src="https://cdn.jsdelivr.net/gh/openlayers/openlayers.github.io@master/en/v6.4.3/build/ol.js"></script>
+  <script src="OBS.js"></script>
+
+  <title>OpenBikeSensor Visualizierung: Messwerte</title>
+</head>
+<body>
+  <div id="map" class="map"></div>
+  <div id="overlay" class="overlay">
+	  <div id="title" class="title">
+	    <div id="title_image"><img src="images/OBS.png" height="100%"></img></div>
+	    <div id="title_text">
+	      <h4>Visualisierung: Messwerte </h4>
+	    </div>
+	  </div>
+    <div id="caption" class="caption">
+    	<b>Bitte einen Messpunkt in der Karte (farbige Kreise) anklicken um detailierte Informationen zu erhalten.</b>
+    </div>        
+    <div id="legend" class="legend">
+      <b>Kartenlegende</b><br>
+      Ring um Messung: <font color="#FFFF00">au&szlig;erorts</a>, <font color="#0000FF">innerorts</a>, <font color="#000000">unbekannt</a>
+      <br>
+	Fläche innerhalb kodiert den &Uuml;berholabstand:
+      <div id="legend_rural" class="legend_rural">&Uuml;berholabstand außerorts<br></div>
+      <div id="legend_urban" class="legend_urban">&Uuml;berholabstand innerorts<br></div>    
+    </div>		
+  </div>
+
+  <script type="text/javascript">
+
+    function annotation(feature){
+    var s = "<table>";
+
+    d = feature.get('distance_overtaker');
+    s += "<td><b>&Uuml;berholabstand:</b></td><td><b>" + ((d == null)?"n/a":d.toFixed(2)) + " m</b></td></tr>";
+    s += "<tr><td>Zeit/Datum der Messung:</td><td>" + feature.get('time') + "</td></tr>";
+
+    s += "<tr><td>Benutzer (pseudonymisiert):</td><td>" + feature.get('user_id') + "</td></tr>";
+    s += "<tr><td>Messungs-ID (pseudonymisiert):</td><td>" + feature.get('measurement_id') + "</td></tr>";
+
+    if (feature.get('has_OSM_annotations') == true){
+    s += "<tr><td>Position der Messung (korrigiert):</td><td>" + feature.get('latitude_projected').toFixed(6) + " " + feature.get('longitude_projected').toFixed(6) + "</td></tr>";
+    }
+    s += "<tr><td>Position der Messung (GPS):</td><td>" + feature.get('latitude_GPS').toFixed(6) + " " + feature.get('longitude_GPS').toFixed(6) + "</td></tr>";
+
+    d = feature.get('distance_stationary');
+    s += "<tr><td>Abstand nach rechts:</td><td>" + ((d == null)?"n/a":d.toFixed(2)) + " m  </td></tr>";
+
+    s += "<tr><td>"
+    if (feature.get("egomotion_is_derived") == true){
+    s += "Eigenbewegung (aus Pos. berechnet)";
+    } else {
+    s += "Eigenbewegung (von GPS)";
+    }
+    s += "</td><td>";
+    c = feature.get('course');
+    s += ((c == null)?"n/a":c.toFixed(0)) + " deg, ";
+
+    v = feature.get('speed');
+    s += ((v == null)?"n/a":(v * 3.6).toFixed(1)) + " km/h</td></tr>";
+
+    if (feature.get('has_OSM_annotations')){
+    s += "<tr><td colspan=2><b>Information aus OpenStreetMap</b></td></tr>";
+    s += "<tr><td>Weg-Kategorie:</td><td>" + feature.get('OSM_highway') + "</td></tr>";
+    s += "<tr><td>Anzahl Fahrstreifen:</td><td>" + feature.get('OSM_lanes') + "</td></tr>";
+    s += "<tr><td>Geschwindigkeitsbegrenzung:</td><td>" + feature.get('OSM_maxspeed') + " km/h</td></tr>";
+    s += "<tr><td>Stra&szlig;enname:</td><td>" + feature.get('OSM_name') + "</td></tr>";
+    s += "<tr><td>inner-/au&szlig;orts:</td><td>" + feature.get('OSM_zone') + "</td></tr>";
+    s += "<tr><td>Einbahnsstra&szlig;e:</td><td>" + feature.get('OSM_oneway') + "</td></tr>";
+    s += "<tr><td>OSM Weg-ID:</td><td><a href=\"https://www.openstreetmap.org/way/" + feature.get('OSM_way_id') + "\" target=\"_blank\">" + feature.get('OSM_way_id') + "</a></td></tr>";
+    s += "<tr><td>Fahrtrichtung:</td><td>" + feature.get('OSM_way_orientation') + "</td></tr>";
+    } else {
+    s += "<tr><td colspan=2>keine OpenStreemMap Informationen vorhanden</td></tr>";
+    }
+
+    s += "</table>"
+    return s;
+    }
+
+    
+    function annotation_verbose(feature){
+    var s = "";
+
+    d = feature.get('distance_overtaker');
+    s += "overtaker's distances: " + ((d == null)?"n/a":d.toFixed(2)) + " m\n";
+    s += "time: " + feature.get('time') + "\n";
+
+    s += "user id: " + feature.get('user_id') + "\n";
+    s += "measurement id: " + feature.get('measurement_id') + "\n";
+
+    if (feature.get('has_OSM_annotations') == true){
+    s += "coordinates (projected): " + feature.get('latitude_projected').toFixed(6) + " " + feature.get('longitude_projected').toFixed(6) + "\n";
+    }
+    s += "coordinates (GPS): " + feature.get('latitude_GPS').toFixed(6) + " " + feature.get('longitude_GPS').toFixed(6) + "\n";
+
+    d = feature.get('distance_overtaker');
+    s += "distances: " + ((d == null)?"n/a":d.toFixed(2)) + " m | ";
+
+    d = feature.get('distance_stationary');
+    s += ((d == null)?"n/a":d.toFixed(2)) + " m\n";
+
+    if (feature.get("egomotion_is_derived") == true){
+    s += "movement (derived): ";
+    } else {
+    s += "movement (GPS): ";
+    }
+    c = feature.get('course');
+    s += ((c == null)?"n/a":c.toFixed(0)) + " deg, ";
+
+    v = feature.get('speed');
+    s += ((v == null)?"n/a":(v * 3.6).toFixed(1)) + " km/h\n";
+
+    if (feature.get('has_OSM_annotations')){
+    s += "OSM annotations:\n";
+    s += "highway: " + feature.get('OSM_highway') + "\n";
+    s += "lanes: " + feature.get('OSM_lanes') + "\n";
+    s += "maxspeed: " + feature.get('OSM_maxspeed') + " km/h\n";
+    s += "name: " + feature.get('OSM_name') + "\n";
+    s += "zone: " + feature.get('OSM_zone') + "\n";
+    s += "oneway: " + feature.get('OSM_oneway') + "\n";
+    s += "way_id: " + feature.get('OSM_way_id') + "\n";
+    s += "way_orientation: " + feature.get('OSM_way_orientation') + "\n";
+    } else {
+    s += "(no OSM annotations assigned)\n";
+    }
+    return s;
+    }
+
+    //    https://tiles.wmflabs.org/bw-mapnik/${z}/${x}/${y}.png
+    var map = new ol.Map({
+    target: 'map',
+    layers: [
+    new ol.layer.Tile({
+    source: new ol.source.OSM({
+    url: 'https://tiles.wmflabs.org/bw-mapnik/{z}/{x}/{y}.png',
+    // url: 'https://{a-c}.tile-cyclosm.openstreetmap.fr/cyclosm-lite/{z}/{x}/{y}.png',
+    crossOrigin: null
+    // url: 'https://{a-c}.tile.openstreetmap.org/{z}/{x}/{y}.png'
+    })
+    })
+    ],
+    view: new ol.View({
+    center: ol.proj.fromLonLat([9.1798000, 48.7759000]),
+    zoom: 16
+    })
+    });
+
+    var textFill = new ol.style.Fill({
+    color: '#fff'
+    });
+    var textStroke = new ol.style.Stroke({
+    color: 'rgba(0, 0, 0, 255)',
+    width: 3
+    });
+
+    var strokeUnknown = new ol.style.Stroke({
+    color: 'rgba(0, 0, 0, 255)',
+    width: 1
+    });
+
+    var strokeUrban = new ol.style.Stroke({
+    color: 'rgba(0, 0, 255, 255)',
+    width: 1
+    });
+
+    var strokeRural = new ol.style.Stroke({
+    color: 'rgba(255, 255, 0, 255)',
+    width: 1
+    });
+
+
+    var dataSource = new ol.source.Vector({
+    format: new ol.format.GeoJSON(),
+    url: 'json/measurements.json'
+    });
+
+    var vectorLayer = new ol.layer.Vector({
+    source: dataSource,
+    style: function(feature, resolution){ return styleFunction(feature, resolution, false);}
+    })
+
+    function styleFunction(feature, resolution, active) {
+    var d = feature.get('distance_overtaker');
+    var projected = feature.get('has_OSM_annotations');
+    var zone = feature.get('OSM_zone');
+    var color = colorUndefinedDistance;
+    var stroke = strokeUnknown;
+    if (d != undefined){
+    if (zone=="urban"){
+    color = paletteUrban.rgba_css(d);
+    stroke = strokeUrban;
+    } else if (zone=="rural"){
+    color = paletteRural.rgba_css(d);
+    stroke = strokeRural;	    
+    }  else {
+    color = paletteUrban.rgba_css(d);
+    stroke = strokeUnknown;
+    }
+    }
+
+    
+    var style = new ol.style.Style({
+    image: new ol.style.Circle({
+    radius: active?10:5,
+    fill: new ol.style.Fill({color: color}),
+    stroke: stroke
+    })
+    });
+    return style;
+    }
+
+    map.addLayer(vectorLayer);
+
+
+    var arrowStyle = new ol.style.Style({
+    stroke: new ol.style.Stroke({
+    color: 'rgba(0, 0, 0, 255)',
+    width: 3})
+    });
+    
+
+    var arrowLayer = new ol.layer.Vector({
+    source: new ol.source.Vector(),
+    style: arrowStyle
+    });
+    map.addLayer(arrowLayer);
+
+    // add arrow features
+    var key = dataSource.once('change', function(event) {
+    if (dataSource.getState() == 'ready') {
+    dataSource.forEachFeature(
+    function(feature){
+    var c = feature.get('course');
+    // var v = feature.get('speed');
+    var v = 10.0;
+    if (c != undefined && v!=undefined) {
+    c = (90.0 - c) * Math.PI / 180.0;
+    var p1 = feature.getGeometry().getCoordinates();
+    var p2 = [p1[0]+Math.cos(c)*v, p1[1] +Math.sin(c)*v];
+    var f = new ol.Feature({
+    geometry: new ol.geom.LineString(
+    [p1, p2]
+    )
+    });
+    // f.setStyle(styles);		       
+    arrowLayer.getSource().addFeature(f);
+    }
+    }
+    );
+    }
+    else
+    {
+
+    }
+    });
+
+
+    arrowLayer.setVisible(true);
+
+
+
+    map.on('singleclick', function(evt) {
+    var feature = map.forEachFeatureAtPixel(evt.pixel, function(feature, layer) {
+    return feature;
+    });
+    if (feature && dataSource.hasFeature(feature)) {
+    var coord = feature.getGeometry().getCoordinates();
+    var props = feature.getProperties();
+    caption.innerHTML = annotation(feature);
+    caption.style.alignItems="flex-start";
+    console.log(annotation_verbose(feature));
+    }
+    });
+
+
+    // feature mouse hover handler
+    var noFeatureActive = false;
+
+    map.on('pointermove', function(evt) {
+    if (evt.dragging) {
+    return;
+    }
+    if (!noFeatureActive){
+    vectorLayer.getSource().getFeatures().forEach(f=>{
+    f.setStyle(styleFunction(f, undefined, false));
+    });
+    noFeatureActive = true;
+    }
+    var pixel = map.getEventPixel(evt.originalEvent);
+    map.forEachFeatureAtPixel(pixel,function(feature) {
+    if (dataSource.hasFeature(feature)){
+    feature.setStyle(styleFunction(feature, undefined, true));
+    noFeatureActive = false;
+    }
+    return feature;
+    });
+    });
+
+    paletteUrban.writeLegend('legend_urban', [0, 1.5, 2.5], 'm');
+    paletteRural.writeLegend('legend_rural', [0, 2.0, 2.5], 'm');
+  </script>
+</body>
+</html>
+
+
