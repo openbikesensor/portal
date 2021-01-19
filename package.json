@@ -17,7 +17,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Friends-of-OpenBikeSensor/obsAPI.git"
+    "url": "git+https://github.com/openbikesensor/obsAPI.git"
   },
   "license": "LGPLv3",
   "dependencies": {

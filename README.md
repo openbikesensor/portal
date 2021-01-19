@@ -1,6 +1,6 @@
 # OpenBikeSensor Web API
 
-The backend API for the [OpenBikeSensor](https://zweirat-stuttgart.de/projekte/openbikesensor/) Web App.
+The backend API for the [OpenBikeSensor](https://openbikesensor.org/) Web App.
 
 ## Direct setup
 
