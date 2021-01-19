@@ -6,7 +6,7 @@ const Comment = mongoose.model('Comment');
 const User = mongoose.model('User');
 const busboy = require('connect-busboy');
 const auth = require('../auth');
-const { normalizeUserAgent } = require('../../logic/tracks');
+const { normalizeUserAgent, buildObsver1 } = require('../../logic/tracks');
 const wrapRoute = require('../../_helpers/wrapRoute');
 
 function preloadByParam(target, getValueFromParam) {
@@ -364,11 +364,26 @@ router.get(
   '/:track/download',
   auth.optional,
   wrapRoute(async (req, res) => {
-    if (!req.track.isVisibleTo(req.user)) {
+    if (req.track.isVisibleToPrivate(req.user)) {
+      return res.download(req.track.fullOriginalFilePath)
+    } else if (req.track.isVisibleTo(req.user)) {
+      await req.track.populate('publicTrackData').execPopulate()
+
+      if (!req.track.publicTrackData) {
+        return res.sendStatus(403);
+      }
+
+      const body = buildObsver1(req.track.publicTrackData.points)
+      const fileName = req.track.slug + '_public.csv'
+
+      res.set({
+        'Content-Disposition': 'attachment; filename=' + JSON.stringify(fileName),
+        'Content-Type': 'text/csv',
+      });
+      return res.end(body)
+    } else {
       return res.sendStatus(403);
     }
-
-    return res.download(req.track.fullOriginalFilePath)
   }),
 );
 
