@@ -54,7 +54,7 @@ class Track extends mongoose.Model {
   }
 
   isVisibleToPrivate(user) {
-    return user._id.equals(this.author._id);
+    return user && user._id.equals(this.author._id);
   }
 
   /**
