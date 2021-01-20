@@ -249,6 +249,8 @@ router.put(
       await track.writeToOriginalFile(fileBody)
 
       await track.rebuildTrackDataAndSave();
+    } else if (track.visible && !track.publicTrackData) {
+      await track.rebuildTrackDataAndSave();
     } else {
       await track.save();
     }

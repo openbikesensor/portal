@@ -18,6 +18,8 @@ services:
     volumes:
       - ./src:/opt/obsAPI/src
       - ./local/api-data:/data
+      - .migrations.js:/opt/obsAPI/.migrations.js
+      - ./migrations:/opt/obsAPI/migrations/
     environment:
       - PORT=3000
       - MONGODB_URL=mongodb://mongo/obsTest
