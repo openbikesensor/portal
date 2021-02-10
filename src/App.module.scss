@@ -1,0 +1,49 @@
+@import "styles.scss";
+
+.App {
+  text-align: center;
+}
+
+.header {
+  @include container;
+  height: 56px;
+  display: flex;
+  align-items: center;
+}
+
+.pageTitle {
+  font-family: "Roboto Slab";
+  font-weight: 600;
+  font-size: 18pt;
+}
+
+.menu {
+  align-items: center;
+  justify-content: center;
+  color: white;
+  flex: 1 0 auto;
+
+  ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: flex;
+    justify-content: flex-end;
+    align-items: baseline;
+
+    li {
+      padding: 1rem;
+      display: block;
+
+      a {
+        color: #877;
+        text-decoration: none;
+
+        &:hover {
+          text-decoration: underline;
+        }
+      }
+    }
+  }
+}
+

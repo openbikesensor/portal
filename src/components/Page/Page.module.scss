@@ -1,0 +1,6 @@
+@import "../../styles.scss";
+
+.page {
+  @include container;
+  margin-top: 32px;
+}
