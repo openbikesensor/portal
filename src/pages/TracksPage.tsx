@@ -4,13 +4,13 @@ import {Item, Tab, Loader, Pagination, Icon} from 'semantic-ui-react'
 import {useObservable} from 'rxjs-hooks'
 import {Link, useHistory, useRouteMatch} from 'react-router-dom'
 import {of, from, concat} from 'rxjs'
-import {map, switchMap, distinctUntilChanged, debounceTime} from 'rxjs/operators'
+import {map, switchMap, distinctUntilChanged} from 'rxjs/operators'
 import _ from 'lodash'
 
 import type {Track} from '../types'
 import {Page} from '../components'
 import api from '../api'
-import {useQueryParam, stringifyParams} from '../query'
+import {useQueryParam} from '../query'
 
 function TracksPageTabs() {
   const history = useHistory()
@@ -49,11 +49,11 @@ function TrackList({privateFeed}: {privateFeed: boolean}) {
       inputs$.pipe(
         map(([page, privateFeed]) => {
           const url = '/tracks' + (privateFeed ? '/feed' : '')
-          const params = {limit: pageSize, offset: pageSize * (page - 1)}
-          return {url, params}
+          const query = {limit: pageSize, offset: pageSize * (page - 1)}
+          return {url, query}
         }),
         distinctUntilChanged(_.isEqual),
-        switchMap((request) => concat(of(null), from(api.fetch(request.url + '?' + stringifyParams(request.params)))))
+        switchMap((request) => concat(of(null), from(api.get(request.url, {query: request.query})))),
       ),
     null,
     [page, privateFeed]
