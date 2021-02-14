@@ -1,5 +1,5 @@
 import {useMemo} from 'react'
-import {useHistory} from 'react-router-dom'
+import {useHistory, useLocation} from 'react-router-dom'
 
 type QueryValue = string | number
 type QueryParams = {[key: string]: QueryValue}
@@ -52,6 +52,7 @@ export function useQueryParam<T extends QueryValue>(
   convert: (t: T | null) => T | null = (x) => x
 ): [T, (newValue: T) => void] {
   const history = useHistory()
+  const _triggerReload = useLocation()
   const {[name]: value = defaultValue} = (parseQuery(history.location.search) as unknown) as {
     [name: string]: T
   }
