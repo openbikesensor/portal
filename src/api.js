@@ -23,7 +23,10 @@ class API {
 
   async post(url, {body: body_, ...options}) {
     const body = typeof body_ !== 'string' ? JSON.stringify(body_) : body_
-    return await this.fetch(url, {...options, body, method: 'post',
+    return await this.fetch(url, {
+      ...options,
+      body,
+      method: 'post',
       headers: {
         ...(options.headers || {}),
         'Content-Type': 'application/json',
@@ -37,7 +40,7 @@ class API {
   }
 
   async delete(url, options = {}) {
-    return await this.get(url,  {...options, method: 'delete'})
+    return await this.get(url, {...options, method: 'delete'})
   }
 }
 

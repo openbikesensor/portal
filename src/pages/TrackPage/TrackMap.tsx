@@ -1,9 +1,9 @@
 import React from 'react'
-import {Vector as VectorSource} from 'ol/source';
-import {Geometry, LineString, Point} from 'ol/geom';
-import Feature from 'ol/Feature';
-import {fromLonLat} from 'ol/proj';
-import {Fill, Stroke, Style, Text, Circle} from 'ol/style';
+import {Vector as VectorSource} from 'ol/source'
+import {Geometry, LineString, Point} from 'ol/geom'
+import Feature from 'ol/Feature'
+import {fromLonLat} from 'ol/proj'
+import {Fill, Stroke, Style, Text, Circle} from 'ol/style'
 
 import {Map} from 'components'
 import type {TrackData, TrackPoint} from 'types'
@@ -11,8 +11,8 @@ import type {TrackData, TrackPoint} from 'types'
 const isValidTrackPoint = (point: TrackPoint): boolean =>
   point.latitude != null && point.longitude != null && (point.latitude !== 0 || point.longitude !== 0)
 
-const WARN_DISTANCE= 200
-const MIN_DISTANCE= 150
+const WARN_DISTANCE = 200
+const MIN_DISTANCE = 150
 
 const evaluateDistanceColor = function (distance) {
   if (distance < MIN_DISTANCE) {
@@ -23,7 +23,6 @@ const evaluateDistanceColor = function (distance) {
     return 'green'
   }
 }
-
 
 const evaluateDistanceForFillColor = function (distance) {
   const redFill = new Fill({color: 'rgba(255, 0, 0, 0.2)'})
@@ -82,7 +81,6 @@ function pointStyleFunction(feature, resolution) {
   })
 }
 
-
 function PointLayer({features, title, visible}) {
   return <Map.VectorLayer {...{title, visible}} style={pointStyleFunction} source={new VectorSource({features})} />
 }
@@ -137,7 +135,6 @@ export default function TrackMap({trackData, ...props}: {trackData: TrackData}) 
     return {trackVectorSource, trackPointsD1, trackPointsD2, trackPointsUntaggedD1, trackPointsUntaggedD2, viewExtent}
   }, [trackData?.points])
 
-
   const trackLayerStyle = React.useMemo(
     () =>
       new Style({
@@ -172,8 +169,7 @@ export default function TrackMap({trackData, ...props}: {trackData: TrackData}) 
 
       <Map.View maxZoom={22} zoom={15} center={fromLonLat([9.1797, 48.7784])} />
       <Map.FitView extent={viewExtent} />
-      <Map.LayerSwitcher groupSelectStyle='children' startActive activationMode='click' reverse={false} />
+      <Map.LayerSwitcher groupSelectStyle="children" startActive activationMode="click" reverse={false} />
     </Map>
   )
 }
-

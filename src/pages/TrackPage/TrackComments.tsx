@@ -40,13 +40,19 @@ export default function TrackComments({comments, onSubmit, onDelete, login, hide
                   <FormattedDate date={comment.createdAt} relative />
                 </div>
               </Comment.Metadata>
-              <Comment.Text><Markdown>{comment.body}</Markdown></Comment.Text>
+              <Comment.Text>
+                <Markdown>{comment.body}</Markdown>
+              </Comment.Text>
               {login?.username === comment.author.username && (
                 <Comment.Actions>
-                <Comment.Action onClick={(e) => {
-                  onDelete(comment.id)
-                  e.preventDefault()
-                }}>Delete</Comment.Action>
+                  <Comment.Action
+                    onClick={(e) => {
+                      onDelete(comment.id)
+                      e.preventDefault()
+                    }}
+                  >
+                    Delete
+                  </Comment.Action>
                 </Comment.Actions>
               )}
             </Comment.Content>

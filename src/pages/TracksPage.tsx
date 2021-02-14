@@ -53,7 +53,7 @@ function TrackList({privateFeed}: {privateFeed: boolean}) {
           return {url, query}
         }),
         distinctUntilChanged(_.isEqual),
-        switchMap((request) => concat(of(null), from(api.get(request.url, {query: request.query})))),
+        switchMap((request) => concat(of(null), from(api.get(request.url, {query: request.query}))))
       ),
     null,
     [page, privateFeed]

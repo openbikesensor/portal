@@ -11,10 +11,10 @@ import api from 'api'
 import {Page} from 'components'
 import type {Track, TrackData, TrackComment} from 'types'
 
-import TrackActions  from './TrackActions'
-import TrackComments  from './TrackComments'
-import TrackDetails  from './TrackDetails'
-import TrackMap  from './TrackMap'
+import TrackActions from './TrackActions'
+import TrackComments from './TrackComments'
+import TrackDetails from './TrackDetails'
+import TrackMap from './TrackMap'
 
 function useTriggerSubject() {
   const subject$ = React.useMemo(() => new Subject(), [])
@@ -50,7 +50,7 @@ const TrackPage = connect((state) => ({login: state.login}))(function TrackPage(
       const comments$ = concat(of(null), reloadComments$).pipe(
         switchMap(() => slug$),
         map((slug) => `/tracks/${slug}/comments`),
-        switchMap(url => api.get(url)),
+        switchMap((url) => api.get(url)),
         pluck('comments'),
         startWith(null) // show track infos before comments are loaded
       )
@@ -65,7 +65,7 @@ const TrackPage = connect((state) => ({login: state.login}))(function TrackPage(
 
   const onSubmitComment = React.useCallback(async ({body}) => {
     await api.post(`/tracks/${slug}/comments`, {
-      body: {comment: {body}}
+      body: {comment: {body}},
     })
     reloadComments()
   }, [])
@@ -107,12 +107,20 @@ const TrackPage = connect((state) => ({login: state.login}))(function TrackPage(
         </Grid.Row>
       </Grid>
 
-    {track?.description && <Segment basic>
-                  <Header as="h2" dividing>Description</Header>
-      <Markdown>{track.description}</Markdown>
-      </Segment>}
+      {track?.description && (
+        <Segment basic>
+          <Header as="h2" dividing>
+            Description
+          </Header>
+          <Markdown>{track.description}</Markdown>
+        </Segment>
+      )}
 
-      <TrackComments {...{hideLoader: loading, comments, login}} onSubmit={onSubmitComment} onDelete={onDeleteComment} />
+      <TrackComments
+        {...{hideLoader: loading, comments, login}}
+        onSubmit={onSubmitComment}
+        onDelete={onDeleteComment}
+      />
 
       {/* <pre>{JSON.stringify(data, null, 2)}</pre> */}
     </Page>
