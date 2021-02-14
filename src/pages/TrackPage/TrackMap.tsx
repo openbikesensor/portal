@@ -85,7 +85,7 @@ function PointLayer({features, title, visible}) {
   return <Map.VectorLayer {...{title, visible}} style={pointStyleFunction} source={new VectorSource({features})} />
 }
 
-export default function TrackMap({trackData, ...props}: {trackData: TrackData}) {
+export default function TrackMap({trackData, show, ...props}: {trackData: TrackData}) {
   const {
     trackVectorSource,
     trackPointsD1,
@@ -157,19 +157,18 @@ export default function TrackMap({trackData, ...props}: {trackData: TrackData}) 
         style={trackLayerStyle}
       />
 
-      <Map.GroupLayer title="Tagged Points">
-        <PointLayer features={trackPointsD1} title="Left" visible={true} />
-        <PointLayer features={trackPointsD2} title="Right" visible={false} />
+      <Map.GroupLayer title="Tagged Points" visible>
+        <PointLayer features={trackPointsD1} title="Left" visible={show.left} />
+        <PointLayer features={trackPointsD2} title="Right" visible={show.right} />
       </Map.GroupLayer>
 
-      <Map.GroupLayer title="Untagged Points" fold="close" visible={false}>
-        <PointLayer features={trackPointsUntaggedD1} title="Left Untagged" visible={false} />
-        <PointLayer features={trackPointsUntaggedD2} title="Right Untagged" visible={false} />
+      <Map.GroupLayer title="Untagged Points" fold="close" visible>
+        <PointLayer features={trackPointsUntaggedD1} title="Left Untagged" visible={show.leftUnconfirmed} />
+        <PointLayer features={trackPointsUntaggedD2} title="Right Untagged" visible={show.rightUnconfirmed} />
       </Map.GroupLayer>
 
       <Map.View maxZoom={22} zoom={15} center={fromLonLat([9.1797, 48.7784])} />
       <Map.FitView extent={viewExtent} />
-      <Map.LayerSwitcher groupSelectStyle="children" startActive activationMode="click" reverse={false} />
     </Map>
   )
 }

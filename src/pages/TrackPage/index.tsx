@@ -1,6 +1,6 @@
 import React from 'react'
 import {connect} from 'react-redux'
-import {Segment, Dimmer, Grid, Loader, Header} from 'semantic-ui-react'
+import {Table, Checkbox, Segment, Dimmer, Grid, Loader, Header} from 'semantic-ui-react'
 import {useParams} from 'react-router-dom'
 import {concat, combineLatest, of, from, Subject} from 'rxjs'
 import {pluck, distinctUntilChanged, map, switchMap, startWith, sample} from 'rxjs/operators'
@@ -81,6 +81,11 @@ const TrackPage = connect((state) => ({login: state.login}))(function TrackPage(
 
   const loading = track == null || trackData == null
 
+  const [left, setLeft] = React.useState(true)
+  const [right, setRight] = React.useState(false)
+  const [leftUnconfirmed, setLeftUnconfirmed] = React.useState(false)
+  const [rightUnconfirmed, setRightUnconfirmed] = React.useState(false)
+
   return (
     <Page>
       <Grid stackable>
@@ -89,7 +94,10 @@ const TrackPage = connect((state) => ({login: state.login}))(function TrackPage(
             <div style={{position: 'relative'}}>
               <Loader active={loading} />
               <Dimmer.Dimmable blurring dimmed={loading}>
-                <TrackMap {...{track, trackData}} style={{height: '60vh', minHeight: 400}} />
+                <TrackMap
+                  {...{track, trackData, show: {left, right, leftUnconfirmed, rightUnconfirmed}}}
+                  style={{height: '60vh', minHeight: 400}}
+                />
               </Dimmer.Dimmable>
             </div>
           </Grid.Column>
@@ -103,6 +111,39 @@ const TrackPage = connect((state) => ({login: state.login}))(function TrackPage(
                 </>
               )}
             </Segment>
+
+            <Header as="h4">Show in Map</Header>
+
+            <Table collapsing compact>
+              <Table.Header>
+                <Table.Row>
+                  <Table.HeaderCell>Left</Table.HeaderCell>
+                  <Table.HeaderCell textAlign="center">Points</Table.HeaderCell>
+                  <Table.HeaderCell textAlign="right">Right</Table.HeaderCell>
+                </Table.Row>
+              </Table.Header>
+
+              <Table.Body>
+                <Table.Row>
+                  <Table.Cell>
+                    <Checkbox checked={left} onChange={(e, d) => setLeft(d.checked)} />{' '}
+                  </Table.Cell>
+                  <Table.Cell textAlign="center">Confirmed</Table.Cell>
+                  <Table.Cell textAlign="right">
+                    <Checkbox checked={right} onChange={(e, d) => setRight(d.checked)} />{' '}
+                  </Table.Cell>
+                </Table.Row>
+                <Table.Row>
+                  <Table.Cell>
+                    <Checkbox checked={leftUnconfirmed} onChange={(e, d) => setLeftUnconfirmed(d.checked)} />{' '}
+                  </Table.Cell>
+                  <Table.Cell textAlign="center">Other</Table.Cell>
+                  <Table.Cell textAlign="right">
+                    <Checkbox checked={rightUnconfirmed} onChange={(e, d) => setRightUnconfirmed(d.checked)} />{' '}
+                  </Table.Cell>
+                </Table.Row>
+              </Table.Body>
+            </Table>
           </Grid.Column>
         </Grid.Row>
       </Grid>

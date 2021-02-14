@@ -9,11 +9,8 @@ import OSM from 'ol/source/OSM'
 import proj4 from 'proj4'
 import {register} from 'ol/proj/proj4'
 
-import OlLayerSwitcher from 'ol-layerswitcher'
-
 // Import styles for open layers + addons
 import 'ol/ol.css'
-import 'ol-layerswitcher/dist/ol-layerswitcher.css'
 
 // Prepare projection
 proj4.defs(
@@ -126,22 +123,8 @@ function View({...options}) {
   return null
 }
 
-function LayerSwitcher({...options}) {
-  const map = React.useContext(MapContext)
-
-  const control = React.useMemo(() => new OlLayerSwitcher(options), [])
-
-  React.useEffect(() => {
-    map?.addControl(control)
-    return () => map?.removeControl(control)
-  }, [control, map])
-
-  return null
-}
-
 Map.FitView = FitView
 Map.GroupLayer = GroupLayer
-Map.LayerSwitcher = LayerSwitcher
 Map.TileLayer = TileLayer
 Map.VectorLayer = VectorLayer
 Map.View = View
