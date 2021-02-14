@@ -42,8 +42,8 @@ function TrackList({privateFeed}: {privateFeed: boolean}) {
   const pageSize = 10
 
   const data: {
-    tracks: Track[],
-    tracksCount: number,
+    tracks: Track[]
+    tracksCount: number
   } | null = useObservable(
     (_$, inputs$) =>
       inputs$.pipe(
@@ -66,12 +66,18 @@ function TrackList({privateFeed}: {privateFeed: boolean}) {
   return (
     <div>
       <Loader content="Loading" active={loading} />
-    {!loading && totalPages > 1 && <Pagination activePage={page} onPageChange={(e, data) => setPage(data.activePage as number)} totalPages={totalPages} />}
+      {!loading && totalPages > 1 && (
+        <Pagination
+          activePage={page}
+          onPageChange={(e, data) => setPage(data.activePage as number)}
+          totalPages={totalPages}
+        />
+      )}
 
       {tracks && (
         <Item.Group divided>
           {tracks.map((track: Track) => (
-            <TrackListItem  key={track.slug} {...{track, privateFeed}} />
+            <TrackListItem key={track.slug} {...{track, privateFeed}} />
           ))}
         </Item.Group>
       )}
@@ -80,27 +86,33 @@ function TrackList({privateFeed}: {privateFeed: boolean}) {
 }
 
 export function TrackListItem({track, privateFeed = false}) {
-            return <Item key={track.slug}>
-              <Item.Image size="tiny" src={track.author.image} />
-              <Item.Content>
-    <Item.Header as={Link} to={`/tracks/${track.slug}`}>{track.title}</Item.Header>
-             <Item.Meta>
-                  Created by {track.author.username} on {track.createdAt}
-                </Item.Meta>
-                <Item.Description>{track.description}</Item.Description>
-                {privateFeed && <Item.Extra>
-                  {track.visible ? (
-                    <>
-                      <Icon color="blue" name="eye" fitted /> Public
-                    </>
-                  ) : (
-                    <>
-                      <Icon name="eye slash" fitted /> Private
-                    </>
-                  )}
-                </Item.Extra>}
-              </Item.Content>
-            </Item>
+  return (
+    <Item key={track.slug}>
+      <Item.Image size="tiny" src={track.author.image} />
+      <Item.Content>
+        <Item.Header as={Link} to={`/tracks/${track.slug}`}>
+          {track.title}
+        </Item.Header>
+        <Item.Meta>
+          Created by {track.author.username} on {track.createdAt}
+        </Item.Meta>
+        <Item.Description>{track.description}</Item.Description>
+        {privateFeed && (
+          <Item.Extra>
+            {track.visible ? (
+              <>
+                <Icon color="blue" name="eye" fitted /> Public
+              </>
+            ) : (
+              <>
+                <Icon name="eye slash" fitted /> Private
+              </>
+            )}
+          </Item.Extra>
+        )}
+      </Item.Content>
+    </Item>
+  )
 }
 
 const TracksPage = connect((state) => ({login: (state as any).login}))(function TracksPage({login, privateFeed}) {

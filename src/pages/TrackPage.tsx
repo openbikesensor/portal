@@ -1,7 +1,7 @@
 import React from 'react'
 import {connect} from 'react-redux'
 import {Link} from 'react-router-dom'
-import {Segment, Dimmer ,Form, Button, List, Grid, Loader, Header, Comment} from 'semantic-ui-react'
+import {Segment, Dimmer, Form, Button, List, Grid, Loader, Header, Comment} from 'semantic-ui-react'
 import {useParams} from 'react-router-dom'
 import {concat, combineLatest, of, from} from 'rxjs'
 import {pluck, distinctUntilChanged, map, switchMap, startWith} from 'rxjs/operators'
@@ -19,12 +19,13 @@ function formatDuration(seconds) {
   return Duration.fromMillis((seconds ?? 0) * 1000).toFormat("h'h' mm'm'")
 }
 
-function FormattedDate({date, relative=false}) {
+function FormattedDate({date, relative = false}) {
   if (date == null) {
     return null
   }
 
-  const dateTime = typeof date === 'string' ? DateTime.fromISO(date) : date instanceof Date ? DateTime.fromJSDate(date) : date
+  const dateTime =
+    typeof date === 'string' ? DateTime.fromISO(date) : date instanceof Date ? DateTime.fromJSDate(date) : date
 
   let str
 
@@ -75,7 +76,7 @@ function TrackDetails({track, isAuthor, trackData}) {
         </List.Item>
       )}
 
-      <Loader active={track != null && trackData == null} inline='centered' style={{marginTop: 16, marginBottom: 16}} />
+      <Loader active={track != null && trackData == null} inline="centered" style={{marginTop: 16, marginBottom: 16}} />
 
       {trackData?.recordedAt != null && (
         <List.Item>
@@ -114,33 +115,36 @@ function TrackActions({slug}) {
 function TrackComments({comments, login, hideLoader}) {
   return (
     <Segment basic>
-    <Comment.Group>
-      <Header as="h2" dividing>
-        Comments
-      </Header>
+      <Comment.Group>
+        <Header as="h2" dividing>
+          Comments
+        </Header>
 
-      <Loader active={!hideLoader && comments == null} inline />
+        <Loader active={!hideLoader && comments == null} inline />
 
-      {comments?.map((comment: TrackComment) => (
-        <Comment key={comment.id}>
-          <Comment.Avatar src={comment.author.image} />
-          <Comment.Content>
-            <Comment.Author as="a">{comment.author.username}</Comment.Author>
-            <Comment.Metadata>
-              <div><FormattedDate date={comment.createdAt} relative /></div>
-            </Comment.Metadata>
-            <Comment.Text>{comment.body}</Comment.Text>
-          </Comment.Content>
-        </Comment>
-      ))}
+        {comments?.map((comment: TrackComment) => (
+          <Comment key={comment.id}>
+            <Comment.Avatar src={comment.author.image} />
+            <Comment.Content>
+              <Comment.Author as="a">{comment.author.username}</Comment.Author>
+              <Comment.Metadata>
+                <div>
+                  <FormattedDate date={comment.createdAt} relative />
+                </div>
+              </Comment.Metadata>
+              <Comment.Text>{comment.body}</Comment.Text>
+            </Comment.Content>
+          </Comment>
+        ))}
 
-
-      {login && comments != null && <Form reply>
-        <Form.TextArea rows={4} />
-        <Button content='Post comment' labelPosition='left' icon='edit' primary />
-      </Form>}
-    </Comment.Group>
-      </Segment>
+        {login && comments != null && (
+          <Form reply>
+            <Form.TextArea rows={4} />
+            <Button content="Post comment" labelPosition="left" icon="edit" primary />
+          </Form>
+        )}
+      </Comment.Group>
+    </Segment>
   )
 }
 
@@ -194,24 +198,24 @@ const TrackPage = connect((state) => ({login: state.login}))(function TrackPage(
         <Grid.Row>
           <Grid.Column width={12}>
             <div style={{position: 'relative'}}>
-            <Loader active={loading} />
-            <Dimmer.Dimmable blurring dimmed={loading}>
-          <Map style={{height: '60vh', minHeight: 400}}>
-            <Map.TileLayer />
-              </Map>
-            </Dimmer.Dimmable>
-              </div>
+              <Loader active={loading} />
+              <Dimmer.Dimmable blurring dimmed={loading}>
+                <Map style={{height: '60vh', minHeight: 400}}>
+                  <Map.TileLayer />
+                </Map>
+              </Dimmer.Dimmable>
+            </div>
           </Grid.Column>
           <Grid.Column width={4}>
             <Segment>
-            {track && (
-              <>
-                <Header as='h1'>{track.title}</Header>
-                <TrackDetails {...{track, trackData, isAuthor}} />
-                {isAuthor && <TrackActions {...{slug}}   />}
-              </>
-            )}
-                </Segment>
+              {track && (
+                <>
+                  <Header as="h1">{track.title}</Header>
+                  <TrackDetails {...{track, trackData, isAuthor}} />
+                  {isAuthor && <TrackActions {...{slug}} />}
+                </>
+              )}
+            </Segment>
           </Grid.Column>
         </Grid.Row>
       </Grid>

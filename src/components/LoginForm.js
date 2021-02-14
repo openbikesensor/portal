@@ -40,18 +40,18 @@ const LoginForm = connect(
     dispatchLogin,
   ])
 
-  return loggedIn ? null :(
-      <Form className={className} onSubmit={onSubmit}>
-        <Form.Field>
-          <label>e-Mail</label>
-          <input value={email} onChange={onChangeEmail} />
-        </Form.Field>
-        <Form.Field>
-          <label>Password</label>
-          <input type="password" value={password} onChange={onChangePassword} />
-        </Form.Field>
-        <Button type="submit">Submit</Button>
-      </Form>
+  return loggedIn ? null : (
+    <Form className={className} onSubmit={onSubmit}>
+      <Form.Field>
+        <label>e-Mail</label>
+        <input value={email} onChange={onChangeEmail} />
+      </Form.Field>
+      <Form.Field>
+        <label>Password</label>
+        <input type="password" value={password} onChange={onChangePassword} />
+      </Form.Field>
+      <Button type="submit">Submit</Button>
+    </Form>
   )
 })
 

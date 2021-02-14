@@ -31,7 +31,9 @@ const App = connect((state) => ({login: state.login}))(function App({login}) {
                 <Link to="/feed">Feed</Link>
               </li>
               <li>
-                <a href="https://openbikesensor.org/" target="_blank">About</a>
+                <a href="https://openbikesensor.org/" target="_blank">
+                  About
+                </a>
               </li>
               {login ? (
                 <>
@@ -65,7 +67,7 @@ const App = connect((state) => ({login: state.login}))(function App({login}) {
             <TracksPage />
           </Route>
           <Route path="/feed/my" exact>
-            <TracksPage privateFeed   />
+            <TracksPage privateFeed />
           </Route>
           <Route path={`/tracks/:slug`} exact>
             <TrackPage />
