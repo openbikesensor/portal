@@ -7,10 +7,10 @@ import {of, from, concat} from 'rxjs'
 import {map, switchMap, distinctUntilChanged} from 'rxjs/operators'
 import _ from 'lodash'
 
-import type {Track} from '../types'
-import {Page} from '../components'
-import api from '../api'
-import {useQueryParam} from '../query'
+import type {Track} from 'types'
+import {Page, StripMarkdown} from 'components'
+import api from 'api'
+import {useQueryParam} from 'query'
 
 function TracksPageTabs() {
   const history = useHistory()
@@ -85,6 +85,14 @@ function TrackList({privateFeed}: {privateFeed: boolean}) {
   )
 }
 
+function maxLength(t, max) {
+  if (t.length > max) {
+    return t.substring(0, max) + ' ...'
+  } else {
+    return t
+  }
+}
+
 export function TrackListItem({track, privateFeed = false}) {
   return (
     <Item key={track.slug}>
@@ -96,7 +104,9 @@ export function TrackListItem({track, privateFeed = false}) {
         <Item.Meta>
           Created by {track.author.username} on {track.createdAt}
         </Item.Meta>
-        <Item.Description>{track.description}</Item.Description>
+        <Item.Description>
+          <StripMarkdown>{maxLength(track.description, 200)}</StripMarkdown>
+        </Item.Description>
         {privateFeed && (
           <Item.Extra>
             {track.visible ? (
