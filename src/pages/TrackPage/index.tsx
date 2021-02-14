@@ -5,6 +5,7 @@ import {useParams} from 'react-router-dom'
 import {concat, combineLatest, of, from, Subject} from 'rxjs'
 import {pluck, distinctUntilChanged, map, switchMap, startWith, sample} from 'rxjs/operators'
 import {useObservable} from 'rxjs-hooks'
+import Markdown from 'react-markdown'
 
 import api from 'api'
 import {Page} from 'components'
@@ -105,6 +106,11 @@ const TrackPage = connect((state) => ({login: state.login}))(function TrackPage(
           </Grid.Column>
         </Grid.Row>
       </Grid>
+
+    {track?.description && <Segment basic>
+                  <Header as="h2" dividing>Description</Header>
+      <Markdown>{track.description}</Markdown>
+      </Segment>}
 
       <TrackComments {...{hideLoader: loading, comments, login}} onSubmit={onSubmitComment} onDelete={onDeleteComment} />
 

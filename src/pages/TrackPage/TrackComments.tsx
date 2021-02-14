@@ -1,5 +1,6 @@
 import React from 'react'
 import {Segment, Form, Button, Loader, Header, Comment} from 'semantic-ui-react'
+import Markdown from 'react-markdown'
 
 import {FormattedDate} from 'components'
 
@@ -39,7 +40,7 @@ export default function TrackComments({comments, onSubmit, onDelete, login, hide
                   <FormattedDate date={comment.createdAt} relative />
                 </div>
               </Comment.Metadata>
-              <Comment.Text>{comment.body}</Comment.Text>
+              <Comment.Text><Markdown>{comment.body}</Markdown></Comment.Text>
               {login?.username === comment.author.username && (
                 <Comment.Actions>
                 <Comment.Action onClick={(e) => {
