@@ -16,8 +16,9 @@ The backend API for the [OpenBikeSensor](https://openbikesensor.org/) Web App.
 
 We've moved the whole development setup into Docker to make it easy for
 everyone to get involved. After sucessfully [installing Docker
-Engine](https://docs.docker.com/engine/install/) onto your machine, and cloning
-the repository, all you need to do is:
+Engine](https://docs.docker.com/engine/install/) as well as [Docker
+Compose](https://docs.docker.com/compose/install/) onto your machine, and
+cloning the repository, all you need to do is:
 
 ```bash
 docker-compose up -d
