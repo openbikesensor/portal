@@ -1,0 +1,54 @@
+version: '3'
+
+services:
+  mongo:
+    image: mongo
+    tty: true
+    volumes:
+      - ./local/mongo:/data/db
+    ports:
+      - '27017:27017'
+    restart: on-failure
+
+  api:
+    image: obs-api
+    build:
+      context: ./api
+    volumes:
+      - ./api/src:/opt/obs/api/src
+      - ./local/api-data:/data
+      - ./api/.migrations.js:/opt/obs/api/.migrations.js
+      - ./api/migrations:/opt/obs/api/migrations/
+    environment:
+      - PORT=3000
+      - MONGODB_URL=mongodb://mongo/obsTest
+      - DATA_DIR=/data
+    links:
+      - mongo
+    ports:
+      - '3000:3000'
+    restart: on-failure
+    command:
+      - npm
+      - run
+      - dev
+
+  frontend:
+    image: obs-frontend
+    build:
+      context: ./frontend
+    volumes:
+      - ./frontend/src:/opt/obs/frontend/src
+      - ./frontend/public:/opt/obs/frontend/public
+      - ./frontend/tsconfig.json:/opt/obs/frontend/tsconfig.json
+      - ./frontend/package.json:/opt/obs/frontend/package.json
+    environment:
+      - PORT=3000
+    links:
+      - api
+    ports:
+      - '3001:3000'
+    restart: on-failure
+    command:
+      - npm
+      - start

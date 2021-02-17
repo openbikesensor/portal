@@ -30,7 +30,7 @@
     "web-vitals": "^0.2.4"
   },
   "scripts": {
-    "start": "PORT=3001 react-scripts start",
+    "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
@@ -53,8 +53,7 @@
       "last 1 safari version"
     ]
   },
-  "proxy": "http://localhost:3000",
-  "port": 3001,
+  "proxy": "http://api:3000",
   "devDependencies": {
     "@types/lodash": "^4.14.168",
     "@types/react-redux": "^7.1.16",
