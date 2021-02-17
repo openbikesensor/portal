@@ -2,7 +2,6 @@ import React from 'react'
 import {connect} from 'react-redux'
 import {Icon, Button} from 'semantic-ui-react'
 import {BrowserRouter as Router, Switch, Route, Link} from 'react-router-dom'
-import _ from 'lodash'
 
 import styles from './App.module.scss'
 import api from './api'
@@ -42,7 +41,7 @@ const App = connect((state) => ({login: state.login}))(function App({login}) {
                   <Link to="/feed">Feed</Link>
                 </li>
                 <li>
-                  <a href="https://openbikesensor.org/" target="_blank">
+                  <a href="https://openbikesensor.org/" target="_blank" rel="noreferrer">
                     About
                   </a>
                 </li>

@@ -3,7 +3,7 @@ import {connect} from 'react-redux'
 import {Table, Checkbox, Segment, Dimmer, Grid, Loader, Header} from 'semantic-ui-react'
 import {useParams} from 'react-router-dom'
 import {concat, combineLatest, of, from, Subject} from 'rxjs'
-import {pluck, distinctUntilChanged, map, switchMap, startWith, sample} from 'rxjs/operators'
+import {pluck, distinctUntilChanged, map, switchMap, startWith} from 'rxjs/operators'
 import {useObservable} from 'rxjs-hooks'
 import Markdown from 'react-markdown'
 
