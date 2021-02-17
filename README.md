@@ -6,11 +6,10 @@ separated into components:
 
 * **api**: The backend service, written in JavaScript for Node.js, using
   express.js, and a MongoDB for metadata storage.
-* **frontend**: a React single-page application that allows access to the data,
-  provides summaries and visualizations, as well as track management and
-  settings for the individual users.
-
-The backend API for the [OpenBikeSensor](https://openbikesensor.org/) Web App.
+* **frontend**: A React single-page application that allows access to the data,
+  provides summaries and visualizations, and lets users adjust settings and
+  manage and publish their tracks.
+  
 
 ## Development setup
 
