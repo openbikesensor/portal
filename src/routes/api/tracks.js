@@ -291,7 +291,7 @@ router.get(
         },
         options: {
           sort: {
-            createdAt: 'desc',
+            createdAt: 'asc',
           },
         },
       })
