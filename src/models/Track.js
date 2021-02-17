@@ -59,7 +59,7 @@ schema.pre('validate', async function (next) {
 
 class Track extends mongoose.Model {
   slugify() {
-    this.slug = slug(this.title) + '-' + ((Math.random() * Math.pow(36, 6)) | 0).toString(36);
+    this.slug = slug(this.title || 'track') + '-' + ((Math.random() * Math.pow(36, 6)) | 0).toString(36);
   }
 
   async generateOriginalFilePath() {
