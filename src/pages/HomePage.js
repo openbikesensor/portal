@@ -20,7 +20,7 @@ function formatDuration(seconds) {
 
 function WelcomeMap() {
   return (
-    <Map style={{height: '24rem', backgroundColor: '#FEFEF4'}}>
+    <Map style={{height: '24rem'}}>
       <Map.TileLayer />
     </Map>
   )

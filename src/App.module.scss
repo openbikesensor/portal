@@ -1,7 +1,7 @@
 @import 'styles.scss';
 
 .App {
-  text-align: center;
+  padding-top: 60px;
 }
 
 .header {
@@ -9,6 +9,17 @@
   height: 56px;
   display: flex;
   align-items: center;
+}
+
+.headline {
+  left: 0;
+  top: 0;
+  right: 0;
+  position: fixed;
+  // border-bottom: 1px solid #E0E0E4;
+  background: white;
+  z-index: 100;
+  box-shadow: 0 0 10px -6px black;
 }
 
 .pageTitle {

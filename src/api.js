@@ -22,15 +22,19 @@ class API {
   }
 
   async post(url, {body: body_, ...options}) {
-    const body = typeof body_ !== 'string' ? JSON.stringify(body_) : body_
+    let body = body_
+    let headers = {...(options.headers || {})}
+
+    if (!(typeof body === 'string' || body instanceof FormData)) {
+        body = JSON.stringify(body)
+        headers['Content-Type'] = 'application/json'
+    }
+
     return await this.fetch(url, {
       ...options,
       body,
       method: 'post',
-      headers: {
-        ...(options.headers || {}),
-        'Content-Type': 'application/json',
-      },
+      headers
     })
   }
 
