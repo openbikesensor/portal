@@ -2,7 +2,7 @@ const router = require('express').Router();
 const mongoose = require('mongoose');
 const User = mongoose.model('User');
 const wrapRoute = require('../../_helpers/wrapRoute');
-const auth = require('../auth');
+const auth = require('../../config/passport');
 
 // Preload user profile on routes with ':username'
 router.param('username', async function (req, res, next, username) {

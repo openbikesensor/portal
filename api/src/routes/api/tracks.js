@@ -5,7 +5,7 @@ const Track = mongoose.model('Track');
 const Comment = mongoose.model('Comment');
 const User = mongoose.model('User');
 const busboy = require('connect-busboy');
-const auth = require('../auth');
+const auth = require('../../config/passport');
 const { normalizeUserAgent, buildObsver1 } = require('../../logic/tracks');
 const wrapRoute = require('../../_helpers/wrapRoute');
 
@@ -172,7 +172,7 @@ async function getMultipartOrJsonBody(req, mapJsonBody = (x) => x) {
 
 router.post(
   '/',
-  auth.required,
+  auth.requiredWithUserId,
   busboy(), // parse multipart body
   wrapRoute(async (req, res) => {
     // Read the whole file into memory. This is not optimal, instead, we should

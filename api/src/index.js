@@ -4,16 +4,18 @@ const bodyParser = require('body-parser');
 const session = require('express-session');
 const cors = require('cors');
 const errorhandler = require('errorhandler');
-const auth = require('./routes/auth');
+const passport = require('passport');
+
+require('./config/passport')
 
 const isProduction = process.env.NODE_ENV === 'production';
 
 // Create global app object
 const app = express();
 
+
 app.use(cors());
-app.use(auth.getUserIdMiddleware);
-app.use(auth.loadUserMiddleware);
+app.use(passport.initialize());
 
 // Normal express config defaults
 app.use(require('morgan')('dev'));
