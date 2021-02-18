@@ -6,7 +6,16 @@ import {BrowserRouter as Router, Switch, Route, Link} from 'react-router-dom'
 import styles from './App.module.scss'
 import api from './api'
 
-import {LoginPage, LogoutPage, NotFoundPage, TracksPage, TrackPage, HomePage, UploadPage} from './pages'
+import {
+  LoginPage,
+  LogoutPage,
+  NotFoundPage,
+  TracksPage,
+  TrackPage,
+  HomePage,
+  UploadPage,
+  RegistrationPage,
+} from './pages'
 
 const App = connect((state) => ({login: state.login}))(function App({login}) {
   // update the API header on each render, the App is rerendered when the login changes
@@ -82,6 +91,9 @@ const App = connect((state) => ({login: state.login}))(function App({login}) {
           </Route>
           <Route path={`/tracks/:slug`} exact>
             <TrackPage />
+          </Route>
+          <Route path="/register" exact>
+            <RegistrationPage />
           </Route>
           <Route path="/login" exact>
             <LoginPage />

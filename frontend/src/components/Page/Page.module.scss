@@ -3,4 +3,11 @@
 .page {
   @include container;
   margin-top: 32px;
+  margin-bottom: 32px;
+}
+
+.small {
+  max-width: 400px;
+  margin-left: auto;
+  margin-right: auto;
 }

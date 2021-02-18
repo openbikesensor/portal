@@ -10,6 +10,7 @@
     "@types/node": "^14.14.25",
     "@types/react": "^17.0.1",
     "@types/react-dom": "^17.0.0",
+    "classnames": "^2.2.6",
     "luxon": "^1.25.0",
     "node-sass": "^4.14.1",
     "ol": "^6.5.0",
