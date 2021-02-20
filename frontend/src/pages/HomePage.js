@@ -1,14 +1,14 @@
 import _ from 'lodash'
 import React from 'react'
-import {connect} from 'react-redux'
-import {Message, Grid, Loader, Statistic, Segment, Header, Item} from 'semantic-ui-react'
+import {Tab, Message, Grid, Loader, Statistic, Segment, Header, Item} from 'semantic-ui-react'
 import {useObservable} from 'rxjs-hooks'
 import {of, pipe, from} from 'rxjs'
 import {map, switchMap, distinctUntilChanged} from 'rxjs/operators'
+import {fromLonLat} from 'ol/proj'
 import {Duration} from 'luxon'
 
 import api from '../api'
-import {Map, Page, LoginForm} from '../components'
+import {Map, Page} from '../components'
 
 import {TrackListItem} from './TracksPage'
 
@@ -20,8 +20,9 @@ function formatDuration(seconds) {
 
 function WelcomeMap() {
   return (
-    <Map style={{height: '24rem'}}>
+    <Map style={{height: '60rem', maxHeight: '80vh'}}>
       <Map.TileLayer />
+      <Map.View maxZoom={22} zoom={6} center={fromLonLat([10, 51])} />
     </Map>
   )
 }
@@ -41,7 +42,7 @@ function Stats() {
       <Segment>
         <Loader active={stats == null} />
 
-        <Statistic.Group widths={4} size="tiny">
+        <Statistic.Group widths={2} size="mini" >
           <Statistic>
             <Statistic.Value>{Number(stats?.publicTrackLength / 1000).toFixed(1)}</Statistic.Value>
             <Statistic.Label>km track length</Statistic.Label>
@@ -64,19 +65,6 @@ function Stats() {
   )
 }
 
-const LoginState = connect((state) => ({login: state.login}))(function LoginState({login}) {
-  return login ? (
-    <>
-      <Header as="h2">Logged in as {login.username} </Header>
-    </>
-  ) : (
-    <>
-      <Header as="h2">Login</Header>
-      <LoginForm />
-    </>
-  )
-})
-
 function MostRecentTrack() {
   const track: Track | null = useObservable(
     () =>
@@ -87,8 +75,6 @@ function MostRecentTrack() {
     null,
     []
   )
-
-  console.log(track)
 
   return (
     <>
@@ -110,19 +96,15 @@ export default function HomePage() {
     <Page>
       <Grid>
         <Grid.Row>
-          <Grid.Column width={16}>
+          <Grid.Column width={10}>
             <WelcomeMap />
           </Grid.Column>
-        </Grid.Row>
-        <Grid.Row>
-          <Grid.Column width={10}>
+          <Grid.Column width={6}>
             <Stats />
             <MostRecentTrack />
           </Grid.Column>
-          <Grid.Column width={6}>
-            <LoginState />
-          </Grid.Column>
         </Grid.Row>
+
       </Grid>
     </Page>
   )

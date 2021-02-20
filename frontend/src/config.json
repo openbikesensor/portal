@@ -1,0 +1,9 @@
+{
+  "auth": {
+    "authorizationEndpoint":  "http://localhost:3000/authorize",
+    "tokenEndpoint":  "http://localhost:3000/token",
+    "clientId": "123",
+    "scope": "*",
+    "redirectUri": "http://localhost:3001/redirect"
+  }
+}

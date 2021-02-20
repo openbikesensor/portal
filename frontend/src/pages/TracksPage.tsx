@@ -37,7 +37,6 @@ function TracksPageTabs() {
 
 function TrackList({privateFeed}: {privateFeed: boolean}) {
   const [page, setPage] = useQueryParam<number>('page', 1, Number)
-  console.log('page', page)
 
   const pageSize = 10
 
@@ -86,7 +85,7 @@ function TrackList({privateFeed}: {privateFeed: boolean}) {
 }
 
 function maxLength(t, max) {
-  if (t.length > max) {
+  if (t && t.length > max) {
     return t.substring(0, max) + ' ...'
   } else {
     return t
@@ -99,7 +98,7 @@ export function TrackListItem({track, privateFeed = false}) {
       <Item.Image size="tiny" src={track.author.image} />
       <Item.Content>
         <Item.Header as={Link} to={`/tracks/${track.slug}`}>
-          {track.title}
+          {track.title || 'Unnamed track'}
         </Item.Header>
         <Item.Meta>
           Created by {track.author.username} on {track.createdAt}

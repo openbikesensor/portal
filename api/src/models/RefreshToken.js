@@ -8,6 +8,7 @@ const schema = new mongoose.Schema(
   {
     token: { index: true, type: String, required: true, unique: true },
     user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+    client: { type: mongoose.Schema.Types.ObjectId, ref: 'Client', required: true },
     expiresAt: { type: Date, required: false },
     scope: { type: String, required: true, defaultValue: '*' },
   },
@@ -28,11 +29,12 @@ class RefreshToken extends mongoose.Model {
     return this.expiresAt == null || this.expiresAt < new Date()
   }
 
-  static generate(user, scope = '*', expiresInSeconds = 24 * 60 * 60) {
+  static generate(client, user, scope = '*', expiresInSeconds = 24 * 60 * 60) {
     const token = crypto.randomBytes(32).toString('hex');
 
     return new RefreshToken({
       token,
+      client,
       user,
       expiresAt: new Date(new Date().getTime() + 1000 * expiresInSeconds),
       scope,

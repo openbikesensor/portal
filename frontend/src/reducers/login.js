@@ -1,19 +1,17 @@
 const initialState = null
 
-export function login(user) {
-  return {type: 'LOGIN.LOGIN', payload: {user}}
-}
-
-export function logout() {
-  return {type: 'LOGIN.LOGOUT'}
+export function setLogin(user) {
+  return {type: 'LOGIN.SET', payload: {user}}
 }
 
 export default function loginReducer(state = initialState, action) {
   switch (action.type) {
-    case 'LOGIN.LOGIN':
+    case 'LOGIN.SET':
       return action.payload.user
-    case 'LOGIN.LOGOUT':
+
+    case 'AUTH.RESET': // cross reducer action :)
       return null
+
     default:
       return state
   }

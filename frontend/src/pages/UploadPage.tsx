@@ -58,13 +58,11 @@ function FileUploadStatus({
     const xhr = new XMLHttpRequest()
 
     const onProgress = (e) => {
-      console.log('progress', e)
       const progress = (e.loaded || 0) / (e.total || 1)
       setProgress(progress)
     }
 
     const onLoad = (e) => {
-      console.log('loaded', e)
       onComplete(id, xhr.response)
     }
 
@@ -72,17 +70,18 @@ function FileUploadStatus({
     xhr.onload = onLoad
     xhr.upload.onprogress = onProgress
     xhr.open('POST', '/api/tracks')
-    xhr.setRequestHeader('Authorization', api.authorization)
-    xhr.send(formData)
+
+    api.getValidAccessToken().then((accessToken) => {
+      xhr.setRequestHeader('Authorization', accessToken)
+      xhr.send(formData)
+    })
 
     return () => xhr.abort()
   }, [file])
 
   return (
     <span>
-    <Loader inline size="mini" active />
-    {' '}
-    {progress < 1 ? (progress * 100).toFixed(0) + ' %' : 'Processing...'}
+      <Loader inline size="mini" active /> {progress < 1 ? (progress * 100).toFixed(0) + ' %' : 'Processing...'}
     </span>
   )
 }
@@ -113,8 +112,6 @@ export default function UploadPage() {
   }, [labelRef.current])
 
   function onSelectFiles(fileList) {
-    console.log('UPLOAD', fileList)
-
     const newFiles = Array.from(fileList).map((file) => ({
       id: 'file-' + String(Math.floor(Math.random() * 1000000)),
       file,

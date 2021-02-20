@@ -8,6 +8,31 @@ const { User, AccessToken, RefreshToken } = require('../models');
 
 const secret = require('../config').secret;
 
+// used to serialize the user for the session
+passport.serializeUser(function (user, done) {
+  done(null, user._id);
+});
+
+// used to deserialize the user
+passport.deserializeUser(function (id, done) {
+  User.findById(id, function (err, user) {
+    done(err, user);
+  });
+});
+
+async function loginWithPassword(email, password, done) {
+  try {
+    const user = await User.findOne({ email: email });
+    if (!user || !user.validPassword(password)) {
+      return done(null, false, { errors: { 'email or password': 'is invalid' } });
+    }
+
+    return done(null, user);
+  } catch (err) {
+    done(err);
+  }
+}
+
 passport.use(
   'usernameAndPassword',
   new LocalStrategy(
@@ -16,18 +41,19 @@ passport.use(
       passwordField: 'user[password]',
       session: false,
     },
-    async function (email, password, done) {
-      try {
-        const user = await User.findOne({ email: email });
-        if (!user || !user.validPassword(password)) {
-          return done(null, false, { errors: { 'email or password': 'is invalid' } });
-        }
+    loginWithPassword,
+  ),
+);
 
-        return done(null, user);
-      } catch (err) {
-        done(err);
-      }
+passport.use(
+  'usernameAndPasswordSession',
+  new LocalStrategy(
+    {
+      usernameField: 'email',
+      passwordField: 'password',
+      session: true,
     },
+    loginWithPassword,
   ),
 );
 
@@ -57,7 +83,7 @@ passport.use(
     async function (token, done) {
       try {
         // we used to put the user ID into the token directly :(
-        const {id} = token
+        const { id } = token;
         const user = await User.findById(id);
         return done(null, user || false);
       } catch (err) {
@@ -74,7 +100,7 @@ passport.use(
       const accessToken = await AccessToken.findOne({ token }).populate('user');
       if (accessToken && accessToken.user) {
         // TODO: scope
-        return done(null, user, { scope: accessToken.scope });
+        return done(null, accessToken.user, { scope: accessToken.scope });
       } else {
         return done(null, false);
       }
@@ -134,12 +160,12 @@ passport.use(
 /**
  * This function creates a middleware that does a passport authentication.
  */
-function createMiddleware(strategies, required) {
+function createMiddleware(strategies, required = true, session = false) {
   return (req, res, next) => {
-    passport.authenticate(strategies, { session: false }, (err, user, info) => {
+    passport.authenticate(strategies, { session }, (err, user, info) => {
       // If this authentication produced an error, throw it. In a chain of
       // multiple strategies, errors are ignored, unless every strategy errors.
-      if (required && err) {
+      if (err) {
         return next(err);
       }
 
@@ -154,9 +180,9 @@ function createMiddleware(strategies, required) {
         return res.status(403).json({ errors: { 'E-Mail-Bestätigung': 'noch nicht erfolgt' } });
       }
 
-      req.user = user
-      req.authInfo = info
-      req.scope = (info && info.scope) || '*'
+      req.user = user;
+      req.authInfo = info;
+      req.scope = (info && info.scope) || '*';
 
       return next();
     })(req, res, next);
@@ -172,6 +198,8 @@ module.exports = {
   // required to check username and passwort for generating a new token, e.g.
   // on the /users/login route, and later on oauth routes
   usernameAndPassword: createMiddleware('usernameAndPassword', true),
+
+  usernameAndPasswordSession: createMiddleware('usernameAndPasswordSession', false, true),
 
   // will be used to verify a refresh token on the route that will exchange the
   // refresh token for a new access token (not in use yet)

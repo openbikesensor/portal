@@ -4,27 +4,19 @@ import {Icon, Button} from 'semantic-ui-react'
 import {BrowserRouter as Router, Switch, Route, Link} from 'react-router-dom'
 
 import styles from './App.module.scss'
-import api from './api'
 
 import {
-  LoginPage,
   LogoutPage,
   NotFoundPage,
   TracksPage,
   TrackPage,
   HomePage,
   UploadPage,
-  RegistrationPage,
-} from './pages'
+  LoginRedirectPage,
+} from 'pages'
+import {LoginButton} from 'components'
 
 const App = connect((state) => ({login: state.login}))(function App({login}) {
-  // update the API header on each render, the App is rerendered when the login changes
-  if (login) {
-    api.setAuthorizationHeader('Token ' + login.token)
-  } else {
-    api.setAuthorizationHeader(null)
-  }
-
   return (
     <Router>
       <div className={styles.App}>
@@ -68,9 +60,7 @@ const App = connect((state) => ({login: state.login}))(function App({login}) {
                 ) : (
                   <>
                     <li>
-                      <Button as={Link} to="/login">
-                        Login
-                      </Button>
+                      <LoginButton as='a' compact />
                     </li>
                   </>
                 )}
@@ -92,11 +82,8 @@ const App = connect((state) => ({login: state.login}))(function App({login}) {
           <Route path={`/tracks/:slug`} exact>
             <TrackPage />
           </Route>
-          <Route path="/register" exact>
-            <RegistrationPage />
-          </Route>
-          <Route path="/login" exact>
-            <LoginPage />
+          <Route path="/redirect" exact>
+            <LoginRedirectPage />
           </Route>
           <Route path="/logout" exact>
             <LogoutPage />

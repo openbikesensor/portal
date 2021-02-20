@@ -42,6 +42,7 @@ router.put(
   }),
 );
 
+// Remove this at some point
 router.post('/users/login',
   auth.usernameAndPassword,
   wrapRoute((req, res) => {

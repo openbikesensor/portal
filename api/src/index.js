@@ -6,16 +6,14 @@ const cors = require('cors');
 const errorhandler = require('errorhandler');
 const passport = require('passport');
 
-require('./config/passport')
+require('./config/passport');
 
 const isProduction = process.env.NODE_ENV === 'production';
 
 // Create global app object
 const app = express();
 
-
 app.use(cors());
-app.use(passport.initialize());
 
 // Normal express config defaults
 app.use(require('morgan')('dev'));
@@ -26,6 +24,8 @@ app.use(require('method-override')());
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use(session({ secret: 'obsobs', cookie: { maxAge: 60000 }, resave: false, saveUninitialized: false }));
+app.use(passport.initialize());
+app.use(passport.session());
 
 if (!isProduction) {
   app.use(errorhandler());

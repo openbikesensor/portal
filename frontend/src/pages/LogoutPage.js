@@ -2,16 +2,14 @@ import React from 'react'
 import {connect} from 'react-redux'
 import {Redirect} from 'react-router-dom'
 
-import {logout as logoutAction} from '../reducers/login'
+import {resetAuth} from 'reducers/auth'
 
 const LogoutPage = connect(
   (state) => ({loggedIn: Boolean(state.login)}),
-  (dispatch) => ({
-    dispatchLogout: () => dispatch(logoutAction()),
-  })
-)(function LogoutPage({loggedIn, dispatchLogout}) {
+  {resetAuth}
+)(function LogoutPage({loggedIn, resetAuth}) {
   React.useEffect(() => {
-    dispatchLogout()
+    resetAuth()
   })
 
   return loggedIn ? null : <Redirect to="/" />

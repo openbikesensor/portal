@@ -6,6 +6,7 @@ const schema = new mongoose.Schema(
   {
     token: { index: true, type: String, required: true, unique: true },
     user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+    client: { type: mongoose.Schema.Types.ObjectId, ref: 'Client', required: true },
     expiresAt: { type: Date, required: true },
     scope: { type: String, required: true, defaultValue: '*' },
   },
@@ -30,12 +31,13 @@ class AccessToken extends mongoose.Model {
     return 'Bearer ' + this.token;
   }
 
-  static generate(user, scope = '*', expiresInSeconds = 24 * 60 * 60) {
+  static generate(client, user, scope = '*', expiresInSeconds = 24 * 60 * 60) {
     const token = crypto.randomBytes(32).toString('hex');
 
     return new AccessToken({
       token,
       user,
+      client,
       expiresAt: new Date(new Date().getTime() + 1000 * expiresInSeconds),
       scope,
     });
