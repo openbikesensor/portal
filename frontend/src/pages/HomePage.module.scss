@@ -1,0 +1,9 @@
+.welcomeMap {
+  height: 60rem;
+  max-height: 80vh;
+
+  @media screen and (max-width: 767px) {
+    margin: -35px -32px 0 -32px;
+  max-height: 70vh;
+  }
+}

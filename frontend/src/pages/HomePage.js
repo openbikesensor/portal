@@ -1,6 +1,6 @@
 import _ from 'lodash'
 import React from 'react'
-import {Tab, Message, Grid, Loader, Statistic, Segment, Header, Item} from 'semantic-ui-react'
+import {Message, Grid, Loader, Statistic, Segment, Header, Item} from 'semantic-ui-react'
 import {useObservable} from 'rxjs-hooks'
 import {of, pipe, from} from 'rxjs'
 import {map, switchMap, distinctUntilChanged} from 'rxjs/operators'
@@ -11,6 +11,7 @@ import api from '../api'
 import {Map, Page} from '../components'
 
 import {TrackListItem} from './TracksPage'
+import styles from './HomePage.module.scss'
 
 function formatDuration(seconds) {
   return Duration.fromMillis((seconds ?? 0) * 1000)
@@ -20,7 +21,7 @@ function formatDuration(seconds) {
 
 function WelcomeMap() {
   return (
-    <Map style={{height: '60rem', maxHeight: '80vh'}}>
+    <Map className={styles.welcomeMap}>
       <Map.TileLayer />
       <Map.View maxZoom={22} zoom={6} center={fromLonLat([10, 51])} />
     </Map>
@@ -70,7 +71,7 @@ function MostRecentTrack() {
     () =>
       of(null).pipe(
         switchMap(() => from(api.fetch('/tracks?limit=1'))),
-        map(({tracks}) => tracks[0])
+        map((response) => response?.tracks?.[0])
       ),
     null,
     []
@@ -94,7 +95,7 @@ function MostRecentTrack() {
 export default function HomePage() {
   return (
     <Page>
-      <Grid>
+      <Grid stackable>
         <Grid.Row>
           <Grid.Column width={10}>
             <WelcomeMap />
