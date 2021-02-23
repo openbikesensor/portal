@@ -11,6 +11,51 @@ class API {
   }
 
   /**
+   * Fetches or directly returns from cache the metadata information from the
+   * authorization server, according to https://tools.ietf.org/html/rfc8414.
+   * Also validates compatibility with this metadata server, i.e. checking that
+   * it supports PKCE.
+   */
+  async getAuthorizationServerMetadata() {
+    const url = new URL(config.auth.server)
+    const pathSuffix = url.pathname.replace(/^\/+|\/+$/, '')
+    url.pathname = '/.well-known/oauth-authorization-server' + (pathSuffix ? '/' + pathSuffix : '')
+
+    const response = await window.fetch(url.toString())
+    const metadata = await response.json()
+
+    const {authorization_endpoint: authorizationEndpoint, token_endpoint: tokenEndpoint,
+      response_types_supported: responseTypesSupported,
+      code_challenge_methods_supported: codeChallengeMethodsSupported,
+    } = metadata
+    if (!authorizationEndpoint) {
+      throw new Error('No authorization endpoint');
+    }
+
+    if (!authorizationEndpoint.startsWith(config.auth.server)) {
+      throw new Error('Invalid authorization endpoint');
+    }
+
+    if (!tokenEndpoint) {
+      throw new Error('No token endpoint');
+    }
+
+    if (!tokenEndpoint.startsWith(config.auth.server)) {
+      throw new Error('Invalid token endpoint');
+    }
+
+    if (!Array.isArray(responseTypesSupported) || !responseTypesSupported.includes('code')) {
+      throw new Error('Authorization code flow not supported or no support advertised.');
+    }
+
+    if (!Array.isArray(codeChallengeMethodsSupported) || !codeChallengeMethodsSupported.includes('S256')) {
+      throw new Error('PKCE with S256 not supported or no support advertised.');
+    }
+
+    return {authorizationEndpoint, tokenEndpoint}
+  }
+
+  /**
    * Return an access token, if it is (still) valid. If not, and a refresh
    * token exists, use the refresh token to issue a new access token. If that
    * fails, or neither is available, return `null`. This should usually result
@@ -47,7 +92,8 @@ class API {
     }
 
     //  Try to use the refresh token
-    const url = new URL(config.auth.tokenEndpoint)
+    const {tokenEndpoint} = await this.getAuthorizationServerMetadata()
+    const url = new URL(tokenEndpoint)
     url.searchParams.append('refresh_token', refreshToken)
     url.searchParams.append('grant_type', 'refresh_token')
     url.searchParams.append('scope', config.auth.scope)
@@ -66,7 +112,8 @@ class API {
   }
 
   async exchangeAuthorizationCode(code) {
-    const url = new URL(config.auth.tokenEndpoint)
+    const {tokenEndpoint} = await this.getAuthorizationServerMetadata()
+    const url = new URL(tokenEndpoint)
     url.searchParams.append('code', code)
     url.searchParams.append('grant_type', 'authorization_code')
     url.searchParams.append('client_id', config.auth.clientId)
@@ -87,8 +134,10 @@ class API {
     return true
   }
 
-  getLoginUrl() {
-    const loginUrl = new URL(config.auth.authorizationEndpoint)
+  async makeLoginUrl() {
+    const {authorizationEndpoint} = await this.getAuthorizationServerMetadata()
+
+    const loginUrl = new URL(authorizationEndpoint)
     loginUrl.searchParams.append('client_id', config.auth.clientId)
     loginUrl.searchParams.append('scope', config.auth.scope)
     loginUrl.searchParams.append('redirect_uri', config.auth.redirectUri)

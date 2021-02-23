@@ -1,10 +1,18 @@
+import React from 'react'
 import {Button} from  'semantic-ui-react'
 
 import api from 'api'
 
 export default function LoginButton(props)  {
-  // TODO: Implement PKCE, generate login URL when clicked (with challenge),
-  // and then redirect there.
-  const href = api.getLoginUrl()
-  return <Button as='a' href={href} {...props}>Login</Button>
+  const [busy, setBusy] = React.useState(false)
+
+  const onClick = React.useCallback(async (e) => {
+    e.preventDefault()
+    setBusy(true)
+    const url = await api.makeLoginUrl()
+    window.location.href = url
+    setBusy(false)
+  }, [setBusy])
+
+  return <Button onClick={busy ? null : onClick} loading={busy} {...props}>Login</Button>
 }

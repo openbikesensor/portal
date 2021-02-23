@@ -284,4 +284,29 @@ router.get(
   }),
 );
 
+/**
+ * Metadata endpoint to inform clients about authorization server capabilities,
+ * according to https://tools.ietf.org/html/rfc8414.
+ */
+router.get(
+  '/.well-known/oauth-authorization-server',
+  wrapRoute(async (req, res) => {
+    const baseUrl = 'http://localhost:3000';
+
+    return res.json({
+      issuer: baseUrl,
+      authorization_endpoint: `${baseUrl}/authorize`,
+      token_endpoint: `${baseUrl}/token`,
+      token_endpoint_auth_methods_supported: ['none'], // only public clients
+      userinfo_endpoint: `${baseUrl}/api/user`,
+      // registration_endpoint: `${baseUrl}/register`, // TODO
+      // scopes_supported: ALL_SCOPE_NAMES, // TODO
+      response_types_supported: ['code'], // only auth code, no implicit flow or
+      service_documentation: 'https://github.com/openbikesensor/portal',
+      ui_locales_supported: ['en-US', 'en-GB', 'en-CA', 'fr-FR', 'fr-CA'],
+      code_challenge_methods_supported: ['S256'],
+    });
+  }),
+);
+
 module.exports = router;
