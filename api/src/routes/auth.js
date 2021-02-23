@@ -1,4 +1,3 @@
-const crypto = require('crypto');
 const router = require('express').Router();
 const passport = require('passport');
 const { URL } = require('url');
@@ -59,7 +58,7 @@ router.post(
       req.session.next = null;
       return;
     }
-    return res.type('html').end('You are logged in.');
+    return res.render('message', { type: 'success', title: 'You are logged in.' });
   }),
 );
 
@@ -67,14 +66,10 @@ router.get(
   '/login',
   wrapRoute(async (req, res) => {
     if (req.user) {
-      return res.type('html').end('Already logged in, nothing to do.');
+      return res.render('message', { type: 'success', title: 'You are already logged in.' });
     }
 
-    res
-      .type('html')
-      .end(
-        '<form method="post"><input name="email" value="test@example.com" /><input type="password" name="password" value="hunter2" /><button type="submit">Login</button></form>',
-      );
+    res.render('login');
   }),
 );
 
@@ -211,20 +206,7 @@ router.get(
         codeChallenge,
       };
 
-      res.type('html').end(`
-          <p>
-          You are about to confirm a login to client <code>${clientId}</code>
-          with redirectUri <code>${redirectUri}</code> and scope <code>${scope}</code>.
-          You have 2 minutes time for your decision.
-          </p>
-
-          <form method="post" action="/authorize/approve">
-            <input type="submit" value="Authorize" />
-          </form>
-          <form method="post" action="/authorize/decline">
-            <input type="submit" value="Decline" />
-          </form>
-      `);
+      res.render('authorize', { clientTitle: client.title, scope, redirectUri });
     } catch (err) {
       console.error(err);
       res.status(400).json({ error: 'invalid_request', error_description: 'unknown error' });
@@ -247,7 +229,11 @@ router.post(
     const { clientId, redirectUri, scope, expiresAt, codeChallenge } = req.session.authorizationTransaction;
 
     if (expiresAt < new Date().getTime()) {
-      return res.status(400).type('html').end(`Your authorization has expired. Please go back and retry the process.`);
+      return res.status(400).render('message', {
+        type: 'error',
+        title: 'Expired',
+        description: 'Your authorization has expired. Please go back and retry the process.',
+      });
     }
 
     const client = await Client.findOne({ clientId });

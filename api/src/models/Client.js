@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 
 const schema = new mongoose.Schema(
   {
+    title: { type: String, required: true },
     clientId: { type: String, required: true }, // this is external, so we do not use the ObjectID
     validRedirectUris: [{ type: String }],
 

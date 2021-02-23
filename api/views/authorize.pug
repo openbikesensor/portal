@@ -1,0 +1,17 @@
+extends layout.pug
+
+block title
+  | Authorize #{clientTitle}
+
+block content
+  p.
+    You are about to confirm a login to client #[b= clientTitle]. You have 2
+    minutes time for your decision.
+
+  .authorization
+    form(method="post", action="/authorize/decline")
+      button(type="submit", class="red") Decline
+
+    form(method="post", action="/authorize/approve")
+      button(type="submit", class="green") Approve
+

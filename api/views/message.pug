@@ -1,0 +1,8 @@
+extends layout.pug
+
+block title
+  = title
+
+block content
+  if description
+    div(class="message " + type)= description

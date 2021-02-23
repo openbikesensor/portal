@@ -4,6 +4,7 @@ WORKDIR /opt/obs/api
 ADD package.json package-lock.json /opt/obs/api/
 RUN npm ci
 
+ADD views /opt/obs/api/views/
 ADD src /opt/obs/api/src/
 
 EXPOSE 3000

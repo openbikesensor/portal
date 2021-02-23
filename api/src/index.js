@@ -15,6 +15,10 @@ const app = express();
 
 app.use(cors());
 
+// Express configuration
+app.set('views', './views')
+app.set('view engine', 'pug')
+
 // Normal express config defaults
 app.use(require('morgan')('dev'));
 app.use(bodyParser.json({ limit: '50mb' }));

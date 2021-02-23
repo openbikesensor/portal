@@ -1,0 +1,16 @@
+extends layout.pug
+
+block title
+  | Login
+
+block content
+  form(method="post")
+    fieldset
+      label(for="email") E-Mail Address
+      input(id="email", name="email")
+
+    fieldset
+      label(for="password") Password
+      input(name="password", type="password")
+
+    button(type="submit") Login
