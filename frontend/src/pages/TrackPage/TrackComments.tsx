@@ -4,6 +4,7 @@ import Markdown from 'react-markdown'
 
 import {FormattedDate} from 'components'
 
+
 function CommentForm({onSubmit}) {
   const [body, setBody] = React.useState('')
 

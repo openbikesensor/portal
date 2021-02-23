@@ -1,18 +1,19 @@
 import React from 'react'
 import {connect} from 'react-redux'
-import {Icon, Button} from 'semantic-ui-react'
+import {Image, Icon, Button} from 'semantic-ui-react'
 import {BrowserRouter as Router, Switch, Route, Link} from 'react-router-dom'
 
 import styles from './App.module.scss'
 
 import {
+  HomePage,
+  LoginRedirectPage,
   LogoutPage,
   NotFoundPage,
-  TracksPage,
+  SettingsPage,
   TrackPage,
-  HomePage,
+  TracksPage,
   UploadPage,
-  LoginRedirectPage,
 } from 'pages'
 import {LoginButton} from 'components'
 
@@ -39,7 +40,7 @@ const App = connect((state) => ({login: state.login}))(function App({login}) {
                   <Link to="/">Home</Link>
                 </li>
                 <li>
-                  <Link to="/feed">Feed</Link>
+                  <Link to="/feed">Tracks</Link>
                 </li>
                 <li>
                   <a href="https://openbikesensor.org/" target="_blank" rel="noreferrer">
@@ -49,7 +50,9 @@ const App = connect((state) => ({login: state.login}))(function App({login}) {
                 {login ? (
                   <>
                     <li>
-                      <Link to="/settings">Settings</Link>
+                      <Link to="/settings">
+                        <Image src={login.image} avatar />
+                      </Link>
                     </li>
                     <li>
                       <Button as={Link} to="/logout" compact>
@@ -60,7 +63,7 @@ const App = connect((state) => ({login: state.login}))(function App({login}) {
                 ) : (
                   <>
                     <li>
-                      <LoginButton as='a' compact />
+                      <LoginButton as="a" compact />
                     </li>
                   </>
                 )}
@@ -89,9 +92,14 @@ const App = connect((state) => ({login: state.login}))(function App({login}) {
             <LogoutPage />
           </Route>
           {login && (
-            <Route path="/upload" exact>
-              <UploadPage />
-            </Route>
+            <>
+              <Route path="/upload" exact>
+                <UploadPage />
+              </Route>
+              <Route path="/settings" exact>
+                <SettingsPage />
+              </Route>
+            </>
           )}
           <Route>
             <NotFoundPage />

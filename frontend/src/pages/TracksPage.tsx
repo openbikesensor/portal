@@ -16,8 +16,8 @@ function TracksPageTabs() {
   const history = useHistory()
   const panes = React.useMemo(
     () => [
-      {menuItem: 'Global Feed', url: '/feed'},
-      {menuItem: 'Your Feed', url: '/feed/my'},
+      {menuItem: 'Public tracks', url: '/feed'},
+      {menuItem: 'My tracks', url: '/feed/my'},
     ],
     []
   )

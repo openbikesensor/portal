@@ -5,6 +5,13 @@ import {setLogin} from 'reducers/login'
 import config from 'config.json'
 import {create as createPkce} from 'pkce'
 
+class RequestError extends Error {
+  constructor(message, errors) {
+    super(message)
+    this.errors = errors
+  }
+}
+
 class API {
   constructor(store) {
     this.store = store
@@ -182,10 +189,17 @@ class API {
       throw new Error('401 Unauthorized')
     }
 
+    let json
+      try {
+        json = await response.json()
+      } catch (err) {
+        json = null
+      }
+
     if (response.status === 200) {
-      return await response.json()
+      return json
     } else {
-      return null
+      throw new RequestError('Error code ' + response.status, json?.errors)
     }
   }
 
@@ -199,9 +213,9 @@ class API {
     }
 
     return await this.fetch(url, {
+      method: 'post',
       ...options,
       body,
-      method: 'post',
       headers,
     })
   }
@@ -213,6 +227,10 @@ class API {
 
   async delete(url, options = {}) {
     return await this.get(url, {...options, method: 'delete'})
+  }
+
+  async put(url, options = {}) {
+    return await this.post(url, {...options, method: 'put'})
   }
 
   getAuthFromTokenResponse(tokenResponse) {
