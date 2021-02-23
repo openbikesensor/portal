@@ -77,6 +77,43 @@ router.get(
   }),
 );
 
+const isIp = (ip) =>
+  typeof ip === 'string' &&
+  /^([0-9]{1,3}\.)[0-9]{1,3}$/.test(ip) &&
+  ip
+    .split('.')
+    .every(
+      (num, idx) =>
+        !num.startsWith('0') && Number(num) > (idx === 0 || idx === 3 ? 1 : 0) && Number(num) < (idx === 3 ? 254 : 255),
+    );
+
+const isLocalIp = (ip) => isIp(ip) && (ip.startsWith('10.') || ip.startsWith('172.16.') || ip.startsWith('192.168.'));
+
+const isValidRedirectUriFor = (redirectUri) => (redirectUriPattern) => {
+  // Here we have an exception to the security requirements demanded by
+  // https://tools.ietf.org/html/draft-ietf-oauth-security-topics-16#section-2.1,
+  // namely, that we do not always require fully specified redirect URIs. This
+  // is because we cannot know beforehand which IP the OBS will be running at.
+  // But since it is usually accessed via local IP, we can allow all local IP
+  // ranges. This special case must only be used in clients that have a very
+  // restricted maxScope as well, to prevent misuse should an attack through
+  // this be successful.
+  // This special case does however enforce TLS ("https://"), for it prevents
+  // usage in a non-TLS-secured web server. At least passive sniffing of the
+  // token is not possible then. A self-signed and manually verified
+  // certificate should be used for this (though usually we cannot enforce the
+  // actual verification).
+  if (redirectUriPattern === '__LOCAL__') {
+    const url = new URL(redirectUri);
+    if (url.protocol === 'https:' && isLocalIp(url.host) && !url.search && !url.hash) {
+      return true;
+    }
+    return false;
+  } else {
+    return redirectUriPattern === redirectUri;
+  }
+};
+
 router.get(
   '/authorize',
   passport.authenticate('session'),
@@ -112,7 +149,8 @@ router.get(
       }
 
       // We enforce that the redirectUri exactly matches one of the provided URIs
-      if (!client.validRedirectUris.includes(redirectUri)) {
+      const check = isValidRedirectUriFor(redirectUri);
+      if (!client.validRedirectUris.some(check)) {
         return returnError(res, 'invalid_request', 'invalid redirect_uri');
       }
 
