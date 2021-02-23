@@ -3,6 +3,7 @@ import globalStore from 'store'
 import {setAuth, invalidateAccessToken, resetAuth} from 'reducers/auth'
 import {setLogin} from 'reducers/login'
 import config from 'config.json'
+import {create as createPkce} from 'pkce'
 
 class API {
   constructor(store) {
@@ -24,32 +25,34 @@ class API {
     const response = await window.fetch(url.toString())
     const metadata = await response.json()
 
-    const {authorization_endpoint: authorizationEndpoint, token_endpoint: tokenEndpoint,
+    const {
+      authorization_endpoint: authorizationEndpoint,
+      token_endpoint: tokenEndpoint,
       response_types_supported: responseTypesSupported,
       code_challenge_methods_supported: codeChallengeMethodsSupported,
     } = metadata
     if (!authorizationEndpoint) {
-      throw new Error('No authorization endpoint');
+      throw new Error('No authorization endpoint')
     }
 
     if (!authorizationEndpoint.startsWith(config.auth.server)) {
-      throw new Error('Invalid authorization endpoint');
+      throw new Error('Invalid authorization endpoint')
     }
 
     if (!tokenEndpoint) {
-      throw new Error('No token endpoint');
+      throw new Error('No token endpoint')
     }
 
     if (!tokenEndpoint.startsWith(config.auth.server)) {
-      throw new Error('Invalid token endpoint');
+      throw new Error('Invalid token endpoint')
     }
 
     if (!Array.isArray(responseTypesSupported) || !responseTypesSupported.includes('code')) {
-      throw new Error('Authorization code flow not supported or no support advertised.');
+      throw new Error('Authorization code flow not supported or no support advertised.')
     }
 
     if (!Array.isArray(codeChallengeMethodsSupported) || !codeChallengeMethodsSupported.includes('S256')) {
-      throw new Error('PKCE with S256 not supported or no support advertised.');
+      throw new Error('PKCE with S256 not supported or no support advertised.')
     }
 
     return {authorizationEndpoint, tokenEndpoint}
@@ -112,12 +115,18 @@ class API {
   }
 
   async exchangeAuthorizationCode(code) {
+    const codeVerifier = localStorage.getItem('codeVerifier');
+    if (!codeVerifier) {
+      throw new Error("No code verifier found");
+    }
+
     const {tokenEndpoint} = await this.getAuthorizationServerMetadata()
     const url = new URL(tokenEndpoint)
     url.searchParams.append('code', code)
     url.searchParams.append('grant_type', 'authorization_code')
     url.searchParams.append('client_id', config.auth.clientId)
     url.searchParams.append('redirect_uri', config.auth.redirectUri)
+    url.searchParams.append('code_verifier', codeVerifier)
     const response = await window.fetch(url.toString())
     const json = await response.json()
 
@@ -137,11 +146,16 @@ class API {
   async makeLoginUrl() {
     const {authorizationEndpoint} = await this.getAuthorizationServerMetadata()
 
+    const {codeVerifier, codeChallenge} = createPkce()
+    localStorage.setItem("codeVerifier", codeVerifier);
+
     const loginUrl = new URL(authorizationEndpoint)
     loginUrl.searchParams.append('client_id', config.auth.clientId)
     loginUrl.searchParams.append('scope', config.auth.scope)
     loginUrl.searchParams.append('redirect_uri', config.auth.redirectUri)
     loginUrl.searchParams.append('response_type', 'code')
+    loginUrl.searchParams.append('code_challenge', codeChallenge)
+    loginUrl.searchParams.append('code_challenge_method', 'S256')
 
     // TODO: Implement PKCE
 

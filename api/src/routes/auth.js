@@ -1,6 +1,8 @@
+const crypto = require('crypto');
 const router = require('express').Router();
 const passport = require('passport');
 const { URL } = require('url');
+const { createChallenge } = require('pkce');
 
 const { AuthorizationCode, AccessToken, RefreshToken, Client } = require('../models');
 const wrapRoute = require('../_helpers/wrapRoute');
@@ -129,6 +131,9 @@ router.get(
         redirect_uri: redirectUri,
         response_type: responseType,
         scope = '*', // fallback to "all" scope
+        // for PKCE
+        code_challenge: codeChallenge,
+        code_challenge_method: codeChallengeMethod,
       } = req.query;
 
       // 1. Find our client and check if it exists
@@ -164,7 +169,22 @@ router.get(
         });
       }
 
-      // 4. Get the scope.
+      // 4. Verify we're using PKCE with supported (S256) code_challenge_method.
+      if (!codeChallenge) {
+        return redirectWithParams(res, redirectUri, {
+          error: 'invalid_request',
+          error_description: 'a code_challenge for PKCE is required',
+        });
+      }
+
+      if (codeChallengeMethod !== 'S256') {
+        return redirectWithParams(res, redirectUri, {
+          error: 'invalid_request',
+          error_description: 'the code_challenge_method for PKCE must be "S256"',
+        });
+      }
+
+      // 5. Get the scope.
       if (!isValidScope(scope)) {
         return redirectWithParams(res, redirectUri, {
           error: 'invalid_scope',
@@ -188,6 +208,7 @@ router.get(
         redirectUri,
         scope,
         expiresAt: new Date().getTime() + 1000 * 60 * 2, // 2 minute decision time
+        codeChallenge,
       };
 
       res.type('html').end(`
@@ -223,7 +244,7 @@ router.post(
       return res.sendStatus(400);
     }
 
-    const { clientId, redirectUri, scope, expiresAt } = req.session.authorizationTransaction;
+    const { clientId, redirectUri, scope, expiresAt, codeChallenge } = req.session.authorizationTransaction;
 
     if (expiresAt < new Date().getTime()) {
       return res.status(400).type('html').end(`Your authorization has expired. Please go back and retry the process.`);
@@ -235,7 +256,7 @@ router.post(
     req.session.authorizationTransaction = null;
 
     if (req.path === '/authorize/approve') {
-      const code = AuthorizationCode.generate(client, req.user, redirectUri, scope);
+      const code = AuthorizationCode.generate(client, req.user, redirectUri, scope, codeChallenge);
       await code.save();
 
       return redirectWithParams(res, redirectUri, { code: code.code, scope });
@@ -258,7 +279,8 @@ router.get(
       code,
       client_id: clientId,
       redirect_uri: redirectUri,
-      //
+      // for PKCE
+      code_verifier: codeVerifier,
     } = req.query;
 
     if (!grantType || grantType !== 'authorization_code') {
@@ -273,35 +295,54 @@ router.get(
       return returnError(res, 'invalid_request', 'code parameter required');
     }
 
-    if (!code) {
+    // Call this function to destroy the authorization code (if it exists),
+    // invalidating it when a single failed request has been received. The
+    // whole process must be restarted. No trial and error ;)
+    const destroyAuthCode = async () => {
+      await AuthorizationCode.deleteOne({ code });
+    };
+
+    if (!clientId) {
+      await destroyAuthCode();
       return returnError(res, 'invalid_client', 'client_id parameter required');
     }
 
     if (!redirectUri) {
+      await destroyAuthCode();
       return returnError(res, 'invalid_request', 'redirect_uri parameter required');
+    }
+
+    if (!codeVerifier) {
+      await destroyAuthCode();
+      return returnError(res, 'invalid_request', 'code_verifier parameter required');
     }
 
     const client = await Client.findOne({ clientId });
 
     if (!client) {
+      await destroyAuthCode();
       return returnError(res, 'invalid_client', 'invalid client_id');
     }
 
     const authorizationCode = await AuthorizationCode.findOne({ code });
-    if ( !authorizationCode ) {
-      console.log('no code found')
+    if (!authorizationCode) {
+      await destroyAuthCode();
       return returnError(res, 'invalid_grant', 'invalid authorization code');
     }
     if (authorizationCode.redirectUri !== redirectUri) {
-      console.log('redirect_uri mismatch')
+      await destroyAuthCode();
       return returnError(res, 'invalid_grant', 'invalid authorization code');
     }
     if (authorizationCode.expiresAt <= new Date().getTime()) {
-      console.log('expired')
+      await destroyAuthCode();
       return returnError(res, 'invalid_grant', 'invalid authorization code');
     }
     if (!client._id.equals(authorizationCode.client)) {
-      console.log('client mismatch', authorizationCode.client, client._id)
+      await destroyAuthCode();
+      return returnError(res, 'invalid_grant', 'invalid authorization code');
+    }
+    if (createChallenge(codeVerifier) !== authorizationCode.codeChallenge) {
+      await destroyAuthCode();
       return returnError(res, 'invalid_grant', 'invalid authorization code');
     }
 
