@@ -1,7 +1,6 @@
 const router = require('express').Router();
 const passport = require('passport');
 const { URL } = require('url');
-const querystring = require('querystring');
 
 const { AuthorizationCode, AccessToken, RefreshToken, Client } = require('../models');
 const wrapRoute = require('../_helpers/wrapRoute');
@@ -96,7 +95,7 @@ const isValidRedirectUriFor = (redirectUri) => (redirectUriPattern) => {
   // is because we cannot know beforehand which IP the OBS will be running at.
   // But since it is usually accessed via local IP, we can allow all local IP
   // ranges. This special case must only be used in clients that have a very
-  // restricted maxScope as well, to prevent misuse should an attack through
+  // restricted `maxScope` as well, to prevent misuse should an attack through
   // this be successful.
   // This special case does however enforce TLS ("https://"), for it prevents
   // usage in a non-TLS-secured web server. At least passive sniffing of the
@@ -170,6 +169,13 @@ router.get(
         return redirectWithParams(res, redirectUri, {
           error: 'invalid_scope',
           error_description: 'the requested scope is not known',
+        });
+      }
+
+      if (client.maxScope && !scopeIncludes(scope, client.maxScope)) {
+        return redirectWithParams(res, redirectUri, {
+          error: 'access_denied',
+          error_description: 'the requested scope is not valid for this client',
         });
       }
 
@@ -303,21 +309,25 @@ router.get(
     await AuthorizationCode.deleteOne({ _id: authorizationCode._id });
 
     const accessToken = AccessToken.generate(authorizationCode.client, authorizationCode.user, authorizationCode.scope);
+    await accessToken.save();
 
-    const refreshToken = RefreshToken.generate(
-      authorizationCode.client,
-      authorizationCode.user,
-      authorizationCode.scope,
-    );
-
-    await Promise.all([accessToken.save(), refreshToken.save()]);
+    let refreshToken;
+    if (client.refreshTokenExpirySeconds != null) {
+      refreshToken = RefreshToken.generate(
+        authorizationCode.client,
+        authorizationCode.user,
+        authorizationCode.scope,
+        client.refreshTokenExpirySeconds,
+      );
+      await refreshToken.save();
+    }
 
     return res.json({
       access_token: accessToken.token,
       token_type: 'Bearer',
       expires_in: Math.round((accessToken.expiresAt - new Date().getTime()) / 1000),
-      refresh_token: refreshToken.token,
       scope: accessToken.scope,
+      ...(refreshToken != null ? { refresh_token: refreshToken.token } : {}),
     });
   }),
 );
