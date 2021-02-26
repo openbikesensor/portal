@@ -1,15 +1,17 @@
 const mongoose = require('mongoose');
+const _ = require('lodash');
 const uniqueValidator = require('mongoose-unique-validator');
+const { DateTime } = require('luxon');
 const slug = require('slug');
 const path = require('path');
 const sanitize = require('sanitize-filename');
-const fs = require('fs')
+const fs = require('fs');
 
 const { parseTrackPoints } = require('../logic/tracks');
 
 const TrackData = require('./TrackData');
 
-const DATA_DIR = process.env.DATA_DIR || path.resolve(__dirname, '../../data/')
+const DATA_DIR = process.env.DATA_DIR || path.resolve(__dirname, '../../data/');
 
 const schema = new mongoose.Schema(
   {
@@ -57,6 +59,29 @@ schema.pre('validate', async function (next) {
   }
 });
 
+// 0..4 Night, 4..10 Morning, 10..14 Noon, 14..18 Afternoon, 18..22 Evening, 22..00 Night
+// Two hour intervals
+const DAYTIMES = [
+  'Night',
+  'Night',
+  'Morning',
+  'Morning',
+  'Morning',
+  'Noon',
+  'Noon',
+  'Afternoon',
+  'Afternoon',
+  'Afternoon',
+  'Evening',
+  'Evening',
+  'Evening',
+  'Night',
+];
+
+function getDaytime(dateTime) {
+  return DAYTIMES[Math.floor((dateTime.hour % 24) / 2)];
+}
+
 class Track extends mongoose.Model {
   slugify() {
     this.slug = slug(this.title || 'track') + '-' + ((Math.random() * Math.pow(36, 6)) | 0).toString(36);
@@ -89,20 +114,20 @@ class Track extends mongoose.Model {
 
   async _ensureDirectoryExists() {
     if (!this.originalFilePath) {
-      await this.generateOriginalFilePath()
+      await this.generateOriginalFilePath();
     }
 
-    const dir = path.join(DATA_DIR, path.dirname(this.originalFilePath))
-    await fs.promises.mkdir(dir, {recursive: true})
+    const dir = path.join(DATA_DIR, path.dirname(this.originalFilePath));
+    await fs.promises.mkdir(dir, { recursive: true });
   }
 
   get fullOriginalFilePath() {
-    return path.join(DATA_DIR, this.originalFilePath)
+    return path.join(DATA_DIR, this.originalFilePath);
   }
 
   async writeToOriginalFile(fileBody) {
-      await this._ensureDirectoryExists()
-      await fs.promises.writeFile(this.fullOriginalFilePath, fileBody)
+    await this._ensureDirectoryExists();
+    await fs.promises.writeFile(this.fullOriginalFilePath, fileBody);
   }
 
   /**
@@ -126,7 +151,7 @@ class Track extends mongoose.Model {
 
     // Parse the points from the body.
     // TODO: Stream file contents, if possible
-    const body = await fs.promises.readFile(this.fullOriginalFilePath)
+    const body = await fs.promises.readFile(this.fullOriginalFilePath);
     const points = Array.from(parseTrackPoints(body));
 
     const trackData = TrackData.createFromPoints(points);
@@ -140,6 +165,31 @@ class Track extends mongoose.Model {
     }
 
     await this.save();
+  }
+
+  async autoGenerateTitle() {
+    if (this.title) {
+      return;
+    }
+
+    if (this.originalFileName) {
+      this.title = _.upperFirst(_.words(this.originalFileName.replace(/(\.obsdata)?\.csv$/, '')).join(' '));
+    }
+
+    for (const property of ['publicTrackData', 'trackData']) {
+      if (!this.title && this[property]) {
+        await this.populate(property).execPopulate();
+        if (this[property].recordedAt) {
+          const dateTime = DateTime.fromJSDate(this[property].recordedAt);
+          const daytime = getDaytime(dateTime);
+          this.title = `${daytime} ride on ${dateTime.toLocaleString(DateTime.DATE_MED)}`;
+        }
+      }
+    }
+
+    if (this.title) {
+      await this.save();
+    }
   }
 
   toJSONFor(user) {

@@ -199,6 +199,8 @@ router.post(
       await track.save()
     }
 
+    await track.autoGenerateTitle()
+
     // console.log(track.author);
     return res.json({ track: track.toJSONFor(req.user) });
   }),
@@ -254,6 +256,8 @@ router.put(
     } else {
       await track.save();
     }
+
+    await track.autoGenerateTitle()
 
     return res.json({ track: track.toJSONFor(req.user) });
   }),
