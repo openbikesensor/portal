@@ -24,7 +24,13 @@ async function loginWithPassword(email, password, done) {
   try {
     const user = await User.findOne({ email: email });
     if (!user || !user.validPassword(password)) {
-      return done(null, false, { errors: { 'email or password': 'is invalid' } });
+      return done(new Error('invalid credentials'), false);
+    }
+
+    // Regardless of whether login is required, if you're logged in as an
+    // unverified user, produce an error.
+    if (user.needsEmailValidation) {
+      return done(new Error('email not verified'), false);
     }
 
     return done(null, user);
@@ -117,7 +123,7 @@ passport.use(
       const refreshToken = await RefreshToken.findOne({ token }).populate('user');
       if (refreshToken && refreshToken.user) {
         // TODO: scope
-        return done(null, user, { scope: 'auth.refresh' });
+        return done(null, refreshToken.user, { scope: 'auth.refresh' });
       } else {
         return done(null, false);
       }
@@ -181,7 +187,6 @@ function createMiddleware(strategies, required = true, session = false) {
       }
 
       req.user = user;
-      req.authInfo = info;
       req.scope = (info && info.scope) || '*';
 
       return next();

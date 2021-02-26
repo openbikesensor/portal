@@ -4,6 +4,7 @@ const { URL } = require('url');
 const { createChallenge } = require('pkce');
 
 const { AuthorizationCode, AccessToken, RefreshToken, Client } = require('../models');
+const auth = require('../config/passport');
 const wrapRoute = require('../_helpers/wrapRoute');
 
 // Check whether the "bigScope" fully includes the "smallScope".
@@ -45,9 +46,30 @@ function isValidScope(scope) {
   return scope === '*' || scopeIncludes(scope, ALL_SCOPE_NAMES.join(' '));
 }
 
+router.use((req, res, next) => {
+  res.locals.user = req.user;
+  next();
+});
+
 router.post(
   '/login',
-  passport.authenticate('usernameAndPasswordSession'),
+  passport.authenticate('usernameAndPasswordSession', { session: true }),
+  (err, req, res, next) => {
+    if (!err) {
+      next();
+    }
+
+    if (err.message === 'invalid credentials') {
+      return res.render('login', { badCredentials: true });
+    }
+
+    let description = 'Unknown error while processing your login.';
+    if (err.message === 'email not verified') {
+      description = 'Your account is not yet verified, please check your email or start the password recovery.';
+    }
+
+    return res.render('message', { type: 'error', title: 'Login failed', description });
+  },
   wrapRoute((req, res, next) => {
     if (!req.user) {
       return res.redirect('/login');
@@ -69,9 +91,20 @@ router.get(
       return res.render('message', { type: 'success', title: 'You are already logged in.' });
     }
 
-    res.render('login');
+    return res.render('login');
   }),
 );
+
+router
+  .route('/logout')
+  .post(
+    auth.usernameAndPasswordSession,
+    wrapRoute(async (req, res) => {
+      req.logout();
+      return res.redirect('/login');
+    }),
+  )
+  .get((req, res) => res.render('logout'));
 
 const isIp = (ip) =>
   typeof ip === 'string' &&
@@ -115,7 +148,6 @@ router.get(
   passport.authenticate('session'),
   wrapRoute(async (req, res) => {
     if (!req.user) {
-      console.log(req);
       req.session.next = req.url;
       return res.redirect('/login');
     }
@@ -208,7 +240,6 @@ router.get(
 
       res.render('authorize', { clientTitle: client.title, scope, redirectUri });
     } catch (err) {
-      console.error(err);
       res.status(400).json({ error: 'invalid_request', error_description: 'unknown error' });
     }
   }),
@@ -383,5 +414,106 @@ router.get(
     });
   }),
 );
+
+module.exports = router;
+
+const accountService = require('../accounts/account.service');
+const validateRequest = require('../_middleware/validate-request');
+const Joi = require('joi');
+
+router
+  .route('/register')
+  .post(
+    validateRequest(
+      Joi.object({
+        username: Joi.string().required(),
+        email: Joi.string().email().required(),
+        password: Joi.string().min(6).required(),
+        confirmPassword: Joi.string().valid(Joi.ref('password')).required(),
+      }),
+    ),
+    wrapRoute(async (req, res) => {
+      await accountService.register(req.body, req.get('origin'));
+
+      return res.render('message', {
+        type: 'success',
+        title: 'Registration successful',
+        description: 'Please check your email for verification instructions.',
+      });
+    }),
+  )
+  .get((req, res) => res.render('register'));
+
+router.get(
+  '/verify-email',
+  validateRequest(
+    Joi.object({
+      token: Joi.string().required(),
+    }),
+    'query',
+  ),
+  wrapRoute(async (req, res) => {
+    await accountService.verifyEmail(req.query);
+    return res.render('message', {
+      type: 'success',
+      title: 'Verification successful',
+      description: 'You can now log in.',
+      showLoginButton: true,
+    });
+  }),
+);
+
+router
+  .route('/forgot-password')
+  .post(
+    validateRequest(
+      Joi.object({
+        email: Joi.string().email().required(),
+      }),
+    ),
+    wrapRoute(async (req, res) => {
+      await accountService.forgotPassword(req.body, req.get('origin'));
+      res.render('message', {
+        type: 'success',
+        title: 'Recovery mail sent',
+        description: 'Please check your inbox for password recovery instructions.',
+      });
+    }),
+  )
+  .get((req, res) => res.render('forgot-password'));
+
+router
+  .route('/reset-password')
+  .post(
+    validateRequest(
+      Joi.object({
+        token: Joi.string().required(),
+        password: Joi.string().min(6).required(),
+        confirmPassword: Joi.string().valid(Joi.ref('password')).required(),
+      }),
+    ),
+    wrapRoute(async (req, res) => {
+      await accountService.resetPassword(req.body);
+      return res.render('message', {
+        type: 'success',
+        title: 'Password reset successful',
+        description: 'You can now log in.',
+        showLoginButton: true,
+      });
+    }),
+  )
+  .get(
+    validateRequest(
+      Joi.object({
+        token: Joi.string().required(),
+      }),
+      'query',
+    ),
+    wrapRoute(async (req, res) => {
+      const { token } = req.query;
+      await accountService.validateResetToken({ token });
+      res.render('reset-password', { token });
+    }),
+  );
 
 module.exports = router;

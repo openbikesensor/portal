@@ -16,8 +16,8 @@ const app = express();
 app.use(cors());
 
 // Express configuration
-app.set('views', './views')
-app.set('view engine', 'pug')
+app.set('views', './views');
+app.set('view engine', 'pug');
 
 // Normal express config defaults
 app.use(require('morgan')('dev'));
@@ -27,7 +27,7 @@ app.use(bodyParser.urlencoded({ limit: '50mb', extended: false }));
 app.use(require('method-override')());
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.use(session({ secret: 'obsobs', cookie: { maxAge: 60000 }, resave: false, saveUninitialized: false }));
+app.use(session({ secret: 'obsobs', cookie: { maxAge: 10 * 60 * 1000 }, resave: false, saveUninitialized: false }));
 app.use(passport.initialize());
 app.use(passport.session());
 

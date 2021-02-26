@@ -1,0 +1,25 @@
+extends layout.pug
+
+block title
+  | Register
+
+block content
+  form(method="post")
+    fieldset
+      label(for="username") Username
+      input(id="username", name="username")
+      p.form-hint At least 3 characters, alphanumerical, must be unique
+
+    fieldset
+      label(for="email") E-Mail Address
+      input(id="email", name="email", type="email")
+
+    fieldset
+      label(for="password") Password
+      input(id="password", name="password", type="password")
+
+    fieldset
+      label(for="confirmPassword") Confirm Password
+      input(id="confirmPassword", name="confirmPassword", type="password")
+
+    button(type="submit") Register

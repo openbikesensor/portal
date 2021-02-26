@@ -6,3 +6,6 @@ block title
 block content
   if description
     div(class="message " + type)= description
+
+  if showLoginButton
+    p: a(href="/login") Go to login
