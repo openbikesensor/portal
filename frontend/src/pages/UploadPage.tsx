@@ -51,33 +51,37 @@ function FileUploadStatus({
 }) {
   const [progress, setProgress] = React.useState(0)
 
-  React.useEffect(() => {
-    const formData = new FormData()
-    formData.append('body', file)
+  React.useEffect(
+    () => {
+      const formData = new FormData()
+      formData.append('body', file)
 
-    const xhr = new XMLHttpRequest()
+      const xhr = new XMLHttpRequest()
 
-    const onProgress = (e) => {
-      const progress = (e.loaded || 0) / (e.total || 1)
-      setProgress(progress)
-    }
+      const onProgress = (e) => {
+        const progress = (e.loaded || 0) / (e.total || 1)
+        setProgress(progress)
+      }
 
-    const onLoad = (e) => {
-      onComplete(id, xhr.response)
-    }
+      const onLoad = (e) => {
+        onComplete(id, xhr.response)
+      }
 
-    xhr.responseType = 'json'
-    xhr.onload = onLoad
-    xhr.upload.onprogress = onProgress
-    xhr.open('POST', '/api/tracks')
+      xhr.responseType = 'json'
+      xhr.onload = onLoad
+      xhr.upload.onprogress = onProgress
+      xhr.open('POST', '/api/tracks')
 
-    api.getValidAccessToken().then((accessToken) => {
-      xhr.setRequestHeader('Authorization', accessToken)
-      xhr.send(formData)
-    })
+      api.getValidAccessToken().then((accessToken) => {
+        xhr.setRequestHeader('Authorization', accessToken)
+        xhr.send(formData)
+      })
 
-    return () => xhr.abort()
-  }, [file])
+      return () => xhr.abort()
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [file]
+  )
 
   return (
     <span>
@@ -107,9 +111,13 @@ export default function UploadPage() {
     [setFiles]
   )
 
-  React.useLayoutEffect(() => {
-    setLabelRefState(labelRef.current)
-  }, [labelRef.current])
+  React.useLayoutEffect(
+    () => {
+      setLabelRefState(labelRef.current)
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [labelRef.current]
+  )
 
   function onSelectFiles(fileList) {
     const newFiles = Array.from(fileList).map((file) => ({

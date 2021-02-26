@@ -60,6 +60,7 @@ export function Layer({layerClass, getDefaultOptions, children, ...props}) {
         ...(getDefaultOptions ? getDefaultOptions() : {}),
         ...props,
       }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     []
   )
 
@@ -111,6 +112,7 @@ function View({...options}) {
       new OlView({
         ...options,
       }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     []
   )
 

@@ -18,7 +18,7 @@ import TrackMap from './TrackMap'
 
 function useTriggerSubject() {
   const subject$ = React.useMemo(() => new Subject(), [])
-  const trigger = React.useCallback(() => subject$.next(null), [])
+  const trigger = React.useCallback(() => subject$.next(null), [subject$])
   return [trigger, subject$]
 }
 
@@ -68,12 +68,12 @@ const TrackPage = connect((state) => ({login: state.login}))(function TrackPage(
       body: {comment: {body}},
     })
     reloadComments()
-  }, [])
+  }, [slug, reloadComments])
 
   const onDeleteComment = React.useCallback(async (id) => {
     await api.delete(`/tracks/${slug}/comments/${id}`)
     reloadComments()
-  }, [])
+  }, [slug, reloadComments])
 
   const isAuthor = login?.username === data?.track?.author?.username
 
