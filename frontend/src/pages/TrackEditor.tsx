@@ -74,8 +74,8 @@ const TrackEditor = connect((state) => ({login: state.login}))(function TrackEdi
     <Page>
       <Grid centered relaxed divided>
         <Grid.Row>
-          <Grid.Column width={8}>
-            <h2>Edit track</h2>
+          <Grid.Column width={10}>
+            <h2>Edit {track ? (track.title || 'Unnamed track') : 'track'}</h2>
             <Form loading={loading} key={track?.slug} onSubmit={onSubmit}>
               <Ref innerRef={findInput(register)}>
                 <Form.Input label="Title" name="title" defaultValue={track?.title} style={{fontSize: '120%'}} />
@@ -135,7 +135,7 @@ const TrackEditor = connect((state) => ({login: state.login}))(function TrackEdi
               <Button type="submit">Save</Button>
             </Form>
           </Grid.Column>
-          <Grid.Column width={4}>
+          <Grid.Column width={6}>
             <h2>Danger zone</h2>
             <p>
               You can remove this track from your account and the portal if you like. However, if at any point you have

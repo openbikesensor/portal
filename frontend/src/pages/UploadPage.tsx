@@ -85,7 +85,7 @@ function FileUploadStatus({
 
   return (
     <span>
-      <Loader inline size="mini" active /> {progress < 1 ? (progress * 100).toFixed(0) + ' %' : 'Processing...'}
+      <Loader inline size="mini" active /> {progress < 1 ? `Uploading ${(progress * 100).toFixed(0)}%` : 'Processing...'}
     </span>
   )
 }
@@ -149,9 +149,8 @@ export default function UploadPage() {
             <Table.Row>
               <Table.HeaderCell>Filename</Table.HeaderCell>
               <Table.HeaderCell>Size</Table.HeaderCell>
-              <Table.HeaderCell>Status</Table.HeaderCell>
-              <Table.HeaderCell></Table.HeaderCell>
-              <Table.HeaderCell></Table.HeaderCell>
+              <Table.HeaderCell>Status / Title</Table.HeaderCell>
+              <Table.HeaderCell colSpan={2}></Table.HeaderCell>
             </Table.Row>
           </Table.Header>
 
@@ -164,16 +163,6 @@ export default function UploadPage() {
                 </Table.Cell>
                 <Table.Cell>{formatFileSize(size)}</Table.Cell>
                 <Table.Cell>
-                  {result ? (
-                    <>
-                      <Icon name="check" /> Uploaded
-                    </>
-                  ) : (
-                    <FileUploadStatus {...{id, file}} onComplete={onCompleteFileUpload} />
-                  )}
-                </Table.Cell>
-                <Table.Cell>
-                  {/* <pre>{JSON.stringify(result || null, null, 2)}</pre> */}
                   {result?.errors ? (
                     <List>
                       {_.sortBy(Object.entries(result.errors))
@@ -185,17 +174,17 @@ export default function UploadPage() {
                           </List.Item>
                         ))}
                     </List>
-                  ) : null}
-                </Table.Cell>
-                <Table.Cell>
-                  {result?.track ? (
+                  ) : result ? (
                     <>
-                      <Link to={`/tracks/${result.track.slug}`}>
-                        <Button size="small" icon="arrow right" />
-                      </Link>
-                      <Button size="small" icon="trash" onClick={() => onDeleteTrack(result.track.slug)} />
+                      <Icon name="check" /> {result.track?.title || 'Unnamed track'}
                     </>
-                  ) : null}
+                  ) : (
+                    <FileUploadStatus {...{id, file}} onComplete={onCompleteFileUpload} />
+                  )}
+                </Table.Cell>
+                <Table.Cell>{result?.track ? <Link to={`/tracks/${result.track.slug}`}>Show</Link> : null}</Table.Cell>
+                <Table.Cell>
+                  {result?.track ? <Link to={`/tracks/${result.track.slug}/edit`}>Edit</Link> : null}
                 </Table.Cell>
               </Table.Row>
             ))}

@@ -1,9 +1,8 @@
 import React from 'react'
-import {Segment, Form, Button, Loader, Header, Comment} from 'semantic-ui-react'
+import {Message, Segment, Form, Button, Loader, Header, Comment} from 'semantic-ui-react'
 import Markdown from 'react-markdown'
 
 import {FormattedDate} from 'components'
-
 
 function CommentForm({onSubmit}) {
   const [body, setBody] = React.useState('')
@@ -59,6 +58,8 @@ export default function TrackComments({comments, onSubmit, onDelete, login, hide
             </Comment.Content>
           </Comment>
         ))}
+
+        {comments != null && !comments.length && <Message>Nobody commented... yet</Message>}
 
         {login && comments != null && <CommentForm onSubmit={onSubmit} />}
       </Comment.Group>

@@ -136,7 +136,7 @@ const TrackPage = connect((state) => ({login: state.login}))(function TrackPage(
             <Segment>
               {track && (
                 <>
-                  <Header as="h1">{track.title}</Header>
+                  <Header as="h1">{track.title || 'Unnamed track'}</Header>
                   <TrackDetails {...{track, trackData, isAuthor}} />
                   {isAuthor && <TrackActions {...{slug}} />}
                 </>
