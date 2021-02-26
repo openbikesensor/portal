@@ -1,8 +1,8 @@
 import React from 'react'
 import _ from 'lodash'
 import {connect} from 'react-redux'
-import {Confirm, Grid, Button, Icon, Popup, Form, Ref, TextArea, Checkbox} from 'semantic-ui-react'
-import {useHistory, useParams} from 'react-router-dom'
+import {Divider, Message, Confirm, Grid, Button, Icon, Popup, Form, Ref, TextArea, Checkbox} from 'semantic-ui-react'
+import {useHistory, useParams, Link} from 'react-router-dom'
 import {concat, of, from} from 'rxjs'
 import {pluck, distinctUntilChanged, map, switchMap} from 'rxjs/operators'
 import {useObservable} from 'rxjs-hooks'
@@ -10,8 +10,31 @@ import {findInput} from 'utils'
 import {useForm, Controller} from 'react-hook-form'
 
 import api from 'api'
-import {Page} from 'components'
+import {Page, FileUploadField} from 'components'
 import type {Track} from 'types'
+
+import {FileUploadStatus} from 'pages/UploadPage'
+
+function ReplaceTrackData({slug}) {
+  const [file, setFile] = React.useState(null)
+  const [result, setResult] = React.useState(null)
+  const onComplete = React.useCallback((_id, r) => setResult(r), [setResult])
+
+  return (
+    <>
+      <h2>Replace track data</h2>
+      {!file ? (
+        <FileUploadField onSelect={setFile} />
+      ) : result ? (
+        <Message>
+          Upload complete. <Link to={`/tracks/${slug}`}>Show track</Link>
+        </Message>
+      ) : (
+        <FileUploadStatus {...{file, onComplete, slug}} />
+      )}
+    </>
+  )
+}
 
 const TrackEditor = connect((state) => ({login: state.login}))(function TrackEditor({login}) {
   const [busy, setBusy] = React.useState(false)
@@ -75,7 +98,7 @@ const TrackEditor = connect((state) => ({login: state.login}))(function TrackEdi
       <Grid centered relaxed divided>
         <Grid.Row>
           <Grid.Column width={10}>
-            <h2>Edit {track ? (track.title || 'Unnamed track') : 'track'}</h2>
+            <h2>Edit {track ? track.title || 'Unnamed track' : 'track'}</h2>
             <Form loading={loading} key={track?.slug} onSubmit={onSubmit}>
               <Ref innerRef={findInput(register)}>
                 <Form.Input label="Title" name="title" defaultValue={track?.title} style={{fontSize: '120%'}} />
@@ -136,13 +159,19 @@ const TrackEditor = connect((state) => ({login: state.login}))(function TrackEdi
             </Form>
           </Grid.Column>
           <Grid.Column width={6}>
+            <ReplaceTrackData slug={slug} />
+
+          <Divider />
+
             <h2>Danger zone</h2>
             <p>
               You can remove this track from your account and the portal if you like. However, if at any point you have
               published this track, we cannot guarantee that there are no versions of it in the public data repository,
               or any copy thereof.
             </p>
-    <Button color="red" onClick={() => setConfirmDelete(true)}>Delete</Button>
+            <Button color="red" onClick={() => setConfirmDelete(true)}>
+              Delete
+            </Button>
             <Confirm open={confirmDelete} onCancel={() => setConfirmDelete(false)} onConfirm={onDelete} />
           </Grid.Column>
         </Grid.Row>

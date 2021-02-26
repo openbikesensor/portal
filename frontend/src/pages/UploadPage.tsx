@@ -1,9 +1,9 @@
 import _ from 'lodash'
 import React from 'react'
-import {List, Loader, Table, Icon, Segment, Header, Button} from 'semantic-ui-react'
+import {List, Loader, Table, Icon} from 'semantic-ui-react'
 import {Link} from 'react-router-dom'
 
-import {FileDrop, Page} from 'components'
+import {FileUploadField, Page} from 'components'
 import type {Track} from 'types'
 import api from 'api'
 
@@ -40,14 +40,16 @@ type FileUploadResult =
       errors: Record<string, string>
     }
 
-function FileUploadStatus({
+export function FileUploadStatus({
   id,
   file,
   onComplete,
+  slug,
 }: {
   id: string
   file: File
   onComplete: (result: FileUploadResult) => void
+  slug?: string
 }) {
   const [progress, setProgress] = React.useState(0)
 
@@ -70,7 +72,11 @@ function FileUploadStatus({
       xhr.responseType = 'json'
       xhr.onload = onLoad
       xhr.upload.onprogress = onProgress
-      xhr.open('POST', '/api/tracks')
+      if (slug) {
+        xhr.open('PUT', `/api/tracks/${slug}`)
+      } else {
+        xhr.open('POST', '/api/tracks')
+      }
 
       api.getValidAccessToken().then((accessToken) => {
         xhr.setRequestHeader('Authorization', accessToken)
@@ -85,7 +91,8 @@ function FileUploadStatus({
 
   return (
     <span>
-      <Loader inline size="mini" active /> {progress < 1 ? `Uploading ${(progress * 100).toFixed(0)}%` : 'Processing...'}
+      <Loader inline size="mini" active />{' '}
+      {progress < 1 ? `Uploading ${(progress * 100).toFixed(0)}%` : 'Processing...'}
     </span>
   )
 }
@@ -99,9 +106,6 @@ type FileEntry = {
 }
 
 export default function UploadPage() {
-  const labelRef = React.useRef()
-  const [labelRefState, setLabelRefState] = React.useState()
-
   const [files, setFiles] = React.useState<FileEntry[]>([])
 
   const onCompleteFileUpload = React.useCallback(
@@ -109,14 +113,6 @@ export default function UploadPage() {
       setFiles((files) => files.map((file) => (file.id === id ? {...file, result, file: null} : file)))
     },
     [setFiles]
-  )
-
-  React.useLayoutEffect(
-    () => {
-      setLabelRefState(labelRef.current)
-    },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [labelRef.current]
   )
 
   function onSelectFiles(fileList) {
@@ -127,18 +123,6 @@ export default function UploadPage() {
       size: file.size,
     }))
     setFiles(files.filter((a) => !newFiles.some((b) => isSameFile(a, b))).concat(newFiles))
-  }
-
-  function onChangeField(e) {
-    if (e.target.files && e.target.files.length) {
-      onSelectFiles(e.target.files)
-    }
-    e.target.value = '' // reset the form field for uploading again
-  }
-
-  async function onDeleteTrack(slug: string) {
-    await api.delete(`/tracks/${slug}`)
-    setFiles((files) => files.filter((t) => t.result?.track?.slug !== slug))
   }
 
   return (
@@ -192,39 +176,7 @@ export default function UploadPage() {
         </Table>
       ) : null}
 
-      <input
-        type="file"
-        id="upload-field"
-        style={{width: 0, height: 0, position: 'fixed', left: -1000, top: -1000, opacity: 0.001}}
-        multiple
-        accept=".csv"
-        onChange={onChangeField}
-      />
-      <label htmlFor="upload-field" ref={labelRef}>
-        {labelRefState && (
-          <FileDrop onDrop={onSelectFiles} frame={labelRefState}>
-            {({draggingOverFrame, draggingOverTarget, onDragOver, onDragLeave, onDrop, onClick}) => (
-              <Segment
-                placeholder
-                {...{onDragOver, onDragLeave, onDrop}}
-                style={{
-                  background: draggingOverTarget || draggingOverFrame ? '#E0E0EE' : null,
-                  transition: 'background 0.2s',
-                }}
-              >
-                <Header icon>
-                  <Icon name="cloud upload" />
-                  Drop files here or click to select them for upload
-                </Header>
-
-                <Button primary as="span">
-                  Upload files
-                </Button>
-              </Segment>
-            )}
-          </FileDrop>
-        )}
-      </label>
+      <FileUploadField onSelect={onSelectFiles} multiple />
     </Page>
   )
 }
