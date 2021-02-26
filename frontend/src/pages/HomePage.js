@@ -1,9 +1,9 @@
-import _ from 'lodash'
 import React from 'react'
+import {Link} from 'react-router-dom'
 import {Message, Grid, Loader, Statistic, Segment, Header, Item} from 'semantic-ui-react'
 import {useObservable} from 'rxjs-hooks'
-import {of, pipe, from} from 'rxjs'
-import {map, switchMap, distinctUntilChanged} from 'rxjs/operators'
+import {of, from} from 'rxjs'
+import {map, switchMap} from 'rxjs/operators'
 import {fromLonLat} from 'ol/proj'
 import {Duration} from 'luxon'
 
@@ -30,10 +30,9 @@ function WelcomeMap() {
 
 function Stats() {
   const stats = useObservable(
-    pipe(
-      distinctUntilChanged(_.isEqual),
+    () => of(null).pipe(
       switchMap(() => api.fetch('/stats'))
-    )
+    ),
   )
 
   return (
@@ -82,7 +81,9 @@ function MostRecentTrack() {
       <h2>Most recent track</h2>
       <Loader active={track === null} />
       {track === undefined ? (
-        <Message>No track uploaded yet. Be the first!</Message>
+        <Message>
+          No track uploaded yet. <Link to="/upload">Be the first!</Link>
+        </Message>
       ) : track ? (
         <Item.Group>
           <TrackListItem track={track} />

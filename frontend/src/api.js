@@ -198,6 +198,8 @@ class API {
 
     if (response.status === 200) {
       return json
+    } else if (response.status === 204) {
+      return null
     } else {
       throw new RequestError('Error code ' + response.status, json?.errors)
     }

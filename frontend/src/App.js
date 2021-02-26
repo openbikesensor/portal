@@ -11,6 +11,7 @@ import {
   LogoutPage,
   NotFoundPage,
   SettingsPage,
+  TrackEditor,
   TrackPage,
   TracksPage,
   UploadPage,
@@ -40,7 +41,7 @@ const App = connect((state) => ({login: state.login}))(function App({login}) {
                   <Link to="/">Home</Link>
                 </li>
                 <li>
-                  <Link to="/feed">Tracks</Link>
+                  <Link to="/tracks">Tracks</Link>
                 </li>
                 <li>
                   <a href="https://openbikesensor.org/" target="_blank" rel="noreferrer">
@@ -76,14 +77,17 @@ const App = connect((state) => ({login: state.login}))(function App({login}) {
           <Route path="/" exact>
             <HomePage />
           </Route>
-          <Route path="/feed" exact>
+          <Route path="/tracks" exact>
             <TracksPage />
           </Route>
-          <Route path="/feed/my" exact>
-            <TracksPage privateFeed />
+          <Route path="/my/tracks" exact>
+            <TracksPage privateTracks />
           </Route>
           <Route path={`/tracks/:slug`} exact>
             <TrackPage />
+          </Route>
+          <Route path={`/tracks/:slug/edit`} exact>
+            <TrackEditor />
           </Route>
           <Route path="/redirect" exact>
             <LoginRedirectPage />

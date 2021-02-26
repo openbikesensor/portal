@@ -6,10 +6,8 @@ import {useForm} from 'react-hook-form'
 import {setLogin} from 'reducers/login'
 import {Page} from 'components'
 import api from 'api'
+import {findInput} from 'utils'
 
-function findInput(register) {
-  return (element) => register(element ? element.querySelector('input, textarea, select') : null)
-}
 
 const SettingsPage = connect((state) => ({login: state.login}), {setLogin})(function SettingsPage({login, setLogin}) {
   const {register, handleSubmit} = useForm()

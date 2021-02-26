@@ -1,9 +1,9 @@
 import React from 'react'
 import {connect} from 'react-redux'
 import {Table, Checkbox, Segment, Dimmer, Grid, Loader, Header} from 'semantic-ui-react'
-import {useParams} from 'react-router-dom'
+import {useParams, useHistory} from 'react-router-dom'
 import {concat, combineLatest, of, from, Subject} from 'rxjs'
-import {pluck, distinctUntilChanged, map, switchMap, startWith} from 'rxjs/operators'
+import {pluck, distinctUntilChanged, map, switchMap, startWith, catchError} from 'rxjs/operators'
 import {useObservable} from 'rxjs-hooks'
 import Markdown from 'react-markdown'
 
@@ -26,6 +26,7 @@ const TrackPage = connect((state) => ({login: state.login}))(function TrackPage(
   const {slug} = useParams()
 
   const [reloadComments, reloadComments$] = useTriggerSubject()
+  const history = useHistory()
 
   const data: {
     track: null | Track
@@ -36,13 +37,31 @@ const TrackPage = connect((state) => ({login: state.login}))(function TrackPage(
       const slug$ = args$.pipe(pluck(0), distinctUntilChanged())
       const track$ = slug$.pipe(
         map((slug) => `/tracks/${slug}`),
-        switchMap((url) => concat(of(null), from(api.get(url)))),
+        switchMap((url) =>
+          concat(
+            of(null),
+            from(api.get(url)).pipe(
+              catchError(() => {
+                history.replace('/tracks')
+              })
+            )
+          )
+        ),
         pluck('track')
       )
 
       const trackData$ = slug$.pipe(
         map((slug) => `/tracks/${slug}/data`),
-        switchMap((url) => concat(of(null), from(api.get(url)))),
+        switchMap((url) =>
+          concat(
+            of(null),
+            from(api.get(url)).pipe(
+              catchError(() => {
+                history.replace('/tracks')
+              })
+            )
+          )
+        ),
         pluck('trackData'),
         startWith(null) // show track infos before track data is loaded
       )
@@ -50,7 +69,13 @@ const TrackPage = connect((state) => ({login: state.login}))(function TrackPage(
       const comments$ = concat(of(null), reloadComments$).pipe(
         switchMap(() => slug$),
         map((slug) => `/tracks/${slug}/comments`),
-        switchMap((url) => api.get(url)),
+        switchMap((url) =>
+          from(api.get(url)).pipe(
+            catchError(() => {
+              history.replace('/tracks')
+            })
+          )
+        ),
         pluck('comments'),
         startWith(null) // show track infos before comments are loaded
       )
@@ -63,17 +88,23 @@ const TrackPage = connect((state) => ({login: state.login}))(function TrackPage(
     [slug]
   )
 
-  const onSubmitComment = React.useCallback(async ({body}) => {
-    await api.post(`/tracks/${slug}/comments`, {
-      body: {comment: {body}},
-    })
-    reloadComments()
-  }, [slug, reloadComments])
+  const onSubmitComment = React.useCallback(
+    async ({body}) => {
+      await api.post(`/tracks/${slug}/comments`, {
+        body: {comment: {body}},
+      })
+      reloadComments()
+    },
+    [slug, reloadComments]
+  )
 
-  const onDeleteComment = React.useCallback(async (id) => {
-    await api.delete(`/tracks/${slug}/comments/${id}`)
-    reloadComments()
-  }, [slug, reloadComments])
+  const onDeleteComment = React.useCallback(
+    async (id) => {
+      await api.delete(`/tracks/${slug}/comments/${id}`)
+      reloadComments()
+    },
+    [slug, reloadComments]
+  )
 
   const isAuthor = login?.username === data?.track?.author?.username
 

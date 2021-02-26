@@ -1,6 +1,6 @@
 import React from 'react'
 import {connect} from 'react-redux'
-import {Item, Tab, Loader, Pagination, Icon} from 'semantic-ui-react'
+import {Message, Item, Tab, Loader, Pagination, Icon} from 'semantic-ui-react'
 import {useObservable} from 'rxjs-hooks'
 import {Link, useHistory, useRouteMatch} from 'react-router-dom'
 import {of, from, concat} from 'rxjs'
@@ -16,8 +16,8 @@ function TracksPageTabs() {
   const history = useHistory()
   const panes = React.useMemo(
     () => [
-      {menuItem: 'Public tracks', url: '/feed'},
-      {menuItem: 'My tracks', url: '/feed/my'},
+      {menuItem: 'Public tracks', url: '/tracks'},
+      {menuItem: 'My tracks', url: '/my/tracks'},
     ],
     []
   )
@@ -29,13 +29,13 @@ function TracksPageTabs() {
     [history, panes]
   )
 
-  const isFeedPage = useRouteMatch('/feed/my')
-  const activeIndex = isFeedPage ? 1 : 0
+  const isOwnTracksPage = useRouteMatch('/my/tracks')
+  const activeIndex = isOwnTracksPage ? 1 : 0
 
   return <Tab menu={{secondary: true, pointing: true}} {...{panes, onTabChange, activeIndex}} />
 }
 
-function TrackList({privateFeed}: {privateFeed: boolean}) {
+function TrackList({privateTracks}: {privateTracks: boolean}) {
   const [page, setPage] = useQueryParam<number>('page', 1, Number)
 
   const pageSize = 10
@@ -46,8 +46,8 @@ function TrackList({privateFeed}: {privateFeed: boolean}) {
   } | null = useObservable(
     (_$, inputs$) =>
       inputs$.pipe(
-        map(([page, privateFeed]) => {
-          const url = '/tracks' + (privateFeed ? '/feed' : '')
+        map(([page, privateTracks]) => {
+          const url = '/tracks' + (privateTracks ? '/feed' : '')
           const query = {limit: pageSize, offset: pageSize * (page - 1)}
           return {url, query}
         }),
@@ -55,7 +55,7 @@ function TrackList({privateFeed}: {privateFeed: boolean}) {
         switchMap((request) => concat(of(null), from(api.get(request.url, {query: request.query}))))
       ),
     null,
-    [page, privateFeed]
+    [page, privateTracks]
   )
 
   const {tracks, tracksCount} = data || {tracks: [], tracksCount: 0}
@@ -73,12 +73,16 @@ function TrackList({privateFeed}: {privateFeed: boolean}) {
         />
       )}
 
-      {tracks && (
+      {tracks && tracks.length ? (
         <Item.Group divided>
           {tracks.map((track: Track) => (
-            <TrackListItem key={track.slug} {...{track, privateFeed}} />
+            <TrackListItem key={track.slug} {...{track, privateTracks}} />
           ))}
         </Item.Group>
+      ) : (
+        <Message>
+          No track uploaded yet. <Link to="/upload">Be the first!</Link>
+        </Message>
       )}
     </div>
   )
@@ -92,7 +96,7 @@ function maxLength(t, max) {
   }
 }
 
-export function TrackListItem({track, privateFeed = false}) {
+export function TrackListItem({track, privateTracks = false}) {
   return (
     <Item key={track.slug}>
       <Item.Image size="tiny" src={track.author.image} />
@@ -106,7 +110,7 @@ export function TrackListItem({track, privateFeed = false}) {
         <Item.Description>
           <StripMarkdown>{maxLength(track.description, 200)}</StripMarkdown>
         </Item.Description>
-        {privateFeed && (
+        {privateTracks && (
           <Item.Extra>
             {track.visible ? (
               <>
@@ -124,11 +128,11 @@ export function TrackListItem({track, privateFeed = false}) {
   )
 }
 
-const TracksPage = connect((state) => ({login: (state as any).login}))(function TracksPage({login, privateFeed}) {
+const TracksPage = connect((state) => ({login: (state as any).login}))(function TracksPage({login, privateTracks}) {
   return (
     <Page>
       {login ? <TracksPageTabs /> : null}
-      <TrackList {...{privateFeed}} />
+      <TrackList {...{privateTracks}} />
     </Page>
   )
 })
