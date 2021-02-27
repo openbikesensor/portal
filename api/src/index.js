@@ -6,7 +6,7 @@ const cors = require('cors');
 const errorhandler = require('errorhandler');
 const passport = require('passport');
 
-require('./config/passport');
+require('./passport');
 
 const isProduction = process.env.NODE_ENV === 'production';
 

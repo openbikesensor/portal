@@ -1,7 +1,6 @@
 const router = require('express').Router();
-const passport = require('passport');
 const wrapRoute = require('../../_helpers/wrapRoute');
-const auth = require('../../config/passport');
+const auth = require('../../passport');
 
 router.get(
   '/user',

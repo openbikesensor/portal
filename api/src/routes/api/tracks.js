@@ -5,7 +5,7 @@ const Track = mongoose.model('Track');
 const Comment = mongoose.model('Comment');
 const User = mongoose.model('User');
 const busboy = require('connect-busboy');
-const auth = require('../../config/passport');
+const auth = require('../../passport');
 const { normalizeUserAgent, buildObsver1 } = require('../../logic/tracks');
 const wrapRoute = require('../../_helpers/wrapRoute');
 

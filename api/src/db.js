@@ -10,6 +10,6 @@ require('./models/TrackData');
 require('./models/User');
 require('./models/Track');
 require('./models/Comment');
-require('./config/passport');
+require('./passport');
 
 module.exports = mongoose;

@@ -1,0 +1,12 @@
+{
+  "secret": "CHANGEME",
+  "mail": {
+    "from": "Sender Name <sender@example.com>",
+    "smtp" : {
+      "host": "mail.example.com",
+      "port": 587,
+      "username": "sender@example.com",
+      "password": "hunter2"
+    }
+  }
+}

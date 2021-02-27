@@ -4,7 +4,7 @@ const { URL } = require('url');
 const { createChallenge } = require('pkce');
 
 const { AuthorizationCode, AccessToken, RefreshToken, Client } = require('../models');
-const auth = require('../config/passport');
+const auth = require('../passport');
 const wrapRoute = require('../_helpers/wrapRoute');
 
 // Check whether the "bigScope" fully includes the "smallScope".

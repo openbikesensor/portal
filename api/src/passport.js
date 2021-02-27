@@ -4,9 +4,9 @@ const { Strategy: BearerStrategy } = require('passport-http-bearer');
 const { Strategy: JwtStrategy } = require('passport-jwt');
 const { Strategy: CustomStrategy } = require('passport-custom');
 
-const { User, AccessToken, RefreshToken } = require('../models');
+const { User, AccessToken, RefreshToken } = require('./models');
 
-const secret = require('../config').secret;
+const secret = require('./config').secret;
 
 // used to serialize the user for the session
 passport.serializeUser(function (user, done) {

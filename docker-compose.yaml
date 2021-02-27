@@ -20,6 +20,7 @@ services:
       - ./local/api-data:/data
       - ./api/.migrations.js:/opt/obs/api/.migrations.js
       - ./api/migrations:/opt/obs/api/migrations/
+      - ./api/config.dev.json:/opt/obs/api/config.json
     environment:
       - PORT=3000
       - MONGODB_URL=mongodb://mongo/obsTest
