@@ -1,5 +1,11 @@
 {
   "cookieSecret": "CHANGEME!!!!!!!!!!@##@!!$$$$$$$$$$$$$!!",
   "jwtSecret": "CHANGEME??????????????////3212321;312kjbkasjd",
-  "mail": false
+  "baseUrl": "http://localhost:3000/",
+  "mainFrontendUrl": "http://localhost:3001/",
+  "mail": false,
+  "mongodb": {
+    "url": "mongodb://mongo/obsTest",
+    "debug": true
+  }
 }

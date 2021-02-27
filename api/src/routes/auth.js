@@ -6,6 +6,7 @@ const { createChallenge } = require('pkce');
 const { AuthorizationCode, AccessToken, RefreshToken, Client } = require('../models');
 const auth = require('../passport');
 const wrapRoute = require('../_helpers/wrapRoute');
+const config = require('../config')
 
 // Check whether the "bigScope" fully includes the "smallScope".
 function scopeIncludes(smallScope, bigScope) {
@@ -48,6 +49,7 @@ function isValidScope(scope) {
 
 router.use((req, res, next) => {
   res.locals.user = req.user;
+  res.locals.mainFrontendUrl = config.mainFrontendUrl
   next();
 });
 
@@ -397,7 +399,7 @@ router.get(
 router.get(
   '/.well-known/oauth-authorization-server',
   wrapRoute(async (req, res) => {
-    const baseUrl = 'http://localhost:3000';
+    const baseUrl = config.baseUrl.replace(/\/+$/, '')
 
     return res.json({
       issuer: baseUrl,

@@ -1,6 +1,8 @@
 {
   "cookieSecret": "CHANGEME!!!!!!!!!!!!!!!!!!!!!11",
   "jwtSecret": "CHANGEME???????????????????////",
+  "baseUrl": "https://openbikesensor.example.com/",
+  "mainFrontendUrl": "https://openbikesensor.example.com/api/",
   "mail": {
     "from": "Sender Name <sender@example.com>",
     "smtp" : {
@@ -9,5 +11,9 @@
       "username": "sender@example.com",
       "password": "hunter2"
     }
+  },
+  "mongodb": {
+    "url": "mongodb://user:pass@host/obs",
+    "debug": false
   }
 }

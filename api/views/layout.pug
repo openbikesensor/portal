@@ -130,7 +130,8 @@ html
       nav
         header OpenBikeSensor Account Pages
         ul
-          li: a(href="/") Back to Portal
+          if mainFrontendUrl
+            li: a(href=mainFrontendUrl) Back to Portal
           if !user
             li: a(href="/login") Login
             li: a(href="/register") Register
