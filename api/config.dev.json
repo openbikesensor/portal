@@ -1,4 +1,5 @@
 {
-  "secret": "CHANGEME!!!!!!!!!!@##@!!$$$$$$$$$$$$$!!",
+  "cookieSecret": "CHANGEME!!!!!!!!!!@##@!!$$$$$$$$$$$$$!!",
+  "jwtSecret": "CHANGEME??????????????////3212321;312kjbkasjd",
   "mail": false
 }

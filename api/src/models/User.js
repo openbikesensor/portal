@@ -2,7 +2,6 @@ const mongoose = require('mongoose');
 const uniqueValidator = require('mongoose-unique-validator');
 const crypto = require('crypto');
 const jwt = require('jsonwebtoken');
-const secret = require('../config').secret;
 
 const schema = new mongoose.Schema(
   {
@@ -61,7 +60,7 @@ class User extends mongoose.Model {
         username: this.username,
         exp: parseInt(exp.getTime() / 1000),
       },
-      secret,
+      config.jwtSecret,
     );
   }
 

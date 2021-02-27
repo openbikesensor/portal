@@ -1,5 +1,6 @@
 {
-  "secret": "CHANGEME",
+  "cookieSecret": "CHANGEME!!!!!!!!!!!!!!!!!!!!!11",
+  "jwtSecret": "CHANGEME???????????????????////",
   "mail": {
     "from": "Sender Name <sender@example.com>",
     "smtp" : {

@@ -4,7 +4,8 @@ const Joi = require('joi');
 const configSchema = Joi.object()
   .required()
   .keys({
-    secret: Joi.string().min(16).max(128).required(),
+    jwtSecret: Joi.string().min(16).max(128).required(),
+    cookieSecret: Joi.string().min(16).max(128).required(),
 
     mail: Joi.alternatives().try(
       Joi.object({

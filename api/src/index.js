@@ -6,6 +6,7 @@ const cors = require('cors');
 const errorhandler = require('errorhandler');
 const passport = require('passport');
 
+const config = require('./config');
 require('./passport');
 
 const isProduction = process.env.NODE_ENV === 'production';
@@ -27,7 +28,7 @@ app.use(bodyParser.urlencoded({ limit: '50mb', extended: false }));
 app.use(require('method-override')());
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.use(session({ secret: 'obsobs', cookie: { maxAge: 10 * 60 * 1000 }, resave: false, saveUninitialized: false }));
+app.use(session({ secret: config.cookieSecret, cookie: { maxAge: 10 * 60 * 1000 }, resave: false, saveUninitialized: false }));
 app.use(passport.initialize());
 app.use(passport.session());
 
