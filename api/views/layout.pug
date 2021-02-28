@@ -1,5 +1,6 @@
 html
   head
+    base(href=baseUrl)
     title
       block title
         | Authorization Server
@@ -133,10 +134,10 @@ html
           if mainFrontendUrl
             li: a(href=mainFrontendUrl) Back to Portal
           if !user
-            li: a(href="/login") Login
-            li: a(href="/register") Register
+            li: a(href="login") Login
+            li: a(href="register") Register
           if user
-            li: a(href="/logout") Logout
+            li: a(href="logout") Logout
       header: h1
         block title
       block content

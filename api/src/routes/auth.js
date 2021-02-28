@@ -53,6 +53,7 @@ function isValidScope(scope) {
 router.use((req, res, next) => {
   res.locals.user = req.user;
   res.locals.mainFrontendUrl = config.mainFrontendUrl;
+  res.locals.baseUrl = baseUrl;
   next();
 });
 
