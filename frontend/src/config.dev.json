@@ -1,4 +1,5 @@
 {
+  "apiUrl": "http://localhost:3001",
   "auth": {
     "server": "http://localhost:3000",
     "clientId": "b730f8d2-d93c-4c68-9ff0-dfac8da76ee2",

@@ -172,7 +172,7 @@ class API {
   async fetch(url, options = {}) {
     const accessToken = await this.getValidAccessToken()
 
-    const response = await window.fetch('/api' + url, {
+    const response = await window.fetch(config.apiUrl + '/api' + url, {
       ...options,
       headers: {
         ...(options.headers || {}),
