@@ -447,7 +447,7 @@ router
       }),
     ),
     wrapRoute(async (req, res) => {
-      await accountService.register(req.body, req.get('origin'));
+      await accountService.register(req.body);
 
       return res.render('message', {
         type: 'success',
@@ -486,7 +486,7 @@ router
       }),
     ),
     wrapRoute(async (req, res) => {
-      await accountService.forgotPassword(req.body, req.get('origin'));
+      await accountService.forgotPassword(req.body);
       res.render('message', {
         type: 'success',
         title: 'Recovery mail sent',
