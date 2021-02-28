@@ -10,6 +10,34 @@ separated into components:
   provides summaries and visualizations, and lets users adjust settings and
   manage and publish their tracks.
   
+## Deployment setup
+
+You should be familiar with managing a Linux server. If not, find a suitable
+guide first. This will only give a rough outline of the steps to take, you must
+make sure to properly set up and secure your server yourself.
+
+1. Create a user for running the application. It is not recommended to run as a
+   user that is also used for other things. Do not run as root!
+2. Clone the repository.
+3. Install `node` of at least version 14, and also `npm`.
+4. Run `npm ci` in the `api` and `frontend` directories to install dependencies.
+5. Install and configure a MongoDB somewhere.
+6. Copy `api/config.json.example` to `api/config.json` and change it to suit
+   your setup. Make sure to only use https URLs. Generate secure secrets.
+   Customize client IDs.
+7. Copy `frontend/src/config.json.example` to `frontend/src/config.json` and
+   adjust.
+8. Run `npm run build` in the frontend directory. This needs to be done after
+   changing the config, so if you did something wrong, re-run the build. If you
+   run your frontend on a non-root URL, run the build with the
+   `PUBLIC_URL=/prefix` environment variable.
+9. Create a systemd-user service, or use tmux, or do whatever you like to start
+   the API service (`npm start` in `api/` directory). It should run as the
+   dedicated user, and expose `127.0.0.1:3000`. Use `PORT` environment variable
+   if you want to change the port. Make sure the service starts with
+   environment `NODE_ENV=production`, too.
+10. Configure nginx or your reverse-proxy of choice to forward API requests to
+    the API port, and serve static files from the `frontend/build/` folder.
 
 ## Development setup
 
