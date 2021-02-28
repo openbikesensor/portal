@@ -8,6 +8,9 @@ const auth = require('../passport');
 const wrapRoute = require('../_helpers/wrapRoute');
 const config = require('../config');
 
+const baseUrl = config.baseUrl.replace(/\/+$/, '');
+
+
 // Check whether the "bigScope" fully includes the "smallScope".
 function scopeIncludes(smallScope, bigScope) {
   const smallScopeParts = smallScope.split(/\s/);
@@ -74,7 +77,7 @@ router.post(
   },
   wrapRoute((req, res, next) => {
     if (!req.user) {
-      return res.redirect('/login');
+      return res.redirect(baseUrl + '/login');
     }
 
     if (req.session.next) {
@@ -103,7 +106,7 @@ router
     auth.usernameAndPasswordSession,
     wrapRoute(async (req, res) => {
       req.logout();
-      return res.redirect('/login');
+      return res.redirect(baseUrl + '/login');
     }),
   )
   .get((req, res) => res.render('logout'));
@@ -151,7 +154,7 @@ router.get(
   wrapRoute(async (req, res) => {
     if (!req.user) {
       req.session.next = req.url;
-      return res.redirect('/login');
+      return res.redirect(baseUrl + '/login');
     }
 
     try {
@@ -409,8 +412,6 @@ router.get(
 router.get(
   '/.well-known/oauth-authorization-server',
   wrapRoute(async (req, res) => {
-    const baseUrl = config.baseUrl.replace(/\/+$/, '');
-
     return res.json({
       issuer: baseUrl,
       authorization_endpoint: `${baseUrl}/authorize`,
