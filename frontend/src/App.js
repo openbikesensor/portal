@@ -20,7 +20,7 @@ import {LoginButton} from 'components'
 
 const App = connect((state) => ({login: state.login}))(function App({login}) {
   return (
-    <Router>
+    <Router basename={process.env.PUBLIC_URL || '/'}>
       <div className={styles.App}>
         <header className={styles.headline}>
           <div className={styles.header}>
