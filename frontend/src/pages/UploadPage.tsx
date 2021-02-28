@@ -6,6 +6,7 @@ import {Link} from 'react-router-dom'
 import {FileUploadField, Page} from 'components'
 import type {Track} from 'types'
 import api from 'api'
+import config from '../config.json'
 
 function isSameFile(a: File, b: File) {
   return a.name === b.name && a.size === b.size
@@ -73,9 +74,9 @@ export function FileUploadStatus({
       xhr.onload = onLoad
       xhr.upload.onprogress = onProgress
       if (slug) {
-        xhr.open('PUT', `/api/tracks/${slug}`)
+        xhr.open('PUT', `${config.apiUrl}/api/tracks/${slug}`)
       } else {
-        xhr.open('POST', '/api/tracks')
+        xhr.open('POST', `${config.apiUrl}/api/tracks`)
       }
 
       api.getValidAccessToken().then((accessToken) => {
