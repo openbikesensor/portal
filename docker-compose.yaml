@@ -44,6 +44,7 @@ services:
       - ./frontend/public:/opt/obs/frontend/public
       - ./frontend/tsconfig.json:/opt/obs/frontend/tsconfig.json
       - ./frontend/package.json:/opt/obs/frontend/package.json
+      - ./frontend/src/config.dev.json:/opt/obs/frontend/src/config.json
     environment:
       - PORT=3000
     links:

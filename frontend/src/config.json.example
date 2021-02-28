@@ -1,0 +1,8 @@
+{
+  "auth": {
+    "server": "https://api.example.com",
+    "clientId": "CHANGEME",
+    "scope": "*",
+    "redirectUri": "https://example.com/redirect"
+  }
+}
