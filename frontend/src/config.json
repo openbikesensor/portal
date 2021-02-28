@@ -1,7 +1,7 @@
 {
   "auth": {
     "server": "http://localhost:3000",
-    "clientId": "123",
+    "clientId": "b730f8d2-d93c-4c68-9ff0-dfac8da76ee2",
     "scope": "*",
     "redirectUri": "http://localhost:3001/redirect"
   }

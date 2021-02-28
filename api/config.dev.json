@@ -7,5 +7,21 @@
   "mongodb": {
     "url": "mongodb://mongo/obsTest",
     "debug": true
-  }
+  },
+  "oAuth2Clients": [
+    {
+      "clientId": "b730f8d2-d93c-4c68-9ff0-dfac8da76ee2",
+      "validRedirectUris": ["http://localhost:3001/redirect"],
+      "refreshTokenExpirySeconds": 604800,
+      "maxScope": "*",
+      "title": "OBS Portal"
+    },
+    {
+      "clientId": "a2958209-4045-4ec9-8cb3-1156abba7de3",
+      "validRedirectUris": ["__LOCAL__"],
+      "maxScope": "track.upload",
+      "refreshTokenExpirySeconds": 86400000,
+      "title": "OpenBikeSensor"
+    }
+  ]
 }

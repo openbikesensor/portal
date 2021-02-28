@@ -5,7 +5,7 @@ const schema = new mongoose.Schema(
   {
     code: { type: String, unique: true, required: true },
     user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-    client: { type: mongoose.Schema.Types.ObjectId, ref: 'Client', required: true },
+    clientId: { type: String, required: true },
     scope: { type: String, required: true, defaultValue: '*' },
     redirectUri: { type: String, required: true },
     expiresAt: { type: Date, required: true },
@@ -15,17 +15,13 @@ const schema = new mongoose.Schema(
 );
 
 class AuthorizationCode extends mongoose.Model {
-  static generate(client, user, redirectUri, scope, codeChallenge, expiresInSeconds = 60) {
+  static generate(options, expiresInSeconds = 60) {
     const code = crypto.randomBytes(8).toString('hex');
 
     return new AuthorizationCode({
+      ...options,
       code,
-      user,
-      client,
-      redirectUri,
       expiresAt: new Date(new Date().getTime() + 1000 * expiresInSeconds),
-      scope,
-      codeChallenge,
     });
   }
 }

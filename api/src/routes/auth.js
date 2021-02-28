@@ -3,10 +3,10 @@ const passport = require('passport');
 const { URL } = require('url');
 const { createChallenge } = require('pkce');
 
-const { AuthorizationCode, AccessToken, RefreshToken, Client } = require('../models');
+const { AuthorizationCode, AccessToken, RefreshToken } = require('../models');
 const auth = require('../passport');
 const wrapRoute = require('../_helpers/wrapRoute');
-const config = require('../config')
+const config = require('../config');
 
 // Check whether the "bigScope" fully includes the "smallScope".
 function scopeIncludes(smallScope, bigScope) {
@@ -49,7 +49,7 @@ function isValidScope(scope) {
 
 router.use((req, res, next) => {
   res.locals.user = req.user;
-  res.locals.mainFrontendUrl = config.mainFrontendUrl
+  res.locals.mainFrontendUrl = config.mainFrontendUrl;
   next();
 });
 
@@ -170,7 +170,7 @@ router.get(
         return returnError(res, 'invalid_request', 'client_id parameter required');
       }
 
-      const client = await Client.findOne({ clientId });
+      const client = await config.oAuth2Clients.find((c) => c.clientId === clientId);
       if (!client) {
         return returnError(res, 'invalid_client', 'unknown client');
       }
@@ -269,13 +269,17 @@ router.post(
       });
     }
 
-    const client = await Client.findOne({ clientId });
-
     // invalidate the transaction
     req.session.authorizationTransaction = null;
 
     if (req.path === '/authorize/approve') {
-      const code = AuthorizationCode.generate(client, req.user, redirectUri, scope, codeChallenge);
+      const code = AuthorizationCode.generate({
+        clientId,
+        user: req.user,
+        redirectUri,
+        scope,
+        codeChallenge,
+      });
       await code.save();
 
       return redirectWithParams(res, redirectUri, { code: code.code, scope });
@@ -336,7 +340,7 @@ router.get(
       return returnError(res, 'invalid_request', 'code_verifier parameter required');
     }
 
-    const client = await Client.findOne({ clientId });
+    const client = await config.oAuth2Clients.find((c) => c.clientId === clientId);
 
     if (!client) {
       await destroyAuthCode();
@@ -356,7 +360,7 @@ router.get(
       await destroyAuthCode();
       return returnError(res, 'invalid_grant', 'invalid authorization code');
     }
-    if (!client._id.equals(authorizationCode.client)) {
+    if (clientId !== authorizationCode.clientId) {
       await destroyAuthCode();
       return returnError(res, 'invalid_grant', 'invalid authorization code');
     }
@@ -368,15 +372,21 @@ router.get(
     // invalidate auth code now, before generating tokens
     await AuthorizationCode.deleteOne({ _id: authorizationCode._id });
 
-    const accessToken = AccessToken.generate(authorizationCode.client, authorizationCode.user, authorizationCode.scope);
+    const accessToken = AccessToken.generate({
+      clientId: authorizationCode.clientId,
+      user: authorizationCode.user,
+      scope: authorizationCode.scope,
+    });
     await accessToken.save();
 
     let refreshToken;
     if (client.refreshTokenExpirySeconds != null) {
       refreshToken = RefreshToken.generate(
-        authorizationCode.client,
-        authorizationCode.user,
-        authorizationCode.scope,
+        {
+          clientId: authorizationCode.clientId,
+          user: authorizationCode.user,
+          scope: authorizationCode.scope,
+        },
         client.refreshTokenExpirySeconds,
       );
       await refreshToken.save();
@@ -399,7 +409,7 @@ router.get(
 router.get(
   '/.well-known/oauth-authorization-server',
   wrapRoute(async (req, res) => {
-    const baseUrl = config.baseUrl.replace(/\/+$/, '')
+    const baseUrl = config.baseUrl.replace(/\/+$/, '');
 
     return res.json({
       issuer: baseUrl,

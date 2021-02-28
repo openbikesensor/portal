@@ -25,6 +25,30 @@ const configSchema = Joi.object({
     url: Joi.string().required(),
     debug: Joi.boolean().default(process.env.NODE_ENV !== 'production'),
   }).required(),
+
+  oAuth2Clients: Joi.array()
+    .default([])
+    .items(
+      Joi.object({
+        title: Joi.string().required(),
+        clientId: Joi.string().required(),
+        validRedirectUris: Joi.array().required().items(Joi.string()),
+
+        // Set `refreshTokenExpirySeconds` to null to issue no refresh tokens.  Set
+        // to a number of seconds to issue refresh tokens with that duration. No
+        // infinite tokens are ever issued, set to big number to simulate that.
+        refreshTokenExpirySeconds: Joi.number()
+          .default(null)
+          .min(1) // 0 would make no sense, use `null` to issue no token
+          .max(1000 * 24 * 60 * 60), // 1000 days, nearly 3 years
+
+        // Set to a scope which cannot be exceeded when requesting client tokens.
+        // Clients must manually request a scope that is smaller or equal to this
+        // scope to get a valid response. Scopes are not automatically truncated.
+        // Leave empty or set to `"*"` for unlimited scopes in this client.
+        maxScope: Joi.string().required(),
+      }),
+    ),
 }).required();
 
 const configFiles = [
