@@ -198,4 +198,9 @@ palettePercentageInverted = new Palette({
     100.0000: [ 64, 0,   0, 255],
 }, [0, 0, 196, 255]);
 
+palettePercentageZweirat = new Palette({
+    0.0000: [  0, 255,   0, 255],
+    50.0000: [255, 255,   0, 255],
+    100.0000: [ 255, 0,   0, 255],
+}, [0, 0, 196, 255]);
 
