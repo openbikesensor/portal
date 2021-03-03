@@ -1,5 +1,6 @@
 # Overview
-OBS-FACE is a script for Filtering, Annotating, Consolidating and Exporting OpenBikeSensor measurements stored in CSV-format.
+OBS-FACE is a Python script for Filtering, Annotating, Consolidating and Exporting OpenBikeSensor measurements stored in the
+[OpenBikeSensor CSV-format](https://github.com/openbikesensor/OpenBikeSensorFirmware/blob/master/docs/software/firmware/csv_format.mdhttps://github.com/openbikesensor/OpenBikeSensorFirmware/blob/master/docs/software/firmware/csv_format.md).
 
 ## Filtering
 Measurements with invalid time stamp, location or distance measurement are filtered out. Further, only confirmed measurements are kept.
@@ -8,24 +9,27 @@ In addition, usernames are replaced by pseudonyms, and only selected information
 
 ## Annotation
 Each measurement is assigned to one _way_ as described by the OpenStreetMap data. GPS positions are corrected by 
-projecting it in to the way. Further, for each *confirmed* measurement, information from OpenStreetMap such as street name are duplicated to the measurement.
+projecting it to the way (snapping). Further, for each *confirmed* measurement, information from OpenStreetMap such as street name are duplicated to the measurement.
 
 ## Consolidating
 All confirmed and valid measurements are collected and consolidated in one file in Json format.
 
 ## Export
-The consolidated measurements are converted to GeoJson format and exported for visualization.
-
+The consolidated measurements are converted to GeoJson format and exported for visualization as required by the [OpenBikeSensor visualization](https://github.com/openbikesensor/OpenBikeSensor-Scripts/tree/main/OBS-FACE-Visualization).
 
 # Installation
 Clone code
 
-`git clone https://github.com/openbikesensor/OpenBikeSensor-Scripts/OBS-FACE/tree/main/`
+ `git clone https://github.com/openbikesensor/OpenBikeSensor-Scripts.git`
+
+and go to the FACE subdirectory
+
+ `cd OpenBikeSensor-Scripts/OBS-FACE`
 
 ## Requirements
-The code is tested with Python 3.8.
+The code is tested with [Python 3.8](https://www.python.org/downloads/release/python-380/).
 
-Install required packages:
+Also, install required Python packages:
 
 `python3.8 -m pip install -r requirements.txt `
 
@@ -36,7 +40,7 @@ The default data directory is assumed to be
 
 `./data/`
 
-Place all CSV files in subdirectories of `./data/input`: 
+Place all OpenBikeSensor CSV files in subdirectories of `./data/input`: 
 
 `./data/input/User1/`
 
@@ -44,13 +48,13 @@ Place all CSV files in subdirectories of `./data/input`:
 
 `./data/input/User3/`
 
-etc. 
+etc. The expected file format is defined [here](https://github.com/openbikesensor/OpenBikeSensorFirmware/blob/master/docs/software/firmware/csv_format.mdhttps://github.com/openbikesensor/OpenBikeSensorFirmware/blob/master/docs/software/firmware/csv_format.md). 
 
-To annotate, collect and export GeoJson visualization data, run:
+To filter, annotate and collect OpenBikeSensor measurements and export to GeoJson visualization data, run:
 
 `python3.8 obs-face.py -ACV -D "Stuttgart" ` 
 
-For measurement annotation, OpenStreetMap geographic data from district "Stuttgart" is used. Additional districts (Kreise) can be added in this way.
+For measurement annotation, OpenStreetMap geographic data from district "Stuttgart" is used. Additional districts (Landkreise) can be added in this way (see below).
 
 For each CSV-file in `./data/input`, one Json-file with annotated measurements as well as a log file is created in `./data/annotated`.
 
@@ -60,22 +64,32 @@ The consolidated, i.e. valid and confirmed measurements are collected in Json-fo
 
 The data exported for visualization will be located in:
 
-`./data/visualization/measurements.json` contain confirmed, valid measurements in GeoJson format.
+`./data/visualization/measurements.json`
 
-`./data/visualization/roads.json` contain confirmed, valid measurements consolidated to road segments in GeoJson format.
+contain confirmed, valid *measurements* in GeoJson format as expected by `measurements.html` in the [OBS-FACE visualization](https://github.com/openbikesensor/OpenBikeSensor-Scripts/tree/main/OBS-FACE-Visualization) project. 
+Further,
+
+`./data/visualization/roads.json` 
+
+contains confirmed, valid measurements consolidated to *road segments* in GeoJson format as expected 
+by `road.html` in the [OBS-FACE visualization](https://github.com/openbikesensor/OpenBikeSensor-Scripts/tree/main/OBS-FACE-Visualization) project.
+
+
 
 ## Advanced Use
 ### Add More Districts
 
 `python3.8 obs-face.py -ACV -D "Stuttgart" -D "Pforzheim" -D "Enzkreis" -D "Landkreis Böblingen" -D "Landkreis Ludwigsburg" -D "Rems-Murr-Kreis" -D "Landkreis Esslingen"`
 
-Make sure the spelling is correct.
+The name of the region is matched with the `name` tag of OpenStreetMap relations describing regions (Germany: *Kreis*), 
+i.e. having the tag `boundary=administrative`, e.g. [Stuttgart](https://www.openstreetmap.org/relation/2793104). 
 
 ### Change Data base Directory
 In case your data is located in a different directory, use:
+
 `python3.8 obs-face.py -ACV -D "Stuttgart" -b ./data_collection/Stuttgart/` 
 
-In general the default data structure is as following:
+In general, the default data structure is as following:
 
 `BASEDIRECTORY/input/` input CSV files to be processed
 
@@ -87,7 +101,7 @@ In general the default data structure is as following:
 
 `BASEDIRECTORY/visualization/roads.json` confirmed, valid measurements consolidated to road segments in GeoJson format
 
-The base directory is changed by the `-b BASEDIRECTORY` option. The paths can be further customized, see the full option list.
+The base directory is changed by the `-b BASEDIRECTORY` option and defaults to `./data`. The paths can be further customized, see the full option list below.
 
 ### Exclude Input Files
 To exclude subdirectories of the input, use:
@@ -99,11 +113,15 @@ All files in`./data/input/User3/` and subdirectories will be excluded.
 The exclusion path `User3/` is considered relative to the input directory path.
 
 ### Use Parallel Processing
-Some of the time consuming computations can be parallelized. Use
+Some of the time-consuming computations can be parallelized. Use
 
 `python3.8 obs-face.py -ACV -D "Stuttgart" -p 4`
 
 to use 4 worker processes. Note that this also increases the memory consumption significantly. 
+
+### Map Cache
+Downloaded OpenStreetMap maps and datastructures derived from them are cached in `./cache`. 
+This reduces processing time, however map updates are ignored until the cache is flushed by deleting all files in the `./cache` directory.
 
 ## All Command Line Options
   -h, --help            show this help message and exit
@@ -145,4 +163,3 @@ to use 4 worker processes. Note that this also increases the memory consumption 
                         disables parallel processing if 0, otherwise defines the number of worker processes
  
   --recompute           always recompute annotation results
-`
