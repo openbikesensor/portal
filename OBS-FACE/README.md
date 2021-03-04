@@ -48,7 +48,7 @@ Place all OpenBikeSensor CSV files in subdirectories of `./data/input`:
 
 `./data/input/User3/`
 
-etc. The expected file format is defined [here](https://github.com/openbikesensor/OpenBikeSensorFirmware/blob/master/docs/software/firmware/csv_format.mdhttps://github.com/openbikesensor/OpenBikeSensorFirmware/blob/master/docs/software/firmware/csv_format.md). 
+etc. The expected file format is defined [here](https://github.com/openbikesensor/OpenBikeSensorFirmware/blob/master/docs/software/firmware/csv_format.md). 
 
 To filter, annotate and collect OpenBikeSensor measurements and export to GeoJson visualization data, run:
 
