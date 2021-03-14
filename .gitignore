@@ -1,3 +1,5 @@
 *.egg-info
 data
 cache
+*.pyc
+__pycache__
