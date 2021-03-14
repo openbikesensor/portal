@@ -309,12 +309,8 @@
 			var alpha = 1.0 * detail + 0.5 * mid + 0.5 * overview;
 			var width = active ? 2 : 1;
 			width = (active ? 4.0 : 2.0) * detail + 4 * mid + 200.0 / resolution * overview;
-			// width = width * 16.0/resolution;	  
 
 			color[3] = alpha;
-			// var width = 2 + 1*Math.log10(n);
-			// var width = active?6:4;
-			// width =Math.max(2.0, width*1/resolution);
 
 			var style = new ol.style.Style({
 				stroke: new ol.style.Stroke({
@@ -359,7 +355,10 @@
 		const changeListener = dataSource.once('change', function(event) {
     		if (dataSource.getState() == 'ready') {
 				const extent = vectorLayer.getSource().getExtent(); 
-    			map.getView().fit(extent, map.getSize()); 
+				const mapSize = map.getSize();
+				const overlay = document.getElementById("overlay");
+				const marginLeft = overlay.offsetWidth + overlay.offsetLeft;
+    			map.getView().fit(extent, {size: mapSize, padding: [0, 0, 0, marginLeft]}); 
 			}
 		});
 
