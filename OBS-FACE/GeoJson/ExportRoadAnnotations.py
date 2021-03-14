@@ -6,7 +6,7 @@ from Mapping.LocalMap import AzimuthalEquidistant as LocalMap
 
 
 class ExportRoadAnnotation:
-    def __init__(self, filename, osm):
+    def __init__(self, filename, osm, right_hand_traffic=True):
         self.filename = filename
         self.osm = osm
         self.features = None
@@ -15,6 +15,7 @@ class ExportRoadAnnotation:
         self.n_grouped = 0
         self.way_statistics = {}
         self.only_confirmed_measurements = True
+        self.right_hand_traffic = right_hand_traffic
 
         lat_0, lon_0 = osm.get_map_center()
         self.local_map = LocalMap(lat_0, lon_0)
@@ -60,7 +61,7 @@ class ExportRoadAnnotation:
                 coordinates_i = coordinates if (i == 0) else list(reversed(coordinates))
                 direction = 0 if way.oneway else +1 if i == 0 else -1
 
-                coordinates_i = self.offset_road_coordinates(coordinates_i, direction)
+                coordinates_i = self.offset_road_coordinates(coordinates_i, direction, self.right_hand_traffic)
 
                 feature = {"type": "Feature",
                            "properties": {"distance_overtaker_mean": way.d_mean[i],
@@ -101,7 +102,7 @@ class ExportRoadAnnotation:
 
         return coordinates
 
-    def offset_road_coordinates(self, coordinates, direction):
+    def offset_road_coordinates(self, coordinates, direction, right_hand_traffic=True):
         if direction == 0:
             return coordinates
 
@@ -110,12 +111,13 @@ class ExportRoadAnnotation:
         for p in coordinates:
             c.append(self.local_map.transfer_to(p[1], p[0]))
 
-        # compute normals, pointing to the right
+        # compute normals, pointing to the right (for right-hand traffic) or left (for left-hand traffic)
         n = []
+        orientation = +1 if right_hand_traffic else -1
         for i in range(len(c)-1):
             n_i = c[i+1] - c[i]
             n_i = n_i / np.linalg.norm(n_i)
-            n_i = np.array([-n_i[1], +n_i[0]])
+            n_i = orientation * np.array([-n_i[1], +n_i[0]])
             n.append(n_i)
 
         # move points

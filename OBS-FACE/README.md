@@ -159,6 +159,10 @@ This reduces processing time, however map updates are ignored until the cache is
   -D DISTRICT, --district DISTRICT
                         name of a district (Landkreis) from which the OSM data should be used, can be used several times
  
+  --left-hand-traffic   switches to left-hand traffic (otherwise: right-hand
+                        traffic); right instead left sensor is used, and the
+                        exported visualization is adapted
+
   -p PARALLEL, --parallel PARALLEL
                         disables parallel processing if 0, otherwise defines the number of worker processes
  

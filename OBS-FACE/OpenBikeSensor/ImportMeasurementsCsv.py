@@ -14,15 +14,17 @@ from Mapping.LocalMap import AzimuthalEquidistant as LocalMap
 
 class ImportMeasurementsCsv:
     def __init__(self,
-                 case_is_overtaker_side=True, left_is_overtaker_side=True,
+                 right_hand_traffic=True,
                  derive_missing_velocities=True,
-                 correct_timezone=False
-                 ):
+                 correct_timezone=False,
+                 left_right_is_swapped=False,
+                 case_is_left=True
+    ):
 
         self.derive_missing_velocities = derive_missing_velocities
         self.correct_timezone = correct_timezone
-        self.left_is_overtaker_side = left_is_overtaker_side
-        self.case_is_overtaker_side = case_is_overtaker_side
+        self.left_is_overtaker_side = left_right_is_swapped != right_hand_traffic
+        self.case_is_overtaker_side = case_is_left == right_hand_traffic
 
         self.measurement_template = {'time': None, 'latitude': None, 'longitude': None,
                                      'distance_overtaker': None, 'distance_stationary': None, 'confirmed': None,

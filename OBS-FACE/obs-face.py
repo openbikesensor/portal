@@ -51,13 +51,12 @@ def collect_datasets(path, exclusion_list):
 
 
 def process_datasets(datasets, path_annotated, osm, skip_if_json_exists=True, path_cache='./cache',
-                     n_worker_processes=1, process_parallel=True):
-
+                     n_worker_processes=1, process_parallel=True, right_hand_traffic=True):
     logging.info("annotating datasets")
 
     annotator = AnnotateMeasurements(osm, cache_dir=path_cache)
     measurement_filter = MeasurementFilter()
-    importer = ImportMeasurementsCsv()
+    importer = ImportMeasurementsCsv(right_hand_traffic=right_hand_traffic)
 
     input_queue = Queue()
     output_queue = Queue()
@@ -100,8 +99,8 @@ def process_datasets(datasets, path_annotated, osm, skip_if_json_exists=True, pa
 
         print("datasets: total {}, input queue {}, output queue {}, finished {} ({} measurements); "
               "worker: running {}, total {}".format(n_in, input_queue.qsize(), output_queue.qsize(),
-                                                              n_out, len(measurements),
-                                                              n_alive, len(processes)), end="\n")
+                                                    n_out, len(measurements),
+                                                    n_alive, len(processes)), end="\n")
 
         if process_parallel:
             # (re)spawn processes
@@ -140,8 +139,10 @@ def combine_statistics(a, b):
         "n_measurements": a["n_measurements"] + b["n_measurements"],
         "n_valid": a["n_valid"] + b["n_valid"],
         "n_confirmed": a["n_confirmed"] + b["n_confirmed"],
-        "t_min": a["t_min"] if a["t_min"] is not None and (b["t_min"] is None or a["t_min"] < b["t_min"]) else b["t_min"],
-        "t_max": a["t_max"] if a["t_max"] is not None and (b["t_max"] is None or a["t_max"] > b["t_max"]) else b["t_max"],
+        "t_min": a["t_min"] if a["t_min"] is not None and (b["t_min"] is None or a["t_min"] < b["t_min"]) else b[
+            "t_min"],
+        "t_max": a["t_max"] if a["t_max"] is not None and (b["t_max"] is None or a["t_max"] > b["t_max"]) else b[
+            "t_max"],
         "t_total": a["t_total"] + b["t_total"],
         "n_segments": a["n_segments"] + b["n_segments"],
         "t": a["t"] + b["t"],
@@ -204,7 +205,7 @@ class AnnotationProcess(Process):
                                                                   log=log)
                     measurements = self.annotator.annotate(measurements)
 
-                    measurements = self.measurement_filter.filter(measurements,log=log)
+                    measurements = self.measurement_filter.filter(measurements, log=log)
 
                     dataset_annotated = {"measurements": measurements, "statistics": statistics}
                     # write out
@@ -256,7 +257,13 @@ def main():
                         help='path where the visualization data will be stored')
 
     parser.add_argument('-D', '--district', required=False, action='append', default=[],
-                        help='name of a district (Landkreis) from which the OSM data should be used, can be used several times')
+                        help='name of a district (Landkreis) from which the OSM data should be used, can be used '
+                             'several times')
+
+    parser.add_argument('--left-hand-traffic', required=False, action='store_false', dest='right_hand_traffic',
+                        default=True,
+                        help='switches to left-hand traffic (otherwise: right-hand traffic); right instead left '
+                             'sensor is used, and the exported visualization is adapted')
 
     parser.add_argument('-p', '--parallel', required=False, action='store', default=0, type=int,
                         help='disables parallel processing if 0, otherwise defines the number of worker processes ')
@@ -277,14 +284,13 @@ def main():
     if args.output_geojson_measurements is None:
         args.output_geojson_measurements = os.path.join(args.base_path, 'visualization', 'measurements.json')
 
-    # args.district = []
-
     logging.debug("parameter list:")
     logging.debug("input=" + args.input)
     logging.debug("path_annotated=" + args.path_annotated)
     logging.debug("output_collected=" + args.output_collected)
 
     logging.debug("district=" + "|".join(args.district))
+    logging.debug("traffic=" + ("right hand" if args.right_hand_traffic else "left hand"))
 
     if args.annotate or args.collect or args.visualization:
         logging.info('Loading OpenStreetMap data')
@@ -332,7 +338,7 @@ def main():
         exporter.finalize()
 
         logging.info("exporting GoeJson roads")
-        exporter = ExportRoadAnnotation(args.output_geojson_roads, osm)
+        exporter = ExportRoadAnnotation(args.output_geojson_roads, osm, right_hand_traffic=args.right_hand_traffic)
         exporter.add_measurements(measurements)
         exporter.finalize()
 
