@@ -4,6 +4,7 @@ import logging
 
 from joblib import Memory
 
+log = logging.getLogger(__name__)
 
 class DataSource:
     def __init__(self, areas=None, cache_dir="cache", query_family="roads_in_admin_boundary"):
@@ -43,7 +44,7 @@ class DataSource:
         # construct the query
         query = self.query_templates[name_query].format(name_pattern=name_pattern)
 
-        logging.debug("sending query to self.overpass_url\m" + query)
+        log.debug("sending query to self.overpass_url\m" + query)
 
         # send it and receive answer
         response = self.get_cached(self.overpass_url,

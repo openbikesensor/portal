@@ -3,6 +3,7 @@ import os
 import logging
 import math
 
+log = logging.getLogger(__name__)
 
 class ExportMeasurements:
     def __init__(self, filename, do_filter=True):
@@ -75,7 +76,7 @@ class ExportMeasurements:
             self.features.append(feature)
 
     def finalize(self):
-        logging.info("{} samples, {} valid ({} valid lat/lon, {} valid distance, {} confirmed)"\
+        log.info("{} samples, {} valid ({} valid lat/lon, {} valid distance, {} confirmed)"\
                      .format(self.n_samples, self.n_valid, self.n_valid_latlon, self.n_valid_dist, self.n_confirmed))
 
         data = {"type": "FeatureCollection",
@@ -83,6 +84,6 @@ class ExportMeasurements:
 
         os.makedirs(os.path.dirname(self.filename), exist_ok=True)
 
-        logging.info("writing GeoJSON file " + self.filename)
+        log.info("writing GeoJSON file " + self.filename)
         with open(self.filename, 'w') as f:
             json.dump(data, f)

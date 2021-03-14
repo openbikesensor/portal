@@ -5,6 +5,7 @@ import logging
 
 from obs.face.mapping import AzimuthalEquidistant as LocalMap
 
+log = logging.getLogger(__name__)
 
 class ExportRoadAnnotation:
     def __init__(self, filename, osm, right_hand_traffic=True):
@@ -46,7 +47,7 @@ class ExportRoadAnnotation:
                 self.n_grouped += 1
 
     def finalize(self):
-        logging.info("{} samples, {} valid".format(self.n_samples, self.n_valid))
+        log.info("{} samples, {} valid".format(self.n_samples, self.n_valid))
         features = []
         for way in self.way_statistics.values():
             way.finalize()
