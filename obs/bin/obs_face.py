@@ -68,9 +68,9 @@ def collect_datasets(path, exclusion_list):
                         "user_id": user_id,
                     }
                     datasets.append(dataset)
-                    log.debug("adding " + filename_relative)
+                    log.debug("adding %s", filename_relative)
                 else:
-                    log.debug("excluding " + filename_relative)
+                    log.debug("excluding %s", filename_relative)
 
     return datasets
 
@@ -338,7 +338,7 @@ def main():
         raise ValueError("--anonymization-hash-salt is required for --anonymize-measurement-id=hashed")
 
     if args.district:
-        logging.warning('--district parameter is deprecated; required map parts are now selected automatically')
+        log.warning('--district parameter is deprecated; required map parts are now selected automatically')
 
     log.debug("parameter list:")
     log.debug("input=%s", args.input)
