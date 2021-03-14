@@ -10,7 +10,7 @@ import jsons
 from obs.face.obscsv import ImportMeasurementsCsv
 from obs.face.annotate import AnnotateMeasurements
 from obs.face.filter import MeasurementFilter
-from obs.face.geojson import ExportMeasurements, ExportRoadAnnotations
+from obs.face.geojson import ExportMeasurements, ExportRoadAnnotation
 from obs.face.osm import DataSource as OSMDataSource
 from obs.face.filter import PrivacyFilter, AnonymizationMode
 
