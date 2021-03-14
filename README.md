@@ -18,9 +18,12 @@ This means that editing the source code, or updating it using git, will
 automatically refer to the new version when calling the command line scripts.
 
 ```
-pip install -r requirements.txt
 pip install -e .
 ```
+
+If you update the source code and some imports to libraries do not work, simply
+re-running the above command should install them. For a non-development
+installation, omit the `-e`. Other pip options can be used as normal.
 
 ## Usage
 
