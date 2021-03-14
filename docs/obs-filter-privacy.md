@@ -34,7 +34,9 @@ chose displaced zone centers), add the argument `-R 0`.
 ### Filtering all files in a directory
 
 ```bash
-for file in obsfiles/*.csv; do python filterCSV.py -i "${file}" -z privacyzones.txt -s SECRET -v; done
+for file in obsfiles/*.csv; do 
+  obs-filter-privacy -i "${file}" -z privacyzones.txt -s SECRET -v
+done
 ```
  
 ### All options
