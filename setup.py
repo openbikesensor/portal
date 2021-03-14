@@ -8,6 +8,7 @@ setup(
     version="0.0.1",
     author="OpenBikeSensor Contributors",
     description="OpenBikeSensor Scripts",
+    url="https://github.com/openbikesensor/OpenBikeSensor-Scripts",
     packages=find_packages(),
     package_data={},
     install_requires=requires,
