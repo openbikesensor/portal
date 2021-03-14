@@ -3,3 +3,5 @@ data
 cache
 *.pyc
 __pycache__
+dist
+build
