@@ -1,8 +1,8 @@
 import numpy as np
 import datetime
 
-from Mapping.Roads import Roads
-from Annotation.BeliefPropagationChain import BeliefPropagationChain as BP
+from obs.face.mapping import Roads
+from .BeliefPropagationChain import BeliefPropagationChain as BP
 
 
 class AnnotateMeasurements:

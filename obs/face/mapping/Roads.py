@@ -1,11 +1,11 @@
 import logging
 import math
 import numpy as np
-from Mapping.LocalMap import AzimuthalEquidistant as LocalMap
-from Mapping.RoadContainerAABBtree import RoadContainerAABBtree as RoadContainer
-from Mapping.Way import Way
 from joblib import Memory
 
+from .LocalMap import AzimuthalEquidistant as LocalMap
+from .RoadContainerAABBtree import RoadContainerAABBtree as RoadContainer
+from .Way import Way
 
 class Roads:
     def __init__(self, osm, d_max=10.0, d_phi_max=40.0, cache_dir='cache'):

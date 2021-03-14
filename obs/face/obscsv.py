@@ -9,7 +9,7 @@ from haversine import haversine, Unit
 
 import urllib
 
-from Mapping.LocalMap import AzimuthalEquidistant as LocalMap
+from obs.face.mapping import AzimuthalEquidistant as LocalMap
 
 
 class ImportMeasurementsCsv:
