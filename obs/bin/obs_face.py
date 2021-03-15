@@ -3,6 +3,7 @@ import pathlib
 from multiprocessing import Process, Queue
 import logging
 import os
+import sys
 import time
 
 import jsons
@@ -243,6 +244,8 @@ def main():
 
     parser.add_argument('-b', '--base-path', required=False, action='store', default='./data/',
                         help='base path to where all data is stored')
+    parser.add_argument('--no-base-path', action='store_const', const=None, dest='base_path',
+                        help='do not use a base path (provide explicit paths as required)')
 
     parser.add_argument('--path-annotated', required=False, action='store', default=None,
                         help='path for storing annotated data')
@@ -284,16 +287,17 @@ def main():
 
     args = parser.parse_args()
 
-    if args.input is None:
-        args.input = os.path.join(args.base_path, 'input')
-    if args.path_annotated is None:
-        args.path_annotated = os.path.join(args.base_path, 'annotated')
-    if args.output_collected is None:
-        args.output_collected = os.path.join(args.base_path, 'collected', 'measurements.json')
-    if args.output_geojson_roads is None:
-        args.output_geojson_roads = os.path.join(args.base_path, 'visualization', 'roads.json')
-    if args.output_geojson_measurements is None:
-        args.output_geojson_measurements = os.path.join(args.base_path, 'visualization', 'measurements.json')
+    if args.base_path is not None:
+        if args.input is None:
+            args.input = os.path.join(args.base_path, 'input')
+        if args.path_annotated is None:
+            args.path_annotated = os.path.join(args.base_path, 'annotated')
+        if args.output_collected is None:
+            args.output_collected = os.path.join(args.base_path, 'collected', 'measurements.json')
+        if args.output_geojson_roads is None:
+            args.output_geojson_roads = os.path.join(args.base_path, 'visualization', 'roads.json')
+        if args.output_geojson_measurements is None:
+            args.output_geojson_measurements = os.path.join(args.base_path, 'visualization', 'measurements.json')
 
     if args.anonymize_user_id == AnonymizationMode.HASHED and args.anonymization_hash_salt is None:
       raise ValueError("--anonymization-hash-salt is required for --anonymize-user-id=hashed")
@@ -316,6 +320,14 @@ def main():
         osm = OSMDataSource(areas=args.district, query_family="roads_in_admin_boundary", cache_dir=args.path_cache)
 
     if args.annotate or args.collect:
+        if not args.input:
+            logging.error('--input or --base-path required')
+            sys.exit(1)
+
+        if not args.path_annotated:
+            logging.error('--path-annotated or --base-path required')
+            sys.exit(1)
+
         logging.info('Collecting datasets')
         datasets = collect_datasets(args.input, args.input_exclude)
 
@@ -336,6 +348,10 @@ def main():
         logging.info("continuous segments:    {}".format(statistics["n_segments"]))
 
     if args.collect:
+        if not args.output_collected:
+            logging.error('--output-collected or --base-path required')
+            sys.exit(1)
+
         logging.info("exporting collected measurements")
         # write out
         os.makedirs(os.path.dirname(args.output_collected), exist_ok=True)
@@ -343,6 +359,19 @@ def main():
             outfile.write(jsons.dumps({"measurements": measurements, "statistics": statistics}))
 
     if args.visualization:
+        if not args.output_collected:
+            logging.error('--output-collected or --base-path required')
+            sys.exit(1)
+
+        if not args.output_geojson_measurements:
+            logging.error('--output-geojson-measurements or --base-path required')
+            sys.exit(1)
+
+        if not args.output_geojson_roads:
+            logging.error('--output-geojson-roads or --base-path required')
+            sys.exit(1)
+
+
         logging.info("exporting visualization data")
         with open(args.output_collected, 'r') as infile:
             data = jsons.loads(infile.read())
