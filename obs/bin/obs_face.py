@@ -277,7 +277,7 @@ def main():
 
     parser.add_argument('--path-annotated', required=False, action='store', default=None,
                         help='path for storing annotated data')
-    parser.add_argument('--output-collected', required=False, action='store', default=None,
+    parser.add_argument('--path-output-collected', required=False, action='store', default=None,
                         help='filename for storing collected data')
     parser.add_argument('--output-geojson-roads', required=False, action='store', default=None,
                         help='filename for storing roads visualization GeoJson data')
@@ -325,8 +325,8 @@ def main():
             args.input = os.path.join(args.base_path, 'input')
         if args.path_annotated is None:
             args.path_annotated = os.path.join(args.base_path, 'annotated')
-        if args.output_collected is None:
-            args.output_collected = os.path.join(args.base_path, 'collected', 'measurements.json')
+        if args.path_output_collected is None:
+            args.path_output_collected = os.path.join(args.base_path, 'collected', 'measurements.json')
         if args.output_geojson_roads is None:
             args.output_geojson_roads = os.path.join(args.base_path, 'visualization', 'roads.json')
         if args.output_geojson_measurements is None:
@@ -341,7 +341,7 @@ def main():
     log.debug("parameter list:")
     log.debug("input=%s", args.input)
     log.debug("path_annotated=%s", args.path_annotated)
-    log.debug("output_collected=%s", args.output_collected)
+    log.debug("path_output_collected=%s", args.path_output_collected)
     log.debug("anonymize user ID=%s", args.anonymize_user_id)
     log.debug("anonymize measurement ID=%s", args.anonymize_measurement_id)
     log.debug("district=%s", "|".join(args.district))
@@ -380,33 +380,34 @@ def main():
         log.info("continuous segments:    %s", statistics["n_segments"])
 
     if args.collect:
-        if not args.output_collected:
-            logging.error('--output-collected or --base-path required')
+        if not args.path_output_collected:
+            log.error('--path-output-collected or --base-path required')
             sys.exit(1)
 
         log.info("exporting collected measurements")
 
         # write out
-        os.makedirs(os.path.dirname(args.output_collected), exist_ok=True)
-        with open(args.output_collected, 'w') as outfile:
+        os.makedirs(os.path.dirname(args.path_output_collected), exist_ok=True)
+        with open(args.path_output_collected, 'w') as outfile:
             outfile.write(jsons.dumps({"measurements": measurements, "statistics": statistics}))
 
     if args.visualization:
-        if not args.output_collected:
-            logging.error('--output-collected or --base-path required')
+        if not args.path_output_collected:
+            log.error('--path-output-collected or --base-path required')
             sys.exit(1)
 
         if not args.output_geojson_measurements:
-            logging.error('--output-geojson-measurements or --base-path required')
+            log.error('--output-geojson-measurements or --base-path required')
             sys.exit(1)
 
         if not args.output_geojson_roads:
-            logging.error('--output-geojson-roads or --base-path required')
+            log.error('--output-geojson-roads or --base-path required')
             sys.exit(1)
+
 
         log.info("exporting visualization data")
 
-        with open(args.output_collected, 'r') as infile:
+        with open(args.path_output_collected, 'r') as infile:
             data = jsons.loads(infile.read())
         measurements = data["measurements"]
 

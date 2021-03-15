@@ -140,7 +140,7 @@ updates are ignored until the cache is flushed by deleting all files in the
                       base path to where all data is stored
 --path-annotated PATH_ANNOTATED
                       path for storing annotated data
---output-collected OUTPUT_COLLECTED
+--path-output-collected OUTPUT_COLLECTED
                       filename for storing collected data
 --output-geojson-roads OUTPUT_GEOJSON_ROADS
                       filename for storing roads visualization GeoJson data
