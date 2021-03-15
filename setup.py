@@ -17,6 +17,7 @@ setup(
         "console_scripts": [
             "obs-face=obs.bin.obs_face:main",
             "obs-filter-privacy=obs.bin.obs_filter_privacy:main",
+            "obs-process-track=obs.bin.obs_process_track:main",
         ]
     },
 )
