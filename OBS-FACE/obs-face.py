@@ -271,13 +271,13 @@ def main():
     parser.add_argument('--recompute', required=False, action='store_true', default=False,
                         help='always recompute annotation results')
 
-    parser.add_argument('--anonymize-user-id', action='store', type=AnonymizationMode, default=AnonymizationMode.REMOVE,
-                        help='Choose whether to remove user ID, store only hashed versions (requires --anonymization-hash-salt) or include '
-                        'the full user ID in outputs.')
+    parser.add_argument('--anonymize-user-id', action='store', type=AnonymizationMode, default=AnonymizationMode.REMOVE, metavar='remove|hashed|full',
+                        help='Choose whether to "remove" user ID (default), store only "hashed" versions (requires --anonymization-hash-salt) or include '
+                        'the "full" user ID in outputs.')
 
-    parser.add_argument('--anonymize-measurement-id', action='store', type=AnonymizationMode, default=AnonymizationMode.REMOVE,
-                        help='Choose whether to remove measurement ID, store only hashed versions (requires --anonymization-hash-salt) or include '
-                        'the full measurement ID in outputs.')
+    parser.add_argument('--anonymize-measurement-id', action='store', type=AnonymizationMode, default=AnonymizationMode.REMOVE, metavar='remove|hashed|full',
+                        help='Choose whether to "remove" measurement ID, store only "hashed" versions (requires --anonymization-hash-salt) or include '
+                        'the "full" measurement ID in outputs.')
 
     parser.add_argument('--anonymization-hash-salt', action='store', type=str,
                         help='A salt/seed for use when hashing user or measurement IDs. Arbitrary string, but kept secret.')
