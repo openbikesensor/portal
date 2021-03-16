@@ -35,7 +35,7 @@ class PrivacyFilter:
     @cached
     def create_hash(self, value):
         hash_bytes = (self.hash_salt + value).encode('utf-8')
-        hash_object = hashlib.md5(hash_bytes)
+        hash_object = hashlib.sha512(hash_bytes)
         hex_hash = hash_object.hexdigest()
         return hex_hash[0::2] # half the size
 
