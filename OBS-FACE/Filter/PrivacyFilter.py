@@ -1,25 +1,43 @@
 import hashlib
+from enum import Enum
+
+from memoization import cached
+
+
+class AnonymizationMode(str, Enum):
+  REMOVE = 'remove'
+  HASHED = 'hashed'
+  FULL = 'full'
 
 
 class PrivacyFilter:
 
-    def __init__(self, pseudonymization_salt="3EHLFQRNBT4TnXZaxje8W5UTU1WV_vUS",
-                 create_user_pseudonyms=True,
-                 create_measurement_pseudonyms=True):
+    def __init__(self, hash_salt=None,
+                 user_id_mode=AnonymizationMode.REMOVE,
+                 measurement_id_mode=AnonymizationMode.REMOVE):
         self.keys_keep = ['time', 'longitude', 'latitude', 'distance_overtaker', 'distance_stationary', 'confirmed',
                           'course', 'speed', 'user_id', 'measurement_id', 'egomotion_is_derived', 'OSM_way_id',
                           'OSM_way_orientation', 'latitude_projected', 'longitude_projected', 'distance_projected',
                           'matching_id', 'has_OSM_annotations', 'latitude_GPS', 'longitude_GPS', 'OSM_zone',
                           'OSM_maxspeed', 'OSM_name', 'OSM_oneway', 'OSM_lanes', 'OSM_highway']
-
         # 'in_privacy_zone',  'discontinuity',
 
-        self.pseudonymization_salt = pseudonymization_salt
-        self.create_user_pseudonyms = create_user_pseudonyms
-        self.create_measurement_pseudonyms = create_measurement_pseudonyms
+        if AnonymizationMode.HASHED in [user_id_mode, measurement_id_mode] and hash_salt is None:
+          raise ValueError("needs hash_salt to hash user_id/measurement_id")
+
+        self.hash_salt = hash_salt
+        self.user_id_mode = user_id_mode
+        self.measurement_id_mode = measurement_id_mode
 
         self.user_pseudonymization = {}
         self.dataset_pseudonymization = {}
+
+    @cached
+    def create_hash(self, value):
+        hash_bytes = (self.hash_salt + value).encode('utf-8')
+        hash_object = hashlib.sha512(hash_bytes)
+        hex_hash = hash_object.hexdigest()
+        return hex_hash[0::2] # half the size
 
     def filter(self, measurements):
         # only keep measurements which are not marked as private
@@ -32,22 +50,22 @@ class PrivacyFilter:
 
         # replace user_id and measurement_id by pseudonyms
         for m in measurements_filtered2:
-            if self.create_user_pseudonyms and "user_id" in m:
+            if self.user_id_mode == AnonymizationMode.HASHED and "user_id" in m:
                 user_id = m["user_id"]
-                user_id_pseudonym = "user_" + hashlib.md5((self.pseudonymization_salt + m["user_id"]).encode()) \
-                                                  .hexdigest()[0:-1:2]
+                user_id_pseudonym = "user_" + self.create_hash(m["user_id"])
                 m["user_id"] = user_id_pseudonym
-                if user_id_pseudonym not in self.user_pseudonymization:
-                    self.user_pseudonymization[user_id_pseudonym] = user_id
+            elif self.user_id_mode == AnonymizationMode.REMOVE:
+                m.pop('user_id', None)
 
-            if self.create_measurement_pseudonyms and "measurement_id" in m:
+            if self.measurement_id_mode == AnonymizationMode.HASHED and "measurement_id" in m:
                 measurement_id = m["measurement_id"]
                 ix = measurement_id.rfind(":")
                 dataset_id, line_id = (measurement_id, "") if ix == -1 else (measurement_id[:ix], measurement_id[ix:])
-                dataset_id_pseudonym = hashlib.md5((self.pseudonymization_salt + dataset_id).encode()) \
-                                           .hexdigest()[0:-1:2]
+                dataset_id_pseudonym = self.create_hash(dataset_id)
                 m["measurement_id"] = dataset_id_pseudonym + line_id
                 if dataset_id_pseudonym not in self.dataset_pseudonymization:
                     self.dataset_pseudonymization[dataset_id_pseudonym] = dataset_id
+            elif self.measurement_id_mode == AnonymizationMode.REMOVE:
+                m.pop('measurement_id', None)
 
         return measurements_filtered2

@@ -6,3 +6,4 @@ haversine==2.3.0
 requests==2.25.1
 aabbtree==2.6.2
 jsons==1.3.0
+memoization==0.3.2

@@ -12,7 +12,7 @@ from Filter.MeasurementFilter import MeasurementFilter
 from GeoJson.ExportMeasurements import ExportMeasurements
 from GeoJson.ExportRoadAnnotations import ExportRoadAnnotation
 from OpenStreetMap.DataSource import DataSource as OSM
-from Filter.PrivacyFilter import PrivacyFilter
+from Filter.PrivacyFilter import PrivacyFilter, AnonymizationMode
 
 
 def collect_datasets(path, exclusion_list):
@@ -271,6 +271,17 @@ def main():
     parser.add_argument('--recompute', required=False, action='store_true', default=False,
                         help='always recompute annotation results')
 
+    parser.add_argument('--anonymize-user-id', action='store', type=AnonymizationMode, default=AnonymizationMode.REMOVE, metavar='remove|hashed|full',
+                        help='Choose whether to "remove" user ID (default), store only "hashed" versions (requires --anonymization-hash-salt) or include '
+                        'the "full" user ID in outputs.')
+
+    parser.add_argument('--anonymize-measurement-id', action='store', type=AnonymizationMode, default=AnonymizationMode.REMOVE, metavar='remove|hashed|full',
+                        help='Choose whether to "remove" measurement ID, store only "hashed" versions (requires --anonymization-hash-salt) or include '
+                        'the "full" measurement ID in outputs.')
+
+    parser.add_argument('--anonymization-hash-salt', action='store', type=str,
+                        help='A salt/seed for use when hashing user or measurement IDs. Arbitrary string, but kept secret.')
+
     args = parser.parse_args()
 
     if args.input is None:
@@ -284,10 +295,18 @@ def main():
     if args.output_geojson_measurements is None:
         args.output_geojson_measurements = os.path.join(args.base_path, 'visualization', 'measurements.json')
 
+    if args.anonymize_user_id == AnonymizationMode.HASHED and args.anonymization_hash_salt is None:
+      raise ValueError("--anonymization-hash-salt is required for --anonymize-user-id=hashed")
+
+    if args.anonymize_measurement_id == AnonymizationMode.HASHED and args.anonymization_hash_salt is None:
+      raise ValueError("--anonymization-hash-salt is required for --anonymize-measurement-id=hashed")
+
     logging.debug("parameter list:")
     logging.debug("input=" + args.input)
     logging.debug("path_annotated=" + args.path_annotated)
     logging.debug("output_collected=" + args.output_collected)
+    logging.debug("anonymize user ID=" + args.anonymize_user_id)
+    logging.debug("anonymize measurement ID=" + args.anonymize_measurement_id)
 
     logging.debug("district=" + "|".join(args.district))
     logging.debug("traffic=" + ("right hand" if args.right_hand_traffic else "left hand"))
@@ -330,7 +349,11 @@ def main():
         measurements = data["measurements"]
 
         # always filter for privacy
-        measurements = PrivacyFilter(create_measurement_pseudonyms=True).filter(measurements)
+        measurements = PrivacyFilter(
+            user_id_mode=args.anonymize_user_id,
+            measurement_id_mode=args.anonymize_measurement_id,
+            hash_salt=args.anonymization_hash_salt,
+          ).filter(measurements)
 
         logging.info("exporting GeoJson measurements")
         exporter = ExportMeasurements(args.output_geojson_measurements, do_filter=True)
