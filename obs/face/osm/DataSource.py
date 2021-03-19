@@ -22,7 +22,7 @@ class DataSource:
             [out:json];
             area[name="Deutschland"];
             rel[name~"{name_pattern}"]["boundary"="administrative"](area);
-            map_to_area;            
+            map_to_area;
             (way["highway"~"trunk|primary|secondary|tertiary|unclassified|residential|trunk_link|primary_link|secondary_link|tertiary_link|living_street|service|track|road"](area);>;);
             out body;
             """

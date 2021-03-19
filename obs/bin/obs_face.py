@@ -3,16 +3,16 @@ import pathlib
 from multiprocessing import Process, Queue
 import logging
 import os
-import jsons
 import time
 
-from OpenBikeSensor.ImportMeasurementsCsv import ImportMeasurementsCsv
-from Annotation.AnnotateMeasurements import AnnotateMeasurements
-from Filter.MeasurementFilter import MeasurementFilter
-from GeoJson.ExportMeasurements import ExportMeasurements
-from GeoJson.ExportRoadAnnotations import ExportRoadAnnotation
-from OpenStreetMap.DataSource import DataSource as OSM
-from Filter.PrivacyFilter import PrivacyFilter, AnonymizationMode
+import jsons
+
+from obs.face.importer import ImportMeasurementsCsv
+from obs.face.annotate import AnnotateMeasurements
+from obs.face.filter import MeasurementFilter
+from obs.face.geojson import ExportMeasurements, ExportRoadAnnotation
+from obs.face.osm import DataSource as OSMDataSource
+from obs.face.filter import PrivacyFilter, AnonymizationMode
 
 
 def collect_datasets(path, exclusion_list):
@@ -313,7 +313,7 @@ def main():
 
     if args.annotate or args.collect or args.visualization:
         logging.info('Loading OpenStreetMap data')
-        osm = OSM(areas=args.district, query_family="roads_in_admin_boundary", cache_dir=args.path_cache)
+        osm = OSMDataSource(areas=args.district, query_family="roads_in_admin_boundary", cache_dir=args.path_cache)
 
     if args.annotate or args.collect:
         logging.info('Collecting datasets')

@@ -2,7 +2,8 @@ import json
 import os
 import numpy as np
 import logging
-from Mapping.LocalMap import AzimuthalEquidistant as LocalMap
+
+from obs.face.mapping import AzimuthalEquidistant as LocalMap
 
 
 class ExportRoadAnnotation:
