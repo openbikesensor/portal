@@ -7,7 +7,7 @@ from memoization import cached
 class AnonymizationMode(str, Enum):
   REMOVE = 'remove'
   HASHED = 'hashed'
-  FULL = 'full'
+  KEEP = 'keep'
 
 
 class PrivacyFilter:
