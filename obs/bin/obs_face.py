@@ -6,6 +6,7 @@ import os
 import time
 
 import jsons
+import coloredlogs
 
 from obs.face.importer import ImportMeasurementsCsv
 from obs.face.annotate import AnnotateMeasurements
@@ -45,9 +46,9 @@ def collect_datasets(path, exclusion_list):
                         "user_id": user_id,
                     }
                     datasets.append(dataset)
-                    log.info("adding " + filename_relative)
+                    log.debug("adding " + filename_relative)
                 else:
-                    log.info("excluding " + filename_relative)
+                    log.debug("excluding " + filename_relative)
 
     return datasets
 
@@ -100,10 +101,10 @@ def process_datasets(datasets, path_annotated, osm, skip_if_json_exists=True, pa
 
         finished = output_queue.empty() and input_queue.empty() and (n_out == n_in)
 
-        print("datasets: total {}, input queue {}, output queue {}, finished {} ({} measurements); "
-              "worker: running {}, total {}".format(n_in, input_queue.qsize(), output_queue.qsize(),
-                                                    n_out, len(measurements),
-                                                    n_alive, len(processes)), end="\n")
+        log.debug("datasets: total %s, input queue %s, output queue %s, "
+                 "finished %s (%s measurements); worker: running %s, total %s",
+                 n_in, input_queue.qsize(), output_queue.qsize(), n_out,
+                 len(measurements), n_alive, len(processes))
 
         if process_parallel:
             # (re)spawn processes
@@ -216,19 +217,14 @@ class AnnotationProcess(Process):
                     with open(filename_json, 'w') as outfile:
                         outfile.write(jsons.dumps(dataset_annotated))
 
-                except ValueError as e:
-                    print("FAILED: " + str(e))
-                    dataset_annotated = None
-                except IOError as e:
-                    print("FAILED: " + str(e))
+                except (ValueError, IOError):
+                    log.exception("Annotation failed with error")
                     dataset_annotated = None
 
         return dataset_annotated
 
 
 def main():
-    logging.basicConfig(level=logging.DEBUG, format='%(levelname)s: %(message)s')
-
     parser = argparse.ArgumentParser(description='annotates, filters, aggregates OpenBikeSensor files, and exports '
                                                  'them for visualization')
 
@@ -285,7 +281,12 @@ def main():
     parser.add_argument('--anonymization-hash-salt', action='store', type=str,
                         help='A salt/seed for use when hashing user or measurement IDs. Arbitrary string, but kept secret.')
 
+    parser.add_argument('-v', '--verbose', action='store_true', help='be verbose')
+
     args = parser.parse_args()
+
+    coloredlogs.install(level=logging.DEBUG if args.verbose else logging.INFO,
+        fmt="%(asctime)s %(name)s %(levelname)s %(message)s")
 
     if args.input is None:
         args.input = os.path.join(args.base_path, 'input')
@@ -328,14 +329,14 @@ def main():
                                                     process_parallel=args.parallel > 0)
 
         log.info("Statistics:")
-        log.info("number of files:        {}".format(statistics["n_files"]))
-        log.info("total measurements:     {}".format(statistics["n_measurements"]))
-        log.info("valid measurements:     {}".format(statistics["n_valid"]))
-        log.info("confirmed measurements: {}".format(statistics["n_confirmed"]))
-        log.info("time range:             {} to {}".format(statistics["t_min"], statistics["t_max"]))
-        log.info("continuous time:        {}s".format(statistics["t"]))
-        log.info("continuous distance:    {}m".format(statistics["d"]))
-        log.info("continuous segments:    {}".format(statistics["n_segments"]))
+        log.info("number of files:        %s", statistics["n_files"])
+        log.info("total measurements:     %s", statistics["n_measurements"])
+        log.info("valid measurements:     %s", statistics["n_valid"])
+        log.info("confirmed measurements: %s", statistics["n_confirmed"])
+        log.info("time range:             %s to %s", statistics["t_min"], statistics["t_max"])
+        log.info("continuous time:        %ss", statistics["t"])
+        log.info("continuous distance:    %sm", statistics["d"])
+        log.info("continuous segments:    %s", statistics["n_segments"])
 
     if args.collect:
         log.info("exporting collected measurements")

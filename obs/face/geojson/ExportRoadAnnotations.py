@@ -47,7 +47,7 @@ class ExportRoadAnnotation:
                 self.n_grouped += 1
 
     def finalize(self):
-        log.info("{} samples, {} valid".format(self.n_samples, self.n_valid))
+        log.info("%s samples, %s valid", self.n_samples, self.n_valid)
         features = []
         for way in self.way_statistics.values():
             way.finalize()

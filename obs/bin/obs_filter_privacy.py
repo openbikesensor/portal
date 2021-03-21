@@ -4,14 +4,20 @@ import sys
 import os
 import csv
 import math
+import logging
 import random
+
+import coloredlogs
 from haversine import haversine, Unit
+
 import argparse
 import struct
 import urllib.parse
 
 
-def filter_csv_privacy(input, output, filter, verbose=False):
+log = logging.getLogger(__name__)
+
+def filter_csv_privacy(input, output, filter):
     with open(input) as file_in:
         reader = csv.reader(file_in, delimiter=';')
 
@@ -60,17 +66,14 @@ def filter_csv_privacy(input, output, filter, verbose=False):
                             d = haversine((lat, lon),
                                           (f["lat"], f["lon"]), unit=Unit.METERS)
                             if d <= f["radius"]:
-                                if verbose:
-                                    print("deleting measurement at {} {}, distance to {} {} is {} and below limit of {}"\
-                                          .format(lat, lon, f["lat"], f["lon"], d, f["radius"] ))
+                                log.debug("deleting measurement at %s %s, distance to %s %s is %s and below limit of %s", lat, lon, f["lat"], f["lon"], d, f["radius"])
                                 keep_line = False
                                 filter_count += 1
 
                 if keep_line:
                     writer.writerow(line)
 
-        if verbose:
-            print("filtered {} data lines, removed {} lines".format(data_count, filter_count))
+        log.debug("filtered %s data lines, removed %s lines", data_count, filter_count)
 
 
 def move_lat_lon(lat1, lon1, bearing, d):
@@ -107,7 +110,7 @@ def read_zones(filename):
                 lon_list.append(lon)
                 radius_list.append(radius)
             except ValueError as e:
-                print("error in line {} of {}: {}".format(line_nr + 1, filename, str(e)))
+                log.error("Error in line %s of %s: %s", line_nr + 1, filename, str(e))
 
     return lat_list, lon_list, radius_list
 
@@ -169,9 +172,12 @@ def main():
 
     args = parser.parse_args()
 
+    coloredlogs.install(level=logging.DEBUG if args.verbose else logging.INFO,
+        fmt="%(asctime)s %(name)s %(levelname)s %(message)s")
+
     if args.randofs != 0 and args.secret is None:
-        print("Error: please provide a secret phrase using the -s option, or deactivate random offsetting of the zone "
-              "center using -R 0")
+        log.error("Please provide a secret phrase using the -s option, or deactivate "
+                  "random offsetting of the zone center using -R 0")
         sys.exit(-1)
 
     if args.output is None:
@@ -179,7 +185,7 @@ def main():
         args.output = base + "_cleaned" + ext
 
     if not len(args.lat) == len(args.lon):
-        print("error: same number of LAT and LON arguments expected")
+        log.error("Same number of LAT and LON arguments expected.")
         sys.exit(-1)
     latitude = args.lat
     longitude = args.lon
@@ -194,10 +200,10 @@ def main():
 
     # compose zones
     zones = []
-    if args.verbose:
-        print("zone list:")
-        print("{:>14s} {:>15s} {:>10s}   {:>15s} {:>15s}".format("latitude [deg]", "longitude [deg]", "radius [m]",
-                                                            "lat. original", "lon. original"))
+
+    log.debug("zone list:")
+    log.debug("%14s %15s %10s   %15s %15s", "latitude [deg]", "longitude [deg]", "radius [m]", "lat. original", "lon. original")
+
     for lat, lon, r in zip(latitude, longitude, radius):
         rand_offset = args.randofs
 
@@ -205,14 +211,13 @@ def main():
 
         zone_moved = move_zone(zone, args.secret)
 
-        if args.verbose:
-            print("{:+14.9f} {:+15.9f} {:10.1f}   {:+15.9f} {:+15.9f}"\
-                  .format(zone_moved["lat"], zone_moved["lon"], zone_moved["radius"],
-                          zone["lat"], zone["lon"]))
+        log.debug("%+14.9f %+15.9f %+10.1f   %+15.9f %+15.9f",
+                  zone_moved["lat"], zone_moved["lon"], zone_moved["radius"],
+                  zone["lat"], zone["lon"])
 
         zones.append(zone_moved)
 
-    filter_csv_privacy(args.input, args.output, zones, args.verbose)
+    filter_csv_privacy(args.input, args.output, zones)
 
 
 if __name__ == "__main__":

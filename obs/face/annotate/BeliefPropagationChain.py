@@ -141,7 +141,7 @@ class BeliefPropagationChain:
         l = [0] * n
         while continue_enumeration:
             # for i in range(n):
-            #     print(l[i], end=" ")
+            #     log.debug(l[i], end=" ")
 
             p = 1.0
             for i in range(n):
@@ -150,7 +150,7 @@ class BeliefPropagationChain:
             for i in range(n - 1):
                 p *= self.psi[i][l[i]][l[i + 1]]
 
-            # print(p)
+            # log.debug(p)
 
             if p > p_best:
                 p_best = p
