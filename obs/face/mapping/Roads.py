@@ -7,6 +7,8 @@ from .LocalMap import AzimuthalEquidistant as LocalMap
 from .RoadContainerAABBtree import RoadContainerAABBtree as RoadContainer
 from .Way import Way
 
+log = logging.getLogger(__name__)
+
 class Roads:
     def __init__(self, osm, d_max=10.0, d_phi_max=40.0, cache_dir='cache'):
         self.d_max = d_max
@@ -16,11 +18,11 @@ class Roads:
 
         self.create_roads_cached = self.memory.cache(self.create_roads, ignore=['self', 'osm'])
 
-        logging.info("creating road data structure")
+        log.info("creating road data structure")
         lat_0, lon_0 = osm.get_map_center()
         self.local_map = LocalMap(lat_0, lon_0)
         self.roads = self.create_roads_cached(osm, osm.data_id)
-        logging.info("finished road data structure")
+        log.info("finished road data structure")
 
     def __del__(self):
         pass
