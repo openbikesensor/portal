@@ -7,6 +7,7 @@ setup(
     name="obs",
     version="0.0.1",
     author="OpenBikeSensor Contributors",
+    license="LGPL-3.0",
     description="OpenBikeSensor Scripts",
     url="https://github.com/openbikesensor/OpenBikeSensor-Scripts",
     packages=find_packages(),
