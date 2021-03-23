@@ -1,4 +1,4 @@
-# OpenBikeSensor Scripts
+# OpenBikeSensor Scripts Collection
 
 This repository contains scripts and utilities for working with OpenBikeSensor
 data.  This is mostly for processing the data for visualization, but also other
@@ -42,18 +42,18 @@ documentation files for details on how to use them.
     Copyright (C) 2020-2021 OpenBikeSensor Contributors
     Contact: https://openbikesensor.org
     
-    The OpenBikeSensor Scripts are free software: you can redistribute it
+    The OpenBikeSensor Scripts Collection is free software: you can redistribute it
     and/or modify it under the terms of the GNU Lesser General Public License
     as published by the Free Software Foundation, either version 3 of the
     License, or (at your option) any later version.
     
-    The OpenBikeSensor Scripts are distributed in the hope that it will be
+    The OpenBikeSensor Scripts Collection is distributed in the hope that it will be
     useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser
     General Public License for more details.
     
     You should have received a copy of the GNU Lesser General Public License
-    along with the OpenBikeSensor Scripts. If not, see
+    along with the OpenBikeSensor Scripts Collection. If not, see
     <http://www.gnu.org/licenses/>.
 
 See also [`COPYING`](./COPYING) and [`COPYING.LESSER`](./COPYING.LESSER).
