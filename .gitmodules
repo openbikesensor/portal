@@ -1,0 +1,3 @@
+[submodule "api/scripts"]
+	path = api/scripts
+	url = https://github.com/openbikesensor/OpenBikeSensor-Scripts

@@ -1,8 +1,17 @@
-FROM node:14
+FROM node:15.11.0-buster
+
+# Install python3, pip3, and make them the default for `python` and `pip` commands
+RUN apt-get update && apt-get install -y python3 python3-pip
+RUN ln -s $(which python3) /usr/local/bin/python
+RUN ln -s $(which pip3) /usr/local/bin/pip
 
 WORKDIR /opt/obs/api
+
 ADD package.json package-lock.json /opt/obs/api/
 RUN npm ci
+
+ADD scripts/setup.py scripts/requirements.txt /opt/obs/api/scripts/
+RUN cd scripts && pip install -e .
 
 ADD views /opt/obs/api/views/
 ADD src /opt/obs/api/src/

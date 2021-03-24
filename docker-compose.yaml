@@ -16,6 +16,7 @@ services:
       context: ./api
     volumes:
       - ./api/src:/opt/obs/api/src
+      - ./api/scripts:/opt/obs/api/scripts
       - ./api/views:/opt/obs/api/views
       - ./local/api-data:/data
       - ./api/.migrations.js:/opt/obs/api/.migrations.js
