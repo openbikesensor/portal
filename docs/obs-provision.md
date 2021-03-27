@@ -82,4 +82,29 @@ specify the `--devices-file` on the command line. This has to be done after the
 
     obs-provision --devices-file ~/my-devices.txt devices list
 
-### Download all files
+### Download files
+
+The `download` subcommand can be used to download all files from one, multiple,
+or all devices. General usage is either with one or more addresses to download
+from those devices:
+
+    obs-provision download 192.168.0.129
+    
+..or  without any arguments to read all devices from the devices file:
+
+    obs-provision download
+    
+Notes:
+
+* Use `--target-directory` to specifiy where to store downloaded files. By
+  default, that is `data/download` in the current directory.
+* The device's *Chip ID* is used as the directory name within the target
+  directory.
+* If you do *not* want to flatten the downloaded files, i.e. keep their
+  relative paths as they are stored in the SD-card (this usually involves the
+  `uploaded/` path), use the `--keep-directory-structure` argument.
+* Existing files are overwritten when downloaded again. Files that exist in the
+  target directory are not deleted, even if they do not exist anymore on the
+  target device. If you want a clean state, delete the target directory and
+  download all files again.
+    

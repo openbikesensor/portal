@@ -1,7 +1,8 @@
-import asyncio
 import argparse
-import logging
+import asyncio
 import ipaddress
+import logging
+import os
 import re
 import sys
 
@@ -51,41 +52,116 @@ async def get_host_info(address, timeout=5):
     """
     async with httpx.AsyncClient() as client:
         try:
-            log.debug('Scanning %s', address)
+            log.debug('[%s] Request information', address)
             response = await client.get(f'http://{address}/about', timeout=timeout)
             text = response.text
 
-            log.debug('Host %s replied, parsing response', address)
-            firmware_match = re.search(r'Firmware version: (v\d+\.\d+\.\d+)', text)
-            if not firmware_match:
-                log.debug('No firmware version found in host %s response', address)
-                return None
-            firmware = firmware_match.group(1)
-
-            chip_id_match = re.search(r'Chip id:(</b>)?\s*([0-9A-F]+)', text)
-            if not chip_id_match:
-                log.debug('No chip ID found in host %s response', address)
-                return None
-            chip_id= chip_id_match.group(2)
-
-            log.debug('Host %s is chip ID %s, running firmware version %s', address, chip_id, firmware)
-            return {"address": address, "firmware": firmware, "chip_id": chip_id}
-
         except httpx.ConnectError:
-            log.debug('Host %s connection failed', address)
+            log.debug('[%s] Connection failed', address)
             return None
 
-async def download_files(address, target_directory, keep_directory_structure=False):
-    file_paths = await list_file_paths(address)
-    print(file_paths)
+    firmware_match = re.search(r'Firmware version: (v\d+\.\d+\.\d+)', text)
+    if not firmware_match:
+        log.debug('[%s] No firmware version found in response', address)
+        return None
+    firmware = firmware_match.group(1)
+
+    chip_id_match = re.search(r'Chip id:(</b>)?\s*([0-9A-F]+)', text)
+    if not chip_id_match:
+        log.debug('[%s] No chip ID found in response', address)
+        return None
+    chip_id= chip_id_match.group(2)
+
+    log.debug('[%s] Chip ID: %s, Firmware version: %s', address, chip_id, firmware)
+    return {"address": address, "firmware": firmware, "chip_id": chip_id}
+
 
 def list_ips(ip_ranges):
     for ip_range in ip_ranges:
         for address in ipaddress.ip_network(ip_range):
             yield str(address)
 
+async def list_sd_dir(address, path='/'):
+    async with httpx.AsyncClient() as client:
+        response = await client.get(f'http://{address}/sd?path={path}', timeout=5)
+        text = response.text
+
+    directories = set()
+    for m in re.finditer(r'<li class="directory"><a href="/sd\?path=([^"]+)">', text):
+        directories.add(m.group(1))
+
+    files = set()
+    for m in re.finditer(r'<li class="file"><a href="/sd\?path=([^"]+)">', text):
+        files.add(m.group(1))
+
+    return directories, files
+        # '<li class="file"><a href="/sd?path=/current_14d.alp">&#x1F4C4;current_14d.alp</a></li>'
+
+async def list_sd_dir_deep(address):
+    paths = ['/']
+    all_files = []
+    while paths:
+        path = paths.pop()
+        directories, files = await list_sd_dir(address, path)
+        paths += list(directories)
+        all_files += list(files)
+    return all_files
+
+async def download_file(address, path, target_directory, keep_directory_structure=False):
+    target_file = path.strip('/')
+    if not keep_directory_structure:
+        target_file = os.path.basename(target_file)
+
+    target_file = os.path.join(target_directory, target_file)
+
+    os.makedirs(os.path.dirname(target_file), exist_ok=True)
+
+    log.debug("[%s] Downloading %s to %s", address, path, target_file)
+
+    async with httpx.AsyncClient() as client:
+        async with client.stream('GET', f'http://{address}/sd?path={path}') as response:
+            with open(target_file, 'wb') as f:
+                async for chunk in response.aiter_bytes():
+                    f.write(chunk)
+
 async def command_download(args):
-    pass
+    addresses = args.addresses or args.devices.addresses
+    log.info("Downloading files from %s devices", len(addresses))
+
+    # Run downloads asynchronously. We use one task for each device, to not
+    # overload it. We avoid parallel requests to the same device by using a
+    # sequential logic (see download_from_device) for each device, but we can
+    # easily process multiple devices simultaneously.
+    results = await asyncio.gather(*map(lambda address: download_from_device(args, address), addresses),
+            return_exceptions=True)
+
+    errors = [r for r in results if isinstance(r, Exception)]
+
+    if len(errors):
+        log.error("Download failed for %s devices", len(errors))
+        sys.exit(1)
+    else:
+        log.info("Download from %s devices successful.", len(addresses))
+
+async def download_from_device(args, address):
+    log.info("[%s] Starting download", address)
+    host = await get_host_info(address)
+
+    if host is None:
+        log.error("[%s] Failed to download from this device, no information available", address)
+        raise ValueError("No compatible device found at %s" % address)
+
+    # TODO: Map from Chip ID to some other alias
+    target_directory = os.path.join(args.target_directory, host['chip_id'])
+    log.debug("[%s] Storing files in %s", address, target_directory)
+
+    log.debug("[%s] Reading file index", address)
+    file_paths = await list_sd_dir_deep(address)
+
+    for path in file_paths:
+        if path.endswith('.obsdata.csv'):
+            await download_file(address, path, target_directory, keep_directory_structure=args.keep_directory_structure)
+
 
 
 async def command_scan(args):
@@ -95,8 +171,12 @@ async def command_scan(args):
         log.error("Please do not scan more than 256 IPs at once.")
         sys.exit(1)
 
+    log.info("Scanning %s addresses", len(ips))
+
     results = await asyncio.gather(*map(get_host_info, ips))
     hosts = [r for r in results if r is not None]
+
+    log.info("Found %s devices", len(hosts))
 
     new_devices = [host['address'] for host in hosts]
 
@@ -106,10 +186,11 @@ async def command_scan(args):
     elif args.write:
         args.devices.set_addresses(new_devices)
         args.devices.write()
+    else:
+        print('\n'.join(new_devices))
 
 async def command_devices_list(args):
-    for address in args.devices.addresses:
-        print(address )
+    print('\n'.join(args.devices.addresses))
 
 async def command_devices_add(args):
     old_addresses = args.devices.addresses
@@ -137,14 +218,15 @@ def main():
     subparsers = parser.add_subparsers()
 
     parser_scan = subparsers.add_parser('scan', help='scan for available devices in the network')
-    parser_scan.add_argument('ip_ranges', nargs='+', help='IP range(s) to use for scanning, in CIDR notation, e.g. 127.16.0.0/24')
+    parser_scan.add_argument('ip_ranges', nargs='+', help='IP range(s) to use for scanning, in CIDR notation, e.g. 172.16.0.0/24')
     parser_scan.add_argument('-a', '--append', action='store_true', help='append found devices to device file')
     parser_scan.add_argument('-w', '--write', action='store_true', help='write found devices to device file (overwrite existing)')
     parser_scan.set_defaults(func=command_scan)
 
     parser_download = subparsers.add_parser('download', help='download files from all devices')
     parser_download.add_argument('--keep-directory-structure', action='store_true', default=False, help='keep directory structure from device, do not flatten')
-    parser_download.add_argument('-t', '--target-directory', required=True, help='where to store target files')
+    parser_download.add_argument('-t', '--target-directory', default='data/download', help='where to store target files')
+    parser_download.add_argument('addresses', nargs='*', help='which devices to download data from (leave empty to use devices file)')
     parser_download.set_defaults(func=command_download)
 
     parser_devices = subparsers.add_parser('devices', help='manage configured devices')
