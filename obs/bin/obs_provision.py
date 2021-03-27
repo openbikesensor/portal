@@ -10,7 +10,39 @@ import httpx
 
 log = logging.getLogger(__name__)
 
-async def get_host_info(host, timeout=5):
+class DevicesContainer:
+    def __init__(self, filename):
+        self.filename = filename
+        self._addresses = None
+
+    @property
+    def addresses(self):
+        if self._addresses is None:
+            self.load()
+        return self._addresses
+
+    def load(self):
+        try:
+            with open(self.filename, 'r') as f:
+                self._addresses = set(filter(lambda x: x, (line.strip() for line in f.readlines())))
+        except:
+            self._addresses = set()
+
+    def append_addresses(self, addresses):
+        self._addresses = self.addresses | set(addresses)
+
+    def remove_addresses(self, addresses):
+        self._addresses = self.addresses - set(addresses)
+
+    def set_addresses(self, addresses):
+        self._addresses = set(addresses)
+
+    def write(self):
+        log.debug("Writing %s addresses to devices file %s", len(self._addresses), self.filename)
+        with open(self.filename, 'w') as f:
+            f.write('\n'.join(self._addresses) + '\n')
+
+async def get_host_info(address, timeout=5):
     """
     Probes a host for whether it is a OpenBikeSensor device. Returns `None` if
     the devices does not appear to be an OpenBikeSensor device. Returns a dict
@@ -19,41 +51,41 @@ async def get_host_info(host, timeout=5):
     """
     async with httpx.AsyncClient() as client:
         try:
-            log.debug('Scanning %s', host)
-            response = await client.get(f'http://{host}/about', timeout=timeout)
+            log.debug('Scanning %s', address)
+            response = await client.get(f'http://{address}/about', timeout=timeout)
             text = response.text
 
-            log.debug('Host %s replied, parsing response', host)
+            log.debug('Host %s replied, parsing response', address)
             firmware_match = re.search(r'Firmware version: (v\d+\.\d+\.\d+)', text)
             if not firmware_match:
-                log.debug('No firmware version found in host %s response', host)
+                log.debug('No firmware version found in host %s response', address)
                 return None
             firmware = firmware_match.group(1)
 
             chip_id_match = re.search(r'Chip id:(</b>)?\s*([0-9A-F]+)', text)
             if not chip_id_match:
-                log.debug('No chip ID found in host %s response', host)
+                log.debug('No chip ID found in host %s response', address)
                 return None
             chip_id= chip_id_match.group(2)
 
-            log.debug('Host %s is chip ID %s, running firmware version %s', host, chip_id, firmware)
-            return {"host": host, "firmware": firmware, "chip_id": chip_id}
+            log.debug('Host %s is chip ID %s, running firmware version %s', address, chip_id, firmware)
+            return {"address": address, "firmware": firmware, "chip_id": chip_id}
 
         except httpx.ConnectError:
-            log.debug('Host %s connection failed', host)
+            log.debug('Host %s connection failed', address)
             return None
 
-async def download_files(host, target_directory, keep_directory_structure=False):
-    file_paths = await list_file_paths(host)
+async def download_files(address, target_directory, keep_directory_structure=False):
+    file_paths = await list_file_paths(address)
     print(file_paths)
 
 def list_ips(ip_ranges):
     for ip_range in ip_ranges:
-        for host in ipaddress.ip_network(ip_range):
-            yield str(host)
+        for address in ipaddress.ip_network(ip_range):
+            yield str(address)
 
 async def command_download(args):
-    load_devices(args.devices_file)
+    pass
 
 
 async def command_scan(args):
@@ -66,47 +98,41 @@ async def command_scan(args):
     results = await asyncio.gather(*map(get_host_info, ips))
     hosts = [r for r in results if r is not None]
 
-    new_devices = set(host['host'] for host in hosts)
+    new_devices = [host['address'] for host in hosts]
 
     if args.append:
-        devices = load_devices(args.devices_file) | new_devices
-        write_devices(args.devices_file, devices)
+        args.devices.append_addresses(new_devices)
+        args.devices.write()
     elif args.write:
-        write_devices(args.devices_file, new_devices)
+        args.devices.set_addresses(new_devices)
+        args.devices.write()
 
 async def command_devices_list(args):
-    devices = load_devices(args.devices_file)
-    for device in devices:
-        print(device)
+    for address in args.devices.addresses:
+        print(address )
 
 async def command_devices_add(args):
-    devices = load_devices(args.devices_file)
-    devices.add(args.host)
-    write_devices(args.devices_file, devices)
-    log.debug("Added device %s", args.host)
+    old_addresses = args.devices.addresses
+
+    args.devices.append_addresses(args.addresses)
+    args.devices.write()
+
+    difference = len(args.devices.addresses) - len(old_addresses)
+    log.debug("Added %s devices", difference)
 
 async def command_devices_remove(args):
-    devices = load_devices(args.devices_file)
-    new_devices = devices - set(args.hosts)
-    write_devices(args.devices_file, new_devices)
-    log.debug("Removed %s devices", len(devices) - len(new_devices))
+    old_addresses = args.devices.addresses
 
+    args.devices.remove_addresses(args.addresses)
+    args.devices.write()
 
-def load_devices(devices_file):
-    try:
-        with open(devices_file, 'r') as f:
-            return set(filter(lambda x: x, (line.strip() for line in f.readlines())))
-    except:
-        return set()
+    difference = len(old_addresses) - len(args.devices.addresses)
+    log.debug("Removed %s devices", difference)
 
-def write_devices(devices_file, devices):
-    log.debug("writing %s devices to file %s", len(devices), devices_file)
-    with open(devices_file, 'w') as f:
-        f.write('\n'.join(devices) + '\n')
 
 def main():
     parser = argparse.ArgumentParser(description='configures and manages OpenBikeSensor devices from the command line')
-    parser.add_argument('-d', '--devices-file', help='path to a file that contains list of devices', default="devices.txt")
+    parser.add_argument('-d', '--devices-file', help='path to a file that contains list of devices', default="devices.txt", type=DevicesContainer, dest='devices')
     parser.add_argument('-v', '--verbose', action='store_true', help='be verbose')
     subparsers = parser.add_subparsers()
 
@@ -127,12 +153,12 @@ def main():
     parser_devicess_list = subparsers_devices.add_parser('list', help='list all devices')
     parser_devicess_list.set_defaults(func=command_devices_list)
 
-    parser_devices_add = subparsers_devices.add_parser('add', help='add a device')
-    parser_devices_add.add_argument('host', help='the IP of the device')
+    parser_devices_add = subparsers_devices.add_parser('add', help='add devices')
+    parser_devices_add.add_argument('addresses', nargs='+', help='the IP of the device')
     parser_devices_add.set_defaults(func=command_devices_add)
 
     parser_devices_remove = subparsers_devices.add_parser('remove', help='remove devices')
-    parser_devices_remove.add_argument('hosts', nargs='+', help='the IPs of the devices to remove')
+    parser_devices_remove.add_argument('addresses', nargs='+', help='the IPs of the devices to remove')
     parser_devices_remove.set_defaults(func=command_devices_remove)
 
     args = parser.parse_args()
