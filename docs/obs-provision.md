@@ -47,15 +47,15 @@ their IP. If this does not work, refer to the
 [Firmware](https://github.com/openbikesensor/OpenBikeSensorFirmware) repository
 for details, troubleshooting, or help resources.
 
-### Write device file
+### Write device file or scan for devices
 
 If you know the IPs of all devices in your network that you want to manage,
 write those IPs in a single file, one on each line, and call it `devices.txt`. Example:
 
-    192.168.0.102
-    192.168.0.103
-    192.168.0.110
-    192.168.0.120
+    192.168.0.128
+    192.168.0.129
+    192.168.0.130
+    192.168.0.140
     
 To automatically generate this file by detecting available devices that appear
 to OpenBikeSensor devices, run the scan command:
@@ -70,3 +70,16 @@ be scanned, but if there is not device at that IP, it will be skipped.
 
 You can run the command with `--append` multiple times, or overwrite the
 existing device file with the scan results with `--write` instead.
+
+You can also configure the list of devices with the `obs-provision devices`
+command. Run the following command for help:
+
+    obs-provision devices --help
+    
+When working with multiple device files, you can always, in any command,
+specify the `--devices-file` on the command line. This has to be done after the
+`obs-provision` command, but before your chosen subcommand (e.g. `devices`):
+
+    obs-provision --devices-file ~/my-devices.txt devices list
+
+### Download all files
