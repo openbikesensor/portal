@@ -211,10 +211,16 @@ async def command_devices_remove(args):
     log.debug("Removed %s devices", difference)
 
 
+def make_help(parser):
+    async def helper(args):
+        parser.print_help()
+    return helper
+
 def main():
     parser = argparse.ArgumentParser(description='configures and manages OpenBikeSensor devices from the command line')
     parser.add_argument('-d', '--devices-file', help='path to a file that contains list of devices', default="devices.txt", type=DevicesContainer, dest='devices')
-    parser.add_argument('-v', '--verbose', action='store_true', help='be verbose')
+    parser.add_argument('-v', '--verbose', action='store_true', help='more log outputs')
+    parser.set_defaults(func=make_help(parser))
     subparsers = parser.add_subparsers()
 
     parser_scan = subparsers.add_parser('scan', help='scan for available devices in the network')
@@ -230,10 +236,11 @@ def main():
     parser_download.set_defaults(func=command_download)
 
     parser_devices = subparsers.add_parser('devices', help='manage configured devices')
+    parser_devices.set_defaults(func=make_help(parser_devices))
     subparsers_devices = parser_devices.add_subparsers()
 
-    parser_devicess_list = subparsers_devices.add_parser('list', help='list all devices')
-    parser_devicess_list.set_defaults(func=command_devices_list)
+    parser_devices_list = subparsers_devices.add_parser('list', help='list all devices')
+    parser_devices_list.set_defaults(func=command_devices_list)
 
     parser_devices_add = subparsers_devices.add_parser('add', help='add devices')
     parser_devices_add.add_argument('addresses', nargs='+', help='the IP of the device')
