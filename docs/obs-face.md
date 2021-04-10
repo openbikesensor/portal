@@ -1,7 +1,7 @@
 # obs-face
 
 This is a toolkit for **f**iltering, **a**nnotating, **c**onsolidating and **e**xporting OpenBikeSensor measurements stored in the
-[OpenBikeSensor CSV-format](https://github.com/openbikesensor/OpenBikeSensorFirmware/blob/master/docs/software/firmware/csv_format.mdhttps://github.com/openbikesensor/OpenBikeSensorFirmware/blob/master/docs/software/firmware/csv_format.md).
+[OpenBikeSensor CSV-format](https://github.com/openbikesensor/OpenBikeSensorFirmware/blob/master/docs/software/firmware/csv_format.md).
 
 
 ## Features
@@ -23,7 +23,7 @@ All confirmed and valid measurements are collected and consolidated in one file 
 
 ### Export
 
-The consolidated measurements are converted to GeoJson format and exported for visualization as required by the [OpenBikeSensor visualization](https://github.com/openbikesensor/OpenBikeSensor-Scripts/tree/main/OBS-FACE-Visualization).
+The consolidated measurements are converted to GeoJson format and exported for visualization as required by the [OpenBikeSensor visualization](https://github.com/openbikesensor/OpenBikeSensor-Scripts/blob/main/visualization/README.md).
 
 ## Installation
 
@@ -129,46 +129,36 @@ updates are ignored until the cache is flushed by deleting all files in the
 
 ```
 -h, --help            show this help message and exit
-
 -A, --annotate        annotates measurements using OSM data
-
 -C, --collect         collects all confirmed and valid measurements and stores it in one file
-
 -V, --visualization   creates the GeoJson data required by the OBS visualization
-
 -i INPUT, --input INPUT
                       path to the location where CSV data files are located
-
 -e INPUT_EXCLUDE, --input-exclude INPUT_EXCLUDE
                       data to be excluded, given by path prefix in the input directory tree
-
 -b BASE_PATH, --base-path BASE_PATH
                       base path to where all data is stored
-
 --path-annotated PATH_ANNOTATED
                       path for storing annotated data
-
 --output-collected OUTPUT_COLLECTED
                       filename for storing collected data
-
 --output-geojson-roads OUTPUT_GEOJSON_ROADS
                       filename for storing roads visualization GeoJson data
-
 --output-geojson-measurements OUTPUT_GEOJSON_MEASUREMENTS
                       filename for storing measurement visualization GeoJson data
-
 --path-cache PATH_CACHE
                       path where the visualization data will be stored
-
 -D DISTRICT, --district DISTRICT
                       name of a district (Landkreis) from which the OSM data should be used, can be used several times
-
---left-hand-traffic   switches to left-hand traffic (otherwise: right-hand
-                      traffic); right instead left sensor is used, and the
-                      exported visualization is adapted
- 
+--left-hand-traffic   switches to left-hand traffic (otherwise: right-hand traffic); right instead left sensor is used, and the exported visualization is adapted
 -p PARALLEL, --parallel PARALLEL
                       disables parallel processing if 0, otherwise defines the number of worker processes
-
 --recompute           always recompute annotation results
+--anonymize-user-id remove|hashed|full
+                      Choose whether to "remove" user ID (default), store only "hashed" versions (requires --anonymization-hash-salt) or include the "full" user ID in outputs.
+--anonymize-measurement-id remove|hashed|full
+                      Choose whether to "remove" measurement ID, store only "hashed" versions (requires --anonymization-hash-salt) or include the "full" measurement ID in outputs.
+--anonymization-hash-salt ANONYMIZATION_HASH_SALT
+                      A salt/seed for use when hashing user or measurement IDs. Arbitrary string, but kept secret.
+
 ```
