@@ -6,7 +6,9 @@
   "scripts": {
     "mongo:start": "docker run --name realworld-mongo -p 27017:27017 mongo & sleep 5",
     "start": "node src/",
+    "start:worker": "node src/worker.js",
     "dev": "nodemon src/",
+    "dev:worker": "nodemon -w src/ src/worker.js",
     "mongo:stop": "docker stop realworld-mongo && docker rm realworld-mongo",
     "autoformat": "eslint --fix .",
     "lint": "eslint .",
@@ -22,6 +24,7 @@
   "license": "LGPLv3",
   "dependencies": {
     "body-parser": "1.19.0",
+    "bull": "^3.22.0",
     "connect-busboy": "0.0.2",
     "cors": "2.8.5",
     "csv-parse": "^4.15.1",

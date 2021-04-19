@@ -1,7 +1,21 @@
+import type {FeatureCollection, Point} from 'geojson'
+
 export type UserProfile = {
   username: string
   image: string
   bio?: string | null
+}
+
+export type TrackData = FeatureCollection
+export type TrackStatistics = {
+  recordedAt?: Date
+  recordedUntil?: Date
+  duration?: number
+  length?: number
+  segments?: number
+  numEvents?: number
+  numMeasurements?: number
+  numValid?: number
 }
 
 export type Track = {
@@ -11,28 +25,16 @@ export type Track = {
   description?: string
   createdAt: string
   visible?: boolean
-}
-
-export type TrackData = {
-  slug: string
-  numEvents?: number | null
-  recordedAt?: String | null
-  recordedUntil?: String | null
-  trackLength?: number | null
-  points: TrackPoint[]
+  statistics?: TrackStatistics
 }
 
 export type TrackPoint = {
-  date: string | null
-  time: string | null
-  latitude: number | null
-  longitude: number | null
-  course: number | null
-  speed: number | null
-  d1: number | null
-  d2: number | null
-  flag: number | null
-  private: number | null
+  type: 'Feature',
+  geometry: Point,
+  properties: {
+    distanceOvertaker: null | number,
+    distanceStationary: null | number,
+  },
 }
 
 export type TrackComment = {

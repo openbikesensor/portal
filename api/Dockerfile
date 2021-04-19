@@ -10,7 +10,7 @@ WORKDIR /opt/obs/api
 ADD package.json package-lock.json /opt/obs/api/
 RUN npm ci
 
-ADD scripts/setup.py scripts/requirements.txt /opt/obs/api/scripts/
+ADD scripts /opt/obs/api/scripts/
 RUN cd scripts && pip install -e .
 
 ADD views /opt/obs/api/views/

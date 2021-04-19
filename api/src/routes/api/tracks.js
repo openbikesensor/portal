@@ -1,6 +1,7 @@
+const fs = require('fs');
+const path = require('path');
 const router = require('express').Router();
 const mongoose = require('mongoose');
-const TrackData = mongoose.model('TrackData');
 const Track = mongoose.model('Track');
 const Comment = mongoose.model('Comment');
 const User = mongoose.model('User');
@@ -8,6 +9,7 @@ const busboy = require('connect-busboy');
 const auth = require('../../passport');
 const { normalizeUserAgent, buildObsver1 } = require('../../logic/tracks');
 const wrapRoute = require('../../_helpers/wrapRoute');
+const {PROCESSING_OUTPUT_DIR} = require('../../paths')
 
 function preloadByParam(target, getValueFromParam) {
   return async (req, res, next, paramValue) => {
@@ -181,25 +183,28 @@ router.post(
     // TODO: Stream into temporary file, then move it later.
     const { body, fileInfo } = await getMultipartOrJsonBody(req, (body) => body.track);
 
-    const {body: fileBody, visible, ...trackBody} = body
+    const { body: fileBody, visible, ...trackBody } = body
 
     const track = new Track({
       ...trackBody,
       author: req.user,
       visible: visible == null ? req.user.areTracksVisibleForAll : Boolean(trackBody.visible)
     })
+    track.customizedTitle = track.title != null
     track.slugify();
 
     if (fileBody) {
       track.uploadedByUserAgent = normalizeUserAgent(req.headers['user-agent']);
       track.originalFileName = fileInfo.body ? fileInfo.body.filename : track.slug + '.csv';
       await track.writeToOriginalFile(fileBody)
-      await track.rebuildTrackDataAndSave();
-    } else {
-      await track.save()
     }
 
+    await track.save()
     await track.autoGenerateTitle()
+
+    if (fileBody) {
+      await track.queueProcessing();
+    }
 
     // console.log(track.author);
     return res.json({ track: track.toJSONFor(req.user) });
@@ -235,29 +240,34 @@ router.put(
 
     if (typeof trackBody.title !== 'undefined') {
       track.title = (trackBody.title || '').trim() || null;
+      track.customizedTitle = track.title != null
     }
 
     if (typeof trackBody.description !== 'undefined') {
       track.description = (trackBody.description || '').trim() || null;
     }
 
+    let process = false
+
     if (trackBody.visible != null) {
-      track.visible = Boolean(trackBody.visible);
+      const visible = Boolean(trackBody.visible);
+      process |= visible !== track.visible
+      track.visible = visible
     }
 
     if (fileBody) {
       track.originalFileName = fileInfo.body ? fileInfo.body.filename : track.slug + '.csv';
       track.uploadedByUserAgent = normalizeUserAgent(req.headers['user-agent']);
       await track.writeToOriginalFile(fileBody)
-
-      await track.rebuildTrackDataAndSave();
-    } else if (track.visible && !track.publicTrackData) {
-      await track.rebuildTrackDataAndSave();
-    } else {
-      await track.save();
+      process = true
     }
 
+    await track.save();
     await track.autoGenerateTitle()
+
+    if (process) {
+      await track.queueProcessing()
+    }
 
     return res.json({ track: track.toJSONFor(req.user) });
   }),
@@ -269,7 +279,6 @@ router.delete(
   auth.required,
   wrapRoute(async (req, res) => {
     if (req.track.author._id.equals(req.user.id)) {
-      await TrackData.findByIdAndDelete(req.track.trackData);
       await req.track.remove();
       return res.sendStatus(204);
     } else {
@@ -342,26 +351,39 @@ router.delete(
   }),
 );
 
-// return an track's trackData
+// return an track's generated data
 router.get(
-  ['/:track/data', '/:track/TrackData'],
+  '/:track/data/:filename',
   auth.optional,
   wrapRoute(async (req, res) => {
+    const {filename} = req.params
+
+    if (!['statistics', 'all_measurements'].includes(filename)) {
+      return res.sendStatus(404);
+    }
+
+    console.log(req.track.author, req.user)
     if (!req.track.isVisibleTo(req.user)) {
       return res.sendStatus(403);
     }
 
-    let trackData;
+    const filePath = path.join(PROCESSING_OUTPUT_DIR, req.track.filePath, filename + '.json')
 
-    if (req.track.isVisibleToPrivate(req.user)) {
-      trackData = await TrackData.findById(req.track.trackData);
-    } else if (!req.track.publicTrackData) {
-      return res.sendStatus(403);
-    } else {
-      trackData = await TrackData.findById(req.track.publicTrackData);
+    let stats
+
+    try {
+      stats = await fs.promises.stat(filePath)
+    } catch(err) {
+      return res.sendStatus(404);
     }
 
-    return res.json({ trackData });
+    if (!stats.isFile()) {
+      // file does not exist (yet)
+      return res.sendStatus(404);
+    }
+
+    const content = await fs.promises.readFile(filePath)
+    return res.json(JSON.parse(content));
   }),
 );
 

@@ -6,25 +6,66 @@ const slug = require('slug');
 const path = require('path');
 const sanitize = require('sanitize-filename');
 const fs = require('fs');
+const uuid = require('uuid/v4');
 
-const { parseTrackPoints } = require('../logic/tracks');
+const { TRACKS_DIR } = require('../paths');
+const queue = require('../queue');
 
-const TrackData = require('./TrackData');
-
-const DATA_DIR = process.env.DATA_DIR || path.resolve(__dirname, '../../data/');
+const statisticsSchema = new mongoose.Schema(
+  {
+    recordedAt: Date,
+    recordedUntil: Date,
+    duration: Number,
+    length: Number,
+    segments: Number,
+    numEvents: Number,
+    numMeasurements: Number,
+    numValid: Number,
+  },
+  { timestamps: false },
+);
 
 const schema = new mongoose.Schema(
   {
+    // A (partially or entirely random generated) string that can be used as a
+    // public identifier
     slug: { type: String, lowercase: true, unique: true },
+
+    // The title for this track.
     title: String,
+
+    // The status of this track, whether it is to be processed, is currently
+    // being processed, or has completed or errored.
+    processingStatus: {
+      type: String,
+      enum: ['pending', 'processing', 'complete', 'error'],
+      default: 'pending',
+    },
+    processingJobId: String,
+
+    // Output from the proccessing routines regarding this track. Might be
+    // displayed to the owner or administrators to help in debugging. Should be
+    // set to `null` if no processing has not been finished.
+    processingLog: String,
+
+    // Set to true if the user customized the title. Disables auto-generating
+    // an updated title when the track is (re-)processed.
+    customizedTitle: { type: Boolean, default: false },
+
+    // A user-provided description of the track. May contain markdown.
     description: String,
+
+    // Whether this track is visible in the public track list or not.
     visible: Boolean,
+
+    // The user agent string, or a part thereof, that was used to upload this
+    // track. Usually contains only the OBS version, other user agents are
+    // discarded due to being irrelevant.
     uploadedByUserAgent: String,
-    body: String, // deprecated, remove after migration has read it
-    comments: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Comment' }],
-    author: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-    trackData: { type: mongoose.Schema.Types.ObjectId, ref: 'TrackData' },
-    publicTrackData: { type: mongoose.Schema.Types.ObjectId, ref: 'TrackData' },
+
+    // The name of the original file, as provided during upload. Used for
+    // providing a download with the same name, and for display in the
+    // frontend.
     originalFileName: {
       type: String,
       required: true,
@@ -36,7 +77,15 @@ const schema = new mongoose.Schema(
         message: (props) => `${props.value} is not a valid filename`,
       },
     },
-    originalFilePath: String,
+
+    // Where the files are stored, relative to a group directory like
+    // TRACKS_DIR or PROCESSING_DIR.
+    filePath: String,
+
+    comments: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Comment' }],
+    author: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+
+    statistics: statisticsSchema,
   },
   { timestamps: true },
 );
@@ -49,8 +98,8 @@ schema.pre('validate', async function (next) {
       this.slugify();
     }
 
-    if (!this.originalFilePath) {
-      await this.generateOriginalFilePath();
+    if (!this.filePath) {
+      await this.generateFilePath();
     }
 
     next();
@@ -87,9 +136,9 @@ class Track extends mongoose.Model {
     this.slug = slug(this.title || 'track') + '-' + ((Math.random() * Math.pow(36, 6)) | 0).toString(36);
   }
 
-  async generateOriginalFilePath() {
+  async generateFilePath() {
     await this.populate('author').execPopulate();
-    this.originalFilePath = path.join('uploads', 'originals', this.author.username, this.slug, 'original.csv');
+    this.filePath = path.join(this.author.username, this.slug);
   }
 
   isVisibleTo(user) {
@@ -113,81 +162,81 @@ class Track extends mongoose.Model {
   }
 
   async _ensureDirectoryExists() {
-    if (!this.originalFilePath) {
-      await this.generateOriginalFilePath();
+    if (!this.filePath) {
+      await this.generateFilePath();
     }
 
-    const dir = path.join(DATA_DIR, path.dirname(this.originalFilePath));
+    const dir = path.dirname(this.getOriginalFilePath());
     await fs.promises.mkdir(dir, { recursive: true });
   }
 
-  get fullOriginalFilePath() {
-    return path.join(DATA_DIR, this.originalFilePath);
+  getOriginalFilePath() {
+    if (!this.filePath) {
+      throw new Error('Cannot get original file path, `filePath` is not yet set. Call `generateFilePath()` first.');
+    }
+    return path.join(TRACKS_DIR, this.filePath, 'original.csv');
   }
 
   async writeToOriginalFile(fileBody) {
     await this._ensureDirectoryExists();
-    await fs.promises.writeFile(this.fullOriginalFilePath, fileBody);
+    await fs.promises.writeFile(this.getOriginalFilePath(), fileBody);
   }
 
   /**
-   * Fills the trackData and publicTrackData with references to correct
-   * TrackData objects.  For now, this is either the same, or publicTrackData
-   * is set to null, depending on the visibility of the track. At some point,
-   * this will include the anonymisation step, and produce a distinct TrackData
-   * object for the publicTrackData reference.
+   * Marks this track as needing processing.
    *
-   * Existing TrackData objects will be deleted by this function.
+   * Also deletes all stored information that is derived during processing from
+   * the database, such that it may be filled again with correct information
+   * during the processing operation.
+   *
+   * Saves the track as well, so it is up to date when the worker receives it.
    */
-  async rebuildTrackDataAndSave() {
-    // clean up existing track data, we want to actually fully delete it
-    if (this.trackData) {
-      await TrackData.findByIdAndDelete(this.trackData);
-    }
-
-    if (this.publicTrackData && this.publicTrackData.equals(this.trackData)) {
-      await TrackData.findByIdAndDelete(this.publicTrackData);
-    }
-
-    // Parse the points from the body.
-    // TODO: Stream file contents, if possible
-    const body = await fs.promises.readFile(this.fullOriginalFilePath);
-    const points = Array.from(parseTrackPoints(body));
-
-    const trackData = TrackData.createFromPoints(points);
-    await trackData.save();
-
-    this.trackData = trackData._id;
-
-    if (this.visible) {
-      // TODO: create a distinct object with filtered data
-      this.publicTrackData = trackData._id;
-    }
+  async queueProcessing() {
+    this.processingStatus = 'pending';
+    this.processingLog = null;
+    this.processingJobId = uuid();
 
     await this.save();
+
+    return await queue.add(
+      'processTrack',
+      {
+        trackId: this._id.toString(),
+      },
+      {
+        jobId: this.processingJobId,
+      },
+    );
+  }
+
+  async readProcessingResults(success = true) {
+    // Copies some information into this object from the outputs of the
+    // processing step. This allows general statistics to be formed, and other
+    // information to be displayed, without having to read individual files
+    // from disk. Each field set here should be unsed in `queueProcessing`.
+    // This routine also moves the `processingStatus` along.
   }
 
   async autoGenerateTitle() {
-    if (this.title) {
+    if (this.customizedTitle) {
       return;
     }
 
+    // for (const property of ['publicTrackData', 'trackData']) {
+    //   if (this[property]) {
+    //     await this.populate(property).execPopulate();
+    //     if (this[property].recordedAt) {
+    //       const dateTime = DateTime.fromJSDate(this[property].recordedAt);
+    //       const daytime = getDaytime(dateTime);
+    //       this.title = `${daytime} ride on ${dateTime.toLocaleString(DateTime.DATE_MED)}`;
+    //       await this.save();
+    //       return
+    //     }
+    //   }
+    // }
+
     if (this.originalFileName) {
       this.title = _.upperFirst(_.words(this.originalFileName.replace(/(\.obsdata)?\.csv$/, '')).join(' '));
-    }
-
-    for (const property of ['publicTrackData', 'trackData']) {
-      if (!this.title && this[property]) {
-        await this.populate(property).execPopulate();
-        if (this[property].recordedAt) {
-          const dateTime = DateTime.fromJSDate(this[property].recordedAt);
-          const daytime = getDaytime(dateTime);
-          this.title = `${daytime} ride on ${dateTime.toLocaleString(DateTime.DATE_MED)}`;
-        }
-      }
-    }
-
-    if (this.title) {
       await this.save();
     }
   }
@@ -203,6 +252,8 @@ class Track extends mongoose.Model {
       updatedAt: this.updatedAt,
       visible: this.visible,
       author: this.author.toProfileJSONFor(user),
+      statistics: this.statistics,
+      processingStatus: this.processingStatus,
       ...(includePrivateFields
         ? {
             uploadedByUserAgent: this.uploadedByUserAgent,

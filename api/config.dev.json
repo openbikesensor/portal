@@ -8,6 +8,7 @@
     "url": "mongodb://mongo/obsTest",
     "debug": true
   },
+  "redisUrl": "redis://redis",
   "oAuth2Clients": [
     {
       "clientId": "b730f8d2-d93c-4c68-9ff0-dfac8da76ee2",

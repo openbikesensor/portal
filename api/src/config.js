@@ -26,6 +26,8 @@ const configSchema = Joi.object({
     debug: Joi.boolean().default(process.env.NODE_ENV !== 'production'),
   }).required(),
 
+  redisUrl: Joi.string().required(),
+
   oAuth2Clients: Joi.array()
     .default([])
     .items(

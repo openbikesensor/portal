@@ -14,35 +14,25 @@ router.get(
     const publicTrackCount = await Track.find({ visible: true }).count();
     const userCount = await User.find().count();
 
-    const [{ trackLength, publicTrackLength, numEvents, trackDuration }] = await Track.aggregate([
-      { $lookup: { from: 'trackdatas', localField: 'publicTrackData', foreignField: '_id', as: 'publicTrackDatas' } },
-      { $lookup: { from: 'trackdatas', localField: 'trackData', foreignField: '_id', as: 'trackDatas' } },
+    const [{ trackLength, numEvents, trackDuration }] = await Track.aggregate([
       {
         $addFields: {
-          publicTrackData: { $arrayElemAt: ['$publicTrackDatas', 0] },
-          trackData: { $arrayElemAt: ['$trackDatas', 0] },
-        },
-      },
-      {
-        $addFields: {
-          publicTrackLength: '$publicTrackData.trackLength',
-          trackLength: '$trackData.trackLength',
-          numEvents: '$publicTrackData.numEvents',
+          trackLength: '$statistics.length',
+          numEvents: '$statistics.numEvents',
           trackDuration: {
             $cond: [
-              { $and: ['$publicTrackData.recordedUntil', '$publicTrackData.recordedAt'] },
-              { $subtract: ['$publicTrackData.recordedUntil', '$publicTrackData.recordedAt'] },
+              { $and: ['$statistics.recordedUntil', '$statistics.recordedAt'] },
+              { $subtract: ['$statistics.recordedUntil', '$statistics.recordedAt'] },
               0,
             ],
           },
         },
       },
-      { $project: { publicTrackLength: true, trackLength: true, numEvents: true, trackDuration: true } },
+      { $project: {trackLength: true, numEvents: true, trackDuration: true } },
       {
         $group: {
           _id: 'sum',
           trackLength: { $sum: '$trackLength' },
-          publicTrackLength: { $sum: '$publicTrackLength' },
           numEvents: { $sum: '$numEvents' },
           trackDuration: { $sum: '$trackDuration' },
         },
@@ -53,7 +43,7 @@ router.get(
 
     return res.json({
       publicTrackCount,
-      publicTrackLength,
+      publicTrackLength: trackLengthPrivatized,
       trackLength: trackLengthPrivatized,
       numEvents,
       trackCount,

@@ -10,13 +10,20 @@ services:
       - '27017:27017'
     restart: on-failure
 
+  redis:
+    image: redis
+    volumes:
+      - ./local/redis:/data
+    command: redis-server --appendonly yes
+    restart: on-failure
+
   api:
     image: obs-api
     build:
       context: ./api
     volumes:
       - ./api/src:/opt/obs/api/src
-      - ./api/scripts:/opt/obs/api/scripts
+      - ./api/scripts/obs:/opt/obs/api/scripts/obs
       - ./api/views:/opt/obs/api/views
       - ./local/api-data:/data
       - ./api/.migrations.js:/opt/obs/api/.migrations.js
@@ -28,6 +35,7 @@ services:
       - DATA_DIR=/data
     links:
       - mongo
+      - redis
     ports:
       - '3000:3000'
     restart: on-failure
@@ -35,6 +43,28 @@ services:
       - npm
       - run
       - dev
+
+  worker:
+    image: obs-api
+    build:
+      context: ./api
+    volumes:
+      - ./api/src:/opt/obs/api/src
+      - ./api/scripts/obs:/opt/obs/api/scripts/obs
+      - ./api/views:/opt/obs/api/views
+      - ./local/api-data:/data
+      - ./api/config.dev.json:/opt/obs/api/config.json
+    environment:
+      - DATA_DIR=/data
+    links:
+      - mongo
+      - redis
+    restart: on-failure
+    command:
+      - npm
+      - run
+      - dev:worker
+
 
   frontend:
     image: obs-frontend

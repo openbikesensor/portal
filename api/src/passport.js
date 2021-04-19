@@ -63,7 +63,7 @@ passport.use(
   ),
 );
 
-function getRequestToken(req) {
+function getRequestToken(req, tokenTypes = ['Token', 'Bearer']) {
   const authorization = req.headers.authorization;
   if (typeof authorization !== 'string') {
     return null;
@@ -71,7 +71,7 @@ function getRequestToken(req) {
 
   const [tokenType, token] = authorization.split(' ');
 
-  if (tokenType === 'Token' || tokenType === 'Bearer') {
+  if (tokenTypes.includes(tokenType)) {
     return token;
   }
 
@@ -139,7 +139,7 @@ passport.use(
     try {
       let userId;
 
-      const headerToken = getRequestToken(req);
+      const headerToken = getRequestToken(req, ['OBSUserId']);
       if (headerToken && headerToken.length === 24) {
         userId = headerToken;
       }

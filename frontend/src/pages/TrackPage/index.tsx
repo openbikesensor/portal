@@ -1,6 +1,6 @@
 import React from 'react'
 import {connect} from 'react-redux'
-import {Table, Checkbox, Segment, Dimmer, Grid, Loader, Header} from 'semantic-ui-react'
+import {Button, Table, Checkbox, Segment, Dimmer, Grid, Loader, Header, Message} from 'semantic-ui-react'
 import {useParams, useHistory} from 'react-router-dom'
 import {concat, combineLatest, of, from, Subject} from 'rxjs'
 import {pluck, distinctUntilChanged, map, switchMap, startWith, catchError} from 'rxjs/operators'
@@ -51,19 +51,19 @@ const TrackPage = connect((state) => ({login: state.login}))(function TrackPage(
       )
 
       const trackData$ = slug$.pipe(
-        map((slug) => `/tracks/${slug}/data`),
+        map((slug) => `/tracks/${slug}/data/all_measurements`),
         switchMap((url) =>
           concat(
-            of(null),
+            of(undefined),
             from(api.get(url)).pipe(
               catchError(() => {
-                history.replace('/tracks')
+                // history.replace('/tracks')
+                return of(null)
               })
             )
           )
         ),
-        pluck('trackData'),
-        startWith(null) // show track infos before track data is loaded
+        startWith(undefined) // show track infos before track data is loaded
       )
 
       const comments$ = concat(of(null), reloadComments$).pipe(
@@ -110,7 +110,8 @@ const TrackPage = connect((state) => ({login: state.login}))(function TrackPage(
 
   const {track, trackData, comments} = data || {}
 
-  const loading = track == null || trackData == null
+  const loading = track == null || trackData === undefined
+  const processing = ['processing', 'pending'].includes(track?.processingStatus)
 
   const [left, setLeft] = React.useState(true)
   const [right, setRight] = React.useState(false)
@@ -119,6 +120,14 @@ const TrackPage = connect((state) => ({login: state.login}))(function TrackPage(
 
   return (
     <Page>
+      {processing && (
+        <Message warning>
+          <Message.Content>
+            Track data is still being processed, please reload page in a while.
+          </Message.Content>
+        </Message>
+      )}
+
       <Grid stackable>
         <Grid.Row>
           <Grid.Column width={12}>
@@ -137,7 +146,7 @@ const TrackPage = connect((state) => ({login: state.login}))(function TrackPage(
               {track && (
                 <>
                   <Header as="h1">{track.title || 'Unnamed track'}</Header>
-                  <TrackDetails {...{track, trackData, isAuthor}} />
+                  <TrackDetails {...{track, isAuthor}} />
                   {isAuthor && <TrackActions {...{slug}} />}
                 </>
               )}

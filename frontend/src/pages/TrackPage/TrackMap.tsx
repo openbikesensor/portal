@@ -8,11 +8,15 @@ import {Fill, Stroke, Style, Text, Circle} from 'ol/style'
 import {Map} from 'components'
 import type {TrackData, TrackPoint} from 'types'
 
-const isValidTrackPoint = (point: TrackPoint): boolean =>
-  point.latitude != null && point.longitude != null && (point.latitude !== 0 || point.longitude !== 0)
+const isValidTrackPoint = (point: TrackPoint): boolean => {
+  const longitude = point.geometry?.coordinates?.[0]
+  const latitude = point.geometry?.coordinates?.[1]
 
-const WARN_DISTANCE = 200
-const MIN_DISTANCE = 150
+  return latitude != null && longitude != null && (latitude !== 0 || longitude !== 0)
+}
+
+const WARN_DISTANCE = 2
+const MIN_DISTANCE = 1.5
 
 const evaluateDistanceColor = function (distance) {
   if (distance < MIN_DISTANCE) {
@@ -59,7 +63,7 @@ const createTextStyle = function (distance, resolution) {
     textAlign: 'center',
     textBaseline: 'middle',
     font: 'normal 18px/1 Arial',
-    text: resolution < 6 ? '' + distance : '',
+    text: resolution < 6 ? '' + Number(distance).toFixed(2) : '',
     fill: new Fill({color: evaluateDistanceColor(distance)}),
     stroke: new Stroke({color: 'white', width: 2}),
     offsetX: 0,
@@ -94,15 +98,20 @@ export default function TrackMap({trackData, show, ...props}: {trackData: TrackD
     trackPointsUntaggedD2,
     viewExtent,
   } = React.useMemo(() => {
-    const trackPointsD1: Feature<Geometry>[] = []
-    const trackPointsD2: Feature<Geometry>[] = []
-    const trackPointsUntaggedD1: Feature<Geometry>[] = []
-    const trackPointsUntaggedD2: Feature<Geometry>[] = []
+    const trackPointsD1: Feature<Point>[] = []
+    const trackPointsD2: Feature<Point>[] = []
+    const trackPointsUntaggedD1: Feature<Point>[] = []
+    const trackPointsUntaggedD2: Feature<Point>[] = []
     const points: Coordinate[] = []
-    const filteredPoints: TrackPoint[] = trackData?.points.filter(isValidTrackPoint) ?? []
+    const filteredPoints: TrackPoint[] = trackData?.features.filter(isValidTrackPoint) ?? []
 
-    for (const dataPoint of filteredPoints) {
-      const {longitude, latitude, flag, d1, d2} = dataPoint
+    for (const feature of filteredPoints) {
+      const {
+        geometry: {
+          coordinates: [latitude, longitude],
+        },
+        properties: {confirmed: flag, distanceOvertaker: d1, distanceStationary: d2},
+      } = feature
 
       const p = fromLonLat([longitude, latitude])
       points.push(p)
@@ -133,7 +142,7 @@ export default function TrackMap({trackData, show, ...props}: {trackData: TrackD
 
     const viewExtent = points.length ? trackVectorSource.getExtent() : null
     return {trackVectorSource, trackPointsD1, trackPointsD2, trackPointsUntaggedD1, trackPointsUntaggedD2, viewExtent}
-  }, [trackData?.points])
+  }, [trackData?.features])
 
   const trackLayerStyle = React.useMemo(
     () =>

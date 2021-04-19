@@ -16,6 +16,7 @@
     "url": "mongodb://user:pass@host/obs",
     "debug": false
   },
+  "redisUrl": "redis://localhost",
   "oAuth2Clients": [
     {
       "clientId": "CHANGEME",
