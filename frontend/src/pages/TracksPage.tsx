@@ -81,7 +81,7 @@ function TrackList({privateTracks}: {privateTracks: boolean}) {
         </Item.Group>
       ) : (
         <Message>
-          No track uploaded yet. <Link to="/upload">Be the first!</Link>
+          No public tracks yet. <Link to="/upload">Upload the first!</Link>
         </Message>
       )}
     </div>

@@ -82,7 +82,7 @@ function MostRecentTrack() {
       <Loader active={track === null} />
       {track === undefined ? (
         <Message>
-          No track uploaded yet. <Link to="/upload">Be the first!</Link>
+          No public tracks yet. <Link to="/upload">Upload the first!</Link>
         </Message>
       ) : track ? (
         <Item.Group>
