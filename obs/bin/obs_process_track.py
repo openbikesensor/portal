@@ -4,7 +4,7 @@ import os
 import tempfile
 import json
 
-from obs.face.obscsv import ImportMeasurementsCsv
+from obs.face.importer import ImportMeasurementsCsv
 from obs.face.annotate import AnnotateMeasurements
 from obs.face.filter import MeasurementFilter
 from obs.face.geojson import ExportMeasurements, ExportRoadAnnotation
