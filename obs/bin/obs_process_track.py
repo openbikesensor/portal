@@ -93,6 +93,7 @@ def process(args):
                 "properties": {
                     "distanceOvertaker": m["distance_overtaker"],
                     "distanceStationary": m["distance_stationary"],
+                    "confirmed": True,
                 },
             }
             for m in confirmed_measurements
@@ -110,6 +111,7 @@ def process(args):
                 "properties": {
                     "distanceOvertaker": m["distance_overtaker"],
                     "distanceStationary": m["distance_stationary"],
+                    "confirmed": m in confirmed_measurements,
                 },
             }
             for m in measurements
