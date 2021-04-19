@@ -11,7 +11,7 @@ router.get(
   '/',
   wrapRoute(async (req, res) => {
     const trackCount = await Track.find().count();
-    const publicTrackCount = await Track.find({ visible: true }).count();
+    const publicTrackCount = await Track.find({ public: true }).count();
     const userCount = await User.find().count();
 
     const [{ trackLength, numEvents, trackDuration }] = await Track.aggregate([

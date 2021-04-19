@@ -57,7 +57,7 @@ router.get(
   '/',
   auth.optional,
   wrapRoute(async (req, res) => {
-    const query = { visible: true };
+    const query = { public: true };
     let limit = 20;
     let offset = 0;
 
@@ -183,12 +183,12 @@ router.post(
     // TODO: Stream into temporary file, then move it later.
     const { body, fileInfo } = await getMultipartOrJsonBody(req, (body) => body.track);
 
-    const { body: fileBody, visible, ...trackBody } = body
+    const { body: fileBody, public, ...trackBody } = body
 
     const track = new Track({
       ...trackBody,
       author: req.user,
-      visible: visible == null ? req.user.areTracksVisibleForAll : Boolean(trackBody.visible)
+      public: public == null ? req.user.areTracksVisibleForAll : Boolean(trackBody.public)
     })
     track.customizedTitle = track.title != null
     track.slugify();
@@ -249,10 +249,10 @@ router.put(
 
     let process = false
 
-    if (trackBody.visible != null) {
-      const visible = Boolean(trackBody.visible);
-      process |= visible !== track.visible
-      track.visible = visible
+    if (trackBody.public != null) {
+      const public = Boolean(trackBody.public);
+      process |= public !== track.public
+      track.public = public
     }
 
     if (fileBody) {

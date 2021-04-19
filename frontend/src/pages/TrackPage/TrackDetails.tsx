@@ -11,10 +11,10 @@ function formatDuration(seconds) {
 export default function TrackDetails({track, isAuthor}) {
   return (
     <List>
-      {track.visible != null && isAuthor && (
+      {track.public != null && isAuthor && (
         <List.Item>
           <List.Header>Visibility</List.Header>
-          {track.visible ? 'Public' : 'Private'}
+          {track.public ? 'Public' : 'Private'}
         </List.Item>
       )}
 

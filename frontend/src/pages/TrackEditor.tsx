@@ -114,13 +114,13 @@ const TrackEditor = connect((state) => ({login: state.login}))(function TrackEdi
               <Form.Field>
                 <label>Visibility</label>
                 <Controller
-                  name="visible"
+                  name="public"
                   control={control}
-                  defaultValue={track?.visible}
+                  defaultValue={track?.public}
                   render={(props) => (
                     <Checkbox
-                      name="visible"
-                      label="Make track visible in public track list"
+                      name="public"
+                      label="Make track public (in track list and details page)"
                       checked={props.value}
                       onChange={(_, {checked}) => props.onChange(checked)}
                     />

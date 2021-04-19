@@ -112,7 +112,7 @@ export function TrackListItem({track, privateTracks = false}) {
         </Item.Description>
         {privateTracks && (
           <Item.Extra>
-            {track.visible ? (
+            {track.public ? (
               <>
                 <Icon color="blue" name="eye" fitted /> Public
               </>

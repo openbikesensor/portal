@@ -24,7 +24,7 @@ export type Track = {
   title: string
   description?: string
   createdAt: string
-  visible?: boolean
+  public?: boolean
   statistics?: TrackStatistics
 }
 

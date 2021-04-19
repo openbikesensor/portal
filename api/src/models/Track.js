@@ -55,8 +55,12 @@ const schema = new mongoose.Schema(
     // A user-provided description of the track. May contain markdown.
     description: String,
 
-    // Whether this track is visible in the public track list or not.
-    visible: Boolean,
+    // Whether this track is visible (anonymized) in the public track list or not.
+    public: { type: Boolean, default: false },
+
+    // Whether this track should be exported to the public track database
+    // (after anonymization).
+    includeInPublicDatabase: { type: Boolean, default: false },
 
     // The user agent string, or a part thereof, that was used to upload this
     // track. Usually contains only the OBS version, other user agents are
@@ -142,7 +146,7 @@ class Track extends mongoose.Model {
   }
 
   isVisibleTo(user) {
-    if (this.visible) {
+    if (this.public) {
       return true;
     }
 
@@ -250,7 +254,7 @@ class Track extends mongoose.Model {
       description: this.description,
       createdAt: this.createdAt,
       updatedAt: this.updatedAt,
-      visible: this.visible,
+      public: this.public,
       author: this.author.toProfileJSONFor(user),
       statistics: this.statistics,
       processingStatus: this.processingStatus,
