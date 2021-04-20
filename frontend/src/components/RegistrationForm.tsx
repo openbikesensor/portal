@@ -1,7 +1,13 @@
 import React from 'react'
 import {Form, Button} from 'semantic-ui-react'
 
-export default function RegistrationForm({onSubmit: onSubmitOuter}) {
+type RegistrationFormSubmit = {
+  username: string | null,
+  email: string | null,
+  password: string | null
+}
+
+export default function RegistrationForm({onSubmit: onSubmitOuter}: {onSubmit: (data: RegistrationFormSubmit) => void}) {
   const [username, setUsername] = React.useState(null)
   const [email, setEmail] = React.useState(null)
   const [password, setPassword] = React.useState(null)
