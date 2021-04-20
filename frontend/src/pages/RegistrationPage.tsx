@@ -9,12 +9,16 @@ import type { RootState } from '../store';
 const RegistrationPage = connect((state: RootState) => ({ loggedIn: Boolean(state.login) }))(function RegistrationPage({
   loggedIn,
 }) {
+  const [message, setMessage] = React.useState();
+
   const onSubmit = React.useCallback(async ({ username, email, password }) => {
     const response = await api.post(`/accounts/register`, {
       body: { username, email, password, confirmPassword: password },
     });
 
-    console.log('response', response);
+    if (response && response.message) {
+      setMessage(response.message);
+    }
   }, []);
 
   return loggedIn ? (
@@ -22,7 +26,7 @@ const RegistrationPage = connect((state: RootState) => ({ loggedIn: Boolean(stat
   ) : (
     <Page small>
       <h2>Register</h2>
-      <RegistrationForm onSubmit={onSubmit} />
+      {message ? message : <RegistrationForm onSubmit={onSubmit} />}
     </Page>
   );
 });
