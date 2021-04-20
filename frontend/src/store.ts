@@ -1,7 +1,7 @@
-import {applyMiddleware, createStore, compose } from 'redux'
-import { save, load } from "redux-localstorage-simple"
+import { applyMiddleware, createStore, compose } from 'redux';
+import { save, load } from 'redux-localstorage-simple';
 
-import rootReducer from './reducers'
+import rootReducer from './reducers';
 
 declare global {
   interface Window {
@@ -13,8 +13,8 @@ const composeEnhancers = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;
 
 export const store = createStore(
   rootReducer,
-  load({ states: ["login"], disableWarnings: true }),
-  composeEnhancers(applyMiddleware(save({ states: ["login"] })))
+  load({ states: ['login'], disableWarnings: true }),
+  composeEnhancers(applyMiddleware(save({ states: ['login'] }))),
 );
 
 export type AppDispatch = typeof store.dispatch;
