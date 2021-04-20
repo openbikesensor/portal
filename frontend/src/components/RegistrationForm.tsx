@@ -12,10 +12,10 @@ export default function RegistrationForm({
 }: {
   onSubmit: (data: RegistrationFormSubmit) => void;
 }) {
-  const [username, setUsername] = React.useState(null);
-  const [email, setEmail] = React.useState(null);
-  const [password, setPassword] = React.useState(null);
-  const [password2, setPassword2] = React.useState(null);
+  const [username, setUsername] = React.useState('');
+  const [email, setEmail] = React.useState('');
+  const [password, setPassword] = React.useState('');
+  const [password2, setPassword2] = React.useState('');
 
   const onChangeUsername = React.useCallback((e) => setUsername(e.target.value), []);
   const onChangeEmail = React.useCallback((e) => setEmail(e.target.value), []);
@@ -32,7 +32,14 @@ export default function RegistrationForm({
     <Form onSubmit={onSubmit}>
       <Form.Input label="Username" value={username} onChange={onChangeUsername} name="username" />
       <Form.Input label="e-Mail" value={email} onChange={onChangeEmail} name="email" />
-      <Form.Input label="Password" type="password" value={password} onChange={onChangePassword} name="password" />
+      <Form.Input
+        label="Password"
+        type="password"
+        value={password}
+        onChange={onChangePassword}
+        name="password"
+        minLength={6}
+      />
       <Form.Input
         label="Password (repeat)"
         type="password"
@@ -40,6 +47,7 @@ export default function RegistrationForm({
         onChange={onChangePassword2}
         name="password2"
         error={password2 != null && password !== password2 ? 'Your passwords do not match.' : null}
+        minLength={6}
       />
       <Button type="submit">Submit</Button>
     </Form>
