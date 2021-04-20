@@ -21,9 +21,11 @@ const RegistrationPage = connect((state: RootState) => ({ loggedIn: Boolean(stat
     }
   }, []);
 
-  return loggedIn ? (
-    <Redirect to="/" />
-  ) : (
+  if (loggedIn) {
+    return <Redirect to="/" />;
+  }
+
+  return (
     <Page small>
       <h2>Register</h2>
       {message ? message : <RegistrationForm onSubmit={onSubmit} />}
