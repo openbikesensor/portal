@@ -39,7 +39,7 @@
       "prettier"
     ],
     "rules": {
-      "prettier/prettier": "error",
+      "prettier/prettier": "warn",
       "standard/array-bracket-even-spacing": 0,
       "standard/computed-property-even-spacing": 0,
       "standard/object-curly-even-spacing": 0
