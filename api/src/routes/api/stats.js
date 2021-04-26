@@ -14,7 +14,7 @@ router.get(
     const publicTrackCount = await Track.find({ public: true }).count();
     const userCount = await User.find().count();
 
-    const [{ trackLength, numEvents, trackDuration }] = await Track.aggregate([
+    const aggregateResult = await Track.aggregate([
       {
         $addFields: {
           trackLength: '$statistics.length',
@@ -38,6 +38,8 @@ router.get(
         },
       },
     ]);
+
+    const [trackLength, numEvents, trackDuration] = aggregateResult.length > 0 ? aggregateResult : [0,0,0];
 
     const trackLengthPrivatized = Math.floor(trackLength / TRACK_LENGTH_ROUNDING) * TRACK_LENGTH_ROUNDING;
 

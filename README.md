@@ -9,7 +9,16 @@ separated into components:
 * **frontend**: A React single-page application that allows access to the data,
   provides summaries and visualizations, and lets users adjust settings and
   manage and publish their tracks.
-  
+
+## Clone the Project
+
+First of all, you must clone this project. This project uses submodules,
+thus ensure, that they are cloned as well:
+
+```bash
+git submodule update --init --recursive
+```
+
 ## Deployment setup
 
 You should be familiar with managing a Linux server. If not, find a suitable
@@ -48,7 +57,7 @@ Compose](https://docs.docker.com/compose/install/) onto your machine, and
 cloning the repository, all you need to do is:
 
 ```bash
-docker-compose up -d
+docker-compose up -d --build
 ```
 
 If this does not work, please open an issue and describe the problem you're
