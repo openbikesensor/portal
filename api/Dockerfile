@@ -1,4 +1,4 @@
-FROM node:15.11.0-buster
+FROM node:15.14-buster
 
 # Install python3, pip3, and make them the default for `python` and `pip` commands
 RUN apt-get update && apt-get install -y python3 python3-pip

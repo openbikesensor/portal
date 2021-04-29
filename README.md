@@ -28,7 +28,9 @@ make sure to properly set up and secure your server yourself.
 1. Create a user for running the application. It is not recommended to run as a
    user that is also used for other things. Do not run as root!
 2. Clone the repository.
-3. Install `node` of at least version 14, and also `npm`.
+3. Install `node` of at least version 15, and also `npm`. You can use the 
+   [Node Version Manager (npm)](https://github.com/nvm-sh/nvm), since this project
+   contains a `.nvmrc`. Just run `nvm install` followed by `nvm use`.
 4. Run `npm ci` in the `api` and `frontend` directories to install dependencies.
 5. Install and configure a MongoDB somewhere.
 6. Copy `api/config.json.example` to `api/config.json` and change it to suit
