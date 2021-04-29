@@ -24,7 +24,9 @@ const App = connect((state) => ({login: state.login}))(function App({login}) {
       <div className={styles.App}>
         <header className={styles.headline}>
           <div className={styles.header}>
-            <div className={styles.pageTitle}>OpenBikeSensor</div>
+            <div className={styles.pageTitle}>
+              <Link to="/">OpenBikeSensor</Link>
+            </div>
             <nav className={styles.menu}>
               <ul>
                 {login && (
