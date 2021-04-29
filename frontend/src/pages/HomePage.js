@@ -49,7 +49,7 @@ function Stats() {
           </Statistic>
           <Statistic>
             <Statistic.Value>{formatDuration(stats?.trackDuration)}</Statistic.Value>
-            <Statistic.Label>hrs recorded</Statistic.Label>
+            <Statistic.Label>hours recorded</Statistic.Label>
           </Statistic>
           <Statistic>
             <Statistic.Value>{stats?.numEvents}</Statistic.Value>
