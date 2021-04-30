@@ -202,7 +202,7 @@ class Track extends mongoose.Model {
 
     await this.save();
 
-    return await queue.add(
+    await queue.add(
       'processTrack',
       {
         trackId: this._id.toString(),
