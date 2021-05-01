@@ -1,4 +1,4 @@
-FROM node:15.14-buster
+FROM node:14
 
 WORKDIR /opt/obs/frontend
 ADD package.json package-lock.json /opt/obs/frontend/
