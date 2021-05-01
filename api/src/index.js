@@ -17,7 +17,7 @@ const app = express();
 app.use(cors());
 
 // Express configuration
-app.set('views', './views');
+app.set('views', path.join(__dirname, '..', 'views'));
 app.set('view engine', 'pug');
 
 // Normal express config defaults
