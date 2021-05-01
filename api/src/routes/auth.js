@@ -10,7 +10,6 @@ const config = require('../config');
 
 const baseUrl = config.baseUrl.replace(/\/+$/, '');
 
-
 // Check whether the "bigScope" fully includes the "smallScope".
 function scopeIncludes(smallScope, bigScope) {
   const smallScopeParts = smallScope.split(/\s/);
@@ -174,7 +173,7 @@ router.get(
         return returnError(res, 'invalid_request', 'client_id parameter required');
       }
 
-      const client = await config.oAuth2Clients.find((c) => c.clientId === clientId);
+      const client = config.oAuth2Clients.find((c) => c.clientId === clientId);
       if (!client) {
         return returnError(res, 'invalid_client', 'unknown client');
       }
@@ -234,17 +233,30 @@ router.get(
 
       // Ok, let's save all this in the session, and show a dialog for the
       // decision to the user.
+      //
+      if (client.autoAccept) {
+        const code = AuthorizationCode.generate({
+          clientId,
+          user: req.user,
+          redirectUri,
+          scope,
+          codeChallenge,
+        });
+        await code.save();
 
-      req.session.authorizationTransaction = {
-        responseType,
-        clientId,
-        redirectUri,
-        scope,
-        expiresAt: new Date().getTime() + 1000 * 60 * 2, // 2 minute decision time
-        codeChallenge,
-      };
+        return redirectWithParams(res, redirectUri, { code: code.code, scope });
+      } else {
+        req.session.authorizationTransaction = {
+          responseType,
+          clientId,
+          redirectUri,
+          scope,
+          expiresAt: new Date().getTime() + 1000 * 60 * 2, // 2 minute decision time
+          codeChallenge,
+        };
 
-      res.render('authorize', { clientTitle: client.title, scope, redirectUri });
+        res.render('authorize', { clientTitle: client.title, scope, redirectUri });
+      }
     } catch (err) {
       res.status(400).json({ error: 'invalid_request', error_description: 'unknown error' });
     }
@@ -344,7 +356,7 @@ router.get(
       return returnError(res, 'invalid_request', 'code_verifier parameter required');
     }
 
-    const client = await config.oAuth2Clients.find((c) => c.clientId === clientId);
+    const client = config.oAuth2Clients.find((c) => c.clientId === clientId);
 
     if (!client) {
       await destroyAuthCode();

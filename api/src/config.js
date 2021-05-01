@@ -49,6 +49,8 @@ const configSchema = Joi.object({
         // scope to get a valid response. Scopes are not automatically truncated.
         // Leave empty or set to `"*"` for unlimited scopes in this client.
         maxScope: Joi.string().required(),
+
+        autoAccept: Joi.boolean().optional(),
       }),
     ),
 }).required();

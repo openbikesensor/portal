@@ -15,7 +15,8 @@
       "validRedirectUris": ["http://localhost:3001/redirect"],
       "refreshTokenExpirySeconds": 604800,
       "maxScope": "*",
-      "title": "OBS Portal"
+      "title": "OBS Portal",
+      "autoAccept": true
     },
     {
       "clientId": "a2958209-4045-4ec9-8cb3-1156abba7de3",
