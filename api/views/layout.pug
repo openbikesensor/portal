@@ -1,143 +1,32 @@
 html
   head
     base(href=baseUrl)
-    title
-      block title
+    title block title
         | Authorization Server
 
+    link(rel="stylesheet", href="/semantic-ui/semantic.min.css")
+
     style.
-      html, body {
-        font-family: "Roboto";
-        font-size: 11pt;
-        background: #FAFAFE;
-      }
-
-      main {
-        max-width: 30rem;
-        margin: 2rem auto;
-        background: white;
-        border: 1px solid #DDD;
-        padding: 2rem;
-        border-radius: 6px;
-      }
-
-      h1 {
-        font-weight: 500;
-        text-align: center;
-      }
-
-      input, button {
-        font: inherit;
-      }
-
-      input {
-        background: white;
-        height: 2rem;
-        display: block;
-        width: 100%;
-        margin: 0.5rem 0;
-        padding: 0 0.5rem;
-        border: 1px solid #DDD;
-      }
-
-      input:focus {
-        border: 1px solid #000;
-        outline: none;
-      }
-
-      button {
-        padding: 0 1rem;
-        height: 2.5rem;
-        background: #dedede;
-        font-size: inherit;
-        border: 0;
-        border-radius: 6px;
-        color: black;
-        font-weight: 500;
-        cursor: pointer;
-      }
-
-      fieldset {
-        border: none;
-        padding: 0;
-        margin: 1rem 0;
-      }
-
-      .message.error {
-        color: red;
-      }
-
-      .authorization {
-        display: flex;
-      }
-
-      .authorization form {
-        flex: 1 1 0;
-      }
-      .authorization form:first-child {
-        margin-right: 2rem;
-      }
-
-      .authorization form button {
-        width: 100%;
-      }
-
-      button.red {
-        background: #b33f3f;
-        color: white;
-      }
-      button.red:hover {
-        background: #ff7878;
-      }
-
-      button.green {
-        background: #41b141;
-        color: white;
-      }
-      button.green:hover {
-        background: #83d283;
-      }
-
-      nav ul {
-        list-style: none;
-        margin: 0;
-        padding: 0;
-        display: flex;
-        align-items: center;
-        padding-bottom: 1rem;
-        margin-bottom: 1rem;
-        border-bottom: 1px solid #DDD;
-      }
-      nav ul li {
-        flex: 1 1 0;
-        text-align: center;
-      }
-      nav ul li a {
-        color: #999;
-        text-decoration: none;
-      }
-      nav ul li a:hover {
-        color: #444;
-      }
-
-      nav header {
-        text-align: center;
-        font-weight: 500;
-        margin-bottom: 1rem;
+      body > main > header {
+        margin: 16px 0;
       }
 
   body
-    main
-      nav
-        header OpenBikeSensor Account Pages
-        ul
-          if mainFrontendUrl
-            li: a(href=mainFrontendUrl) Back to Portal
-          if !user
-            li: a(href="login") Login
-            li: a(href="register") Register
-          if user
-            li: a(href="logout") Logout
-      header: h1
-        block title
-      block content
+    main.ui.container
+      header
+        nav.ui.menu
+          a.item(href=mainFrontendUrl, title="Back to Portal")
+            i.icon.arrow.left
+          .header.item OpenBikeSensor Account
+          .right.menu
+            if mainFrontendUrl
+            if !user
+              a.item(href="login") Login
+              a.item(href="register") Register
+            if user
+              a.item(href="logout") Logout
+      div.ui.grid.centered
+        div.eight.wide.column
+          h2.ui.header
+            block title
+          block content

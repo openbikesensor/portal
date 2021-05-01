@@ -4,17 +4,17 @@ block title
   | Login
 
 block content
-  form(method="post")
-    fieldset
+  form.ui.form(method="post")
+    .field
       label(for="email") E-Mail Address
       input(id="email", name="email")
 
-    fieldset
+    .field
       label(for="password") Password
       input(name="password", type="password")
 
     if badCredentials
-      p.message.error Invalid login credentials, please try again.
+      p.ui.negative.message Invalid login credentials, please try again.
 
-    button(type="submit", style="margin-right: 2rem") Login
-    a(href="forgot-password") I forgot my password
+    button.ui.button.primary(type="submit", style="margin-right: 2rem") Login
+    a.ui(href="forgot-password") I forgot my password

@@ -55,6 +55,7 @@
     "pug": "^3.0.0",
     "request": "2.88.2",
     "sanitize-filename": "^1.6.3",
+    "semantic-ui-css": "^2.4.1",
     "slug": "^3.5.2",
     "turf": "^3.0.14",
     "underscore": "^1.12.0"

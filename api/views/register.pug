@@ -4,22 +4,22 @@ block title
   | Register
 
 block content
-  form(method="post")
-    fieldset
+  form.ui.form(method="post")
+    .field
       label(for="username") Username
       input(id="username", name="username")
       p.form-hint At least 3 characters, alphanumerical, must be unique
 
-    fieldset
+    .field
       label(for="email") E-Mail Address
       input(id="email", name="email", type="email")
 
-    fieldset
+    .field
       label(for="password") Password
       input(id="password", name="password", type="password")
 
-    fieldset
+    .field
       label(for="confirmPassword") Confirm Password
       input(id="confirmPassword", name="confirmPassword", type="password")
 
-    button(type="submit") Register
+    button.ui.button.primary(type="submit") Register

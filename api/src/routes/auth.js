@@ -74,7 +74,7 @@ router.post(
       description = 'Your account is not yet verified, please check your email or start the password recovery.';
     }
 
-    return res.render('message', { type: 'error', title: 'Login failed', description });
+    return res.render('message', { type: 'negative', title: 'Login failed', description });
   },
   wrapRoute((req, res, next) => {
     if (!req.user) {
@@ -86,7 +86,7 @@ router.post(
       req.session.next = null;
       return;
     }
-    return res.render('message', { type: 'success', title: 'You are logged in.' });
+    return res.render('message', { type: 'positive', title: 'You are logged in.', showFrontendLink: true });
   }),
 );
 
@@ -94,7 +94,7 @@ router.get(
   '/login',
   wrapRoute(async (req, res) => {
     if (req.user) {
-      return res.render('message', { type: 'success', title: 'You are already logged in.' });
+      return res.render('message', { type: 'positive', title: 'You are already logged in.' });
     }
 
     return res.render('login');
@@ -267,7 +267,7 @@ router.post(
 
     if (expiresAt < new Date().getTime()) {
       return res.status(400).render('message', {
-        type: 'error',
+        type: 'negative',
         title: 'Expired',
         description: 'Your authorization has expired. Please go back and retry the process.',
       });
@@ -450,7 +450,7 @@ router
       await accountService.register(req.body);
 
       return res.render('message', {
-        type: 'success',
+        type: 'positive',
         title: 'Registration successful',
         description: 'Please check your email for verification instructions.',
       });
@@ -469,7 +469,7 @@ router.get(
   wrapRoute(async (req, res) => {
     await accountService.verifyEmail(req.query);
     return res.render('message', {
-      type: 'success',
+      type: 'positive',
       title: 'Verification successful',
       description: 'You can now log in.',
       showLoginButton: true,
@@ -488,7 +488,7 @@ router
     wrapRoute(async (req, res) => {
       await accountService.forgotPassword(req.body);
       res.render('message', {
-        type: 'success',
+        type: 'positive',
         title: 'Recovery mail sent',
         description: 'Please check your inbox for password recovery instructions.',
       });
@@ -509,7 +509,7 @@ router
     wrapRoute(async (req, res) => {
       await accountService.resetPassword(req.body);
       return res.render('message', {
-        type: 'success',
+        type: 'positive',
         title: 'Password reset successful',
         description: 'You can now log in.',
         showLoginButton: true,
