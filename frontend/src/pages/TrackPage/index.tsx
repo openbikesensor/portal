@@ -1,6 +1,6 @@
 import React from 'react'
 import {connect} from 'react-redux'
-import {Button, Table, Checkbox, Segment, Dimmer, Grid, Loader, Header, Message} from 'semantic-ui-react'
+import {Table, Checkbox, Segment, Dimmer, Grid, Loader, Header, Message} from 'semantic-ui-react'
 import {useParams, useHistory} from 'react-router-dom'
 import {concat, combineLatest, of, from, Subject} from 'rxjs'
 import {pluck, distinctUntilChanged, map, switchMap, startWith, catchError} from 'rxjs/operators'
@@ -106,6 +106,13 @@ const TrackPage = connect((state) => ({login: state.login}))(function TrackPage(
     [slug, reloadComments]
   )
 
+  const onDownloadOriginal = React.useCallback(
+    () => {
+      api.downloadFile(`/tracks/${slug}/download/original.csv`)
+    },
+    [slug]
+  )
+
   const isAuthor = login?.username === data?.track?.author?.username
 
   const {track, trackData, comments} = data || {}
@@ -147,7 +154,7 @@ const TrackPage = connect((state) => ({login: state.login}))(function TrackPage(
                 <>
                   <Header as="h1">{track.title || 'Unnamed track'}</Header>
                   <TrackDetails {...{track, isAuthor}} />
-                  {isAuthor && <TrackActions {...{slug}} />}
+                  <TrackActions {...{isAuthor, onDownloadOriginal, slug}} />
                 </>
               )}
             </Segment>

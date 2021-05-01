@@ -20,6 +20,11 @@ export default function TrackDetails({track, isAuthor}) {
 
       {track.originalFileName != null && (
         <List.Item>
+          {isAuthor && (
+            <div style={{float: 'right'}}>
+            </div>
+          )}
+
           <List.Header>Original Filename</List.Header>
           <code>{track.originalFileName}</code>
         </List.Item>

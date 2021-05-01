@@ -4,6 +4,20 @@ import {setAuth, invalidateAccessToken, resetAuth} from 'reducers/auth'
 import {setLogin} from 'reducers/login'
 import config from 'config.json'
 import {create as createPkce} from 'pkce'
+import download from 'downloadjs'
+
+function getFileNameFromContentDispostionHeader(contentDisposition: string): string | undefined {
+  const standardPattern = /filename=(["']?)(.+)\1/i
+  const wrongPattern = /filename=([^"'][^;"'\n]+)/i
+
+  if (standardPattern.test(contentDisposition)) {
+    return contentDisposition.match(standardPattern)[2]
+  }
+
+  if (wrongPattern.test(contentDisposition)) {
+    return contentDisposition.match(wrongPattern)[1]
+  }
+}
 
 class RequestError extends Error {
   constructor(message, errors) {
@@ -122,9 +136,9 @@ class API {
   }
 
   async exchangeAuthorizationCode(code) {
-    const codeVerifier = localStorage.getItem('codeVerifier');
+    const codeVerifier = localStorage.getItem('codeVerifier')
     if (!codeVerifier) {
-      throw new Error("No code verifier found");
+      throw new Error('No code verifier found')
     }
 
     const {tokenEndpoint} = await this.getAuthorizationServerMetadata()
@@ -154,7 +168,7 @@ class API {
     const {authorizationEndpoint} = await this.getAuthorizationServerMetadata()
 
     const {codeVerifier, codeChallenge} = createPkce()
-    localStorage.setItem("codeVerifier", codeVerifier);
+    localStorage.setItem('codeVerifier', codeVerifier)
 
     const loginUrl = new URL(authorizationEndpoint)
     loginUrl.searchParams.append('client_id', config.auth.clientId)
@@ -172,10 +186,12 @@ class API {
   async fetch(url, options = {}) {
     const accessToken = await this.getValidAccessToken()
 
+    const {returnResponse = false, ...fetchOptions} = options
+
     const response = await window.fetch(config.apiUrl + '/api' + url, {
-      ...options,
+      ...fetchOptions,
       headers: {
-        ...(options.headers || {}),
+        ...(fetchOptions.headers || {}),
         Authorization: accessToken,
       },
     })
@@ -189,12 +205,22 @@ class API {
       throw new Error('401 Unauthorized')
     }
 
-    let json
-      try {
-        json = await response.json()
-      } catch (err) {
-        json = null
+    if (returnResponse) {
+      if (response.status === 200) {
+        return response
+      } else if (response.status === 204) {
+        return null
+      } else {
+        throw new RequestError('Error code ' + response.status)
       }
+    }
+
+    let json
+    try {
+      json = await response.json()
+    } catch (err) {
+      json = null
+    }
 
     if (response.status === 200) {
       return json
@@ -243,6 +269,18 @@ class API {
       expiresAt: new Date().getTime() + tokenResponse.expires_in * 1000,
       scope: tokenResponse.scope,
     }
+  }
+
+  async downloadFile(url, options = {}) {
+    const res = await this.fetch(url, {returnResponse: true, ...options})
+    const blob = await res.blob()
+    const filename = getFileNameFromContentDispostionHeader(res.headers.get('content-disposition'))
+    const contentType = res.headers.get('content-type')
+
+    // Apparently this workaround is needed for some browsers
+    const newBlob = new Blob([blob], {type: contentType})
+
+    download(newBlob, filename, contentType)
   }
 }
 
