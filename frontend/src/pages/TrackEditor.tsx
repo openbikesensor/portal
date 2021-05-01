@@ -161,7 +161,7 @@ const TrackEditor = connect((state) => ({login: state.login}))(function TrackEdi
           <Grid.Column width={6}>
             <ReplaceTrackData slug={slug} />
 
-          <Divider />
+            <Divider />
 
             <h2>Danger zone</h2>
             <p>
