@@ -8,7 +8,7 @@ import {fromLonLat} from 'ol/proj'
 import {Duration} from 'luxon'
 
 import api from '../api'
-import {Map, Page} from '../components'
+import {Map, Page, RoadsLayer} from '../components'
 
 import {TrackListItem} from './TracksPage'
 import styles from './HomePage.module.scss'
@@ -22,18 +22,21 @@ function formatDuration(seconds) {
 function WelcomeMap() {
   return (
     <Map className={styles.welcomeMap}>
-      <Map.TileLayer />
-      <Map.View maxZoom={22} zoom={6} center={fromLonLat([10, 51])} />
+      <RoadsLayer />
+      <Map.TileLayer
+        osm={{
+          url: 'https://tiles.wmflabs.org/bw-mapnik/{z}/{x}/{y}.png',
+          crossOrigin: null,
+        }}
+      />
+      {/* <Map.View maxZoom={22} zoom={6} center={fromLonLat([10, 51])} /> */}
+      <Map.View maxZoom={22} zoom={13} center={fromLonLat([9.1798, 48.7759])} />
     </Map>
   )
 }
 
 function Stats() {
-  const stats = useObservable(
-    () => of(null).pipe(
-      switchMap(() => api.fetch('/stats'))
-    ),
-  )
+  const stats = useObservable(() => of(null).pipe(switchMap(() => api.fetch('/stats'))))
 
   return (
     <>
@@ -42,7 +45,7 @@ function Stats() {
       <Segment>
         <Loader active={stats == null} />
 
-        <Statistic.Group widths={2} size="mini" >
+        <Statistic.Group widths={2} size="mini">
           <Statistic>
             <Statistic.Value>{Number(stats?.publicTrackLength / 1000).toFixed(1)}</Statistic.Value>
             <Statistic.Label>km track length</Statistic.Label>
@@ -106,7 +109,6 @@ export default function HomePage() {
             <MostRecentTrack />
           </Grid.Column>
         </Grid.Row>
-
       </Grid>
     </Page>
   )

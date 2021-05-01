@@ -52,7 +52,7 @@ export function Map({children, ...props}) {
 }
 
 export function Layer({layerClass, getDefaultOptions, children, ...props}) {
-  const context = React.useContext(MapLayerContext)
+  const context = React.useContext(MapContext)
 
   const layer = React.useMemo(
     () =>
@@ -64,13 +64,11 @@ export function Layer({layerClass, getDefaultOptions, children, ...props}) {
     []
   )
 
-  for (const [k, v] of Object.entries(props)) {
-    layer.set(k, v)
-  }
+  layer.setProperties(props)
 
   React.useEffect(() => {
-    context?.push(layer)
-    return () => context?.remove(layer)
+    context?.addLayer(layer)
+    return () => context?.removeLayer(layer)
   }, [layer, context])
 
   if (typeof layer.getLayers === 'function') {
@@ -80,9 +78,8 @@ export function Layer({layerClass, getDefaultOptions, children, ...props}) {
   }
 }
 
-export function TileLayer(props) {
-  return <Layer layerClass={OlTileLayer} getDefaultOptions={() => ({source: new OSM()})} {...props} />
-}
+export function TileLayer({osm, ...props}) {
+  return <Layer layerClass={OlTileLayer} getDefaultOptions={() => ({source: new OSM(osm)})} {...props} /> }
 
 export function VectorLayer(props) {
   return <Layer layerClass={OlVectorLayer} {...props} />

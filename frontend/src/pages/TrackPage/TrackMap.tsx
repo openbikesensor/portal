@@ -157,7 +157,12 @@ export default function TrackMap({trackData, show, ...props}: {trackData: TrackD
 
   return (
     <Map {...props}>
-      <Map.TileLayer />
+      <Map.TileLayer
+        osm={{
+          url: 'https://tiles.wmflabs.org/bw-mapnik/{z}/{x}/{y}.png',
+          crossOrigin: null,
+        }}
+      />
       <Map.VectorLayer
         visible
         updateWhileAnimating={false}
