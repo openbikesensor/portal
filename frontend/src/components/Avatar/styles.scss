@@ -1,0 +1,43 @@
+.avatar.text-avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  vertical-align: -3px;
+
+  > span {
+    color: white;
+    font-size: 20pt;
+    text-transform: uppercase;
+    display: inline;
+
+    a:hover & {
+      text-decoration: none !important;
+    }
+  }
+}
+
+
+.avatar.empty-avatar {
+  background: #AAA;
+}
+
+
+.avatar.text-avatar,
+.avatar.empty-avatar {
+  // border-radius: 0.25rem;
+  border-radius: 10%;
+  width: 2.5em;
+  height: 2.5em;
+
+  .ui.comments & {
+    display: inline-flex;
+    width: 2.5em;
+    height: 2.5em;
+  }
+
+  .tiny.image & {
+    width: 64px;
+    height: 64px;
+  }
+}
+

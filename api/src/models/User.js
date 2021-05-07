@@ -71,7 +71,7 @@ class User extends mongoose.Model {
       email: this.email,
       token: this.generateJWT(),
       bio: this.bio,
-      image: this.image || 'https://static.productionready.io/images/smiley-cyrus.jpg',
+      image: this.image,
       areTracksVisibleForAll: this.areTracksVisibleForAll,
       apiKey: this._id,
     };
@@ -81,7 +81,7 @@ class User extends mongoose.Model {
     return {
       username: this.username,
       bio: this.bio,
-      image: this.image || 'https://static.productionready.io/images/smiley-cyrus.jpg',
+      image: this.image,
     };
   }
 }

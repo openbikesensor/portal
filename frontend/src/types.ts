@@ -2,7 +2,7 @@ import type {FeatureCollection, Point} from 'geojson'
 
 export type UserProfile = {
   username: string
-  image: string
+  image?: string | null
   bio?: string | null
 }
 

@@ -16,7 +16,7 @@ import {
   TracksPage,
   UploadPage,
 } from 'pages'
-import {LoginButton} from 'components'
+import {Avatar, LoginButton} from 'components'
 
 const App = connect((state) => ({login: state.login}))(function App({login}) {
   return (
@@ -54,7 +54,7 @@ const App = connect((state) => ({login: state.login}))(function App({login}) {
                   <>
                     <li>
                       <Link to="/settings">
-                        <Image src={login.image} avatar />
+                        <Avatar user={login} />
                       </Link>
                     </li>
                     <li>

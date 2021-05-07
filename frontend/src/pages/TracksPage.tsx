@@ -8,7 +8,7 @@ import {map, switchMap, distinctUntilChanged} from 'rxjs/operators'
 import _ from 'lodash'
 
 import type {Track} from 'types'
-import {Page, StripMarkdown} from 'components'
+import {Avatar, Page, StripMarkdown} from 'components'
 import api from 'api'
 import {useQueryParam} from 'query'
 
@@ -99,7 +99,9 @@ function maxLength(t, max) {
 export function TrackListItem({track, privateTracks = false}) {
   return (
     <Item key={track.slug}>
-      <Item.Image size="tiny" src={track.author.image} />
+      <Item.Image size="tiny">
+        <Avatar user={track.author} />
+      </Item.Image>
       <Item.Content>
         <Item.Header as={Link} to={`/tracks/${track.slug}`}>
           {track.title || 'Unnamed track'}

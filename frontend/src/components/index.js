@@ -1,3 +1,4 @@
+export {default as Avatar} from './Avatar'
 export {default as FileDrop} from './FileDrop'
 export {default as FileUploadField} from './FileUploadField'
 export {default as FormattedDate} from './FormattedDate'

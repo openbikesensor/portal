@@ -2,7 +2,7 @@ import React from 'react'
 import {Message, Segment, Form, Button, Loader, Header, Comment} from 'semantic-ui-react'
 import Markdown from 'react-markdown'
 
-import {FormattedDate} from 'components'
+import {Avatar, FormattedDate} from 'components'
 
 function CommentForm({onSubmit}) {
   const [body, setBody] = React.useState('')
@@ -32,7 +32,7 @@ export default function TrackComments({comments, onSubmit, onDelete, login, hide
 
         {comments?.map((comment: TrackComment) => (
           <Comment key={comment.id}>
-            <Comment.Avatar src={comment.author.image} />
+            <Avatar user={comment.author} />
             <Comment.Content>
               <Comment.Author as="a">{comment.author.username}</Comment.Author>
               <Comment.Metadata>
