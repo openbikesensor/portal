@@ -32,7 +32,7 @@ const App = connect((state) => ({login: state.login}))(function App({login}) {
                 {login && (
                   <li>
                     <Link to="/upload">
-                      <Button compact color="green">
+                      <Button compact primary>
                         <Icon name="cloud upload" />
                         Upload
                       </Button>
@@ -54,7 +54,7 @@ const App = connect((state) => ({login: state.login}))(function App({login}) {
                   <>
                     <li>
                       <Link to="/settings">
-                        <Avatar user={login} />
+                        <Avatar user={login} className={styles.avatar} />
                       </Link>
                     </li>
                     <li>

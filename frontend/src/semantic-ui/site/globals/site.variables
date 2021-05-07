@@ -12,10 +12,5 @@
 @obsColorG6: #EFB509;
 @obsColorS: #000000;
 
-@blue: #80A6CD;
-@green: #78CB5B;
-@orange: #D26911;
-@black: #333333;
-
 @primaryColor: @obsColorB4;
 @secondaryColor: @obsColorG1;

@@ -1,5 +1,6 @@
 import React from 'react'
 import {Comment} from 'semantic-ui-react'
+import classnames from 'classnames'
 
 import './styles.scss'
 
@@ -17,21 +18,21 @@ function getColor(s) {
   return `hsl(${h}, 50%, 50%)`
 }
 
-export default function Avatar({user}) {
+export default function Avatar({user, className}) {
   const {image, username} = user || {}
 
   if (image) {
-    return <Comment.Avatar src={image} />
+    return <Comment.Avatar src={image} className={className} />
   }
 
   if (!username) {
-    return <div className="avatar empty-avatar" />
+    return <div className={classnames(className, "avatar", "empty-avatar")} />
   }
 
   const color = getColor(username)
 
   return (
-    <div className="avatar text-avatar" style={{background: color}}>
+    <div className={classnames(className, "avatar", "text-avatar")} style={{background: color}}>
       {username && <span>{username[0]}</span>}
     </div>
   )
