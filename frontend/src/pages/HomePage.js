@@ -81,7 +81,7 @@ function MostRecentTrack() {
 
   return (
     <>
-      <h2>Most recent track</h2>
+      <Header as="h2">Most recent track</Header>
       <Loader active={track === null} />
       {track === undefined ? (
         <Message>

@@ -1,6 +1,6 @@
 import React from 'react'
 import {connect} from 'react-redux'
-import {Message, Icon, Grid, Form, Button, TextArea, Ref, Input} from 'semantic-ui-react'
+import {Message, Icon, Grid, Form, Button, TextArea, Ref, Input, Header} from 'semantic-ui-react'
 import {useForm} from 'react-hook-form'
 
 import {setLogin} from 'reducers/login'
@@ -36,7 +36,7 @@ const SettingsPage = connect((state) => ({login: state.login}), {setLogin})(func
     <Grid.Row>
     <Grid.Column width={8}>
 
-      <h2>Your profile</h2>
+      <Header as="h2">Your profile</Header>
 
       <Message info>All of this information is public.</Message>
 
@@ -85,7 +85,7 @@ function ApiKeyDialog({login}) {
 
   return (
     <>
-      <h2>Your API Key</h2>
+      <Header as="h2">Your API Key</Header>
       <p>
         Here you find your API Key, for use in the OpenBikeSensor. You can
         to copy and paste it into your sensor's configuration interface to

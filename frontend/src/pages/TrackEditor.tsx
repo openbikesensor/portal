@@ -1,7 +1,7 @@
 import React from 'react'
 import _ from 'lodash'
 import {connect} from 'react-redux'
-import {Divider, Message, Confirm, Grid, Button, Icon, Popup, Form, Ref, TextArea, Checkbox} from 'semantic-ui-react'
+import {Divider, Message, Confirm, Grid, Button, Icon, Popup, Form, Ref, TextArea, Checkbox, Header} from 'semantic-ui-react'
 import {useHistory, useParams, Link} from 'react-router-dom'
 import {concat, of, from} from 'rxjs'
 import {pluck, distinctUntilChanged, map, switchMap} from 'rxjs/operators'
@@ -22,7 +22,7 @@ function ReplaceTrackData({slug}) {
 
   return (
     <>
-      <h2>Replace track data</h2>
+      <Header as="h2">Replace track data</Header>
       {!file ? (
         <FileUploadField onSelect={setFile} />
       ) : result ? (
@@ -98,7 +98,7 @@ const TrackEditor = connect((state) => ({login: state.login}))(function TrackEdi
       <Grid centered relaxed divided>
         <Grid.Row>
           <Grid.Column width={10}>
-            <h2>Edit {track ? track.title || 'Unnamed track' : 'track'}</h2>
+            <Header as="h2">Edit {track ? track.title || 'Unnamed track' : 'track'}</Header>
             <Form loading={loading} key={track?.slug} onSubmit={onSubmit}>
               <Ref innerRef={findInput(register)}>
                 <Form.Input label="Title" name="title" defaultValue={track?.title} style={{fontSize: '120%'}} />
@@ -163,7 +163,7 @@ const TrackEditor = connect((state) => ({login: state.login}))(function TrackEdi
 
             <Divider />
 
-            <h2>Danger zone</h2>
+            <Header as="h2">Danger zone</Header>
             <p>
               You can remove this track from your account and the portal if you like. However, if at any point you have
               published this track, we cannot guarantee that there are no versions of it in the public data repository,
