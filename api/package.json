@@ -58,7 +58,7 @@
     "semantic-ui-css": "^2.4.1",
     "slug": "^3.5.2",
     "turf": "^3.0.14",
-    "underscore": "^1.12.0"
+    "underscore": "^1.12.1"
   },
   "devDependencies": {
     "eslint": "^7.20.0",
