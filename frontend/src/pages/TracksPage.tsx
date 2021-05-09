@@ -1,6 +1,6 @@
 import React from 'react'
 import {connect} from 'react-redux'
-import {Message, Item, Tab, Loader, Pagination, Icon} from 'semantic-ui-react'
+import {Button, Message, Item, Menu, Loader, Pagination, Icon} from 'semantic-ui-react'
 import {useObservable} from 'rxjs-hooks'
 import {Link, useHistory, useRouteMatch} from 'react-router-dom'
 import {of, from, concat} from 'rxjs'
@@ -14,25 +14,23 @@ import {useQueryParam} from 'query'
 
 function TracksPageTabs() {
   const history = useHistory()
-  const panes = React.useMemo(
-    () => [
-      {menuItem: 'Public tracks', url: '/tracks'},
-      {menuItem: 'My tracks', url: '/my/tracks'},
-    ],
-    []
-  )
 
-  const onTabChange = React.useCallback(
+  const onClick = React.useCallback(
     (e, data) => {
-      history.push(panes[data.activeIndex].url)
+      history.push(data.name)
     },
-    [history, panes]
+    [history]
   )
 
-  const isOwnTracksPage = useRouteMatch('/my/tracks')
-  const activeIndex = isOwnTracksPage ? 1 : 0
+  const isOwnTracksPage = Boolean(useRouteMatch('/my/tracks'))
 
-  return <Tab menu={{secondary: true, pointing: true}} {...{panes, onTabChange, activeIndex}} />
+  return (
+    <Menu pointing secondary>
+      <Menu.Item name="/tracks" active={!isOwnTracksPage} {...{onClick}}>Tracks</Menu.Item>
+      <Menu.Item name="/my/tracks" active={isOwnTracksPage} {...{onClick}} />
+    <Menu.Item name="/upload" position='right' {...{onClick}}><Button color='green' compact size='small'>Upload</Button></Menu.Item>
+    </Menu>
+  )
 }
 
 function TrackList({privateTracks}: {privateTracks: boolean}) {

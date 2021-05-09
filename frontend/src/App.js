@@ -1,6 +1,6 @@
 import React from 'react'
 import {connect} from 'react-redux'
-import {List, Grid, Container, Menu, Icon, Button, Header} from 'semantic-ui-react'
+import {List, Grid, Container, Menu, Icon, Button, Header, Dropdown} from 'semantic-ui-react'
 import {BrowserRouter as Router, Switch, Route, Link} from 'react-router-dom'
 
 import config from 'config.json'
@@ -32,30 +32,24 @@ const App = connect((state) => ({login: state.login}))(function App({login}) {
             Tracks
           </Link>
 
-          {login ? (
             <Menu.Menu position="right">
-              <Link to="/upload" component={Menu.Item}>
-                <Button compact primary>
-                  <Icon name="cloud upload" />
-                  Upload
-                </Button>
-              </Link>
-
-              <Link to="/settings" component={Menu.Item}>
+          {login ? (
+            <Dropdown item trigger={
                 <Avatar user={login} className={styles.avatar} />
-              </Link>
-
-              <Link component={Menu.Item} to="/logout">
-                <Button compact>Logout</Button>
-              </Link>
-            </Menu.Menu>
+              }>
+                <Dropdown.Menu>
+                  <Link to="/upload" component={Dropdown.Item} icon="cloud upload" text="Upload tracks" />
+                  <Link to="/settings" component={Dropdown.Item} icon="cog" text="Settings" />
+                    <Dropdown.Divider />
+                  <Link to="/logout" component={Dropdown.Item} icon="sign-out" text="Logout" />
+              </Dropdown.Menu>
+              </Dropdown>
           ) : (
-            <Menu.Menu>
               <Menu.Item>
                 <LoginButton as="a" compact />
               </Menu.Item>
-            </Menu.Menu>
           )}
+            </Menu.Menu>
         </Container>
       </Menu>
 
