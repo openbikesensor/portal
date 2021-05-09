@@ -5,5 +5,7 @@
     "clientId": "CHANGEME",
     "scope": "*",
     "redirectUri": "https://example.com/redirect"
-  }
+  },
+  "imprintUrl": "https://example.com/imprint",
+  "privacyPolicyUrl": "https://example.com/privacy"
 }

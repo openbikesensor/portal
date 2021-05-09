@@ -1,14 +1,40 @@
 @import 'styles.scss';
 
-.App {
+:global(#root) {
   padding-top: 60px;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: stretch;
+
+  html, body, & {
+    min-height: 100%;
+  }
 }
 
-.header {
-  @include container;
-  height: 56px;
-  display: flex;
-  align-items: center;
+.footer {
+  margin-top: auto;
+  min-height: 12rem;
+  padding: 2rem 0;
+
+  background: $obsColorB4;
+  color: $obsColorW;
+
+  h1, h2, h3, h4, h5, h6 {
+    &:global(.ui.header) {
+      color: inherit;
+    }
+  }
+
+  a {
+    &, &:hover {
+      color: inherit;
+    }
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
 }
 
 .avatar {
@@ -36,12 +62,12 @@
   box-shadow: 0 0 10px -6px black;
 }
 
-.pageTitle {
+.pageTitle a {
   font-family: 'Open Sans Condensed';
   font-weight: 600;
   font-size: 18pt;
 
-  &, a, a:hover {
+  &, &:hover {
     color: $obsColorB4;
   }
 }

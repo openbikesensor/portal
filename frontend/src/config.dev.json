@@ -5,5 +5,7 @@
     "clientId": "b730f8d2-d93c-4c68-9ff0-dfac8da76ee2",
     "scope": "*",
     "redirectUri": "http://localhost:3001/redirect"
-  }
+  },
+  "imprintUrl": "https://example.com/imprint",
+  "privacyPolicyUrl": "https://example.com/privacy"
 }
