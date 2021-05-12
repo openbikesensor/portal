@@ -163,5 +163,5 @@ All of this of course is not too important if you're developing locally. To get
 to the logged email content that *would* have been sent, check your docker log:
 
 ```bash
-docker-compose log -f api
+docker-compose logs -f api
 ```
