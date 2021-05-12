@@ -16,6 +16,10 @@ First of all, you must clone this project. This project uses submodules,
 thus ensure, that they are cloned as well:
 
 ```bash
+git clone --recursive https://github.com/openbikesensor/portal
+
+# ... or if you forgot the --recursive argument, you can run this in the
+# repository's directory later:
 git submodule update --init --recursive
 ```
 
@@ -28,7 +32,7 @@ make sure to properly set up and secure your server yourself.
 1. Create a user for running the application. It is not recommended to run as a
    user that is also used for other things. Do not run as root!
 2. Clone the repository.
-3. Install `node` of at least version 15, and also `npm`. You can use the 
+3. Install `node` of at least version 15, and also `npm`. You can use the
    [Node Version Manager (nvm)](https://github.com/nvm-sh/nvm), since this project
    contains a `.nvmrc`. Just run `nvm install` followed by `nvm use`.
 4. Run `npm ci` in the `api` and `frontend` directories to install dependencies.
@@ -120,13 +124,13 @@ docker-compose run --rm api npm run migrate:up
 ````
 
 ## Custom MongoDB installation
-    
+
 If you have your own MongoDB instance running somewhere, you can set the
 environment variable `MONGODB_URL` when starting the server, and it will read
 that URL for connecting.
-  
+
     export MONGODB_URL=mongodb://user:password@mongodb.example.com/obs-app-database
-    
+
 This does not work when using docker-compose, in that case, you will have to
 modify the `docker-compose.yaml` to include that URL.
 
@@ -140,7 +144,7 @@ you start the application like so: `npm run dev -- --devSendMails`.
 Mails are also always sent in production mode!
 
 For actually sending e-mails the mailserver, sender, user and password for the
-SMTP server need to be specified as environment variables: 
+SMTP server need to be specified as environment variables:
 
 * `MAILUSER` -- the smtp mailbox login name
 * `MAILPW` -- password for the mailbox
