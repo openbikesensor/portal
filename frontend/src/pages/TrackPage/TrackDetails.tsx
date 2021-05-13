@@ -37,10 +37,10 @@ export default function TrackDetails({track, isAuthor}) {
         </List.Item>
       )}
 
-      {track.duration == null && (
+      {track.statistics?.duration != null && (
         <List.Item>
           <List.Header>Duration</List.Header>
-          {formatDuration(track.duration || 1402)}
+          {formatDuration(track.statistics.duration)}
         </List.Item>
       )}
 
