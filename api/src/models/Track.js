@@ -115,20 +115,18 @@ schema.pre('validate', async function (next) {
 // 0..4 Night, 4..10 Morning, 10..14 Noon, 14..18 Afternoon, 18..22 Evening, 22..00 Night
 // Two hour intervals
 const DAYTIMES = [
-  'Night',
-  'Night',
-  'Morning',
-  'Morning',
-  'Morning',
-  'Noon',
-  'Noon',
-  'Afternoon',
-  'Afternoon',
-  'Afternoon',
-  'Evening',
-  'Evening',
-  'Evening',
-  'Night',
+  'Night', // 0h - 2h
+  'Night', // 2h - 4h
+  'Morning', // 4h - 6h
+  'Morning', // 6h - 8h
+  'Morning', // 8h - 10h
+  'Noon', // 10h - 12h
+  'Noon', // 12h - 14h
+  'Afternoon', // 14h - 16h
+  'Afternoon', // 16h - 18h
+  'Evening', // 18h - 20h
+  'Evening', // 20h - 22h
+  'Night', // 22h - 24h
 ];
 
 function getDaytime(dateTime) {
@@ -199,6 +197,7 @@ class Track extends mongoose.Model {
     this.processingStatus = 'pending';
     this.processingLog = null;
     this.processingJobId = uuid();
+    this.statistics = null;
 
     await this.save();
 
@@ -226,19 +225,31 @@ class Track extends mongoose.Model {
       return;
     }
 
-    // for (const property of ['publicTrackData', 'trackData']) {
-    //   if (this[property]) {
-    //     await this.populate(property).execPopulate();
-    //     if (this[property].recordedAt) {
-    //       const dateTime = DateTime.fromJSDate(this[property].recordedAt);
-    //       const daytime = getDaytime(dateTime);
-    //       this.title = `${daytime} ride on ${dateTime.toLocaleString(DateTime.DATE_MED)}`;
-    //       await this.save();
-    //       return
-    //     }
-    //   }
-    // }
+    // Try to figure out when this file was recorded. Either we have it in then
+    // statistics, e.g. after parsing and processing the track, or we can maybe
+    // derive it from the filename.
+    let recordedAt = null;
 
+    if (this.statistics && this.statistics.recordedAt != null) {
+      recordedAt = DateTime.fromJSDate(this.statistics.recordedAt);
+    } else if (this.originalFileName) {
+      const match = this.originalFileName.match(/^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}\.[0-9]{2}\.[0-9]{2}/);
+      if (match) {
+        recordedAt = DateTime.fromFormat(match[0], "yyyy-MM-dd'T'HH.mm.ss");
+        if (!recordedAt.isValid) {
+          recordedAt = null;
+        }
+      }
+    }
+
+    if (recordedAt) {
+      const daytime = getDaytime(recordedAt);
+      this.title = `${daytime} ride on ${recordedAt.toLocaleString(recordedAt.DATE_MED)}`;
+      await this.save();
+      return;
+    }
+
+    // Detecting recording date failed, use filename
     if (this.originalFileName) {
       this.title = _.upperFirst(_.words(this.originalFileName.replace(/(\.obsdata)?\.csv$/, '')).join(' '));
       await this.save();

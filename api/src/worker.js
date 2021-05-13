@@ -101,6 +101,10 @@ queue.process('processTrack', async (job) => {
 
     track.processingStatus = 'complete';
     await track.save();
+
+    // Maybe we have found out the recording date, regenerate the automatic
+    // title (if not yet manually set)
+    await track.autoGenerateTitle()
   } catch (err) {
     console.error('Processing failed:', err);
     track.processingLog += String(err) + '\n' + err.stack + '\n';

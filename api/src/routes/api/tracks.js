@@ -200,11 +200,12 @@ router.post(
     }
 
     await track.save()
-    await track.autoGenerateTitle()
 
     if (fileBody) {
       await track.queueProcessing();
     }
+
+    await track.autoGenerateTitle()
 
     return res.json({ track: track.toJSONFor(req.user) });
   }),
@@ -262,11 +263,12 @@ router.put(
     }
 
     await track.save();
-    await track.autoGenerateTitle()
 
     if (process) {
       await track.queueProcessing()
     }
+
+    await track.autoGenerateTitle()
 
     return res.json({ track: track.toJSONFor(req.user) });
   }),
