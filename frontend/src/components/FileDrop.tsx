@@ -160,6 +160,7 @@ export default class FileDrop extends React.PureComponent<FileDropProps, FileDro
   }
 
   handleDrop: ReactDragEventHandler<HTMLDivElement> = (event) => {
+    event.preventDefault?.()
     if (this.props.onDrop && FileDrop.eventHasFiles(event)) {
       const files = event.dataTransfer ? event.dataTransfer.files : null
       this.props.onDrop(files, event)

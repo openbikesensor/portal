@@ -18,6 +18,8 @@ export default function FileUploadField({onSelect: onSelect_, multiple}) {
   )
 
   function onChangeField(e) {
+    e.preventDefault?.()
+
     if (e.target.files && e.target.files.length) {
       onSelect(e.target.files)
     }
