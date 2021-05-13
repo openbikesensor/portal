@@ -51,7 +51,7 @@ const TrackPage = connect((state) => ({login: state.login}))(function TrackPage(
       )
 
       const trackData$ = slug$.pipe(
-        map((slug) => `/tracks/${slug}/data/all_measurements`),
+        map((slug) => `/tracks/${slug}/data`),
         switchMap((url) =>
           concat(
             of(undefined),

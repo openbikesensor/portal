@@ -1,4 +1,4 @@
-import type {FeatureCollection, Point} from 'geojson'
+import type {FeatureCollection, Feature, LineString, Point} from 'geojson'
 
 export type UserProfile = {
   username: string
@@ -6,7 +6,12 @@ export type UserProfile = {
   bio?: string | null
 }
 
-export type TrackData = FeatureCollection
+export type TrackData = {
+  track: Feature<LineString>,
+  allMeasurements: FeatureCollection,
+  confirmedMeasurements: FeatureCollection,
+}
+
 export type TrackStatistics = {
   recordedAt?: Date
   recordedUntil?: Date

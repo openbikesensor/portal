@@ -206,7 +206,6 @@ router.post(
       await track.queueProcessing();
     }
 
-    // console.log(track.author);
     return res.json({ track: track.toJSONFor(req.user) });
   }),
 );
@@ -353,37 +352,43 @@ router.delete(
 
 // return an track's generated data
 router.get(
-  '/:track/data/:filename',
+  '/:track/data',
   auth.optional,
   wrapRoute(async (req, res) => {
-    const {filename} = req.params
-
-    if (!['statistics', 'all_measurements'].includes(filename)) {
-      return res.sendStatus(404);
+    const FILE_BY_KEY = {
+      allMeasurements: 'all_measurements.json',
+      confirmedMeasurements: 'confirmed_measurements.json',
+      track: 'track.json',
     }
 
-    console.log(req.track.author, req.user)
     if (!req.track.isVisibleTo(req.user)) {
       return res.sendStatus(403);
     }
 
-    const filePath = path.join(PROCESSING_OUTPUT_DIR, req.track.filePath, filename + '.json')
+    const result = {}
+    for (const [key, filename] of Object.entries(FILE_BY_KEY)) {
+      const filePath = path.join(PROCESSING_OUTPUT_DIR, req.track.filePath, filename)
 
-    let stats
+      let stats
 
-    try {
-      stats = await fs.promises.stat(filePath)
-    } catch(err) {
-      return res.sendStatus(404);
+      try {
+        stats = await fs.promises.stat(filePath)
+      } catch(err) {
+        continue
+      }
+
+      if (!stats.isFile()) {
+        // file does not exist (yet)
+        continue
+      }
+
+      const content = await fs.promises.readFile(filePath)
+      const contentJson = JSON.parse(content)
+
+      result[key] = contentJson
     }
 
-    if (!stats.isFile()) {
-      // file does not exist (yet)
-      return res.sendStatus(404);
-    }
-
-    const content = await fs.promises.readFile(filePath)
-    return res.json(JSON.parse(content));
+    return res.json(result);
   }),
 );
 

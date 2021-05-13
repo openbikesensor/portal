@@ -102,8 +102,7 @@ export default function TrackMap({trackData, show, ...props}: {trackData: TrackD
     const trackPointsD2: Feature<Point>[] = []
     const trackPointsUntaggedD1: Feature<Point>[] = []
     const trackPointsUntaggedD2: Feature<Point>[] = []
-    const points: Coordinate[] = []
-    const filteredPoints: TrackPoint[] = trackData?.features.filter(isValidTrackPoint) ?? []
+    const filteredPoints: TrackPoint[] = trackData?.allMeasurements?.features.filter(isValidTrackPoint) ?? []
 
     for (const feature of filteredPoints) {
       const {
@@ -114,7 +113,6 @@ export default function TrackMap({trackData, show, ...props}: {trackData: TrackD
       } = feature
 
       const p = fromLonLat([longitude, latitude])
-      points.push(p)
 
       const geometry = new Point(p)
 
@@ -135,6 +133,10 @@ export default function TrackMap({trackData, show, ...props}: {trackData: TrackD
       }
     }
 
+    const points: Coordinate[] = trackData?.track.geometry.coordinates.map(([latitude, longitude]) => {
+      return fromLonLat([longitude, latitude])
+    }) ?? []
+
     //Simplify to 1 point per 2 meter
     const trackVectorSource = new VectorSource({
       features: [new Feature(new LineString(points).simplify(2))],
@@ -142,7 +144,7 @@ export default function TrackMap({trackData, show, ...props}: {trackData: TrackD
 
     const viewExtent = points.length ? trackVectorSource.getExtent() : null
     return {trackVectorSource, trackPointsD1, trackPointsD2, trackPointsUntaggedD1, trackPointsUntaggedD2, viewExtent}
-  }, [trackData?.features])
+  }, [trackData?.allMeasurements?.features])
 
   const trackLayerStyle = React.useMemo(
     () =>
