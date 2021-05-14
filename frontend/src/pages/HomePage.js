@@ -45,22 +45,22 @@ function Stats() {
       <Segment>
         <Loader active={stats == null} />
 
-        <Statistic.Group widths={2} size="mini">
+        <Statistic.Group widths={2} size="tiny">
           <Statistic>
             <Statistic.Value>{Number(stats?.trackLength / 1000).toFixed(1)} km</Statistic.Value>
-            <Statistic.Label>track length</Statistic.Label>
+            <Statistic.Label>Total track length</Statistic.Label>
           </Statistic>
           <Statistic>
             <Statistic.Value>{formatDuration(stats?.trackDuration)} h</Statistic.Value>
-            <Statistic.Label>recorded</Statistic.Label>
+            <Statistic.Label>Time recorded</Statistic.Label>
           </Statistic>
           <Statistic>
             <Statistic.Value>{stats?.numEvents}</Statistic.Value>
-            <Statistic.Label>events</Statistic.Label>
+            <Statistic.Label>Events confirmed</Statistic.Label>
           </Statistic>
           <Statistic>
             <Statistic.Value>{stats?.userCount}</Statistic.Value>
-            <Statistic.Label>members</Statistic.Label>
+            <Statistic.Label>Members joined</Statistic.Label>
           </Statistic>
         </Statistic.Group>
       </Segment>
