@@ -43,7 +43,12 @@ nano treafik/treafik.toml
 * Configure you email in the `traefik/traefil.toml`. 
   This email is uses by Let's Encrypt to send you some mails regarding your certificates.
 
-3) Configure the domains in the `docker-compose-prod.yaml`:
+3) Copy and edit the `docker-compose-prod.yaml`:
+
+```
+cp docker-compose-prod.yaml.example docker-compose-prod.yaml
+nano docker-compose-prod.yaml
+```
 
 * Change the domain of the label of the API:
   `traefik.http.routers.obsapi.rule=Host(api.example.com)`
@@ -102,7 +107,7 @@ docker-compose -f docker-compose-prod.yaml logs -f
 If something went wrong, you can reconfigure your config files and rerun:
 
 ```
-docker-compose build --no-cache
+docker-compose -f docker-compose-prod.yaml build --no-cache
 docker-compose -f docker-compose-prod.yaml up -d
 ```
 
