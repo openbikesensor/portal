@@ -13,7 +13,7 @@
     }
   },
   "mongodb": {
-    "url": "mongo://mongodb/obs",
+    "url": "mongodb://mongo/obs",
     "debug": false
   },
   "redisUrl": "redis://redis",

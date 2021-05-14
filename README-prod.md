@@ -1,6 +1,6 @@
 *HINT: This is still work in progress*
 
-# Use Docker in Production
+# Use Docker in Production (with Traefik)
 
 ## Introduction
 
@@ -20,21 +20,30 @@ Based on some labels, traefik routes the domains to the corresponding docker-con
 
 # Before getting started.
 
-We assume, we have to (sub)domains, which point to the same server ip adress, 
-for example by using CNAME dns entries. This documentation assumes the following two domains:
+We assume, we have two (sub)domains, which point to the same server ip-address, 
+for example by using CNAME DNS entries. This documentation assumes the following two domains:
 
 * api.example.com
 * portal.example.com
 
-These domains are also configured in the example configuration files, 
-which we tackle soon in the next section.
-
+These domains are also configured in the example configuration files,
+provided in this repository. We'll tackle them in the next section.
 
 ## Details
 
 1) Clone the repo as described in the [README.md](README.md)
 
-2) Configure the domains in the `docker-compose-prod.yaml`:
+2) Copy and edit `treafik.toml`:
+
+```bash
+cp treafik/treafik.toml.example treafik/treafik.toml
+nano treafik/treafik.toml
+```
+
+* Configure you email in the `traefik/traefil.toml`. 
+  This email is uses by Let's Encrypt to send you some mails regarding your certificates.
+
+3) Configure the domains in the `docker-compose-prod.yaml`:
 
 * Change the domain of the label of the API:
   `traefik.http.routers.obsapi.rule=Host(api.example.com)`
@@ -67,13 +76,41 @@ nano api/config.json
 5) Build container and run them:
 
 ```bash
-docker-compose -f docker-compose-prod.yaml up --build
+docker-compose -f docker-compose-prod.yaml up -d --build
 ```
 
-6) Test the API and frontend:
+The services are build now. It can take some minutes. 
+After some time, you yould see:
+
+```
+Recreating obsexamplecom_traefik_1 ... done
+Creating obsexamplecom_mongo_1     ... done
+Creating obsexamplecom_redis_1     ... done
+Creating obsexamplecom_worker_1    ... done
+Creating obsexamplecom_api_1       ... done
+Creating obsexamplecom_frontend_1  ... done
+```
+
+6) Take a look into the logs!
+
+Now, you can watch the logs:
+
+```bash
+docker-compose -f docker-compose-prod.yaml logs -f
+```
+
+If something went wrong, you can reconfigure your config files and rerun:
+
+```
+docker-compose build --no-cache
+docker-compose -f docker-compose-prod.yaml up -d
+```
+
+7) Test the API and frontend:
 
 * https://api.example.com/api/stats
 * https://portal.example.com
+
 
 
 # TODO
