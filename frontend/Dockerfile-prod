@@ -23,9 +23,11 @@ RUN npm run build
 #############################################
 
 # Use apache
-# FROM httpd:2.4
-# COPY --from=builder /opt/obs/frontend/build /usr/local/apache2/htdocs
+FROM httpd:2.4
+# Enable rewrite_module
+RUN sed -i '/LoadModule rewrite_module/s/^#//g' /usr/local/apache2/conf/httpd.conf
+# Allow .htaccess within /usr/local/apache2/htdocs 
+RUN sed -i '/<Directory "\/usr\/local\/apache2\/htdocs">/,/<\/Directory>/ s/AllowOverride None/AllowOverride all/' /usr/local/apache2/conf/httpd.conf
 
-# Use nginx
-FROM nginx:1.20
-COPY --from=builder /opt/obs/frontend/build /usr/share/nginx/html
+COPY --from=builder /opt/obs/frontend/build /usr/local/apache2/htdocs
+COPY apache/.htaccess /usr/local/apache2/htdocs/
