@@ -1,0 +1,31 @@
+#############################################
+# Build the frontend AS builder
+#############################################
+
+FROM node:14 as builder
+
+WORKDIR /opt/obs/frontend
+ADD package.json package-lock.json /opt/obs/frontend/
+RUN npm ci
+
+ADD tsconfig.json craco.config.js /opt/obs/frontend/
+ADD public/ /opt/obs/frontend/public/
+ADD src/ /opt/obs/frontend/src/
+
+# [Optional] Add the URL prefix. It must also be set in the docker-compose.yml
+# ENV PUBLIC_URL=/prefix
+
+RUN npm run build
+
+#############################################
+# Serve the frontend
+#############################################
+
+# Use apache
+# FROM httpd:2.4
+# COPY --from=builder /opt/obs/frontend/build /usr/local/apache2/htdocs
+
+# Use nginx
+FROM nginx:1.20
+COPY --from=builder /opt/obs/frontend/build /usr/share/nginx/html
+
