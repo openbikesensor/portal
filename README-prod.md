@@ -2,39 +2,81 @@
 
 # Use Docker in Production
 
-1) Clone the repo as described in the [README.md](README.md)
+## Introduction
 
-2) Configure the port in the `docker-compose-prod.yaml`:
+The main idea of this document is to provide an easy docker-based production-ready 
+setup of the openbikesensor portal. 
+It uses the [the traefik proxy](and https://doc.traefik.io/traefik/) as a reverse proxy, 
+which listens on port 80 and 443.
+Based on some labels, traefik routes the domains to the corresponding docker-containers:
 
-```bash
-...
-- '3001:80'
-...
+```
+                  /---:3000[api]
+--->:443[traefik] -
+                  \---:80[frontend]
+                   \
+                    \---:80[other-service]
 ```
 
-3) Copy and edit the `config.json` (set the domain and previously selected port).
+# Before getting started.
 
-For the frontend:
+We assume, we have to (sub)domains, which point to the same server ip adress, 
+for example by using CNAME dns entries. This documentation assumes the following two domains:
+
+* api.example.com
+* portal.example.com
+
+These domains are also configured in the example configuration files, 
+which we tackle soon in the next section.
+
+
+## Details
+
+1) Clone the repo as described in the [README.md](README.md)
+
+2) Configure the domains in the `docker-compose-prod.yaml`:
+
+* Change the domain of the label of the API:
+  `traefik.http.routers.obsapi.rule=Host(api.example.com)`
+* Change the domain of the label of the portal:
+  `traefik.http.routers.obsapi.rule=Host(portal.example.com)`
+
+3) Copy and edit the `config.json` of the frontend:
 
 ```bash
-cp frontend/src/config.dev.json frontend/src/config.json
+cp frontend/src/config.json.example frontend/src/config.json
 nano frontend/src/config.json
 ```
 
-For the API:
+* Change all URLs to your (sub)domains
+* Create a UUID by using `uuidgen` and set the `clientId`
+
+4) Copy and edit the `config.json` of the api:
 
 ```bash
-cp api/config.dev.json api/config.json
+cp api/config.json.example api/config.json
 nano api/config.json
 ```
 
+* Change all URLs to your (sub)domains
+* Generate and set a random `cookieSecret` (for example with `uuidgen`)
+* Generate and set a random `jwtSecret` (for example with `uuidgen`)
+* Configure you SMTP mail server
+* Set the `clientId` for the `oAuth2Client` of the portal (from step 3)
 
-3) Build and run the container
+5) Build container and run them:
 
 ```bash
 docker-compose -f docker-compose-prod.yaml up --build
 ```
 
-4) Test the frontend
+6) Test the API and frontend:
 
-The frontend should be available under your configured domain and port.
+* https://api.example.com/api/stats
+* https://portal.example.com
+
+
+# TODO
+
+touch traefik/acme.json
+chmod 600 traefik/acme.json

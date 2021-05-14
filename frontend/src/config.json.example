@@ -2,10 +2,10 @@
   "apiUrl": "https://api.example.com",
   "auth": {
     "server": "https://api.example.com",
-    "clientId": "CHANGEME",
+    "clientId": "!!!<<<CHANGEME>>>!!!",
     "scope": "*",
-    "redirectUri": "https://example.com/redirect"
+    "redirectUri": "https://portal.example.com/redirect"
   },
-  "imprintUrl": "https://example.com/imprint",
-  "privacyPolicyUrl": "https://example.com/privacy"
+  "imprintUrl": "https://portal.example.com/imprint",
+  "privacyPolicyUrl": "https://portal.example.com/privacy"
 }

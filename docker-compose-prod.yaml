@@ -29,18 +29,24 @@ services:
       - ./api/config.json:/opt/obs/api/config.json
     environment:
       - PORT=3000
-      - MONGODB_URL=mongodb://mongo/obsTest
+      - MONGODB_URL=mongo://mongo/obs
       - DATA_DIR=/data
     links:
       - mongo
       - redis
-    ports:
-      - '3000:3000'
+    expose:
+      - "3000"
     restart: on-failure
     command:
       - npm
       - run
       - dev
+    labels:
+      - traefik.http.routers.obsapi.rule=Host(`api.example.com`)
+      - traefik.http.routers.obsapi.entrypoints=websecure
+      - traefik.http.routers.obsapi.tls=true
+      - traefik.http.routers.obsapi.tls.certresolver=leresolver
+
 
   worker:
     image: obs-api
@@ -70,6 +76,29 @@ services:
       dockerfile: Dockerfile-prod
     links:
       - api
-    ports:
-      - '3001:80'
+    expose:
+      - "80"
     restart: on-failure
+    labels:
+      - traefik.http.routers.obsfrontend.rule=Host(`portal.example.com`)
+      - traefik.http.routers.obsfrontend.entrypoints=websecure
+      - traefik.http.routers.obsfrontend.tls=true
+      - traefik.http.routers.obsfrontend.tls.certresolver=leresolver
+
+  traefik:
+    # The official v2 Traefik docker image
+    image: traefik:2.4
+    # Enables the web UI and tells Traefik to listen to docker
+#    command: --api.insecure=true --providers.docker
+    ports:
+      # The HTTP port
+      - "80:80"
+      # The HTTPS port
+      - "443:443"
+      # The Web UI (enabled by --api.insecure=true)
+      - "8080:8080"
+    volumes:
+      # So that Traefik can listen to the Docker events
+      - "/var/run/docker.sock:/var/run/docker.sock"
+#      - "./traefik/acme.json:/acme.json"
+      - "./traefik/traefik.toml:/traefik.toml"

@@ -1,0 +1,27 @@
+# https://doc.traefik.io/traefik/v2.4/routing/entrypoints/
+[entryPoints]
+  [entryPoints.web]
+    address = ":80"
+
+    [entryPoints.web.http]
+    [entryPoints.web.http.redirections]
+      [entryPoints.web.http.redirections.entryPoint]
+        to = "websecure"
+        scheme = "https"
+
+  [entryPoints.websecure]
+    address = ":443"
+
+# Enable API
+#[api]
+
+# Enable docker backend
+[providers.docker]
+
+# https://doc.traefik.io/traefik/v2.4/https/acme/#configuration-examples
+[certificatesResolvers.leresolver.acme]
+  email = "acme@exmaple.org"
+  storage = "acme.json"
+  [certificatesResolvers.leresolver.acme.httpChallenge]
+    # used during the challenge
+    entryPoint = "web"
