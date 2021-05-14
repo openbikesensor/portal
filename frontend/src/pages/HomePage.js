@@ -47,12 +47,12 @@ function Stats() {
 
         <Statistic.Group widths={2} size="mini">
           <Statistic>
-            <Statistic.Value>{Number(stats?.publicTrackLength / 1000).toFixed(1)}</Statistic.Value>
-            <Statistic.Label>km track length</Statistic.Label>
+            <Statistic.Value>{Number(stats?.trackLength / 1000).toFixed(1)} km</Statistic.Value>
+            <Statistic.Label>track length</Statistic.Label>
           </Statistic>
           <Statistic>
-            <Statistic.Value>{formatDuration(stats?.trackDuration)}</Statistic.Value>
-            <Statistic.Label>hours recorded</Statistic.Label>
+            <Statistic.Value>{formatDuration(stats?.trackDuration)} h</Statistic.Value>
+            <Statistic.Label>recorded</Statistic.Label>
           </Statistic>
           <Statistic>
             <Statistic.Value>{stats?.numEvents}</Statistic.Value>
