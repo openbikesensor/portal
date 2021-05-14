@@ -19,16 +19,23 @@ import {
 } from 'pages'
 import {Avatar, LoginButton} from 'components'
 
+// This component removes the "navigate" prop before rendering a Menu.Item,
+// which is a workaround for an annoying warning that is somehow caused by the
+// <Link /> and <Menu.Item /> combination.
+function MenuItemForLink({navigate, ...props}) {
+  return <Menu.Item {...props} />
+}
+
 const App = connect((state) => ({login: state.login}))(function App({login}) {
   return (
     <Router basename={process.env.PUBLIC_URL || '/'}>
       <Menu fixed="top">
         <Container>
-          <Link to="/" component={Menu.Item} header className={styles.pageTitle}>
+          <Link to="/" component={MenuItemForLink} header className={styles.pageTitle}>
             OpenBikeSensor
           </Link>
 
-          <Link component={Menu.Item} to="/tracks">
+          <Link component={MenuItemForLink} to="/tracks" as="a">
             Tracks
           </Link>
 
