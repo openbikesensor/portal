@@ -108,9 +108,8 @@ docker-compose -f docker-compose-prod.yaml up -d
 
 7) Test the API and frontend:
 
-* https://api.example.com/api/stats
+* https://api.example.com/login
 * https://portal.example.com
-
 
 
 # TODO
