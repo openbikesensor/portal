@@ -12,12 +12,22 @@
 ...
 ```
 
-3) Copy and edit the `config.json` (set the domain and previously selected port):
+3) Copy and edit the `config.json` (set the domain and previously selected port).
+
+For the frontend:
 
 ```bash
 cp frontend/src/config.dev.json frontend/src/config.json
 nano frontend/src/config.json
 ```
+
+For the API:
+
+```bash
+cp api/config.dev.json api/config.json
+nano api/config.json
+```
+
 
 3) Build and run the container
 
