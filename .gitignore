@@ -3,3 +3,4 @@ config.json
 src/config.json
 data
 docker-compose-prod.yaml
+traefik/traefik.toml

@@ -20,46 +20,24 @@ services:
     build:
       context: ./api
     volumes:
-      - ./api/src:/opt/obs/api/src
-      - ./api/scripts/obs:/opt/obs/api/scripts/obs
-      - ./api/views:/opt/obs/api/views
       - ./local/api-data:/data
-      - ./api/.migrations.js:/opt/obs/api/.migrations.js
-      - ./api/migrations:/opt/obs/api/migrations/
       - ./api/config.json:/opt/obs/api/config.json
     environment:
-      - PORT=3000
       - MONGODB_URL=mongo://mongo/obs
-      - DATA_DIR=/data
-    links:
-      - mongo
-      - redis
-    expose:
-      - "3000"
     restart: on-failure
-    command:
-      - npm
-      - run
-      - dev
     labels:
       - traefik.http.routers.obsapi.rule=Host(`api.example.com`)
       - traefik.http.routers.obsapi.entrypoints=websecure
       - traefik.http.routers.obsapi.tls=true
       - traefik.http.routers.obsapi.tls.certresolver=leresolver
 
-
   worker:
     image: obs-api
     build:
       context: ./api
     volumes:
-      - ./api/src:/opt/obs/api/src
-      - ./api/scripts/obs:/opt/obs/api/scripts/obs
-      - ./api/views:/opt/obs/api/views
       - ./local/api-data:/data
       - ./api/config.json:/opt/obs/api/config.json
-    environment:
-      - DATA_DIR=/data
     links:
       - mongo
       - redis
@@ -67,7 +45,7 @@ services:
     command:
       - npm
       - run
-      - dev:worker
+      - start:worker
 
   frontend:
     image: obs-frontend
@@ -76,8 +54,6 @@ services:
       dockerfile: Dockerfile-prod
     links:
       - api
-    expose:
-      - "80"
     restart: on-failure
     labels:
       - traefik.http.routers.obsfrontend.rule=Host(`portal.example.com`)
@@ -86,19 +62,14 @@ services:
       - traefik.http.routers.obsfrontend.tls.certresolver=leresolver
 
   traefik:
-    # The official v2 Traefik docker image
     image: traefik:2.4
-    # Enables the web UI and tells Traefik to listen to docker
-#    command: --api.insecure=true --providers.docker
     ports:
-      # The HTTP port
       - "80:80"
-      # The HTTPS port
       - "443:443"
-      # The Web UI (enabled by --api.insecure=true)
+      # The Web UI (enabled by [api] in traefik.toml)
       # - "8080:8080"
     volumes:
       # So that Traefik can listen to the Docker events
-      - "/var/run/docker.sock:/var/run/docker.sock"
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./traefik/traefik.toml:/traefik.toml
 #      - "./traefik/acme.json:/acme.json"
-      - "./traefik/traefik.toml:/traefik.toml"

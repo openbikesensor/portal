@@ -17,6 +17,12 @@ RUN cd scripts && pip install -e .
 ADD views /opt/obs/api/views/
 ADD src /opt/obs/api/src/
 
+#ADD .migrations.js .
+#ADD migrations .
+
 EXPOSE 3000
+
 ENV PORT=3000
-CMD ["npm", "start"]
+ENV DATA_DIR=/data
+
+CMD ["npm", "run", "start"]
