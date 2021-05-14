@@ -8,6 +8,7 @@ RUN ln -s $(which pip3) /usr/local/bin/pip
 WORKDIR /opt/obs/api
 
 ADD package.json package-lock.json /opt/obs/api/
+RUN echo update-notifier=false >> ~/.npmrc
 RUN npm ci
 
 ADD scripts /opt/obs/api/scripts/

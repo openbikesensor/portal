@@ -2,6 +2,7 @@ FROM node:14
 
 WORKDIR /opt/obs/frontend
 ADD package.json package-lock.json /opt/obs/frontend/
+RUN echo update-notifier=false >> ~/.npmrc
 RUN npm ci
 
 ADD tsconfig.json craco.config.js /opt/obs/frontend/
