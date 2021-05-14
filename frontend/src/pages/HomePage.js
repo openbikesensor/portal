@@ -3,7 +3,7 @@ import {Link} from 'react-router-dom'
 import {Message, Grid, Loader, Statistic, Segment, Header, Item, Menu} from 'semantic-ui-react'
 import {useObservable} from 'rxjs-hooks'
 import {of, from, concat} from 'rxjs'
-import {tap, map, switchMap, distinctUntilChanged} from 'rxjs/operators'
+import {map, switchMap, distinctUntilChanged} from 'rxjs/operators'
 import {fromLonLat} from 'ol/proj'
 import {Duration, DateTime} from 'luxon'
 
@@ -64,7 +64,6 @@ function Stats() {
           }
         }),
         switchMap((query) => concat(of(null), from(api.get('/stats', {query})))),
-        tap(console.log),
       ),
     null,
     [timeframe]
