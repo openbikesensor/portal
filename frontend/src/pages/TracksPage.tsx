@@ -58,7 +58,7 @@ function TrackList({privateTracks}: {privateTracks: boolean}) {
 
   const {tracks, tracksCount} = data || {tracks: [], tracksCount: 0}
   const loading = !data
-  const totalPages = tracksCount / pageSize
+  const totalPages = Math.ceil(tracksCount / pageSize)
 
   return (
     <div>
