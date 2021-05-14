@@ -44,8 +44,7 @@ const App = connect((state) => ({login: state.login}))(function App({login}) {
               </Dropdown>
             ) : (
               <Menu.Item>
-                Foo
-                {/* <LoginButton compact /> */}
+                <LoginButton compact />
               </Menu.Item>
             )}
           </Menu.Menu>
