@@ -1,13 +1,12 @@
 import React from 'react'
 import {connect} from 'react-redux'
-import {Message, Icon, Grid, Form, Button, TextArea, Ref, Input, Header} from 'semantic-ui-react'
+import {Message, Icon, Grid, Form, Button, TextArea, Ref, Input, Header, Divider} from 'semantic-ui-react'
 import {useForm} from 'react-hook-form'
 
 import {setLogin} from 'reducers/login'
-import {Page} from 'components'
+import {Page, Stats} from 'components'
 import api from 'api'
 import {findInput} from 'utils'
-
 
 const SettingsPage = connect((state) => ({login: state.login}), {setLogin})(function SettingsPage({login, setLogin}) {
   const {register, handleSubmit} = useForm()
@@ -32,41 +31,44 @@ const SettingsPage = connect((state) => ({login: state.login}), {setLogin})(func
 
   return (
     <Page>
-    <Grid centered relaxed divided>
-    <Grid.Row>
-    <Grid.Column width={8}>
+      <Grid centered relaxed divided>
+        <Grid.Row>
+          <Grid.Column width={8}>
+            <Header as="h2">Your profile</Header>
 
-      <Header as="h2">Your profile</Header>
+            <Message info>All of this information is public.</Message>
 
-      <Message info>All of this information is public.</Message>
+            <Form onSubmit={handleSubmit(onSave)} loading={loading}>
+              <Ref innerRef={findInput(register)}>
+                <Form.Input error={errors?.username} label="Username" name="username" defaultValue={login.username} />
+              </Ref>
+              <Form.Field error={errors?.bio}>
+                <label>Bio</label>
+                <Ref innerRef={register}>
+                  <TextArea name="bio" rows={4} defaultValue={login.bio} />
+                </Ref>
+              </Form.Field>
+              <Form.Field error={errors?.image}>
+                <label>Avatar URL</label>
+                <Ref innerRef={findInput(register)}>
+                  <Input name="image" defaultValue={login.image} />
+                </Ref>
+              </Form.Field>
 
-      <Form onSubmit={handleSubmit(onSave)} loading={loading}>
-        <Ref innerRef={findInput(register)}>
-          <Form.Input error={errors?.username} label="Username" name="username" defaultValue={login.username} />
-        </Ref>
-        <Form.Field error={errors?.bio}>
-          <label>Bio</label>
-          <Ref innerRef={register}>
-            <TextArea name="bio" rows={4} defaultValue={login.bio} />
-          </Ref>
-        </Form.Field>
-        <Form.Field error={errors?.image}>
-          <label>Avatar URL</label>
-          <Ref innerRef={findInput(register)}>
-            <Input name="image" defaultValue={login.image} />
-          </Ref>
-        </Form.Field>
+              <Button type="submit" primary>
+                Save
+              </Button>
+            </Form>
+          </Grid.Column>
+          <Grid.Column width={6}>
+            <ApiKeyDialog {...{login}} />
 
-        <Button type="submit" primary>
-          Save
-        </Button>
-      </Form>
-  </Grid.Column>
-    <Grid.Column width={6}>
-      <ApiKeyDialog {...{login}} />
-    </Grid.Column>
-    </Grid.Row>
-    </Grid>
+            <Divider />
+
+            <Stats user={login.username} />
+          </Grid.Column>
+        </Grid.Row>
+      </Grid>
     </Page>
   )
 })
@@ -87,9 +89,8 @@ function ApiKeyDialog({login}) {
     <>
       <Header as="h2">Your API Key</Header>
       <p>
-        Here you find your API Key, for use in the OpenBikeSensor. You can
-        to copy and paste it into your sensor's configuration interface to
-        allow direct upload from the device.
+        Here you find your API Key, for use in the OpenBikeSensor. You can to copy and paste it into your sensor's
+        configuration interface to allow direct upload from the device.
       </p>
       <p>Please protect your API Key carefully as it allows full control over your account.</p>
       {show ? (
@@ -97,7 +98,9 @@ function ApiKeyDialog({login}) {
           <Input value={login.apiKey} fluid />
         </Ref>
       ) : (
-        <Button onClick={onClick}><Icon name='lock' /> Show API Key</Button>
+        <Button onClick={onClick}>
+          <Icon name="lock" /> Show API Key
+        </Button>
       )}
     </>
   )

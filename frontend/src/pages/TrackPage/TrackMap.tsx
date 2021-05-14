@@ -1,6 +1,6 @@
 import React from 'react'
 import {Vector as VectorSource} from 'ol/source'
-import {Geometry, LineString, Point} from 'ol/geom'
+import {LineString, Point} from 'ol/geom'
 import Feature from 'ol/Feature'
 import {fromLonLat} from 'ol/proj'
 import {Fill, Stroke, Style, Text, Circle} from 'ol/style'
@@ -18,7 +18,7 @@ const isValidTrackPoint = (point: TrackPoint): boolean => {
 const WARN_DISTANCE = 2
 const MIN_DISTANCE = 1.5
 
-const evaluateDistanceColor = function (distance) {
+const evaluateDistanceColor = function (distance: number) {
   if (distance < MIN_DISTANCE) {
     return 'red'
   } else if (distance < WARN_DISTANCE) {
@@ -28,7 +28,7 @@ const evaluateDistanceColor = function (distance) {
   }
 }
 
-const evaluateDistanceForFillColor = function (distance) {
+const evaluateDistanceForFillColor = function (distance: number) {
   const redFill = new Fill({color: 'rgba(255, 0, 0, 0.2)'})
   const orangeFill = new Fill({color: 'rgba(245,134,0,0.2)'})
   const greenFill = new Fill({color: 'rgba(50, 205, 50, 0.2)'})
@@ -43,7 +43,7 @@ const evaluateDistanceForFillColor = function (distance) {
   }
 }
 
-const evaluateDistanceForStrokeColor = function (distance) {
+const evaluateDistanceForStrokeColor = function (distance: number) {
   const redStroke = new Stroke({color: 'rgb(255, 0, 0)'})
   const orangeStroke = new Stroke({color: 'rgb(245,134,0)'})
   const greenStroke = new Stroke({color: 'rgb(50, 205, 50)'})
@@ -58,7 +58,7 @@ const evaluateDistanceForStrokeColor = function (distance) {
   }
 }
 
-const createTextStyle = function (distance, resolution) {
+const createTextStyle = function (distance: number, resolution: number) {
   return new Text({
     textAlign: 'center',
     textBaseline: 'middle',

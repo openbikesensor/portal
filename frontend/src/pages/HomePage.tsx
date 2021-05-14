@@ -1,23 +1,16 @@
 import React from 'react'
 import {Link} from 'react-router-dom'
-import {Message, Grid, Loader, Statistic, Segment, Header, Item} from 'semantic-ui-react'
+import {Message, Grid, Loader, Header, Item} from 'semantic-ui-react'
 import {useObservable} from 'rxjs-hooks'
 import {of, from} from 'rxjs'
 import {map, switchMap} from 'rxjs/operators'
 import {fromLonLat} from 'ol/proj'
-import {Duration} from 'luxon'
 
-import api from '../api'
-import {Map, Page, RoadsLayer} from '../components'
+import api from 'api'
+import {Stats, Map, Page, RoadsLayer} from 'components'
 
 import {TrackListItem} from './TracksPage'
 import styles from './HomePage.module.scss'
-
-function formatDuration(seconds) {
-  return Duration.fromMillis((seconds ?? 0) * 1000)
-    .as('hours')
-    .toFixed(1)
-}
 
 function WelcomeMap() {
   return (
@@ -35,38 +28,6 @@ function WelcomeMap() {
   )
 }
 
-function Stats() {
-  const stats = useObservable(() => of(null).pipe(switchMap(() => api.fetch('/stats'))))
-
-  return (
-    <>
-      <Header as="h2">Statistics</Header>
-
-      <Segment>
-        <Loader active={stats == null} />
-
-        <Statistic.Group widths={2} size="mini">
-          <Statistic>
-            <Statistic.Value>{Number(stats?.publicTrackLength / 1000).toFixed(1)}</Statistic.Value>
-            <Statistic.Label>km track length</Statistic.Label>
-          </Statistic>
-          <Statistic>
-            <Statistic.Value>{formatDuration(stats?.trackDuration)}</Statistic.Value>
-            <Statistic.Label>hours recorded</Statistic.Label>
-          </Statistic>
-          <Statistic>
-            <Statistic.Value>{stats?.numEvents}</Statistic.Value>
-            <Statistic.Label>events</Statistic.Label>
-          </Statistic>
-          <Statistic>
-            <Statistic.Value>{stats?.userCount}</Statistic.Value>
-            <Statistic.Label>members</Statistic.Label>
-          </Statistic>
-        </Statistic.Group>
-      </Segment>
-    </>
-  )
-}
 
 function MostRecentTrack() {
   const track: Track | null = useObservable(

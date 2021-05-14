@@ -1,7 +1,4 @@
 import React from 'react'
-import {useObservable} from 'rxjs-hooks'
-import {of} from 'rxjs'
-import {switchMap} from 'rxjs/operators'
 import VectorSource from 'ol/source/Vector'
 import GeoJSON from 'ol/format/GeoJSON'
 import {Stroke, Style} from 'ol/style'

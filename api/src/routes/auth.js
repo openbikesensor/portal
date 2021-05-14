@@ -109,7 +109,14 @@ router
       return res.redirect(baseUrl + '/login');
     }),
   )
-  .get((req, res) => res.render('logout'));
+  .get((req, res) => {
+    if (req.query.redirectTo) {
+      req.logout();
+      return res.redirect(req.query.redirectTo);
+    }
+
+    return res.render('logout')
+  });
 
 const isIp = (ip) =>
   typeof ip === 'string' &&

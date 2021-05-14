@@ -28,7 +28,7 @@ function TracksPageTabs() {
     <Menu pointing secondary>
       <Menu.Item name="/tracks" active={!isOwnTracksPage} {...{onClick}}>Tracks</Menu.Item>
       <Menu.Item name="/my/tracks" active={isOwnTracksPage} {...{onClick}} />
-    <Menu.Item name="/upload" position='right' {...{onClick}}><Button color='green' compact size='small'>Upload</Button></Menu.Item>
+      <Menu.Item name="/upload" position='right' {...{onClick}}><Button color='green' compact size='small'>Upload</Button></Menu.Item>
     </Menu>
   )
 }
@@ -58,7 +58,7 @@ function TrackList({privateTracks}: {privateTracks: boolean}) {
 
   const {tracks, tracksCount} = data || {tracks: [], tracksCount: 0}
   const loading = !data
-  const totalPages = tracksCount / pageSize
+  const totalPages = Math.ceil(tracksCount / pageSize)
 
   return (
     <div>
