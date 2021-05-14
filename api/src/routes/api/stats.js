@@ -5,6 +5,7 @@ const { DateTime } = require('luxon');
 const Track = mongoose.model('Track');
 const User = mongoose.model('User');
 const wrapRoute = require('../../_helpers/wrapRoute');
+const auth = require('../../passport');
 
 // round to this number of meters for privacy reasons
 const TRACK_LENGTH_ROUNDING = 1000;
@@ -14,6 +15,7 @@ const TRACK_DURATION_ROUNDING = 120;
 
 router.get(
   '/',
+  auth.optional,
   wrapRoute(async (req, res) => {
     const start = DateTime.fromISO(req.query.start);
     const end = DateTime.fromISO(req.query.end);
@@ -24,25 +26,40 @@ router.get(
       ...(end.isValid ? { $lt: end.toJSDate() } : {}),
     };
 
-    const trackCount = await Track.find({
+    let userFilter;
+    if (req.query.user) {
+      const user = await User.findOne({ username: req.query.user });
+
+      // Only the user can look for their own stats, for now
+      if (req.user && req.user._id.equals(user._id)) {
+        userFilter = user._id;
+      } else {
+        userFilter = { $ne: null };
+      }
+    }
+
+    const trackFilter = {
       'statistics.recordedAt': dateFilter,
-    }).count();
+      ...(userFilter ? { author: userFilter } : {}),
+    };
+
+    const trackCount = await Track.find(trackFilter).count();
 
     const publicTrackCount = await Track.find({
-      'statistics.recordedAt': dateFilter,
+      ...trackFilter,
       public: true,
     }).count();
 
     const userCount = await User.find({
-      createdAt: dateFilter,
+      ...(userFilter
+        ? { _id: userFilter }
+        : {
+            createdAt: dateFilter,
+          }),
     }).count();
 
     const trackStats = await Track.aggregate([
-      {
-        $match: {
-          'statistics.recordedAt': dateFilter,
-        },
-      },
+      { $match: trackFilter },
       {
         $addFields: {
           trackLength: {
