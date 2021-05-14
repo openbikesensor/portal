@@ -164,6 +164,18 @@ class API {
     return true
   }
 
+  async logout() {
+    // 1. Tell the store to forget that we're logged in.
+    this.store.dispatch(resetAuth())
+
+    // 2. Log out session in API.
+    const {tokenEndpoint} = await this.getAuthorizationServerMetadata()
+    const url = new URL(tokenEndpoint.replace(/\/token$/, '/logout'))
+    url.searchParams.append('redirectTo', window.location.href) // bring us back to the current page
+
+    window.location.href = url.toString()
+  }
+
   async makeLoginUrl() {
     const {authorizationEndpoint} = await this.getAuthorizationServerMetadata()
 

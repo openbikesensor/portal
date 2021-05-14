@@ -1,18 +1,19 @@
 import React from 'react'
+import {Loader} from 'semantic-ui-react'
 import {connect} from 'react-redux'
 import {Redirect} from 'react-router-dom'
 
-import {resetAuth} from 'reducers/auth'
+import api from 'api'
 
 const LogoutPage = connect(
   (state) => ({loggedIn: Boolean(state.login)}),
-  {resetAuth}
-)(function LogoutPage({loggedIn, resetAuth}) {
+)(function LogoutPage({loggedIn}) {
   React.useEffect(() => {
-    resetAuth()
+    // no await, just trigger it
+    api.logout()
   })
 
-  return loggedIn ? null : <Redirect to="/" />
+  return loggedIn ? <Loader active /> : <Redirect to="/" />
 })
 
 export default LogoutPage

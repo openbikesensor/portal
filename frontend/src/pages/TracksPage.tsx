@@ -28,7 +28,7 @@ function TracksPageTabs() {
     <Menu pointing secondary>
       <Menu.Item name="/tracks" active={!isOwnTracksPage} {...{onClick}}>Tracks</Menu.Item>
       <Menu.Item name="/my/tracks" active={isOwnTracksPage} {...{onClick}} />
-    <Menu.Item name="/upload" position='right' {...{onClick}}><Button color='green' compact size='small'>Upload</Button></Menu.Item>
+      <Menu.Item name="/upload" position='right' {...{onClick}}><Button color='green' compact size='small'>Upload</Button></Menu.Item>
     </Menu>
   )
 }
