@@ -18,9 +18,9 @@ Based on some labels, traefik routes the domains to the corresponding docker-con
                     \---:80[other-service]
 ```
 
-# Before getting started.
+# Before Getting Started
 
-We assume, we have two (sub)domains, which point to the same server ip-address, 
+We assume, we have two (sub)domains, which point to the same server ip-address,
 for example by using CNAME DNS entries. This documentation assumes the following two domains:
 
 * api.example.com
@@ -32,6 +32,8 @@ provided in this repository. We'll tackle them in the next section.
 ## Details
 
 1) Clone the repo as described in the [README.md](README.md)
+
+Ensure, you also cloned the submodules!
 
 2) Copy and edit `treafik.toml`:
 
@@ -85,7 +87,7 @@ docker-compose -f docker-compose-prod.yaml up -d --build
 ```
 
 The services are build now. It can take some minutes. 
-After some time, you yould see:
+At the end you sould see:
 
 ```
 Recreating obsexamplecom_traefik_1 ... done
@@ -111,7 +113,7 @@ docker-compose -f docker-compose-prod.yaml build --no-cache
 docker-compose -f docker-compose-prod.yaml up -d
 ```
 
-7) Test the API and frontend:
+7) Test the API and the frontend:
 
 * https://api.example.com/login
 * https://portal.example.com
