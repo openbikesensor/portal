@@ -93,6 +93,12 @@ async function resetPassword({ token, password }) {
   // update password and remove reset token
   account.setPassword(password);
   account.resetToken = undefined;
+
+  // Since password recovery happens through email, we can consider this a
+  // successful verification of the email address.
+  account.needsEmailValidation = false;
+  account.verificationToken = undefined;
+
   await account.save();
 }
 
