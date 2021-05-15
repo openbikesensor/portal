@@ -89,6 +89,58 @@ function PointLayer({features, title, visible}) {
   return <Map.VectorLayer {...{title, visible}} style={pointStyleFunction} source={new VectorSource({features})} />
 }
 
+
+const trackStroke = new Stroke({width: 4, color: 'rgb(30,144,255)'})
+const trackLayerStyle = new Style({stroke: trackStroke})
+
+function trackLayerStyleWithArrows(feature, resolution) {
+  const geometry = feature.getGeometry()
+
+  let styles = [trackLayerStyle]
+
+  // Numbers are in pixels
+  const arrowLength = 10 * resolution
+  const arrowSpacing = 200 * resolution
+
+  const a = arrowLength / Math.sqrt(2)
+  let spaceSinceLast = 0
+
+  geometry.forEachSegment(function (start, end) {
+    const dx = end[0] - start[0]
+    const dy = end[1] - start[1]
+    const d = Math.sqrt(dx * dx + dy * dy)
+    const rotation = Math.atan2(dy, dx)
+    spaceSinceLast += d
+
+    while (spaceSinceLast > arrowSpacing) {
+      spaceSinceLast -= arrowSpacing
+
+      let offsetAlongLine = (d - spaceSinceLast) / d
+      let pos = [start[0] + dx * offsetAlongLine, start[1] + dy * offsetAlongLine]
+
+      const lineStr1 = new LineString([pos, [pos[0] - a, pos[1] + a]])
+      lineStr1.rotate(rotation, pos)
+      const lineStr2 = new LineString([pos, [pos[0] - a, pos[1] - a]])
+      lineStr2.rotate(rotation, pos)
+
+      styles.push(
+        new Style({
+          geometry: lineStr1,
+          stroke: trackStroke,
+        })
+      )
+      styles.push(
+        new Style({
+          geometry: lineStr2,
+          stroke: trackStroke,
+        })
+      )
+    }
+  })
+
+  return styles
+}
+
 export default function TrackMap({trackData, show, ...props}: {trackData: TrackData}) {
   const {
     trackVectorSource,
@@ -133,9 +185,10 @@ export default function TrackMap({trackData, show, ...props}: {trackData: TrackD
       }
     }
 
-    const points: Coordinate[] = trackData?.track.geometry.coordinates.map(([latitude, longitude]) => {
-      return fromLonLat([longitude, latitude])
-    }) ?? []
+    const points: Coordinate[] =
+      trackData?.track.geometry.coordinates.map(([latitude, longitude]) => {
+        return fromLonLat([longitude, latitude])
+      }) ?? []
 
     //Simplify to 1 point per 2 meter
     const trackVectorSource = new VectorSource({
@@ -145,17 +198,6 @@ export default function TrackMap({trackData, show, ...props}: {trackData: TrackD
     const viewExtent = points.length ? trackVectorSource.getExtent() : null
     return {trackVectorSource, trackPointsD1, trackPointsD2, trackPointsUntaggedD1, trackPointsUntaggedD2, viewExtent}
   }, [trackData?.allMeasurements?.features])
-
-  const trackLayerStyle = React.useMemo(
-    () =>
-      new Style({
-        stroke: new Stroke({
-          width: 3,
-          color: 'rgb(30,144,255)',
-        }),
-      }),
-    []
-  )
 
   return (
     <Map {...props}>
@@ -170,7 +212,7 @@ export default function TrackMap({trackData, show, ...props}: {trackData: TrackD
         updateWhileAnimating={false}
         updateWhileInteracting={false}
         source={trackVectorSource}
-        style={trackLayerStyle}
+        style={trackLayerStyleWithArrows}
       />
 
       <Map.GroupLayer title="Tagged Points" visible>
