@@ -5,6 +5,9 @@ const configSchema = Joi.object({
   jwtSecret: Joi.string().min(16).max(128).required(),
   cookieSecret: Joi.string().min(16).max(128).required(),
 
+  imprintUrl: Joi.string(),
+  privacyPolicyUrl: Joi.string(),
+
   baseUrl: Joi.string().required(),
   mainFrontendUrl: Joi.string(), // optional
 
