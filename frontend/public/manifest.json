@@ -1,6 +1,7 @@
 {
-  "short_name": "OpenBikeSensor",
+  "short_name": "OBS Portal",
   "name": "OpenBikeSensor Portal",
+  "description": "Upload the tracks recorded with your OpenBikeSensor device to this portal and participate in the accumulation of Open Data.",
   "icons": [
     {
       "src": "favicon.ico",
@@ -20,6 +21,8 @@
   ],
   "start_url": ".",
   "display": "standalone",
-  "theme_color": "#000000",
-  "background_color": "#ffffff"
+  "theme_color": "#114594",
+  "background_color": "#ffffff",
+  "manifest_version": 2,
+  "version": "0.2.0-pre"
 }
