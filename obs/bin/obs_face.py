@@ -123,10 +123,18 @@ def process_datasets(datasets, path_annotated, osm, skip_if_json_exists=True, pa
 
         finished = output_queue.empty() and input_queue.empty() and (n_out == n_in)
 
+        try:
+            input_queue_size = input_queue.qsize()
+            output_queue_size = output_queue.qsize()
+        except NotImplementedError:
+            # on MacOS qsize() throws, so substitute the approximate queue size for the debug log
+            input_queue_size = "N/A"
+            output_queue_size = "N/A"
+        
         log.debug("datasets: total %s, input queue %s, output queue %s, "
-                 "finished %s (%s measurements); worker: running %s, total %s",
-                 n_in, input_queue.qsize(), output_queue.qsize(), n_out,
-                 len(measurements), n_alive, len(processes))
+                "finished %s (%s measurements); worker: running %s, total %s",
+                n_in, input_queue_size, output_queue_size, n_out,
+                len(measurements), n_alive, len(processes))
 
         if process_parallel:
             # (re)spawn processes
