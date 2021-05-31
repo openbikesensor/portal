@@ -1,50 +1,52 @@
-# Copyright (C) 2020-2021 OpenBikeSensor Contributors
-# Contact: https://openbikesensor.org
-#
-# This file is part of the OpenBikeSensor Scripts Collection.
-#
-# The OpenBikeSensor Scripts Collection is free software: you can redistribute it and/or
-# modify it under the terms of the GNU Lesser General Public License as
-# published by the Free Software Foundation, either version 3 of the License,
-# or (at your option) any later version.
-#
-# The OpenBikeSensor Scripts Collection is distributed in the hope that it will be
-# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser
-# General Public License for more details.
-#
-# You should have received a copy of the GNU Lesser General Public License
-# along with the OpenBikeSensor Scripts Collection.  If not, see
-# <http://www.gnu.org/licenses/>.
-
 import numpy as np
 import math
 
 
 class Way:
-    def __init__(self, p_list, aux, directional=0):
-        self.p_list = p_list
+    def __init__(self, way_id, way, nodes, local_map):
+        self.way_id = way_id
 
-        x = [p[0] for p in p_list]
-        y = [p[1] for p in p_list]
+        if "tags" in way:
+            self.tags = way["tags"]
+        else:
+            self.tags = {}
 
+        # determine points
+        self.points_xy = []
+        self.points_latlon = []
+
+        # go through all nodes of the way
+        for node_id in way["nodes"]:
+            node = nodes[node_id]
+            lat, lon = node["lat"], node["lon"]
+            # transfer node to local coordinates
+            self.points_latlon.append((lat, lon))
+            p = local_map.transfer_to(lat, lon)
+            self.points_xy.append(p)
+
+        x = [p[0] for p in self.points_xy]
+        y = [p[1] for p in self.points_xy]
+
+        # bounding box
         self.a = [min(x), min(y)]
         self.b = [max(x), max(y)]
-        self.aux = aux
 
+        # direction
         dx = np.diff(x)
         dy = np.diff(y)
 
-        direction_ = np.arctan2(dy, dx)
+        # determine if way is directed, and which is the "forward" direction
+        directional = self.get_way_directionality(way)
+        direction = np.arctan2(dy, dx)
         if directional == 1:
             self.is_directional = True
-            self.direction = direction_
+            self.direction = direction
         elif directional == -1:
             self.is_directional = True
-            self.direction = direction_ + math.pi
+            self.direction = (direction + math.pi) % (2*math.pi)
         else:
             self.is_directional = False
-            self.direction = direction_
+            self.direction = direction
 
     def get_axis_aligned_bounding_box(self):
         return self.a, self.b
@@ -52,40 +54,43 @@ class Way:
     def axis_aligned_bounding_boxes_overlap(self, a, b):
         return np.all(self.a < b) and np.all(a < self.b)
 
-    def distance_of_point(self, x, direction):
+    def distance_of_point(self, xy, direction):
+        # determine closest point on way
         p0 = None
         dist_x_best = math.inf
         i_best = None
         x_projected_best = None
-        for i, p in enumerate(self.p_list):
+        for i, p in enumerate(self.points_xy):
             if p0 is not None:
                 d = p - p0
-                dist, x_projected = self.distance_of_point2(p0, d, x)
+                dist, x_projected = self.point_line_distance(p0, d, xy)
                 if dist < dist_x_best:
                     dist_x_best = dist
                     x_projected_best = x_projected
                     i_best = i
             p0 = p
 
-        d = self.p_list[i_best] - self.p_list[i_best - 1]
+        # also check deviation from way direction
+        d = self.points_xy[i_best] - self.points_xy[i_best - 1]
         direction_ = math.atan2(d[1], d[0])
 
         d0 = self.distance_periodic(direction, direction_)
         if self.is_directional:
             dist_direction_best = d0
-            way_direction = +1
+            way_orientation = +1
         else:
             d180 = self.distance_periodic(direction + math.pi, direction_)
             if d0 <= d180:
-                way_direction = +1
+                way_orientation = +1
                 dist_direction_best = d0
             else:
-                way_direction = -1
+                way_orientation = -1
                 dist_direction_best = d180
 
-        return dist_x_best, x_projected_best, dist_direction_best, way_direction
+        return dist_x_best, x_projected_best, dist_direction_best, way_orientation
 
-    def distance_of_point2(self, p0, d, x):
+    @staticmethod
+    def point_line_distance(p0, d, x):
         c = x - p0
 
         dd = np.inner(d, d)
@@ -113,3 +118,16 @@ class Way:
         d = a - b
         return abs((d + p2) % p - p2)
 
+    @staticmethod
+    def get_way_directionality(way):
+        if "tags" in way and "oneway" in way["tags"]:
+            v = way["tags"]["oneway"]
+            if v in ["yes", "true", "1"]:
+                v = +1
+            elif v in ["no", "false", "0"]:
+                v = 0
+            elif v in ["-1", "reverse"]:
+                v = -1
+        else:
+            v = 0
+        return v

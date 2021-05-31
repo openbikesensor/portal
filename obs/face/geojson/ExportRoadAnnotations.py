@@ -27,9 +27,9 @@ from obs.face.mapping import AzimuthalEquidistant as LocalMap
 log = logging.getLogger(__name__)
 
 class ExportRoadAnnotation:
-    def __init__(self, filename, osm, right_hand_traffic=True):
+    def __init__(self, filename, map_source, right_hand_traffic=True):
         self.filename = filename
-        self.osm = osm
+        self.map_source = map_source
         self.features = None
         self.n_samples = 0
         self.n_valid = 0
@@ -38,8 +38,7 @@ class ExportRoadAnnotation:
         self.only_confirmed_measurements = True
         self.right_hand_traffic = right_hand_traffic
 
-        lat_0, lon_0 = osm.get_map_center()
-        self.local_map = LocalMap(lat_0, lon_0)
+        self.local_map = map_source.get_local_map()
 
     def add_measurements(self, measurements):
         for sample in measurements:
@@ -56,14 +55,20 @@ class ExportRoadAnnotation:
             value = sample["distance_overtaker"]
             way_orientation = sample["OSM_way_orientation"]
 
+            self.map_source.ensure_coverage([sample["latitude"]], [sample["longitude"]])
+
             if way_id in self.way_statistics:
                 # way statistic object already created
                 self.way_statistics[way_id].add_sample(value, way_orientation)
                 self.n_grouped += 1
-            elif way_id in self.osm.ways:
-                # statistic object not created, but OSM way exists
-                self.way_statistics[way_id] = WayStatistics(way_id, self.osm.ways[way_id]).add_sample(value, way_orientation)
-                self.n_grouped += 1
+            else:
+                way = self.map_source.get_way_by_id(way_id)
+                if way:
+                    # statistic object not created, but OSM way exists
+                    self.way_statistics[way_id] = WayStatistics(way_id, way).add_sample(value, way_orientation)
+                    self.n_grouped += 1
+                else:
+                    logging.warning("way not found in map")
 
     def finalize(self):
         log.info("%s samples, %s valid", self.n_samples, self.n_valid)
@@ -112,14 +117,11 @@ class ExportRoadAnnotation:
             json.dump(data, f)
 
     def get_way_coordinates(self, way_id):
-        coordinates = []
-        if way_id in self.osm.ways:
-            way = self.osm.ways[way_id]
-            if "nodes" in way:
-                for node_id in way["nodes"]:
-                    c = (self.osm.nodes[node_id]["lon"],
-                         self.osm.nodes[node_id]["lat"])
-                    coordinates.append(c)
+        way = self.map_source.get_way_by_id(way_id)
+        if way:
+            coordinates = [(p[1], p[0]) for p in way.points_latlon]
+        else:
+            coordinates = []
 
         return coordinates
 
@@ -176,23 +178,22 @@ class WayStatistics:
         self.oneway = False
         self.name = "unknown"
 
-        if "tags" in way:
-            tags = way["tags"]
-            if "zone:traffic" in tags:
-                zone = tags["zone:traffic"]
-                if zone == "DE:urban":
-                    zone = "urban"
-                elif zone == "DE:rural":
-                    zone = "rural"
-                elif zone == "DE:motorway":
-                    zone = "motorway"
-                self.zone = zone
+        tags = way.tags
+        if "zone:traffic" in tags:
+            zone = tags["zone:traffic"]
+            if zone == "DE:urban":
+                zone = "urban"
+            elif zone == "DE:rural":
+                zone = "rural"
+            elif zone == "DE:motorway":
+                zone = "motorway"
+            self.zone = zone
 
-            if "oneway" in tags:
-                self.oneway = tags["oneway"] == "yes"
+        if "oneway" in tags:
+            self.oneway = tags["oneway"] == "yes"
 
-            if "name" in tags:
-                self.name = tags["name"]
+        if "name" in tags:
+            self.name = tags["name"]
 
         self.d_limit = 1.5 if self.zone == "urban" else 2.0 if self.zone == "rural" else 1.5
 

@@ -17,83 +17,70 @@
 # along with the OpenBikeSensor Scripts Collection.  If not, see
 # <http://www.gnu.org/licenses/>.
 
-import requests
 import numpy as np
 import logging
 
-from joblib import Memory
+from .TileSource import TileSource
+from .WayContainer import WayContainerAABBTree as WayContainer
+from .Way import Way
+from obs.face.mapping import AzimuthalEquidistant as LocalMap
 
 log = logging.getLogger(__name__)
 
 class DataSource:
-    def __init__(self, areas=None, cache_dir="cache", query_family="roads_in_admin_boundary"):
-        if areas is None:
-            areas = ["Stuttgart"]
+    def __init__(self, cache_dir="cache", tile_zoom=14, lat_lon_ref=None):
+        self.nodes = {}
+        self.ways = {}
+        self.way_container = WayContainer()
 
-        self.areas = areas
+        self.loaded_tiles = []
+        self.tile_source = TileSource()
+        self.tile_zoom = tile_zoom
 
-        self.memory = Memory(cache_dir, verbose=0, compress=True)
-        self.get_cached = self.memory.cache(requests.get)
+        if lat_lon_ref is None:
+            lat_lon_ref = [51 + 8 / 60, 10 + 25 / 60]
 
-        self.overpass_url = "http://overpass-api.de/api/interpreter"
+        self.local_map = LocalMap(lat_lon_ref[0], lat_lon_ref[1])
 
-        self.query_templates = {
-            "roads_in_admin_boundary": """
-            [out:json];
-            area[name="Deutschland"];
-            rel[name~"{name_pattern}"]["boundary"="administrative"](area);
-            map_to_area;
-            (way["highway"~"trunk|primary|secondary|tertiary|unclassified|residential|trunk_link|primary_link|secondary_link|tertiary_link|living_street|service|track|road"](area);>;);
-            out body;
-            """
-            }
+    def ensure_coverage(self, lat, lon):
+        tiles = self.tile_source.get_required_tiles(lat, lon, self.tile_zoom)
+        for tile in tiles:
+            self.add_tile(tile)
 
-        data, self.data_id = self.read(areas, query_family)
+    def get_way_by_id(self, way_id):
+        if way_id and way_id in self.ways:
+            return self.ways[way_id]
+        else:
+            return None
 
-        self.nodes, self.ways = self.convert_to_dict(data)
+    def get_local_map(self):
+        return self.local_map
 
-    def read(self, areas, name_query):
-        # construct a regular search pattern from list of areas
-        # ["Stuttgart", "Pforzheim", "Enzkreis"] results in
-        # "^Stuttgart$|^Pforzheim$|^Enzkreis$"
-        name_pattern = "|".join(
-            ["^" + area + "$" for area in areas]
-        )
+    def add_tile(self, tile):
+        # skip if already in tile list
+        if tile in self.loaded_tiles:
+            return
 
-        # construct the query
-        query = self.query_templates[name_query].format(name_pattern=name_pattern)
+        # request tile, will be returned as a node-way-relation-split
+        nodes, ways, relations = self.tile_source.get_tile(tile[0], tile[1], tile[2])
 
-        log.debug("sending query to self.overpass_url\m" + query)
+        # add nodes
+        self.nodes.update(nodes)
 
-        # send it and receive answer
-        response = self.get_cached(self.overpass_url,
-                                   params={'data': query})
+        # add way objects, and store
+        for way_id, way in ways.items():
+            if way_id not in self.ways:
+                w = Way(way_id, way, nodes, self.local_map)
+                self.ways[way_id] = w
+                self.way_container.insert(w)
 
-        time = response.headers["Date"]
-
-        data_id = query + time
-
-        data = response.json()
-
-        return data, data_id
+        # update tile list
+        self.loaded_tiles.append(tile)
 
     def get_map_center(self):
         lat = np.mean([node["lat"] for node in self.nodes.values()])
         lon = np.mean([node["lon"] for node in self.nodes.values()])
-
         return lat, lon
 
-    @staticmethod
-    def convert_to_dict(data):
-        nodes = {}
-        ways = {}
-
-        for e in data["elements"]:
-            type_e = e["type"]
-            id_e = e["id"]
-            if type_e == "node":
-                nodes[id_e] = e
-            elif type_e == "way":
-                ways[id_e] = e
-
-        return nodes, ways
+    def find_approximate_near_ways(self, x, d_max):
+        return self.way_container.find_near_candidates(x, d_max=d_max)
