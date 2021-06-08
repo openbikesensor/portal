@@ -432,8 +432,8 @@ class ImportMeasurementsCsv:
                          default=None, required=True),
             CsvExtractor(["Latitude", "Longitude"], ["latitude", "longitude"],
                          lambda lat, lon: [float(lat), float(lon)],
-                         accept=lambda lat_, lon_: abs(lat_) <= 90.0 and
-                                                   abs(lon_) <= 180.0,
+                         accept=lambda lat_, lon_: abs(lat_) <= 90.0 and abs(lon_) <= 180.0,
+                         reject=lambda lat, lon: lat == 0.0 and lon == 0.0,
                          default=[None, None], required=True),
             CsvExtractor("Altitude", "altitude",
                          lambda v: float(v),
