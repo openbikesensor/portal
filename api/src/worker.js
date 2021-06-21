@@ -63,8 +63,6 @@ queue.process('processTrack', async (job) => {
         outputDirectory,
         '--path-cache',
         OBS_FACE_CACHE_DIR,
-        '--district',
-        'Freiburg im Breisgau',
         // '--anonymize-user-id', 'remove',
         // '--anonymize-measurement-id', 'remove',
       ],
