@@ -23,12 +23,11 @@ import logging
 from .TileSource import TileSource
 from .WayContainer import WayContainerAABBTree as WayContainer
 from .Way import Way
-from obs.face.mapping import AzimuthalEquidistant as LocalMap
 
 log = logging.getLogger(__name__)
 
 class DataSource:
-    def __init__(self, cache_dir="cache", tile_zoom=14, lat_lon_ref=None):
+    def __init__(self, cache_dir="cache", tile_zoom=14):
         self.nodes = {}
         self.ways = {}
         self.way_container = WayContainer()
@@ -36,11 +35,6 @@ class DataSource:
         self.loaded_tiles = []
         self.tile_source = TileSource()
         self.tile_zoom = tile_zoom
-
-        if lat_lon_ref is None:
-            lat_lon_ref = [51 + 8 / 60, 10 + 25 / 60]
-
-        self.local_map = LocalMap(lat_lon_ref[0], lat_lon_ref[1])
 
     def ensure_coverage(self, lat, lon):
         tiles = self.tile_source.get_required_tiles(lat, lon, self.tile_zoom)
@@ -70,7 +64,7 @@ class DataSource:
         # add way objects, and store
         for way_id, way in ways.items():
             if way_id not in self.ways:
-                w = Way(way_id, way, nodes, self.local_map)
+                w = Way(way_id, way, nodes)
                 self.ways[way_id] = w
                 self.way_container.insert(w)
 
@@ -82,5 +76,5 @@ class DataSource:
         lon = np.mean([node["lon"] for node in self.nodes.values()])
         return lat, lon
 
-    def find_approximate_near_ways(self, x, d_max):
-        return self.way_container.find_near_candidates(x, d_max=d_max)
+    def find_approximate_near_ways(self, lat_lon, d_max):
+        return self.way_container.find_near_candidates(lat_lon, d_max=d_max)

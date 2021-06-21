@@ -1,9 +1,10 @@
 import numpy as np
 import math
+from obs.face.mapping import EquirectangularFast as LocalMap
 
 
 class Way:
-    def __init__(self, way_id, way, nodes, local_map):
+    def __init__(self, way_id, way, all_nodes):
         self.way_id = way_id
 
         if "tags" in way:
@@ -12,32 +13,32 @@ class Way:
             self.tags = {}
 
         # determine points
-        self.points_xy = []
-        self.points_latlon = []
+        nodes_way = [all_nodes[i] for i in way["nodes"]]
 
-        # go through all nodes of the way
-        for node_id in way["nodes"]:
-            node = nodes[node_id]
-            lat, lon = node["lat"], node["lon"]
-            # transfer node to local coordinates
-            self.points_latlon.append((lat, lon))
-            p = local_map.transfer_to(lat, lon)
-            self.points_xy.append(p)
-
-        x = [p[0] for p in self.points_xy]
-        y = [p[1] for p in self.points_xy]
+        lat = np.array([n["lat"] for n in nodes_way])
+        lon = np.array([n["lon"] for n in nodes_way])
+        self.points_lat_lon = np.stack((lat, lon), axis=1)
 
         # bounding box
-        self.a = [min(x), min(y)]
-        self.b = [max(x), max(y)]
+        self.a = (min(lat), min(lon))
+        self.b = (max(lat), max(lon))
+
+        # define the local map around the center of the bounding box
+        lat_0 = (self.a[0] + self.b[0]) * 0.5
+        lon_0 = (self.a[1] + self.b[1]) * 0.5
+        self.local_map = LocalMap(lat_0, lon_0)
+
+        # transfer way points to local coordinate system
+        x, y = self.local_map.transfer_to(lat, lon)
+        self.points_xy = np.stack((x, y), axis=1)
 
         # direction
         dx = np.diff(x)
         dy = np.diff(y)
+        direction = np.arctan2(dy, dx)
 
         # determine if way is directed, and which is the "forward" direction
         directional = self.get_way_directionality(way)
-        direction = np.arctan2(dy, dx)
         if directional == 1:
             self.is_directional = True
             self.direction = direction
@@ -54,7 +55,10 @@ class Way:
     def axis_aligned_bounding_boxes_overlap(self, a, b):
         return np.all(self.a < b) and np.all(a < self.b)
 
-    def distance_of_point(self, xy, direction):
+    def distance_of_point(self, lat_lon, direction_sample):
+        # transfer lat_lon to local coordinate system
+        xy = np.array(self.local_map.transfer_to(lat_lon[0], lat_lon[1]))
+
         # determine closest point on way
         p0 = None
         dist_x_best = math.inf
@@ -70,16 +74,17 @@ class Way:
                     i_best = i
             p0 = p
 
-        # also check deviation from way direction
-        d = self.points_xy[i_best] - self.points_xy[i_best - 1]
-        direction_ = math.atan2(d[1], d[0])
+        # transfer projected point to lat_lon
+        lat_lon_projected_best = self.local_map.transfer_from(x_projected_best[0], x_projected_best[1])
 
-        d0 = self.distance_periodic(direction, direction_)
+        # also check deviation from way direction
+        direction_best = self.direction[i_best - 1]
+        d0 = self.distance_periodic(direction_sample, direction_best)
         if self.is_directional:
             dist_direction_best = d0
             way_orientation = +1
         else:
-            d180 = self.distance_periodic(direction + math.pi, direction_)
+            d180 = self.distance_periodic(direction_sample + math.pi, direction_best)
             if d0 <= d180:
                 way_orientation = +1
                 dist_direction_best = d0
@@ -87,7 +92,37 @@ class Way:
                 way_orientation = -1
                 dist_direction_best = d180
 
-        return dist_x_best, x_projected_best, dist_direction_best, way_orientation
+        return dist_x_best, lat_lon_projected_best, dist_direction_best, way_orientation
+
+    def get_way_coordinates(self, reverse=False, lateral_offset=0):
+        if lateral_offset == 0:
+            coordinates = list(reversed(self.points_lat_lon)) if reverse else self.points_lat_lon
+        else:
+            c = self.points_xy
+
+            # compute normals, pointing to the left
+            n = []
+            for i in range(len(c) - 1):
+                n_i = c[i + 1] - c[i]
+                n_i = n_i / np.linalg.norm(n_i)
+                n_i = np.array([-n_i[1], +n_i[0]])
+                n.append(n_i)
+
+            # move points
+            coordinates = []
+            for i in range(len(c)):
+                # create an average normal for each node
+                n_prev = n[max(0, i - 1)]
+                n_next = n[min(len(n) - 1, i)]
+                n_i = 0.5 * (n_prev + n_next)
+                # make sure it is normalized
+                n_i = n_i / np.linalg.norm(n_i)
+                # then move the point
+                c_i = c[i] + n_i * lateral_offset
+                c_i = self.local_map.transfer_from(c_i[0], c_i[1])
+                coordinates.append([c_i[0], c_i[1]])
+
+        return coordinates
 
     @staticmethod
     def point_line_distance(p0, d, x):

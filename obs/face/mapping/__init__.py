@@ -17,6 +17,6 @@
 # along with the OpenBikeSensor Scripts Collection.  If not, see
 # <http://www.gnu.org/licenses/>.
 
-from .LocalMap import LocalMapTangential, Gnomonic, AzimuthalEquidistant
+from .LocalMap import LocalMapTangential, Gnomonic, AzimuthalEquidistant, Equirectangular, EquirectangularFast
 from .Roads import Roads
 

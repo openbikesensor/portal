@@ -4,6 +4,8 @@ import math
 from aabbtree import AABB
 from aabbtree import AABBTree
 
+from obs.face.mapping import EquirectangularFast as LocalMap
+
 
 class WayContainerAABBTree:
     def __init__(self, d_max=0):
@@ -18,13 +20,20 @@ class WayContainerAABBTree:
         aabb = AABB([(a[0], b[0]), (a[1], b[1])])
         self.data.add(aabb, element)
 
-    def find_near_candidates(self, x, d_max):
-        if not math.isfinite(x[0]) or not math.isfinite(x[1]):
+    def find_near_candidates(self, lat_lon, d_max):
+        if not math.isfinite(lat_lon[0]) or not math.isfinite(lat_lon[1]):
             return []
 
-        # the point x and a square environment
-        bb = AABB([(x[0] - d_max, x[0] + d_max), (x[1] - d_max, x[1] + d_max)])
+        # transfer bounding box of +/- d_max (in meter) to a +/- d_lon and d_lat
+        # (approximate, but very good for d_max << circumference earth)
+        d_lat, d_lon = LocalMap.get_scale_at(lat_lon[0], lat_lon[1])
+        d_lat *= d_max
+        d_lon *= d_max
 
+        # define an axis-aligned bounding box (in lat/lon) around the queried point lat_lon
+        bb = AABB([(lat_lon[0] - d_lat, lat_lon[0] + d_lat), (lat_lon[1] - d_lon, lat_lon[1] + d_lon)])
+
+        # and query all overlapping bounding boxes of ways
         candidates = self.data.overlap_values(bb)
 
         return candidates

@@ -22,8 +22,6 @@ import math
 import numpy as np
 # from joblib import Memory
 
-from .LocalMap import AzimuthalEquidistant as LocalMap
-
 
 log = logging.getLogger(__name__)
 
@@ -45,9 +43,8 @@ class Roads:
             return [], [], [], [], []
 
         # find near candidates
-        c_sample = sample["course"]
-        x = self.map_source.local_map.transfer_to(sample["latitude"], sample["longitude"])
-        way_list, dist_x_list, x_projected_list, dist_phi_list, way_orientation_list = self.find_near(x, c_sample)
+        way_list, dist_x_list, lat_lon_projected_list, dist_phi_list, way_orientation_list = \
+            self.find_near([sample["latitude"], sample["longitude"]], sample["course"])
 
         # determine distances
         m = len(way_list)
@@ -74,25 +71,25 @@ class Roads:
         for j, i in enumerate(i_sorted):
             way_id[j] = way_list[i].way_id
             way_orientation[j] = way_orientation_list[i]
-            lat_projected[j], lon_projected[j] = self.map_source.local_map.transfer_from(x_projected_list[i])
+            lat_projected[j], lon_projected[j] = lat_lon_projected_list[i]
             distances[j] = d[i]
 
         return way_id, way_orientation, lat_projected, lon_projected, distances
 
-    def find_near(self, x, course):
+    def find_near(self, lat_lon, course):
         # find candidates, exclude only those which are safe to exclude
-        ways = self.map_source.find_approximate_near_ways(x, self.d_max)
+        ways = self.map_source.find_approximate_near_ways(lat_lon, self.d_max)
 
         # then enumerate all candidates an do precise search
         dist_x = []
         dist_dir = []
-        x_projected = []
+        lat_lon_projected = []
         orientation = []
         for way in ways:
-            dist_x_way, x_projected_way, dist_dir_way, orientation_way = way.distance_of_point(x, course)
+            dist_x_way, lat_lon_projected_way, dist_dir_way, orientation_way = way.distance_of_point(lat_lon, course)
             dist_x.append(dist_x_way)
             dist_dir.append(dist_dir_way)
-            x_projected.append(x_projected_way)
+            lat_lon_projected.append(lat_lon_projected_way)
             orientation.append(orientation_way)
-        return ways, dist_x, x_projected, dist_dir, orientation
+        return ways, dist_x, lat_lon_projected, dist_dir, orientation
 
