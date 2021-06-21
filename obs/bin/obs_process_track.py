@@ -35,14 +35,6 @@ def main():
         dest="cache_dir",
         help="path where the visualization data will be stored",
     )
-    parser.add_argument(
-        "-D",
-        "--district",
-        required=True,
-        action="append",
-        default=[],
-        help="name of a district from which the OSM data should be used, can be used several times",
-    )
 
     args = parser.parse_args()
 
@@ -56,11 +48,7 @@ def main():
 
 def process(args):
     log.info("Loading OpenStreetMap data")
-    osm = OSMDataSource(
-        areas=args.district,
-        query_family="roads_in_admin_boundary",
-        cache_dir=args.cache_dir,
-    )
+    osm = OSMDataSource(cache_dir=args.cache_dir)
 
     filename_input = os.path.abspath(args.input)
     dataset_id = os.path.splitext(os.path.basename(args.input))[0]
