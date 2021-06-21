@@ -194,6 +194,7 @@ router.post(
     track.slugify();
 
     if (fileBody) {
+      await track.validateFileBodyUniqueness(fileBody)
       track.uploadedByUserAgent = normalizeUserAgent(req.headers['user-agent']);
       track.originalFileName = fileInfo.body ? fileInfo.body.filename : track.slug + '.csv';
       await track.writeToOriginalFile(fileBody)
@@ -256,6 +257,7 @@ router.put(
     }
 
     if (fileBody) {
+      await track.validateFileBodyUniqueness(fileBody)
       track.originalFileName = fileInfo.body ? fileInfo.body.filename : track.slug + '.csv';
       track.uploadedByUserAgent = normalizeUserAgent(req.headers['user-agent']);
       await track.writeToOriginalFile(fileBody)
