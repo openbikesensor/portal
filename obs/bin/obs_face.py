@@ -68,9 +68,9 @@ def collect_datasets(path, exclusion_list):
                         "user_id": user_id,
                     }
                     datasets.append(dataset)
-                    log.debug("adding " + filename_relative)
+                    log.debug("adding %s", filename_relative)
                 else:
-                    log.debug("excluding " + filename_relative)
+                    log.debug("excluding %s", filename_relative)
 
     return datasets
 
@@ -130,7 +130,7 @@ def process_datasets(datasets, path_annotated, osm, skip_if_json_exists=True, pa
             # on MacOS qsize() throws, so substitute the approximate queue size for the debug log
             input_queue_size = "N/A"
             output_queue_size = "N/A"
-        
+
         log.debug("datasets: total %s, input queue %s, output queue %s, "
                 "finished %s (%s measurements); worker: running %s, total %s",
                 n_in, input_queue_size, output_queue_size, n_out,
@@ -288,8 +288,7 @@ def main():
                         help='path where the visualization data will be stored')
 
     parser.add_argument('-D', '--district', required=False, action='append', default=[],
-                        help='name of a district (Landkreis) from which the OSM data should be used, can be used '
-                             'several times')
+                        help='DEPRECATED; required map parts are now selected automatically')
 
     parser.add_argument('--left-hand-traffic', required=False, action='store_false', dest='right_hand_traffic',
                         default=True,
@@ -333,10 +332,13 @@ def main():
             args.output_geojson_measurements = os.path.join(args.base_path, 'visualization', 'measurements.json')
 
     if args.anonymize_user_id == AnonymizationMode.HASHED and args.anonymization_hash_salt is None:
-      raise ValueError("--anonymization-hash-salt is required for --anonymize-user-id=hashed")
+        raise ValueError("--anonymization-hash-salt is required for --anonymize-user-id=hashed")
 
     if args.anonymize_measurement_id == AnonymizationMode.HASHED and args.anonymization_hash_salt is None:
-      raise ValueError("--anonymization-hash-salt is required for --anonymize-measurement-id=hashed")
+        raise ValueError("--anonymization-hash-salt is required for --anonymize-measurement-id=hashed")
+
+    if args.district:
+        log.warning('--district parameter is deprecated; required map parts are now selected automatically')
 
     log.debug("parameter list:")
     log.debug("input=%s", args.input)
@@ -344,12 +346,11 @@ def main():
     log.debug("path_output_collected=%s", args.path_output_collected)
     log.debug("anonymize user ID=%s", args.anonymize_user_id)
     log.debug("anonymize measurement ID=%s", args.anonymize_measurement_id)
-    log.debug("district=%s", "|".join(args.district))
     log.debug("traffic=%s hand", "right" if args.right_hand_traffic else "left")
 
     if args.annotate or args.collect or args.visualization:
-        log.info('Loading OpenStreetMap data')
-        osm = OSMDataSource(areas=args.district, query_family="roads_in_admin_boundary", cache_dir=args.path_cache)
+        logging.info('Loading OpenStreetMap data')
+        map_source = OSMDataSource(cache_dir=args.path_cache)
 
     if args.annotate or args.collect:
         if not args.input:
@@ -364,7 +365,8 @@ def main():
         datasets = collect_datasets(args.input, args.input_exclude)
 
         log.info('Annotating and filtering CSV files')
-        measurements, statistics = process_datasets(datasets, args.path_annotated, osm, path_cache=args.path_cache,
+        measurements, statistics = process_datasets(datasets, args.path_annotated, map_source,
+                                                    path_cache=args.path_cache,
                                                     skip_if_json_exists=not args.recompute,
                                                     n_worker_processes=args.parallel,
                                                     process_parallel=args.parallel > 0)
@@ -424,7 +426,7 @@ def main():
         exporter.finalize()
 
         log.info("exporting GoeJson roads")
-        exporter = ExportRoadAnnotation(args.output_geojson_roads, osm, right_hand_traffic=args.right_hand_traffic)
+        exporter = ExportRoadAnnotation(args.output_geojson_roads, map_source, right_hand_traffic=args.right_hand_traffic)
         exporter.add_measurements(measurements)
         exporter.finalize()
 

@@ -253,3 +253,66 @@ class AzimuthalEquidistant:
         # counter-clockwise, radiants, east = 0
         phi = math.atan2(x[1], x[0])
         return phi
+
+
+class Equirectangular:
+    def __init__(self, lat_0, lon_0):
+        # https://en.wikipedia.org/wiki/Equirectangular_projection
+        # radius earth [m]
+        self.r_earth = 40000e3 / (2 * math.pi)
+
+        self.lat_0 = lat_0
+        self.lon_0 = lon_0
+
+    def transfer_to(self, lat, lon):
+        lambda_ = math.radians(lon)
+        phi = math.radians(lat)
+        lambda_0 = math.radians(self.lon_0)
+        phi_1 = math.radians(self.lat_0)
+
+        x = self.r_earth * (lambda_ - lambda_0) * math.cos(phi_1)
+        y = self.r_earth * (phi - phi_1)
+
+        return x, y
+
+    def transfer_from(self, x, y):
+        lambda_0 = math.radians(self.lon_0)
+        phi_0 = math.radians(self.lat_0)
+        phi_1 = phi_0
+
+        lambda_ = x / self.r_earth / math.cos(phi_1) + lambda_0
+        phi = y / self.r_earth + phi_0
+
+        lat = math.degrees(phi)
+        lon = math.degrees(lambda_)
+        return lat, lon
+
+
+class EquirectangularFast:
+    def __init__(self, lat_0, lon_0):
+        # https://en.wikipedia.org/wiki/Equirectangular_projection
+        circumference_earth_per_degree = 40000e3 / 360.0
+
+        self.lat_a = circumference_earth_per_degree
+        self.lat_b = - self.lat_a * lat_0
+
+        self.lon_a = circumference_earth_per_degree * math.cos(math.radians(lat_0))
+        self.lon_b = - self.lon_a * lon_0
+
+    def transfer_to(self, lat, lon):
+        x = self.lon_a * lon + self.lon_b
+        y = self.lat_a * lat + self.lat_b
+
+        return x, y
+
+    def transfer_from(self, x, y):
+        lon = (x - self.lon_b) / self.lon_a
+        lat = (y - self.lat_b) / self.lat_a
+
+        return lat, lon
+
+    @staticmethod
+    def get_scale_at(lat, lon):
+        s_lon = 360.0 / 40000e3
+        s_lat = s_lon / math.cos(math.radians(lat))
+        return s_lat, s_lon

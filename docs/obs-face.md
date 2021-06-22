@@ -14,7 +14,7 @@ In addition, usernames are replaced by pseudonyms, and only selected information
 
 ### Annotation
 
-Each measurement is assigned to one _way_ as described by the OpenStreetMap data. GPS positions are corrected by 
+Each measurement is assigned to one _way_ as described by the OpenStreetMap data. GPS positions are corrected by
 projecting it to the way (snapping). Further, for each *confirmed* measurement, information from OpenStreetMap such as street name are duplicated to the measurement.
 
 ### Consolidating
@@ -41,38 +41,23 @@ Place all OpenBikeSensor CSV files in subdirectories of `./data/input`, such as:
 * `./data/input/User2/`
 * `./data/input/User3/`
 
-The expected file format is defined [here](https://github.com/openbikesensor/OpenBikeSensorFirmware/blob/master/docs/software/firmware/csv_format.md). 
+The expected file format is defined [here](https://github.com/openbikesensor/OpenBikeSensorFirmware/blob/master/docs/software/firmware/csv_format.md).
 
 To filter, annotate and collect OpenBikeSensor measurements and export to GeoJson visualization data, run:
 
 ```bash
-obs-face -ACV -D "Stuttgart"
+obs-face -ACV
 ```
-
-For measurement annotation, OpenStreetMap geographic data from district
-"Stuttgart" is used. Additional districts (Landkreise) can be added in this way
-(see below).
 
 For each CSV file in `./data/input`, one JSON file with annotated measurements as well as a log file is created in `./data/annotated`.
 
 The consolidated, valid and confirmed measurements are collected in JSON format
 in `data/collected/measurements.json`, the data exported for visualization will
-be located in `data/visualization/measurements.json`. Futher,
+be located in `data/visualization/measurements.json`. Further,
 `./data/visualization/roads.json` contains confirmed, valid measurements
 consolidated to *road segments* in GeoJSON format.
 
 ### Advanced Usage
-
-#### Add more districts
-
-```bash
-obs-face -ACV -D "Stuttgart" -D "Pforzheim" -D "Enzkreis" -D "Landkreis Böblingen" -D "Landkreis Ludwigsburg" -D "Rems-Murr-Kreis" -D "Landkreis Esslingen"`
-```
-
-The name of the region is matched with the `name` tag of OpenStreetMap
-relations describing regions (Germany: *Landkreis*), i.e. having the tag
-`boundary=administrative`, e.g.
-[Stuttgart](https://www.openstreetmap.org/relation/2793104). 
 
 ### Base Directory
 
@@ -80,17 +65,17 @@ In case your data is located in a different directory, use the `-b
 BASE_DIRECTORY` command line flag:
 
 ```bash
-obs-face -ACV -D "Stuttgart" -b ./data_collection/Stuttgart/
+obs-face -ACV -b ./data_collection/Stuttgart/
 ```
 
-The base directory defaults to `./data`. 
+The base directory defaults to `./data`.
 
 In structure of the base directory is as follows:
 
 * `$BASE_DIRECTORY/input/` input CSV files to be processed
 * `$BASE_DIRECTORY/annotated/` annotated measurements
 * `$BASE_DIRECTORY/collected/measurements.json` annotated, filtered and collected measurements
-* `$BASE_DIRECTORY/visualization/measurements.json` confirmed, valid measurements in GeoJson format 
+* `$BASE_DIRECTORY/visualization/measurements.json` confirmed, valid measurements in GeoJson format
 * `$BASE_DIRECTORY/visualization/roads.json` confirmed, valid measurements consolidated to road segments in GeoJson format
 
 The paths can be further customized, see `--help`.
@@ -100,7 +85,7 @@ The paths can be further customized, see `--help`.
 To exclude subdirectories of the input, use:
 
 ```bash
-obs-face -ACV -D "Stuttgart" -e User3/
+obs-face -ACV -e User3/
 ```
 
 All files in `./data/input/User3/` and subdirectories will be excluded. The
@@ -112,11 +97,11 @@ Some of the time-consuming computations can be parallelized. Use the `-p`
 command line flag to set the number of processors, e.g.:
 
 ```
-obs-face -ACV -D "Stuttgart" -p 4
+obs-face -ACV -p 4
 ```
 
 This will use 4 worker processes. Note that this also increases the memory
-consumption significantly. 
+consumption significantly.
 
 ### Map Cache
 
@@ -149,8 +134,10 @@ updates are ignored until the cache is flushed by deleting all files in the
 --path-cache PATH_CACHE
                       path where the visualization data will be stored
 -D DISTRICT, --district DISTRICT
-                      name of a district (Landkreis) from which the OSM data should be used, can be used several times
---left-hand-traffic   switches to left-hand traffic (otherwise: right-hand traffic); right instead left sensor is used, and the exported visualization is adapted
+                      DEPRECATED; required map parts are now selected automatically
+--left-hand-traffic   switches to left-hand traffic (otherwise: right-hand
+                      traffic); right instead left sensor is used, and the
+                      exported visualization is adapted
 -p PARALLEL, --parallel PARALLEL
                       disables parallel processing if 0, otherwise defines the number of worker processes
 --recompute           always recompute annotation results

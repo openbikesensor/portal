@@ -20,66 +20,31 @@
 import logging
 import math
 import numpy as np
-from joblib import Memory
+# from joblib import Memory
 
-from .LocalMap import AzimuthalEquidistant as LocalMap
-from .RoadContainerAABBtree import RoadContainerAABBtree as RoadContainer
-from .Way import Way
 
 log = logging.getLogger(__name__)
 
 class Roads:
-    def __init__(self, osm, d_max=10.0, d_phi_max=40.0, cache_dir='cache'):
+    def __init__(self, maps_source, d_max=10.0, d_phi_max=40.0, cache_dir='cache'):
         self.d_max = d_max
         self.d_phi_max = math.radians(d_phi_max)
 
-        self.memory = Memory(cache_dir, verbose=0, compress=True)
+        # self.memory = Memory(cache_dir, verbose=0, compress=True)
 
-        self.create_roads_cached = self.memory.cache(self.create_roads, ignore=['self', 'osm'])
-
-        log.info("creating road data structure")
-        lat_0, lon_0 = osm.get_map_center()
-        self.local_map = LocalMap(lat_0, lon_0)
-        self.roads = self.create_roads_cached(osm, osm.data_id)
-        log.info("finished road data structure")
+        self.map_source = maps_source
 
     def __del__(self):
         pass
 
-    def get_closest_way_oriented(self, sample):
-        # we will at least need a valid position
-        if sample["latitude"] is None or sample["longitude"] is None or sample["course"] is None:
-            return None, None, [None, None]
-
-        c_sample = sample["course"]
-        x = self.local_map.transfer_to(sample["latitude"], sample["longitude"])
-        candidate_list, dist_x_list, x_projected_list, dist_dir_list, way_orientation_list = self.roads.find_near(x, c_sample)
-
-        d_best = self.d_max
-        i_best = None
-        for i, l in enumerate(candidate_list):
-            d_x = dist_x_list[i]
-            d_dir = dist_dir_list[i]
-            if d_x < d_best and d_dir <= self.d_phi_max:
-                i_best = i
-                d_best = d_x
-
-        way_id = None if i_best is None else candidate_list[i_best].aux
-        way_orientation = None if i_best is None else way_orientation_list[i_best]
-        lat_lon_projected = [None, None] if i_best is None else self.local_map.transfer_from(x_projected_list[i_best])
-
-        return way_id, way_orientation, lat_lon_projected
-
     def get_n_closest_ways_oriented(self, sample, n):
         # we will at least need a valid position and moving direction
         if sample["latitude"] is None or sample["longitude"] is None or sample["course"] is None:
-            # return None, None, None, None, None
             return [], [], [], [], []
 
         # find near candidates
-        c_sample = sample["course"]
-        x = self.local_map.transfer_to(sample["latitude"], sample["longitude"])
-        way_list, dist_x_list, x_projected_list, dist_phi_list, way_orientation_list = self.roads.find_near(x, c_sample)
+        way_list, dist_x_list, lat_lon_projected_list, dist_phi_list, way_orientation_list = \
+            self.find_near([sample["latitude"], sample["longitude"]], sample["course"])
 
         # determine distances
         m = len(way_list)
@@ -104,46 +69,27 @@ class Roads:
         way_orientation = [0] * m
         distances = [0] * m
         for j, i in enumerate(i_sorted):
-            way_id[j] = way_list[i].aux
+            way_id[j] = way_list[i].way_id
             way_orientation[j] = way_orientation_list[i]
-            lat_projected[j], lon_projected[j] = self.local_map.transfer_from(x_projected_list[i])
+            lat_projected[j], lon_projected[j] = lat_lon_projected_list[i]
             distances[j] = d[i]
 
         return way_id, way_orientation, lat_projected, lon_projected, distances
 
-    def create_roads(self, osm, osm_data_id):
-        # ignore1 and ignore2 are introduced to force memory to check these arguments
-        roads = RoadContainer(self.d_max)
+    def find_near(self, lat_lon, course):
+        # find candidates, exclude only those which are safe to exclude
+        ways = self.map_source.find_approximate_near_ways(lat_lon, self.d_max)
 
-        # add each way
-        for id_way, way in osm.ways.items():
-            directional = self.get_way_directionality(way)
+        # then enumerate all candidates an do precise search
+        dist_x = []
+        dist_dir = []
+        lat_lon_projected = []
+        orientation = []
+        for way in ways:
+            dist_x_way, lat_lon_projected_way, dist_dir_way, orientation_way = way.distance_of_point(lat_lon, course)
+            dist_x.append(dist_x_way)
+            dist_dir.append(dist_dir_way)
+            lat_lon_projected.append(lat_lon_projected_way)
+            orientation.append(orientation_way)
+        return ways, dist_x, lat_lon_projected, dist_dir, orientation
 
-            points = []
-
-            # go through all nodes of the way
-            for node_id in way["nodes"]:
-                node = osm.nodes[node_id]
-                lat, lon = node["lat"], node["lon"]
-                # transfer node to local coordinates
-                p = self.local_map.transfer_to(lat, lon)
-                points.append(p)
-
-            w = Way(points, id_way, directional)
-            roads.insert(w)
-
-        return roads
-
-    @staticmethod
-    def get_way_directionality(way):
-        if "tags" in way and "oneway" in way["tags"]:
-            v = way["tags"]["oneway"]
-            if v in ["yes", "true", "1"]:
-                v = +1
-            elif v in ["no", "false", "0"]:
-                v = 0
-            elif v in ["-1", "reverse"]:
-                v = -1
-        else:
-            v = 0
-        return v

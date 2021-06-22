@@ -17,8 +17,6 @@
 # along with the OpenBikeSensor Scripts Collection.  If not, see
 # <http://www.gnu.org/licenses/>.
 
-from .Way import Way
-from .LocalMap import LocalMapTangential, Gnomonic, AzimuthalEquidistant
-from .RoadContainerAABBtree import RoadContainerAABBtree
+from .LocalMap import LocalMapTangential, Gnomonic, AzimuthalEquidistant, Equirectangular, EquirectangularFast
 from .Roads import Roads
 

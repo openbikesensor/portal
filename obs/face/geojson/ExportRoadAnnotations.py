@@ -26,10 +26,11 @@ from obs.face.mapping import AzimuthalEquidistant as LocalMap
 
 log = logging.getLogger(__name__)
 
+
 class ExportRoadAnnotation:
-    def __init__(self, filename, osm, right_hand_traffic=True):
+    def __init__(self, filename, map_source, right_hand_traffic=True):
         self.filename = filename
-        self.osm = osm
+        self.map_source = map_source
         self.features = None
         self.n_samples = 0
         self.n_valid = 0
@@ -37,9 +38,6 @@ class ExportRoadAnnotation:
         self.way_statistics = {}
         self.only_confirmed_measurements = True
         self.right_hand_traffic = right_hand_traffic
-
-        lat_0, lon_0 = osm.get_map_center()
-        self.local_map = LocalMap(lat_0, lon_0)
 
     def add_measurements(self, measurements):
         for sample in measurements:
@@ -56,50 +54,58 @@ class ExportRoadAnnotation:
             value = sample["distance_overtaker"]
             way_orientation = sample["OSM_way_orientation"]
 
+            self.map_source.ensure_coverage([sample["latitude"]], [sample["longitude"]])
+
             if way_id in self.way_statistics:
                 # way statistic object already created
                 self.way_statistics[way_id].add_sample(value, way_orientation)
                 self.n_grouped += 1
-            elif way_id in self.osm.ways:
-                # statistic object not created, but OSM way exists
-                self.way_statistics[way_id] = WayStatistics(way_id, self.osm.ways[way_id]).add_sample(value, way_orientation)
-                self.n_grouped += 1
+            else:
+                way = self.map_source.get_way_by_id(way_id)
+                if way:
+                    # statistic object not created, but OSM way exists
+                    self.way_statistics[way_id] = WayStatistics(way_id, way).add_sample(value, way_orientation)
+                    self.n_grouped += 1
+                else:
+                    logging.warning("way not found in map")
 
     def finalize(self):
         log.info("%s samples, %s valid", self.n_samples, self.n_valid)
         features = []
-        for way in self.way_statistics.values():
-            way.finalize()
-            if not any(way.valid):
+        for way_stats in self.way_statistics.values():
+            way_stats.finalize()
+            if not any(way_stats.valid):
                 continue
 
-            coordinates = self.get_way_coordinates(way.way_id)
+            for i in range(1 if way_stats.oneway else 2):
+                direction = 0 if way_stats.oneway else +1 if i == 0 else -1
 
-            for i in range(1 if way.oneway else 2):
-                #if not way.valid[i]:
-                #    continue
-
-                coordinates_i = coordinates if (i == 0) else list(reversed(coordinates))
-                direction = 0 if way.oneway else +1 if i == 0 else -1
-
-                coordinates_i = self.offset_road_coordinates(coordinates_i, direction, self.right_hand_traffic)
+                way_osm = self.map_source.get_way_by_id(way_stats.way_id)
+                if way_osm:
+                    lateral_offset = 2.0 * direction * (-1 if self.right_hand_traffic else +1)
+                    reverse = i == 1
+                    coordinates = way_osm.get_way_coordinates(reverse=reverse, lateral_offset=lateral_offset)
+                    # exchange lat and lon
+                    coordinates = [(p[1], p[0]) for p in coordinates]
+                else:
+                    coordinates = []
 
                 feature = {"type": "Feature",
-                           "properties": {"distance_overtaker_mean": way.d_mean[i],
-                                          "distance_overtaker_median": way.d_median[i],
-                                          "distance_overtaker_minimum": way.d_minimum[i],
-                                          "distance_overtaker_n": way.n[i],
-                                          "distance_overtaker_n_below_limit": way.n_lt_limit[i],
-                                          "distance_overtaker_n_above_limit": way.n_geq_limit[i],
-                                          "distance_overtaker_limit": way.d_limit,
-                                          "distance_overtaker_measurements": way.samples[i],
-                                          "zone": way.zone,
+                           "properties": {"distance_overtaker_mean": way_stats.d_mean[i],
+                                          "distance_overtaker_median": way_stats.d_median[i],
+                                          "distance_overtaker_minimum": way_stats.d_minimum[i],
+                                          "distance_overtaker_n": way_stats.n[i],
+                                          "distance_overtaker_n_below_limit": way_stats.n_lt_limit[i],
+                                          "distance_overtaker_n_above_limit": way_stats.n_geq_limit[i],
+                                          "distance_overtaker_limit": way_stats.d_limit,
+                                          "distance_overtaker_measurements": way_stats.samples[i],
+                                          "zone": way_stats.zone,
                                           "direction": direction,
-                                          "name": way.name,
-                                          "way_id": way.way_id,
-                                          "valid": way.valid[i],
+                                          "name": way_stats.name,
+                                          "way_id": way_stats.way_id,
+                                          "valid": way_stats.valid[i],
                                           },
-                           "geometry": {"type": "LineString", "coordinates": coordinates_i}}
+                           "geometry": {"type": "LineString", "coordinates": coordinates}}
 
                 features.append(feature)
 
@@ -110,53 +116,6 @@ class ExportRoadAnnotation:
 
         with open(self.filename, 'w') as f:
             json.dump(data, f)
-
-    def get_way_coordinates(self, way_id):
-        coordinates = []
-        if way_id in self.osm.ways:
-            way = self.osm.ways[way_id]
-            if "nodes" in way:
-                for node_id in way["nodes"]:
-                    c = (self.osm.nodes[node_id]["lon"],
-                         self.osm.nodes[node_id]["lat"])
-                    coordinates.append(c)
-
-        return coordinates
-
-    def offset_road_coordinates(self, coordinates, direction, right_hand_traffic=True):
-        if direction == 0:
-            return coordinates
-
-        # convert to coordinates in local map
-        c = []
-        for p in coordinates:
-            c.append(self.local_map.transfer_to(p[1], p[0]))
-
-        # compute normals, pointing to the right (for right-hand traffic) or left (for left-hand traffic)
-        n = []
-        orientation = +1 if right_hand_traffic else -1
-        for i in range(len(c)-1):
-            n_i = c[i+1] - c[i]
-            n_i = n_i / np.linalg.norm(n_i)
-            n_i = orientation * np.array([-n_i[1], +n_i[0]])
-            n.append(n_i)
-
-        # move points
-        d = - 2.0
-        coordinates_offset = []
-        for i in range(len(c)):
-            # create an average normal for each node
-            n_prev = n[max(0, i-1)]
-            n_next = n[min(len(n)-1, i)]
-            n_i = 0.5*(n_prev + n_next)
-            # make sure it is normalized
-            n_i = n_i / np.linalg.norm(n_i)
-            # then move the point
-            c_i = c[i] + n_i * d
-            c_i = self.local_map.transfer_from(c_i)
-            coordinates_offset.append([c_i[1], c_i[0]])
-
-        return coordinates_offset
 
 
 class WayStatistics:
@@ -176,23 +135,22 @@ class WayStatistics:
         self.oneway = False
         self.name = "unknown"
 
-        if "tags" in way:
-            tags = way["tags"]
-            if "zone:traffic" in tags:
-                zone = tags["zone:traffic"]
-                if zone == "DE:urban":
-                    zone = "urban"
-                elif zone == "DE:rural":
-                    zone = "rural"
-                elif zone == "DE:motorway":
-                    zone = "motorway"
-                self.zone = zone
+        tags = way.tags
+        if "zone:traffic" in tags:
+            zone = tags["zone:traffic"]
+            if zone == "DE:urban":
+                zone = "urban"
+            elif zone == "DE:rural":
+                zone = "rural"
+            elif zone == "DE:motorway":
+                zone = "motorway"
+            self.zone = zone
 
-            if "oneway" in tags:
-                self.oneway = tags["oneway"] == "yes"
+        if "oneway" in tags:
+            self.oneway = tags["oneway"] == "yes"
 
-            if "name" in tags:
-                self.name = tags["name"]
+        if "name" in tags:
+            self.name = tags["name"]
 
         self.d_limit = 1.5 if self.zone == "urban" else 2.0 if self.zone == "rural" else 1.5
 

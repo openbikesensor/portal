@@ -25,11 +25,11 @@ from .BeliefPropagationChain import BeliefPropagationChain as BP
 
 
 class AnnotateMeasurements:
-    def __init__(self, osm, cache_dir='cache', osm_projection="filtered", fully_annotate_unconfirmed=False):
+    def __init__(self, map_source, cache_dir='cache', osm_projection="filtered", fully_annotate_unconfirmed=False):
         self.fully_annotate_unconfirmed = fully_annotate_unconfirmed
 
-        self.osm = osm
-        self.roads = Roads(osm, d_max=40.0, d_phi_max=90, cache_dir=cache_dir)
+        self.map_source = map_source
+        self.roads = Roads(map_source, d_max=40.0, d_phi_max=90, cache_dir=cache_dir)
 
         if osm_projection == "greedy":
             self.add_osm_way_id = self.add_osm_way_id_greedy
@@ -39,39 +39,48 @@ class AnnotateMeasurements:
             raise(ValueError("invalid value for osm_projection: " + osm_projection))
 
     def annotate(self, measurements):
+        # ensure that the relevant parts of the map is loaded
+        self.ensure_map_coverage(measurements)
+
         # add OSM file id
         measurements = self.add_osm_way_id(measurements)
 
+        # add annotations
         measurements = self.add_osm_annotations(measurements)
 
         return measurements
 
+    def ensure_map_coverage(self, measurements):
+        lat = [m["latitude"] for m in measurements]
+        lon = [m["longitude"] for m in measurements]
+
+        self.map_source.ensure_coverage(lat, lon)
+
     def annotate_ways(self, m):
         way_id = m["OSM_way_id"]
-        if way_id is not None and way_id in self.osm.ways:
-            way = self.osm.ways[way_id]
-            if "tags" in way:
-                tags = way["tags"]
-                if "zone:traffic" in tags:
-                    zone = tags["zone:traffic"]
-                    if zone == "DE:urban":
-                        zone = "urban"
-                    elif zone == "DE:rural":
-                        zone = "rural"
-                    elif zone == "DE:motorway":
-                        zone = "motorway"
-                    m["OSM_zone"] = zone
+        way = self.map_source.get_way_by_id(way_id)
+        if way_id is not None and way is not None:
+            tags = way.tags
+            if "zone:traffic" in tags:
+                zone = tags["zone:traffic"]
+                if zone == "DE:urban":
+                    zone = "urban"
+                elif zone == "DE:rural":
+                    zone = "rural"
+                elif zone == "DE:motorway":
+                    zone = "motorway"
+                m["OSM_zone"] = zone
 
-                if "maxspeed" in tags:
-                    m["OSM_maxspeed"] = tags["maxspeed"]
-                if "name" in tags:
-                    m["OSM_name"] = tags["name"]
-                if "oneway" in tags:
-                    m["OSM_oneway"] = tags["oneway"]
-                if "lanes" in tags:
-                    m["OSM_lanes"] = tags["lanes"]
-                if "highway" in tags:
-                    m["OSM_highway"] = tags["highway"]
+            if "maxspeed" in tags:
+                m["OSM_maxspeed"] = tags["maxspeed"]
+            if "name" in tags:
+                m["OSM_name"] = tags["name"]
+            if "oneway" in tags:
+                m["OSM_oneway"] = tags["oneway"]
+            if "lanes" in tags:
+                m["OSM_lanes"] = tags["lanes"]
+            if "highway" in tags:
+                m["OSM_highway"] = tags["highway"]
 
         return m
 
@@ -79,13 +88,14 @@ class AnnotateMeasurements:
         measurements_annotated = []
         for m in measurements:
             if m["confirmed"] or True:
-                way_id, way_orientation, lat_lon_projected = self.roads.get_closest_way_oriented(m)
-                if way_id is not None:
-                    m["OSM_way_id"] = way_id
-                    m["OSM_way_orientation"] = way_orientation
-                    # replace lat/lon by projected values, but backup original values
-                    m["latitude_projected"] = lat_lon_projected[0]
-                    m["longitude_projected"] = lat_lon_projected[1]
+                # way_id, way_orientation, lat_lon_projected = self.roads.get_closest_way_oriented(m)
+                way_id, way_orientation, lat_projected, lon_projected, distance = \
+                    self.roads.get_n_closest_ways_oriented(m, 1)
+                if way_id:
+                    m["OSM_way_id"] = way_id[0]
+                    m["OSM_way_orientation"] = way_orientation[0]
+                    m["latitude_projected"] = lat_projected[0]
+                    m["longitude_projected"] = lon_projected[0]
 
             measurements_annotated.append(m)
 
@@ -111,9 +121,9 @@ class AnnotateMeasurements:
                 matching_distance = distance
                 matching_id = [[]]*len(way_id)
                 for i, way_id_i in enumerate(way_id):
-                    way = self.osm.ways[way_id_i]
-                    if "tags" in way and "name" in way["tags"]:
-                        matching_id[i] = way["tags"]["name"]
+                    way = self.map_source.get_way_by_id(way_id_i)
+                    if "name" in way.tags:
+                        matching_id[i] = way.tags["name"]
                     else:
                         matching_id[i] = str(way_id_i)
             else:
