@@ -52,6 +52,8 @@ function isValidScope(scope) {
 router.use((req, res, next) => {
   res.locals.user = req.user;
   res.locals.mainFrontendUrl = config.mainFrontendUrl;
+  res.locals.imprintUrl = config.imprintUrl;
+  res.locals.privacyPolicyUrl = config.privacyPolicyUrl;
   res.locals.baseUrl = baseUrl + '/';
   next();
 });
@@ -463,6 +465,10 @@ router
         email: Joi.string().email().required(),
         password: Joi.string().min(6).required(),
         confirmPassword: Joi.string().valid(Joi.ref('password')).required(),
+
+        ...(config.privacyPolicyUrl ? {
+          acceptPrivacyPolicy: Joi.boolean().truthy().required(),
+        } : {}),
       }),
     ),
     wrapRoute(async (req, res) => {

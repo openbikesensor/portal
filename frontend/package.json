@@ -1,6 +1,6 @@
 {
-  "name": "react-frontend",
-  "version": "0.1.0",
+  "name": "openbikesensor-portal-frontend",
+  "version": "0.2.0-pre",
   "private": true,
   "dependencies": {
     "@testing-library/jest-dom": "^5.12.0",

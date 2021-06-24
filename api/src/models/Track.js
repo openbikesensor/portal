@@ -1,3 +1,4 @@
+const crypto = require('crypto');
 const mongoose = require('mongoose');
 const _ = require('lodash');
 const uniqueValidator = require('mongoose-unique-validator');
@@ -82,6 +83,12 @@ const schema = new mongoose.Schema(
       },
     },
 
+    // A hash of the original file's contents. Nobody can upload the same track twice.
+    originalFileHash: {
+      type: String,
+      required: true,
+    },
+
     // Where the files are stored, relative to a group directory like
     // TRACKS_DIR or PROCESSING_DIR.
     filePath: String,
@@ -93,6 +100,8 @@ const schema = new mongoose.Schema(
   },
   { timestamps: true },
 );
+
+schema.index({ author: 1, originalFileHash: 1 }, { unique: true });
 
 schema.plugin(uniqueValidator, { message: 'is already taken' });
 
@@ -182,6 +191,19 @@ class Track extends mongoose.Model {
   async writeToOriginalFile(fileBody) {
     await this._ensureDirectoryExists();
     await fs.promises.writeFile(this.getOriginalFilePath(), fileBody);
+  }
+
+  async validateFileBodyUniqueness(fileBody) {
+    // Generate hash
+    const hash = crypto.createHash('sha512').update(fileBody).digest('hex');
+
+    const existingTracks = await Track.find({ originalFileHash: hash, author: this.author });
+    if (existingTracks.length === 0 || (existingTracks.length === 1 && existingTracks[0]._id.equals(this._id))) {
+      this.originalFileHash = hash;
+      return;
+    }
+
+    throw new Error('Track file already uploaded.');
   }
 
   /**

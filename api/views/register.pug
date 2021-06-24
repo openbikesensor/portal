@@ -22,4 +22,17 @@ block content
       label(for="confirmPassword") Confirm Password
       input(id="confirmPassword", name="confirmPassword", type="password")
 
+    if privacyPolicyUrl
+      .field
+        label Privacy policy
+
+        .ui.checkbox
+          input(id="acceptPrivacyPolicy", name="acceptPrivacyPolicy", type="checkbox", value="true")
+          label(for="acceptPrivacyPolicy")
+            | I have read and understood the
+            |
+            a(href=privacyPolicyUrl, target="_blank", rel="noreferrer") privacy policy
+            |
+            | and consent to the use of my data as described therein.
+
     button.ui.button.primary(type="submit") Register
