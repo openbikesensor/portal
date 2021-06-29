@@ -18,18 +18,27 @@
 # <http://www.gnu.org/licenses/>.
 
 import csv
-from tzwhere import tzwhere
-import numpy as np
 import pytz
 import datetime
 import math
 import sys
-from haversine import haversine, Unit
-
 import urllib
+
+import numpy as np
+from tzwhere import tzwhere
+from haversine import haversine, Unit
+import gpstime
+
 
 from obs.face.mapping import AzimuthalEquidistant as LocalMap
 
+# A magic number. When using timestamps as an intermediate format, we have to
+# subtract this, because GPS time timestamps' epoch start at some point in
+# the 80's ;)
+GPS_UNIX_EPOCH_OFFSET = 315964800
+
+def convert_gps_to_utc(dt):
+    return datetime.datetime.fromtimestamp(gpstime.gps2unix(dt.timestamp() - GPS_UNIX_EPOCH_OFFSET), tz=pytz.UTC)
 
 class ImportMeasurementsCsv:
     def __init__(self,
@@ -59,9 +68,11 @@ class ImportMeasurementsCsv:
     def read(self, filename, user_id="unknown", dataset_id="unknown", log=sys.stdout):
         log.write("importing {}\n".format(filename))
 
-        measurements = self.read_csv(filename, user_id, dataset_id, log)
+        measurements, metadata = self.read_csv(filename, user_id, dataset_id, log)
         n = len(measurements)
         log.write("read {} measurements\n".format(len(measurements)))
+
+        self.correct_gps_time(measurements, metadata)
 
         if self.correct_timezone:
             log.write("correcting timezones\n")
@@ -130,7 +141,7 @@ class ImportMeasurementsCsv:
             log.write("error while reading CSV in line {}: {}".format(line_count, e))
             raise ValueError("error while reading CSV in line {}: {}".format(line_count, e))
 
-        return measurements
+        return measurements, metadata
 
     @staticmethod
     def identify_format(header, metadata):
@@ -151,6 +162,14 @@ class ImportMeasurementsCsv:
             else:
                 raise ValueError("unknown file format")
         return format_version
+
+    def correct_gps_time(self, measurements, metadata):
+        if metadata is None or metadata.get('TimeZone') != ['GPS']:
+            return
+
+        for m in measurements:
+            if m['time'] is not None:
+                m['time'] = convert_gps_to_utc(m['time'])
 
     def correct_measurement_timezones(self, measurements, log=sys.stdout):
         for m in measurements:
