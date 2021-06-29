@@ -26,6 +26,7 @@ from .Way import Way
 
 log = logging.getLogger(__name__)
 
+
 class DataSource:
     def __init__(self, cache_dir="cache", tile_zoom=14):
         self.nodes = {}
@@ -36,8 +37,8 @@ class DataSource:
         self.tile_source = TileSource()
         self.tile_zoom = tile_zoom
 
-    def ensure_coverage(self, lat, lon):
-        tiles = self.tile_source.get_required_tiles(lat, lon, self.tile_zoom)
+    def ensure_coverage(self, lat, lon, extend=0.0):
+        tiles = self.tile_source.get_required_tiles(lat, lon, self.tile_zoom, extend=extend)
         for tile in tiles:
             self.add_tile(tile)
 

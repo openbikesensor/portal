@@ -6,6 +6,8 @@ import os
 import pickle
 import time
 
+from obs.face.mapping.LocalMap import EquirectangularFast as LocalMap
+
 
 class TileSource:
     def __init__(self, cache_dir='./cache', use_cache=True):
@@ -13,9 +15,6 @@ class TileSource:
 
         self.query_template = dict()
 
-        # self.memory = Memory(cache_dir, verbose=0, compress=True)
-
-        # self.request_tile_cached = self.memory.cache(self.request_tile, ignore=['self'])
         self.cache_dir = cache_dir
         self.use_cache = use_cache
 
@@ -25,7 +24,7 @@ class TileSource:
         # out body;
 
         self.query_template["default"] = """
-        [out:json];        
+        [out:json];
         (way({bbox[0]:},{bbox[1]:},{bbox[2]:},{bbox[3]:})["highway"~"trunk|primary|secondary|tertiary|unclassified|residential|trunk_link|primary_link|secondary_link|tertiary_link|living_street|service|track|road"];>;);
         out body;"""
 
@@ -109,13 +108,28 @@ class TileSource:
         tiles = [(zoom, x, y) for x in range(x_min, x_max + 1) for y in range(y_min, y_max + 1)]
         return tiles
 
-    def get_required_tiles(self, lat, lon, zoom, tolerance_lat=0, tolerance_lon=0):
+    def get_required_tiles(self, lat, lon, zoom, extend=0):
+        # derive tolerance, measured in degree
+        i = len(lat) // 2
+        s_lat, s_lon = LocalMap.get_scale_at(lat[i], lon[i])
+        tol_lat = s_lat * extend
+        tol_lon = s_lon * extend
+
         tiles = set()
 
+        # go through each point in the lat-lon-list
         for lat_, lon_ in zip(lat, lon):
-            if lat_ and lon_ and -90 <= lat_ <= +90 and -180.0 <= lon_ <= +180:
-                x, y = self.latlon2tile(zoom, lat_, lon_)
-                tiles.add((zoom, x, y))
+            # make sure it's a valid coordinate
+            if lat_ and lon_:
+                # consider the corners of a box, centered at the point (lat_, lon_) and size 2 tol_lat x 2 tol_lan
+                for lat__ in (lat_ - tol_lat, lat_ + tol_lat):
+                    for lon__ in (lon_ - tol_lon, lon_ + tol_lon):
+                        # make sure it's a valid coordinate
+                        if -90 <= lat__ <= +90 and -180.0 <= lon__ <= +180:
+                            # get tile position
+                            x, y = self.latlon2tile(zoom, lat_, lon_)
+                            # and add to set
+                            tiles.add((zoom, x, y))
 
         return tiles
 

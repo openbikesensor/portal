@@ -313,6 +313,6 @@ class EquirectangularFast:
 
     @staticmethod
     def get_scale_at(lat, lon):
-        s_lon = 360.0 / 40000e3
-        s_lat = s_lon / math.cos(math.radians(lat))
+        s_lat = 360.0 / 40000e3
+        s_lon = s_lat / math.cos(math.radians(lat))
         return s_lat, s_lon

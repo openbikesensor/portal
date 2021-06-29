@@ -25,11 +25,13 @@ from .BeliefPropagationChain import BeliefPropagationChain as BP
 
 
 class AnnotateMeasurements:
-    def __init__(self, map_source, cache_dir='cache', osm_projection="filtered", fully_annotate_unconfirmed=False):
+    def __init__(self, map_source, cache_dir='cache', osm_projection="filtered", fully_annotate_unconfirmed=False,
+                 point_way_tolerance=40.0):
         self.fully_annotate_unconfirmed = fully_annotate_unconfirmed
 
         self.map_source = map_source
-        self.roads = Roads(map_source, d_max=40.0, d_phi_max=90, cache_dir=cache_dir)
+        self.roads = Roads(map_source, d_max=point_way_tolerance, d_phi_max=90, cache_dir=cache_dir)
+        self.point_way_tolerance = point_way_tolerance
 
         if osm_projection == "greedy":
             self.add_osm_way_id = self.add_osm_way_id_greedy
@@ -54,7 +56,7 @@ class AnnotateMeasurements:
         lat = [m["latitude"] for m in measurements]
         lon = [m["longitude"] for m in measurements]
 
-        self.map_source.ensure_coverage(lat, lon)
+        self.map_source.ensure_coverage(lat, lon, extend=self.point_way_tolerance)
 
     def annotate_ways(self, m):
         way_id = m["OSM_way_id"]
