@@ -10,7 +10,8 @@ async function sendEmail({ to, subject, html }) {
     const transporter = nodemailer.createTransport({
       host: config.mail.smtp.host,
       port: config.mail.smtp.port,
-      secure: true,
+      secure: !config.mail.smtp.starttls,
+      requiretls: config.mail.smtp.starttls,
       auth: {
         user: config.mail.smtp.username,
         pass: config.mail.smtp.password,
