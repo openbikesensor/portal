@@ -7,7 +7,8 @@
     "from": "Sender Name <sender@example.com>",
     "smtp" : {
       "host": "mail.example.com",
-      "port": 587,
+      "port": 465,
+      "starttls": false,
       "username": "sender@example.com",
       "password": "hunter2"
     }
