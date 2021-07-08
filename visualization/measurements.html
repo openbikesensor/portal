@@ -296,6 +296,15 @@ along with the OpenBikeSensor Scripts Collection.  If not, see
 
     map.addLayer(vectorLayer);
 
+    const changeListener = dataSource.once('change', function(event) {
+    		if (dataSource.getState() == 'ready') {
+				const extent = vectorLayer.getSource().getExtent();
+				const mapSize = map.getSize();
+				const overlay = document.getElementById("overlay");
+				const marginLeft = overlay.offsetWidth + overlay.offsetLeft;
+    			map.getView().fit(extent, {size: mapSize, padding: [0, 0, 0, marginLeft]});
+			}
+		});
 
     var arrowStyle = new ol.style.Style({
     stroke: new ol.style.Stroke({
