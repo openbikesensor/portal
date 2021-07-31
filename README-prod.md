@@ -31,7 +31,7 @@ provided in this repository. We'll tackle them in the next section.
 
 ## Details
 
-1) Clone the repo as described in the [README.md](README.md)
+1) Clone the repo as described in the [README.md](README.md) side note: If you are working on a non-main branch, e.g. ``your_branch`` do not forget to ``git checkout your/branch``
 
 Ensure, you also cloned the submodules!
 
