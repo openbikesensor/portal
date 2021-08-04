@@ -31,3 +31,4 @@ RUN sed -i '/<Directory "\/usr\/local\/apache2\/htdocs">/,/<\/Directory>/ s/Allo
 
 COPY --from=builder /opt/obs/frontend/build /usr/local/apache2/htdocs
 COPY apache/.htaccess /usr/local/apache2/htdocs/
+RUN chmod -R a+rX /usr/local/apache2/htdocs
