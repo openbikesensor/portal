@@ -33,6 +33,9 @@ const {version} = packageJson
 function MenuItemForLink({navigate, ...props}) {
   return <Menu.Item {...props} />
 }
+function DropdownItemForLink({navigate, ...props}) {
+  return <Dropdown.Item {...props} />
+}
 
 const App = connect((state) => ({login: state.login}))(function App({login}) {
   const apiVersion = useObservable(() => from(api.get('/info')).pipe(pluck('version')))
@@ -53,10 +56,10 @@ const App = connect((state) => ({login: state.login}))(function App({login}) {
             {login ? (
               <Dropdown item trigger={<Avatar user={login} className={styles.avatar} />}>
                 <Dropdown.Menu>
-                  <Link to="/upload" component={Dropdown.Item} icon="cloud upload" text="Upload tracks" />
-                  <Link to="/settings" component={Dropdown.Item} icon="cog" text="Settings" />
+                  <Link to="/upload" component={DropdownItemForLink} icon="cloud upload" text="Upload tracks" />
+                  <Link to="/settings" component={DropdownItemForLink} icon="cog" text="Settings" />
                   <Dropdown.Divider />
-                  <Link to="/logout" component={Dropdown.Item} icon="sign-out" text="Logout" />
+                  <Link to="/logout" component={DropdownItemForLink} icon="sign-out" text="Logout" />
                 </Dropdown.Menu>
               </Dropdown>
             ) : (
