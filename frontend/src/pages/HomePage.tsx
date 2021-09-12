@@ -17,7 +17,7 @@ function WelcomeMap() {
     <Map className={styles.welcomeMap}>
       <RoadsLayer />
       <Map.BaseLayer />
-      <Map.View zoom={13} center={fromLonLat([9.1798, 48.7759])} />
+      <Map.View />
     </Map>
   )
 }

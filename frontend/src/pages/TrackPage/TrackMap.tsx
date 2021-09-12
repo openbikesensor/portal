@@ -221,7 +221,7 @@ export default function TrackMap({trackData, show, ...props}: {trackData: TrackD
         <PointLayer features={trackPointsUntaggedD2} title="Right Untagged" visible={show.rightUnconfirmed} />
       </Map.GroupLayer>
 
-      <Map.View zoom={15} center={fromLonLat([9.1797, 48.7784])} />
+      <Map.View />
       <Map.FitView extent={viewExtent} />
     </Map>
   )

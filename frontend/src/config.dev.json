@@ -12,5 +12,10 @@
     "url": "https://tiles.wmflabs.org/bw-mapnik/{z}/{x}/{y}.png",
     "minZoom": 0,
     "maxZoom": 18
+  },
+  "mapHome": {
+    "zoom": 15,
+    "longitude": 9.1797,
+    "latitude": 48.7784
   }
 }

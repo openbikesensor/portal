@@ -8,6 +8,7 @@ import OlGroupLayer from 'ol/layer/Group'
 import OSM from 'ol/source/OSM'
 import proj4 from 'proj4'
 import {register} from 'ol/proj/proj4'
+import {fromLonLat} from 'ol/proj'
 
 // Import styles for open layers + addons
 import 'ol/ol.css'
@@ -116,14 +117,22 @@ function FitView({extent}) {
   return null
 }
 
+const minZoom = config.mapTileset?.minZoom ?? 0
+const maxZoom = config.mapTileset?.maxZoom ?? 18
+const mapHomeZoom = config.mapHome?.zoom ?? 15
+const mapHomeLongitude = config.mapHome?.longitude ?? 9.1797
+const mapHomeLatitude = config.mapHome?.latitude ?? 48.7784
+
 function View({...options}) {
   const map = React.useContext(MapContext)
 
   const view = React.useMemo(
     () =>
       new OlView({
-        minZoom: config.mapTileset?.minZoom ?? 0,
-        maxZoom: config.mapTileset?.maxZoom ?? 18,
+        minZoom,
+        maxZoom,
+        zoom: Math.max(Math.min(mapHomeZoom, maxZoom), minZoom),
+        center: fromLonLat([mapHomeLongitude, mapHomeLatitude]),
         ...options,
       }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
