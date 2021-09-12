@@ -2,6 +2,9 @@ import React from 'react'
 import {connect} from 'react-redux'
 import {List, Grid, Container, Menu, Header, Dropdown} from 'semantic-ui-react'
 import {BrowserRouter as Router, Switch, Route, Link} from 'react-router-dom'
+import {useObservable} from 'rxjs-hooks'
+import {from} from 'rxjs'
+import {pluck} from 'rxjs/operators'
 
 import config from 'config.json'
 import styles from './App.module.scss'
@@ -18,6 +21,11 @@ import {
   UploadPage,
 } from 'pages'
 import {Avatar, LoginButton} from 'components'
+import api from 'api'
+
+import packageJson from '../package.json'
+
+const {version} = packageJson
 
 // This component removes the "navigate" prop before rendering a Menu.Item,
 // which is a workaround for an annoying warning that is somehow caused by the
@@ -27,6 +35,8 @@ function MenuItemForLink({navigate, ...props}) {
 }
 
 const App = connect((state) => ({login: state.login}))(function App({login}) {
+  const apiVersion = useObservable(() => from(api.get('/info')).pipe(pluck('version')))
+
   return (
     <Router basename={process.env.PUBLIC_URL || '/'}>
       <Menu fixed="top">
@@ -147,7 +157,21 @@ const App = connect((state) => ({login: state.login}))(function App({login}) {
                 </List>
               </Grid.Column>
 
-              <Grid.Column></Grid.Column>
+              <Grid.Column>
+                <Header as="h5">Info</Header>
+                <List>
+                  <List.Item>
+                    <a href={`https://github.com/openbikesensor/portal/releases/tag/v${version}`} target="_blank" rel="noreferrer">
+                      Frontend v{version}
+                    </a>
+                  </List.Item>
+                  <List.Item>
+                    <a href={`https://github.com/openbikesensor/portal${apiVersion ? `/releases/tag/v${apiVersion}` : ''}`} target="_blank" rel="noreferrer">
+                      API v{apiVersion ?? '...'}
+                    </a>
+                  </List.Item>
+                </List>
+              </Grid.Column>
             </Grid.Row>
           </Grid>
         </Container>
