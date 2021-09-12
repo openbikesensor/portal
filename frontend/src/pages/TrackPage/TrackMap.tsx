@@ -7,6 +7,7 @@ import {Fill, Stroke, Style, Text, Circle} from 'ol/style'
 
 import {Map} from 'components'
 import type {TrackData, TrackPoint} from 'types'
+import config from 'config.json'
 
 const isValidTrackPoint = (point: TrackPoint): boolean => {
   const longitude = point.geometry?.coordinates?.[0]
@@ -201,12 +202,7 @@ export default function TrackMap({trackData, show, ...props}: {trackData: TrackD
 
   return (
     <Map {...props}>
-      <Map.TileLayer
-        osm={{
-          url: 'https://tiles.wmflabs.org/bw-mapnik/{z}/{x}/{y}.png',
-          crossOrigin: null,
-        }}
-      />
+      <Map.BaseLayer />
       <Map.VectorLayer
         visible
         updateWhileAnimating={false}
@@ -225,7 +221,7 @@ export default function TrackMap({trackData, show, ...props}: {trackData: TrackD
         <PointLayer features={trackPointsUntaggedD2} title="Right Untagged" visible={show.rightUnconfirmed} />
       </Map.GroupLayer>
 
-      <Map.View maxZoom={22} zoom={15} center={fromLonLat([9.1797, 48.7784])} />
+      <Map.View zoom={15} center={fromLonLat([9.1797, 48.7784])} />
       <Map.FitView extent={viewExtent} />
     </Map>
   )

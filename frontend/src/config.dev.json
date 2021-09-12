@@ -7,5 +7,10 @@
     "redirectUri": "http://localhost:3001/redirect"
   },
   "imprintUrl": "https://example.com/imprint",
-  "privacyPolicyUrl": "https://example.com/privacy"
+  "privacyPolicyUrl": "https://example.com/privacy",
+  "mapTileset": {
+    "url": "https://tiles.wmflabs.org/bw-mapnik/{z}/{x}/{y}.png",
+    "minZoom": 0,
+    "maxZoom": 18
+  }
 }

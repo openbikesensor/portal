@@ -12,6 +12,8 @@ import {register} from 'ol/proj/proj4'
 // Import styles for open layers + addons
 import 'ol/ol.css'
 
+import config from 'config.json'
+
 // Prepare projection
 proj4.defs(
   'projLayer1',
@@ -79,7 +81,20 @@ export function Layer({layerClass, getDefaultOptions, children, ...props}) {
 }
 
 export function TileLayer({osm, ...props}) {
-  return <Layer layerClass={OlTileLayer} getDefaultOptions={() => ({source: new OSM(osm)})} {...props} /> }
+  return <Layer layerClass={OlTileLayer} getDefaultOptions={() => ({source: new OSM(osm)})} {...props} />
+}
+
+export function BaseLayer(props) {
+  return (
+    <TileLayer
+      osm={{
+        url: config.mapTileset?.url ?? 'https://tiles.wmflabs.org/bw-mapnik/{z}/{x}/{y}.png',
+        crossOrigin: null,
+      }}
+      {...props}
+    />
+  )
+}
 
 export function VectorLayer(props) {
   return <Layer layerClass={OlVectorLayer} {...props} />
@@ -107,6 +122,8 @@ function View({...options}) {
   const view = React.useMemo(
     () =>
       new OlView({
+        minZoom: config.mapTileset?.minZoom ?? 0,
+        maxZoom: config.mapTileset?.maxZoom ?? 18,
         ...options,
       }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -127,5 +144,6 @@ Map.GroupLayer = GroupLayer
 Map.TileLayer = TileLayer
 Map.VectorLayer = VectorLayer
 Map.View = View
+Map.BaseLayer = BaseLayer
 
 export default Map

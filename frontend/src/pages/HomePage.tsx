@@ -16,14 +16,8 @@ function WelcomeMap() {
   return (
     <Map className={styles.welcomeMap}>
       <RoadsLayer />
-      <Map.TileLayer
-        osm={{
-          url: 'https://tiles.wmflabs.org/bw-mapnik/{z}/{x}/{y}.png',
-          crossOrigin: null,
-        }}
-      />
-      {/* <Map.View maxZoom={22} zoom={6} center={fromLonLat([10, 51])} /> */}
-      <Map.View maxZoom={22} zoom={13} center={fromLonLat([9.1798, 48.7759])} />
+      <Map.BaseLayer />
+      <Map.View zoom={13} center={fromLonLat([9.1798, 48.7759])} />
     </Map>
   )
 }
