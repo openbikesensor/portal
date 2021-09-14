@@ -1,12 +1,13 @@
 import React from 'react'
 import {connect} from 'react-redux'
-import {Message, Icon, Grid, Form, Button, TextArea, Ref, Input, Header, Divider} from 'semantic-ui-react'
+import {Message, Icon, Grid, Form, Button, TextArea, Ref, Input, Header, Divider, Popup} from 'semantic-ui-react'
 import {useForm} from 'react-hook-form'
 
 import {setLogin} from 'reducers/login'
 import {Page, Stats} from 'components'
 import api from 'api'
 import {findInput} from 'utils'
+import config from 'config.json'
 
 const SettingsPage = connect((state) => ({login: state.login}), {setLogin})(function SettingsPage({login, setLogin}) {
   const {register, handleSubmit} = useForm()
@@ -73,6 +74,31 @@ const SettingsPage = connect((state) => ({login: state.login}), {setLogin})(func
   )
 })
 
+function CopyInput({value, ...props}) {
+  const [success, setSuccess] = React.useState(null)
+  const onClick = async () => {
+    try {
+      await window.navigator?.clipboard?.writeText(value)
+      setSuccess(true)
+    } catch (err) {
+      setSuccess(false)
+    } finally {
+      setTimeout(() => {
+        setSuccess(null)
+      }, 2000)
+    }
+  }
+
+  return (
+    <Popup
+      trigger={<Input {...props} value={value} fluid action={{icon: 'copy', onClick}} />}
+      position="top right"
+      open={success != null}
+      content={success ? 'Copied.' : 'Failed to copy.'}
+    />
+  )
+}
+
 const selectField = findInput((ref) => ref?.select())
 
 function ApiKeyDialog({login}) {
@@ -93,15 +119,19 @@ function ApiKeyDialog({login}) {
         configuration interface to allow direct upload from the device.
       </p>
       <p>Please protect your API Key carefully as it allows full control over your account.</p>
-      {show ? (
-        <Ref innerRef={selectField}>
-          <Input value={login.apiKey} fluid />
-        </Ref>
-      ) : (
-        <Button onClick={onClick}>
-          <Icon name="lock" /> Show API Key
-        </Button>
-      )}
+      <div style={{height: 40, marginBottom: 16}}>
+        {show ? (
+          <Ref innerRef={selectField}>
+            <CopyInput label="Personal API key" value={login.apiKey} />
+          </Ref>
+        ) : (
+          <Button onClick={onClick}>
+            <Icon name="lock" /> Show API Key
+          </Button>
+        )}
+      </div>
+      <p>The API URL should be set to:</p>
+      <CopyInput label="API URL" value={config.apiUrl} />
     </>
   )
 }
