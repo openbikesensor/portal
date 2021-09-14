@@ -6,7 +6,7 @@ import {useObservable} from 'rxjs-hooks'
 import {from} from 'rxjs'
 import {pluck} from 'rxjs/operators'
 
-import config from 'config.json'
+import {useConfig} from 'config'
 import styles from './App.module.scss'
 
 import {
@@ -38,6 +38,7 @@ function DropdownItemForLink({navigate, ...props}) {
 }
 
 const App = connect((state) => ({login: state.login}))(function App({login}) {
+  const config = useConfig()
   const apiVersion = useObservable(() => from(api.get('/info')).pipe(pluck('version')))
 
   return (
@@ -148,12 +149,12 @@ const App = connect((state) => ({login: state.login}))(function App({login}) {
                 <Header as="h5">This installation</Header>
                 <List>
                   <List.Item>
-                    <a href={config.privacyPolicyUrl} target="_blank" rel="noreferrer">
+                    <a href={config?.privacyPolicyUrl} target="_blank" rel="noreferrer">
                       Privacy policy
                     </a>
                   </List.Item>
                   <List.Item>
-                    <a href={config.imprintUrl} target="_blank" rel="noreferrer">
+                    <a href={config?.imprintUrl} target="_blank" rel="noreferrer">
                       Imprint
                     </a>
                   </List.Item>

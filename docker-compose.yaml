@@ -1,3 +1,9 @@
+# This docker-compose file is intended for development use.  You can simply run
+# `docker-compose up -d` in the repository and it should build and run all
+# required parts of the application. See README.md for details.
+#
+# For a production docker setup, please check the corresponding documentation.
+
 version: '3'
 
 services:
@@ -75,7 +81,9 @@ services:
       - ./frontend/public:/opt/obs/frontend/public
       - ./frontend/tsconfig.json:/opt/obs/frontend/tsconfig.json
       - ./frontend/package.json:/opt/obs/frontend/package.json
-      - ./frontend/src/config.dev.json:/opt/obs/frontend/src/config.json
+
+      # Overwrite the default config with the development mode configuration
+      - ./frontend/config.dev.json:/opt/obs/frontend/public/config.json
     environment:
       - PORT=3000
     links:

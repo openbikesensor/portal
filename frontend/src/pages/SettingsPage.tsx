@@ -7,7 +7,7 @@ import {setLogin} from 'reducers/login'
 import {Page, Stats} from 'components'
 import api from 'api'
 import {findInput} from 'utils'
-import config from 'config.json'
+import {useConfig} from 'config'
 
 const SettingsPage = connect((state) => ({login: state.login}), {setLogin})(function SettingsPage({login, setLogin}) {
   const {register, handleSubmit} = useForm()
@@ -102,6 +102,7 @@ function CopyInput({value, ...props}) {
 const selectField = findInput((ref) => ref?.select())
 
 function ApiKeyDialog({login}) {
+  const config = useConfig()
   const [show, setShow] = React.useState(false)
   const onClick = React.useCallback(
     (e) => {
@@ -131,7 +132,7 @@ function ApiKeyDialog({login}) {
         )}
       </div>
       <p>The API URL should be set to:</p>
-      <CopyInput label="API URL" value={config.apiUrl} />
+      <CopyInput label="API URL" value={config?.apiUrl ?? '...'} />
     </>
   )
 }

@@ -2,7 +2,7 @@ import {stringifyParams} from 'query'
 import globalStore from 'store'
 import {setAuth, invalidateAccessToken, resetAuth} from 'reducers/auth'
 import {setLogin} from 'reducers/login'
-import config from 'config.json'
+import configPromise from 'config'
 import {create as createPkce} from 'pkce'
 import download from 'downloadjs'
 
@@ -39,6 +39,7 @@ class API {
    * it supports PKCE.
    */
   async getAuthorizationServerMetadata() {
+    const config = await configPromise
     const url = new URL(config.auth.server)
     const pathSuffix = url.pathname.replace(/^\/+|\/+$/, '')
     url.pathname = '/.well-known/oauth-authorization-server' + (pathSuffix ? '/' + pathSuffix : '')
@@ -117,6 +118,7 @@ class API {
 
     //  Try to use the refresh token
     const {tokenEndpoint} = await this.getAuthorizationServerMetadata()
+    const config = await configPromise
     const url = new URL(tokenEndpoint)
     url.searchParams.append('refresh_token', refreshToken)
     url.searchParams.append('grant_type', 'refresh_token')
@@ -142,6 +144,7 @@ class API {
     }
 
     const {tokenEndpoint} = await this.getAuthorizationServerMetadata()
+    const config = await configPromise
     const url = new URL(tokenEndpoint)
     url.searchParams.append('code', code)
     url.searchParams.append('grant_type', 'authorization_code')
@@ -178,6 +181,7 @@ class API {
 
   async makeLoginUrl() {
     const {authorizationEndpoint} = await this.getAuthorizationServerMetadata()
+    const config = await configPromise
 
     const {codeVerifier, codeChallenge} = createPkce()
     localStorage.setItem('codeVerifier', codeVerifier)
@@ -197,6 +201,7 @@ class API {
 
   async fetch(url, options = {}) {
     const accessToken = await this.getValidAccessToken()
+    const config = await configPromise
 
     const {returnResponse = false, ...fetchOptions} = options
 

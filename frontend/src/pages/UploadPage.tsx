@@ -6,7 +6,7 @@ import {Link} from 'react-router-dom'
 import {FileUploadField, Page} from 'components'
 import type {Track} from 'types'
 import api from 'api'
-import config from '../config.json'
+import configPromise from 'config'
 
 function isSameFile(a: File, b: File) {
   return a.name === b.name && a.size === b.size
@@ -56,34 +56,41 @@ export function FileUploadStatus({
 
   React.useEffect(
     () => {
-      const formData = new FormData()
-      formData.append('body', file)
+      let xhr
 
-      const xhr = new XMLHttpRequest()
+      async function _work() {
+        const formData = new FormData()
+        formData.append('body', file)
 
-      const onProgress = (e) => {
-        const progress = (e.loaded || 0) / (e.total || 1)
-        setProgress(progress)
-      }
+        xhr = new XMLHttpRequest()
 
-      const onLoad = (e) => {
-        onComplete(id, xhr.response)
-      }
+        const onProgress = (e) => {
+          const progress = (e.loaded || 0) / (e.total || 1)
+          setProgress(progress)
+        }
 
-      xhr.responseType = 'json'
-      xhr.onload = onLoad
-      xhr.upload.onprogress = onProgress
-      if (slug) {
-        xhr.open('PUT', `${config.apiUrl}/api/tracks/${slug}`)
-      } else {
-        xhr.open('POST', `${config.apiUrl}/api/tracks`)
-      }
+        const onLoad = (e) => {
+          onComplete(id, xhr.response)
+        }
 
-      api.getValidAccessToken().then((accessToken) => {
+        xhr.responseType = 'json'
+        xhr.onload = onLoad
+        xhr.upload.onprogress = onProgress
+
+        const config = await configPromise
+        if (slug) {
+          xhr.open('PUT', `${config.apiUrl}/api/tracks/${slug}`)
+        } else {
+          xhr.open('POST', `${config.apiUrl}/api/tracks`)
+        }
+
+        const accessToken = await api.getValidAccessToken()
+
         xhr.setRequestHeader('Authorization', accessToken)
         xhr.send(formData)
-      })
+      }
 
+      _work()
       return () => xhr.abort()
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps

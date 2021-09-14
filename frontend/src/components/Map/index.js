@@ -13,7 +13,7 @@ import {fromLonLat} from 'ol/proj'
 // Import styles for open layers + addons
 import 'ol/ol.css'
 
-import config from 'config.json'
+import {useConfig} from 'config'
 
 // Prepare projection
 proj4.defs(
@@ -86,6 +86,11 @@ export function TileLayer({osm, ...props}) {
 }
 
 export function BaseLayer(props) {
+  const config = useConfig()
+  if (!config) {
+    return null
+  }
+
   return (
     <TileLayer
       osm={{
@@ -117,26 +122,30 @@ function FitView({extent}) {
   return null
 }
 
-const minZoom = config.mapTileset?.minZoom ?? 0
-const maxZoom = config.mapTileset?.maxZoom ?? 18
-const mapHomeZoom = config.mapHome?.zoom ?? 15
-const mapHomeLongitude = config.mapHome?.longitude ?? 9.1797
-const mapHomeLatitude = config.mapHome?.latitude ?? 48.7784
-
 function View({...options}) {
   const map = React.useContext(MapContext)
+  const config = useConfig()
 
   const view = React.useMemo(
-    () =>
-      new OlView({
+    () => {
+      if (!config) return null
+
+      const minZoom = config.mapTileset?.minZoom ?? 0
+      const maxZoom = config.mapTileset?.maxZoom ?? 18
+      const mapHomeZoom = config.mapHome?.zoom ?? 15
+      const mapHomeLongitude = config.mapHome?.longitude ?? 9.1797
+      const mapHomeLatitude = config.mapHome?.latitude ?? 48.7784
+
+      return new OlView({
         minZoom,
         maxZoom,
         zoom: Math.max(Math.min(mapHomeZoom, maxZoom), minZoom),
         center: fromLonLat([mapHomeLongitude, mapHomeLatitude]),
         ...options,
-      }),
+      })
+    },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    []
+    [config]
   )
 
   React.useEffect(() => {

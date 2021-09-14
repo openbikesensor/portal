@@ -7,7 +7,6 @@ import {Fill, Stroke, Style, Text, Circle} from 'ol/style'
 
 import {Map} from 'components'
 import type {TrackData, TrackPoint} from 'types'
-import config from 'config.json'
 
 const isValidTrackPoint = (point: TrackPoint): boolean => {
   const longitude = point.geometry?.coordinates?.[0]
