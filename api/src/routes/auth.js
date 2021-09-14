@@ -83,7 +83,7 @@ router.post(
     }
 
     if (req.session.next) {
-      res.redirect(req.session.next);
+      res.redirect(baseUrl + req.session.next);
       req.session.next = null;
       return;
     }
