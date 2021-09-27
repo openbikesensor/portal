@@ -1,0 +1,125 @@
+version: '3'
+
+networks:
+  gateway:
+    external: true
+    name: gateway
+  backend:
+    internal: true
+
+services:
+  mongo:
+    image: mongo
+    tty: true
+    volumes:
+      - ./data/mongo:/data/db
+    restart: on-failure
+    networks:
+      - backend
+
+  redis:
+    image: redis
+    volumes:
+      - ./data/redis:/data
+    command: redis-server --appendonly yes
+    restart: on-failure
+    networks:
+      - backend
+
+  api:
+    image: obs-api
+    build:
+      context: ./source/api
+    volumes:
+      - ./data/api-data:/data
+      - ./config/api-config.json:/opt/obs/api/config.json
+    environment:
+      - MONGODB_URL=mongo://mongo/obs
+    restart: on-failure
+    labels:
+      - traefik.http.middlewares.obsapi-prefix.stripprefix.prefixes=/api
+      - traefik.http.middlewares.obsapi-wellknown.replacepathregex.regex=^/\.well-known/oauth-authorization-server/api$$
+      - traefik.http.middlewares.obsapi-wellknown.replacepathregex.replacement=/.well-known/oauth-authorization-server
+      - traefik.http.routers.obsapi.rule=Host(`portal.example.com`) && (PathPrefix(`/api/`) || Path(`/.well-known/oauth-authorization-server/api`))
+      - traefik.http.routers.obsapi.entrypoints=websecure
+      - traefik.http.routers.obsapi.tls=true
+      - traefik.http.routers.obsapi.tls.certresolver=leresolver
+      - traefik.http.routers.obsapi.middlewares=obsapi-prefix@docker,obsapi-wellknown@docker
+      - traefik.docker.network=gateway
+    networks:
+      - gateway
+      - backend
+
+  worker:
+    image: obs-api
+    build:
+      context: ./source/api
+    volumes:
+      - ./data/api-data:/data
+      - ./config/api-config.json:/opt/obs/api/config.json
+    links:
+      - mongo
+      - redis
+    restart: on-failure
+    command:
+      - npm
+      - run
+      - start:worker
+    networks:
+      - backend
+      # Not requred for traefik, but to reach overpass-api.de
+      - gateway
+
+  frontend:
+    image: obs-frontend
+    build:
+      context: ./source/frontend
+      dockerfile: Dockerfile-prod
+    links:
+      - api
+    restart: on-failure
+    labels:
+      - traefik.http.routers.obsfrontend.rule=Host(`portal.example.com`)
+      - traefik.http.routers.obsfrontend.entrypoints=websecure
+      - traefik.http.routers.obsfrontend.tls=true
+      - traefik.http.routers.obsfrontend.tls.certresolver=leresolver
+      - traefik.docker.network=gateway
+    networks:
+      - gateway
+      - backend
+
+  traefik:
+    image: traefik:2.4.8
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+     # The Web UI (enabled by [api] in traefik.toml)
+     # - "8080:8080"
+
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./config/traefik.toml:/traefik.toml
+      - ./config/usersfile:/usersfile
+      - ./data/acme.json:/acme.json
+
+    networks:
+      - gateway
+
+    labels:
+      # global redirect from http to https
+      - "traefik.http.routers.http-catchall.rule=hostregexp(`{host:.+}`)"
+      - "traefik.http.routers.http-catchall.entrypoints=web"
+      # Define middlewares to be used
+      - "traefik.http.routers.http-catchall.middlewares=redirect-http-to-https"
+      # Configure middlewares
+      - "traefik.http.middlewares.redirect-http-to-https.redirectscheme.scheme=https"
+
+      # Show Traefik Dashboard. Enable the dashboard in traefik.toml if you use these.
+      # - "traefik.http.routers.traefik.rule=Host(`traefik.example.com`)"
+      # - "traefik.http.routers.traefik.service=api@internal"
+      # - "traefik.http.routers.traefik.tls=true"
+      # - "traefik.http.routers.traefik.entrypoints=websecure"
+      # - "traefik.http.routers.traefik.tls.certresolver=leresolver"
+      # - "traefik.http.routers.traefik.middlewares=basic-auth"
+      # - "traefik.http.middlewares.basic-auth.basicauth.usersfile=/usersfile"
