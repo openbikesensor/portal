@@ -433,7 +433,11 @@ class ImportMeasurementsCsv:
         return extractors
 
     def create_field_extractors_v2(self, header, metadata, format_id):
-        raw_n_max = int(metadata["MaximumMeasurementsPerLine"][0])
+        try:
+            raw_n_max = int(metadata["MaximumMeasurementsPerLine"][0])
+        except (LookupError, ValueError):
+            raw_n_max = max(1, *(int(x[3:]) for x in header if x[:3] in ('Rus','Lus','Tms')))
+
         extractors = [
             CsvExtractor(["Date", "Time"], "time",
                          lambda date, time:
