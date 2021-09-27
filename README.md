@@ -23,7 +23,10 @@ git clone --recursive https://github.com/openbikesensor/portal
 git submodule update --init --recursive
 ```
 
-## Deployment setup
+## Production setup
+
+**Note:** There is now a guide for a dockerized deployment in the
+[deployment](deployment) folder.
 
 You should be familiar with managing a Linux server. If not, find a suitable
 guide first. This will only give a rough outline of the steps to take, you must
