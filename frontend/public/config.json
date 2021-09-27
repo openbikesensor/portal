@@ -1,0 +1,11 @@
+{
+  "apiUrl": "https://api.example.com",
+  "auth": {
+    "server": "https://api.example.com",
+    "clientId": "!!!<<<CHANGEME>>>!!!",
+    "scope": "*",
+    "redirectUri": "https://portal.example.com/redirect"
+  },
+  "imprintUrl": "https://portal.example.com/imprint",
+  "privacyPolicyUrl": "https://portal.example.com/privacy"
+}

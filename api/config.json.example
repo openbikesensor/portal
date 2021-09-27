@@ -1,8 +1,8 @@
 {
-  "cookieSecret": "CHANGEME!!!!!!!!!!!!!!!!!!!!!11",
-  "jwtSecret": "CHANGEME???????????????????////",
-  "baseUrl": "https://openbikesensor.example.com/",
-  "mainFrontendUrl": "https://openbikesensor.example.com/api/",
+  "cookieSecret": "!!!<<<CHANGEME>>>!!!",
+  "jwtSecret": "!!!<<<CHANGEME>>>!!!",
+  "baseUrl": "https://api.example.com/",
+  "mainFrontendUrl": "https://portal.example.com/",
   "mail": {
     "from": "Sender Name <sender@example.com>",
     "smtp" : {
@@ -10,24 +10,24 @@
       "port": 465,
       "starttls": false,
       "username": "sender@example.com",
-      "password": "hunter2"
+      "password": "!!!<<<CHANGEME>>>!!!"
     }
   },
   "mongodb": {
-    "url": "mongodb://user:pass@host/obs",
+    "url": "mongodb://mongo/obs",
     "debug": false
   },
-  "redisUrl": "redis://localhost",
+  "redisUrl": "redis://redis",
   "oAuth2Clients": [
     {
-      "clientId": "CHANGEME",
-      "validRedirectUris": ["https://site.example.com/redirect"],
+      "clientId": "!!!<<<CHANGEME>>>!!!",
+      "validRedirectUris": ["https://portal.example.com/redirect"],
       "refreshTokenExpirySeconds": 604800,
       "maxScope": "*",
       "title": "OBS Portal"
     },
     {
-      "clientId": "CHANGEME",
+      "clientId": "!!!<<<CHANGEME>>>!!!",
       "validRedirectUris": ["__LOCAL__"],
       "maxScope": "track.upload",
       "refreshTokenExpirySeconds": 86400000,

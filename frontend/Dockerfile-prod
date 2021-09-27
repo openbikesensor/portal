@@ -1,0 +1,34 @@
+#############################################
+# Build the frontend AS builder
+#############################################
+
+FROM node:14 as builder
+
+WORKDIR /opt/obs/frontend
+ADD package.json package-lock.json /opt/obs/frontend/
+RUN echo update-notifier=false >> ~/.npmrc
+RUN npm ci
+
+ADD tsconfig.json craco.config.js /opt/obs/frontend/
+ADD public/ /opt/obs/frontend/public/
+ADD src/ /opt/obs/frontend/src/
+
+# [Optional] Add the URL prefix. It must also be set in the docker-compose.yml
+# ENV PUBLIC_URL=/prefix
+
+RUN npm run build
+
+#############################################
+# Serve the frontend
+#############################################
+
+# Use apache
+FROM httpd:2.4
+# Enable rewrite_module
+RUN sed -i '/LoadModule rewrite_module/s/^#//g' /usr/local/apache2/conf/httpd.conf
+# Allow .htaccess within /usr/local/apache2/htdocs
+RUN sed -i '/<Directory "\/usr\/local\/apache2\/htdocs">/,/<\/Directory>/ s/AllowOverride None/AllowOverride all/' /usr/local/apache2/conf/httpd.conf
+
+COPY --from=builder /opt/obs/frontend/build /usr/local/apache2/htdocs
+COPY apache/.htaccess /usr/local/apache2/htdocs/
+RUN chmod -R a+rX /usr/local/apache2/htdocs
