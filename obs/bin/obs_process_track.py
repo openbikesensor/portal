@@ -67,6 +67,7 @@ def process(args):
         )
         measurements = AnnotateMeasurements(osm, cache_dir=args.cache_dir).annotate(measurements)
         confirmed_measurements = MeasurementFilter().filter(measurements, log=logfile)
+        valid_measurements = MeasurementFilter(remove_unconfirmed=False).filter(measurements, log=logfile)
 
     # write out
     confirmed_measurements_json = {
@@ -102,7 +103,7 @@ def process(args):
                     "confirmed": m in confirmed_measurements,
                 },
             }
-            for m in measurements
+            for m in valid_measurements
             if m["distance_overtaker"] or m["distance_stationary"]
         ],
     }
@@ -112,7 +113,7 @@ def process(args):
         "geometry": {
             "type": "LineString",
             "coordinates": [
-                [m["latitude"], m["longitude"]] for m in measurements
+                [m["latitude"], m["longitude"]] for m in valid_measurements
             ],
         },
     }
