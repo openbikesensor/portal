@@ -201,23 +201,25 @@ export default function TrackMap({trackData, show, ...props}: {trackData: TrackD
 
   return (
     <Map {...props}>
-      <Map.BaseLayer />
+      <Map.BaseLayer
+      zIndex={10} />
       <Map.VectorLayer
         visible
         updateWhileAnimating={false}
         updateWhileInteracting={false}
         source={trackVectorSource}
         style={trackLayerStyleWithArrows}
+        zIndex={100}
       />
 
       <Map.GroupLayer title="Tagged Points" visible>
-        <PointLayer features={trackPointsD1} title="Left" visible={show.left} />
-        <PointLayer features={trackPointsD2} title="Right" visible={show.right} />
+        <PointLayer features={trackPointsD1} title="Left" visible={show.left} zIndex={101} />
+        <PointLayer features={trackPointsD2} title="Right" visible={show.right} zIndex={101} />
       </Map.GroupLayer>
 
       <Map.GroupLayer title="Untagged Points" fold="close" visible>
-        <PointLayer features={trackPointsUntaggedD1} title="Left Untagged" visible={show.leftUnconfirmed} />
-        <PointLayer features={trackPointsUntaggedD2} title="Right Untagged" visible={show.rightUnconfirmed} />
+        <PointLayer features={trackPointsUntaggedD1} title="Left Untagged" visible={show.leftUnconfirmed} zIndex={101} />
+        <PointLayer features={trackPointsUntaggedD2} title="Right Untagged" visible={show.rightUnconfirmed} zIndex={101} />
       </Map.GroupLayer>
 
       <Map.View />
