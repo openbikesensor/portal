@@ -310,8 +310,7 @@ router.get(
             createdAt: 'asc',
           },
         },
-      })
-      .execPopulate();
+      });
 
     return res.json({
       comments: req.track.comments.map(function (comment) {

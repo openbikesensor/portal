@@ -148,7 +148,7 @@ class Track extends mongoose.Model {
   }
 
   async generateFilePath() {
-    await this.populate('author').execPopulate();
+    await this.populate('author');
     this.filePath = path.join(this.author.username, this.slug);
   }
 
