@@ -17,7 +17,7 @@ const schema = new mongoose.Schema(
 
 schema.plugin(uniqueValidator, { message: 'reused token' });
 
-class RefreshToken extends mongoose.Model {
+class RefreshTokenClass extends mongoose.Model {
   toJSON() {
     return {
       token: this.token,
@@ -40,6 +40,7 @@ class RefreshToken extends mongoose.Model {
   }
 }
 
-mongoose.model(RefreshToken, schema);
+schema.loadClass(RefreshTokenClass);
 
-module.exports = RefreshToken;
+const RefreshToken = mongoose.model('RefreshToken', schema);
+module.exports = RefreshToken

@@ -15,7 +15,7 @@ const schema = new mongoose.Schema(
 
 schema.plugin(uniqueValidator, { message: 'reused token' });
 
-class AccessToken extends mongoose.Model {
+class AccessTokenClass extends mongoose.Model {
   toJSON() {
     return {
       token: this.token,
@@ -24,7 +24,7 @@ class AccessToken extends mongoose.Model {
   }
 
   isValid() {
-    return this.expiresAt < new Date()
+    return this.expiresAt < new Date();
   }
 
   toHeaderString() {
@@ -42,6 +42,8 @@ class AccessToken extends mongoose.Model {
   }
 }
 
-mongoose.model(AccessToken, schema);
+schema.loadClass(AccessTokenClass);
+
+const AccessToken = mongoose.model('AccessToken', schema);
 
 module.exports = AccessToken;

@@ -38,6 +38,7 @@ if (!isProduction) {
 }
 
 require('./db');
+require('./models');
 
 app.use(require('./routes'));
 

@@ -14,7 +14,7 @@ const schema = new mongoose.Schema(
   { timestamps: true },
 );
 
-class AuthorizationCode extends mongoose.Model {
+class AuthorizationCodeClass extends mongoose.Model {
   static generate(options, expiresInSeconds = 60) {
     const code = crypto.randomBytes(8).toString('hex');
 
@@ -26,6 +26,7 @@ class AuthorizationCode extends mongoose.Model {
   }
 }
 
-mongoose.model(AuthorizationCode, schema);
+schema.loadClass(AuthorizationCodeClass)
 
-module.exports = AuthorizationCode;
+const AuthorizationCode = mongoose.model('AuthorizationCode', schema);
+module.exports = AuthorizationCode

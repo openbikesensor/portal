@@ -9,7 +9,7 @@ const schema = new mongoose.Schema(
   { timestamps: true },
 );
 
-class Comment extends mongoose.Model {
+class CommentClass extends mongoose.Model {
   toJSONFor(user) {
     return {
       id: this._id,
@@ -20,6 +20,5 @@ class Comment extends mongoose.Model {
   }
 }
 
-mongoose.model(Comment, schema);
-
-module.exports = Comment;
+schema.loadClass(CommentClass)
+module.exports = mongoose.model('Comment', schema);

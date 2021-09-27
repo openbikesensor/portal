@@ -39,7 +39,7 @@ const schema = new mongoose.Schema(
 
 schema.plugin(uniqueValidator, { message: 'ist bereits vergeben. Sorry!' });
 
-class User extends mongoose.Model {
+class UserClass extends mongoose.Model {
   validPassword(password) {
     const hash = crypto.pbkdf2Sync(password, this.salt, 10000, 512, 'sha512').toString('hex');
     return this.hash === hash;
@@ -86,6 +86,6 @@ class User extends mongoose.Model {
   }
 }
 
-mongoose.model(User, schema);
-
-module.exports = User;
+schema.loadClass(UserClass);
+const User = mongoose.model('User', schema);
+module.exports = User

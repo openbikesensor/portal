@@ -142,7 +142,7 @@ function getDaytime(dateTime) {
   return DAYTIMES[Math.floor((dateTime.hour % 24) / 2)];
 }
 
-class Track extends mongoose.Model {
+class TrackClass extends mongoose.Model {
   slugify() {
     this.slug = slug(this.title || 'track') + '-' + ((Math.random() * Math.pow(36, 6)) | 0).toString(36);
   }
@@ -301,6 +301,6 @@ class Track extends mongoose.Model {
   }
 }
 
-mongoose.model(Track, schema);
-
+schema.loadClass(TrackClass);
+const Track = mongoose.model('Track', schema);
 module.exports = Track;
