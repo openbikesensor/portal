@@ -1,7 +1,6 @@
 const router = require('express').Router();
-const mongoose = require('mongoose');
-const Track = mongoose.model('Track');
 const wrapRoute = require('../../_helpers/wrapRoute');
+const { Track } = require('../../models');
 
 // return a list of tags
 router.get(

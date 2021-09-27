@@ -1,8 +1,7 @@
 const crypto = require('crypto');
-const mongoose = require('mongoose');
 const sendEmail = require('../_helpers/send-email');
-const User = mongoose.model('User');
 const config = require('../config');
+const { User } = require('../models');
 
 const baseUrl = config.baseUrl.replace(/\/+$/, '');
 
@@ -113,7 +112,7 @@ async function sendVerificationEmail(account) {
     '<p>Thanks for registering!</p>',
     '<p>Please click the below link to verify your email address:</p>',
     `<p><a href="${verifyUrl}">${verifyUrl}</a></p>`,
-  ].join('\n')
+  ].join('\n');
 
   await sendEmail({
     to: account.email,

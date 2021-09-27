@@ -1,9 +1,7 @@
 const router = require('express').Router();
-const mongoose = require('mongoose');
 const { DateTime } = require('luxon');
 
-const Track = mongoose.model('Track');
-const User = mongoose.model('User');
+const { Track, User } = require('../../models');
 const wrapRoute = require('../../_helpers/wrapRoute');
 const auth = require('../../passport');
 

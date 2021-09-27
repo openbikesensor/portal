@@ -1,15 +1,12 @@
 const fs = require('fs');
 const path = require('path');
 const router = require('express').Router();
-const mongoose = require('mongoose');
-const Track = mongoose.model('Track');
-const Comment = mongoose.model('Comment');
-const User = mongoose.model('User');
+const { Track, User, Comment } = require('../../models');
 const busboy = require('connect-busboy');
 const auth = require('../../passport');
 const { normalizeUserAgent, buildObsver1 } = require('../../logic/tracks');
 const wrapRoute = require('../../_helpers/wrapRoute');
-const {PROCESSING_OUTPUT_DIR} = require('../../paths')
+const { PROCESSING_OUTPUT_DIR } = require('../../paths');
 
 function preloadByParam(target, getValueFromParam) {
   return async (req, res, next, paramValue) => {
@@ -80,7 +77,13 @@ router.get(
     }
 
     const [tracks, tracksCount] = await Promise.all([
-      Track.find(query).sort('-createdAt').limit(Number(limit)).skip(Number(offset)).sort({ createdAt: 'desc' }).populate('author').exec(),
+      Track.find(query)
+        .sort('-createdAt')
+        .limit(Number(limit))
+        .skip(Number(offset))
+        .sort({ createdAt: 'desc' })
+        .populate('author')
+        .exec(),
       Track.countDocuments(query).exec(),
     ]);
 
@@ -183,30 +186,30 @@ router.post(
     // TODO: Stream into temporary file, then move it later.
     const { body, fileInfo } = await getMultipartOrJsonBody(req, (body) => body.track);
 
-    const { body: fileBody, public, ...trackBody } = body
+    const { body: fileBody, public, ...trackBody } = body;
 
     const track = new Track({
       ...trackBody,
       author: req.user,
-      public: public == null ? req.user.areTracksVisibleForAll : Boolean(trackBody.public)
-    })
-    track.customizedTitle = track.title != null
+      public: public == null ? req.user.areTracksVisibleForAll : Boolean(trackBody.public),
+    });
+    track.customizedTitle = track.title != null;
     track.slugify();
 
     if (fileBody) {
-      await track.validateFileBodyUniqueness(fileBody)
+      await track.validateFileBodyUniqueness(fileBody);
       track.uploadedByUserAgent = normalizeUserAgent(req.headers['user-agent']);
       track.originalFileName = fileInfo.body ? fileInfo.body.filename : track.slug + '.csv';
-      await track.writeToOriginalFile(fileBody)
+      await track.writeToOriginalFile(fileBody);
     }
 
-    await track.save()
+    await track.save();
 
     if (fileBody) {
       await track.queueProcessing();
     }
 
-    await track.autoGenerateTitle()
+    await track.autoGenerateTitle();
 
     return res.json({ track: track.toJSONFor(req.user) });
   }),
@@ -237,40 +240,43 @@ router.put(
       return res.sendStatus(403);
     }
 
-    const { body: {body: fileBody, ...trackBody}, fileInfo } = await getMultipartOrJsonBody(req, (body) => body.track);
+    const {
+      body: { body: fileBody, ...trackBody },
+      fileInfo,
+    } = await getMultipartOrJsonBody(req, (body) => body.track);
 
     if (typeof trackBody.title !== 'undefined') {
       track.title = (trackBody.title || '').trim() || null;
-      track.customizedTitle = track.title != null
+      track.customizedTitle = track.title != null;
     }
 
     if (typeof trackBody.description !== 'undefined') {
       track.description = (trackBody.description || '').trim() || null;
     }
 
-    let process = false
+    let process = false;
 
     if (trackBody.public != null) {
       const public = Boolean(trackBody.public);
-      process |= public !== track.public
-      track.public = public
+      process |= public !== track.public;
+      track.public = public;
     }
 
     if (fileBody) {
-      await track.validateFileBodyUniqueness(fileBody)
+      await track.validateFileBodyUniqueness(fileBody);
       track.originalFileName = fileInfo.body ? fileInfo.body.filename : track.slug + '.csv';
       track.uploadedByUserAgent = normalizeUserAgent(req.headers['user-agent']);
-      await track.writeToOriginalFile(fileBody)
-      process = true
+      await track.writeToOriginalFile(fileBody);
+      process = true;
     }
 
     await track.save();
 
     if (process) {
-      await track.queueProcessing()
+      await track.queueProcessing();
     }
 
-    await track.autoGenerateTitle()
+    await track.autoGenerateTitle();
 
     return res.json({ track: track.toJSONFor(req.user) });
   }),
@@ -299,18 +305,17 @@ router.get(
       return res.sendStatus(403);
     }
 
-    await req.track
-      .populate({
-        path: 'comments',
-        populate: {
-          path: 'author',
+    await req.track.populate({
+      path: 'comments',
+      populate: {
+        path: 'author',
+      },
+      options: {
+        sort: {
+          createdAt: 'asc',
         },
-        options: {
-          sort: {
-            createdAt: 'asc',
-          },
-        },
-      });
+      },
+    });
 
     return res.json({
       comments: req.track.comments.map(function (comment) {
@@ -362,33 +367,33 @@ router.get(
       allMeasurements: 'all_measurements.json',
       confirmedMeasurements: 'confirmed_measurements.json',
       track: 'track.json',
-    }
+    };
 
     if (!req.track.isVisibleTo(req.user)) {
       return res.sendStatus(403);
     }
 
-    const result = {}
+    const result = {};
     for (const [key, filename] of Object.entries(FILE_BY_KEY)) {
-      const filePath = path.join(PROCESSING_OUTPUT_DIR, req.track.filePath, filename)
+      const filePath = path.join(PROCESSING_OUTPUT_DIR, req.track.filePath, filename);
 
-      let stats
+      let stats;
 
       try {
-        stats = await fs.promises.stat(filePath)
-      } catch(err) {
-        continue
+        stats = await fs.promises.stat(filePath);
+      } catch (err) {
+        continue;
       }
 
       if (!stats.isFile()) {
         // file does not exist (yet)
-        continue
+        continue;
       }
 
-      const content = await fs.promises.readFile(filePath)
-      const contentJson = JSON.parse(content)
+      const content = await fs.promises.readFile(filePath);
+      const contentJson = JSON.parse(content);
 
-      result[key] = contentJson
+      result[key] = contentJson;
     }
 
     return res.json(result);
@@ -404,8 +409,8 @@ router.get(
       return res.sendStatus(403);
     }
 
-    return res.download(req.track.getOriginalFilePath(), req.track.originalFileName)
-  })
-)
+    return res.download(req.track.getOriginalFilePath(), req.track.originalFileName);
+  }),
+);
 
 module.exports = router;
