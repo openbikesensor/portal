@@ -1,14 +1,12 @@
 import pytz
-from os.path import dirname, join, abspath
+from os.path import join
 from datetime import datetime
 
 from .obscsv import ImportMeasurementsCsv
 
-TESTDATA_DIR = abspath(join(dirname(__file__), '..', '..', '..', 'test-data'))
-
-def test_gps_time():
+def test_gps_time(test_data_dir):
     measurements, statistics = ImportMeasurementsCsv().read(
-        join(TESTDATA_DIR, 'gps-time.csv'),
+        join(test_data_dir, 'gps-time.csv'),
         user_id="dummy",
         dataset_id="dummy",
     )
