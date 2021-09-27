@@ -21,6 +21,7 @@ import csv
 import pytz
 import datetime
 import math
+import gzip
 import sys
 import urllib
 
@@ -99,7 +100,12 @@ class ImportMeasurementsCsv:
     def read_csv(self, filename, user_id, dataset_id, log=sys.stdout):
         measurements = []
         try:
-            with open(filename) as file:
+            if filename.endswith('.gz'):
+                opener = gzip.open(filename, 'rt', encoding='utf-8')
+            else:
+                opener = open(filename)
+
+            with opener as file:
                 reader = csv.reader(file, delimiter=';')
                 line_count = 0
                 metadata_uninitialized = True
