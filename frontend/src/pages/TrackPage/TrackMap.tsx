@@ -85,10 +85,11 @@ function pointStyleFunction(feature, resolution) {
   })
 }
 
-function PointLayer({features, title, visible}) {
-  return <Map.VectorLayer {...{title, visible}} style={pointStyleFunction} source={new VectorSource({features})} />
+function PointLayer({features, title, visible, zIndex}) {
+  return (
+    <Map.VectorLayer {...{title, visible, zIndex}} style={pointStyleFunction} source={new VectorSource({features})} />
+  )
 }
-
 
 const trackStroke = new Stroke({width: 4, color: 'rgb(30,144,255)'})
 const trackLayerStyle = new Style({stroke: trackStroke})
@@ -201,8 +202,7 @@ export default function TrackMap({trackData, show, ...props}: {trackData: TrackD
 
   return (
     <Map {...props}>
-      <Map.BaseLayer
-      zIndex={10} />
+      <Map.BaseLayer zIndex={10} />
       <Map.VectorLayer
         visible
         updateWhileAnimating={false}
@@ -218,8 +218,18 @@ export default function TrackMap({trackData, show, ...props}: {trackData: TrackD
       </Map.GroupLayer>
 
       <Map.GroupLayer title="Untagged Points" fold="close" visible>
-        <PointLayer features={trackPointsUntaggedD1} title="Left Untagged" visible={show.leftUnconfirmed} zIndex={101} />
-        <PointLayer features={trackPointsUntaggedD2} title="Right Untagged" visible={show.rightUnconfirmed} zIndex={101} />
+        <PointLayer
+          features={trackPointsUntaggedD1}
+          title="Left Untagged"
+          visible={show.leftUnconfirmed}
+          zIndex={101}
+        />
+        <PointLayer
+          features={trackPointsUntaggedD2}
+          title="Right Untagged"
+          visible={show.rightUnconfirmed}
+          zIndex={101}
+        />
       </Map.GroupLayer>
 
       <Map.View />
