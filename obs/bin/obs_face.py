@@ -213,6 +213,8 @@ class AnnotationProcess(Process):
         filename_json = os.path.join(self.path_annotated,
                                      os.path.splitext(dataset["filename_relative"])[0] + '.json')
 
+        log.debug("[%s] processing %s", self.process_name, filename_json)
+
         dataset_annotated = None
         do_annotate = True
         if self.skip_if_json_exists and os.path.isfile(filename_json):
@@ -220,12 +222,12 @@ class AnnotationProcess(Process):
             t2 = pathlib.Path(filename_json).stat().st_mtime
 
             if t1 <= t2:
-                log.debug("using cached result: " + filename_json)
+                log.debug("[%s] using cached result from %s ", self.process_name, filename_json)
                 with open(filename_json, 'r') as infile:
                     dataset_annotated = jsons.loads(infile.read())
                 do_annotate = False
             else:
-                log.debug("cached result is outdated")
+                log.debug("[%s] cached result in %s is outdated, recomputing ", self.process_name, filename_json)
 
         if do_annotate:
             filename_log = os.path.join(self.path_annotated,
@@ -246,9 +248,10 @@ class AnnotationProcess(Process):
                     os.makedirs(os.path.dirname(filename_json), exist_ok=True)
                     with open(filename_json, 'w') as outfile:
                         outfile.write(jsons.dumps(dataset_annotated))
+                    log.debug("[%s] wrote annotated results to %s", self.process_name, filename_json)
 
                 except (ValueError, IOError):
-                    log.exception("Annotation failed with error")
+                    log.exception("[%s] Annotation failed with error", self.process_name)
                     dataset_annotated = None
 
         return dataset_annotated
