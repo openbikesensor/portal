@@ -21,6 +21,7 @@ import csv
 import pytz
 import datetime
 import math
+import gzip
 import sys
 import urllib
 
@@ -99,7 +100,12 @@ class ImportMeasurementsCsv:
     def read_csv(self, filename, user_id, dataset_id, log=sys.stdout):
         measurements = []
         try:
-            with open(filename) as file:
+            if filename.endswith('.gz'):
+                opener = gzip.open(filename, 'rt', encoding='utf-8')
+            else:
+                opener = open(filename)
+
+            with opener as file:
                 reader = csv.reader(file, delimiter=';')
                 line_count = 0
                 metadata_uninitialized = True
@@ -124,7 +130,7 @@ class ImportMeasurementsCsv:
                             extractors = self.create_field_extractors_v2(line, metadata, format_id)
                             format_uninitialized = False
                         else:
-                            raise ValueError("unsupported format {}".format(metadata["OBSDataFormat"][0]))
+                            raise ValueError(f"unsupported format {format_id!r}")
                     else:
                         measurement = {
                             "user_id": user_id,
@@ -145,26 +151,25 @@ class ImportMeasurementsCsv:
 
     @staticmethod
     def identify_format(header, metadata):
-        if "OBSDataFormat" in metadata:
-            format_version = metadata["OBSDataFormat"][0]
-        else:
+        try:
+            return metadata["OBSDataFormat"][0]
+        except LookupError:
             # this is a pre-v2 version
+            if "Left" in header and "Right" in header:
+                return "1.3" if "insidePrivacyArea" in header else "1.2"
+
             if "Case" in header and "Lid" in header:
-                if not ("Course" in header and "Speed" in header):
-                    format_version = "1.0"
-                else:
-                    format_version = "1.1"
-            elif "Left" in header and "Right" in header:
-                if not ("insidePrivacyArea" in header):
-                    format_version = "1.2"
-                else:
-                    format_version = "1.3"
-            else:
-                raise ValueError("unknown file format")
-        return format_version
+                return "1.1" if "Course" in header and "Speed" in header else "1.0"
+
+        raise ValueError("unknown file format")
 
     def correct_gps_time(self, measurements, metadata):
-        if metadata is None or metadata.get('TimeZone') != ['GPS']:
+        try:
+            timezone = metadata['TimeZone'][0]
+        except LookupError:
+            return
+
+        if timezone != 'GPS':
             return
 
         for m in measurements:
@@ -433,7 +438,11 @@ class ImportMeasurementsCsv:
         return extractors
 
     def create_field_extractors_v2(self, header, metadata, format_id):
-        raw_n_max = int(metadata["MaximumMeasurementsPerLine"][0])
+        try:
+            raw_n_max = int(metadata["MaximumMeasurementsPerLine"][0])
+        except (LookupError, ValueError):
+            raw_n_max = max(1, *(int(x[3:]) for x in header if x[:3] in ('Rus','Lus','Tms')))
+
         extractors = [
             CsvExtractor(["Date", "Time"], "time",
                          lambda date, time:

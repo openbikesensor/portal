@@ -3,6 +3,7 @@ import logging
 import os
 import tempfile
 import json
+from functools import partial
 
 from obs.face.importer import ImportMeasurementsCsv
 from obs.face.annotate import AnnotateMeasurements
@@ -35,8 +36,17 @@ def main():
         dest="cache_dir",
         help="path where the visualization data will be stored",
     )
+    parser.add_argument(
+        "--compress",
+        action="store",
+        default="no",
+        choices=['no', 'gzip'],
+        help="which compression method to use when writing files",
+    )
 
     args = parser.parse_args()
+
+    args.open = partial(open_compressed, args)
 
     if args.cache_dir is None:
         with tempfile.TemporaryDirectory() as cache_dir:
@@ -44,6 +54,16 @@ def main():
             process(args)
     else:
         process(args)
+
+
+def open_compressed(args, filename, mode='rt', *pargs, auto_change_name=True, **kwargs):
+    if args.compress == 'gzip':
+        import gzip
+        if auto_change_name and mode[0] in 'wa':
+            filename += '.gz'
+        return gzip.open(filename, mode, *pargs, **kwargs)
+    else:
+        return open(filename, mode, *pargs, **kwargs)
 
 
 def process(args):
@@ -58,7 +78,7 @@ def process(args):
     filename_log = os.path.join(args.output, f"{dataset_id}.log")
 
     log.info("Annotating and filtering CSV file")
-    with open(filename_log, "w") as logfile:
+    with args.open(filename_log, "wt") as logfile:
         measurements, statistics = ImportMeasurementsCsv().read(
             filename_input,
             user_id="dummy",
@@ -67,6 +87,7 @@ def process(args):
         )
         measurements = AnnotateMeasurements(osm, cache_dir=args.cache_dir).annotate(measurements)
         confirmed_measurements = MeasurementFilter().filter(measurements, log=logfile)
+        valid_measurements = MeasurementFilter(remove_unconfirmed=False).filter(measurements, log=logfile)
 
     # write out
     confirmed_measurements_json = {
@@ -102,7 +123,7 @@ def process(args):
                     "confirmed": m in confirmed_measurements,
                 },
             }
-            for m in measurements
+            for m in valid_measurements
             if m["distance_overtaker"] or m["distance_stationary"]
         ],
     }
@@ -112,7 +133,7 @@ def process(args):
         "geometry": {
             "type": "LineString",
             "coordinates": [
-                [m["latitude"], m["longitude"]] for m in measurements
+                [m["latitude"], m["longitude"]] for m in valid_measurements
             ],
         },
     }
@@ -134,7 +155,7 @@ def process(args):
         ("track.json", track_json),
         ("statistics.json", statistics_json),
     ]:
-        with open(os.path.join(args.output, output_filename), 'w') as fp:
+        with args.open(os.path.join(args.output, output_filename), 'wt') as fp:
             json.dump(data, fp, indent=4)
 
 if __name__ == "__main__":
