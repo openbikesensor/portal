@@ -1,5 +1,7 @@
 const path = require('path');
 
+const API_ROOT_DIR = path.resolve(__dirname, '../');
+
 const DATA_DIR = process.env.DATA_DIR || path.resolve(__dirname, '../../data/');
 
 // Contains the subtree for processing files
@@ -23,4 +25,4 @@ module.exports = {
   PROCESSING_DIR_PRIVATE,
   TRACKS_DIR,
   OBS_FACE_CACHE_DIR,
-}
+};
