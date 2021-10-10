@@ -141,10 +141,10 @@ updates are ignored until the cache is flushed by deleting all files in the
 -p PARALLEL, --parallel PARALLEL
                       disables parallel processing if 0, otherwise defines the number of worker processes
 --recompute           always recompute annotation results
---anonymize-user-id remove|hashed|full
-                      Choose whether to "remove" user ID (default), store only "hashed" versions (requires --anonymization-hash-salt) or include the "full" user ID in outputs.
---anonymize-measurement-id remove|hashed|full
-                      Choose whether to "remove" measurement ID, store only "hashed" versions (requires --anonymization-hash-salt) or include the "full" measurement ID in outputs.
+--anonymize-user-id remove|hashed|keep
+                      Choose whether to "remove" user ID (default), store only "hashed" versions (requires --anonymization-hash-salt) or "keep" the full user ID in outputs.
+--anonymize-measurement-id remove|hashed|keep
+                      Choose whether to "remove" measurement ID, store only "hashed" versions (requires --anonymization-hash-salt) or "keep" the full measurement ID in outputs.
 --anonymization-hash-salt ANONYMIZATION_HASH_SALT
                       A salt/seed for use when hashing user or measurement IDs. Arbitrary string, but kept secret.
 

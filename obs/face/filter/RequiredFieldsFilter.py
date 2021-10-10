@@ -17,10 +17,27 @@
 # along with the OpenBikeSensor Scripts Collection.  If not, see
 # <http://www.gnu.org/licenses/>.
 
+import logging
+
 from .MeasurementFilter import MeasurementFilter
-from .PrivacyFilter import PrivacyFilter, AnonymizationMode
-from .ChainFilter import ChainFilter
-from .RequiredFieldsFilter import RequiredFieldsFilter
-from .DistanceMeasuredFilter import DistanceMeasuredFilter
-from .ConfirmedFilter import ConfirmedFilter
-from .PrivacyZonesFilter import PrivacyZonesFilter, PrivacyZone
+
+module_log = logging.getLogger(__name__)
+
+
+class RequiredFieldsFilter(MeasurementFilter):
+    def __init__(self):
+        self.required_fields = [
+            "time",
+            "longitude",
+            "latitude",
+        ]
+
+    def filter(self, measurements, log=module_log):
+        input_size = len(measurements)
+        result = [
+            measurement
+            for measurement in measurements
+            if all(measurement.get(field) is not None for field in self.required_fields)
+        ]
+        log.info("Removed %s invalid measurements", input_size - len(result))
+        return result

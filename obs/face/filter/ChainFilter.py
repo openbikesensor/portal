@@ -17,10 +17,20 @@
 # along with the OpenBikeSensor Scripts Collection.  If not, see
 # <http://www.gnu.org/licenses/>.
 
+import sys
+import logging
+
 from .MeasurementFilter import MeasurementFilter
-from .PrivacyFilter import PrivacyFilter, AnonymizationMode
-from .ChainFilter import ChainFilter
-from .RequiredFieldsFilter import RequiredFieldsFilter
-from .DistanceMeasuredFilter import DistanceMeasuredFilter
-from .ConfirmedFilter import ConfirmedFilter
-from .PrivacyZonesFilter import PrivacyZonesFilter, PrivacyZone
+
+module_log = logging.getLogger(__name__)
+
+
+class ChainFilter(MeasurementFilter):
+    def __init__(self, *filters):
+        self.filters = filters
+
+    def filter(self, measurements, log=module_log):
+        for filter_ in self.filters:
+            measurements = filter_.filter(measurements, log)
+        log.debug("Applied %s filters.", len(self.filters))
+        return measurements

@@ -17,10 +17,26 @@
 # along with the OpenBikeSensor Scripts Collection.  If not, see
 # <http://www.gnu.org/licenses/>.
 
+import sys
+import logging
+
 from .MeasurementFilter import MeasurementFilter
-from .PrivacyFilter import PrivacyFilter, AnonymizationMode
-from .ChainFilter import ChainFilter
-from .RequiredFieldsFilter import RequiredFieldsFilter
-from .DistanceMeasuredFilter import DistanceMeasuredFilter
-from .ConfirmedFilter import ConfirmedFilter
-from .PrivacyZonesFilter import PrivacyZonesFilter, PrivacyZone
+
+module_log = logging.getLogger(__name__)
+
+
+class DistanceMeasuredFilter(MeasurementFilter):
+    def filter(self, measurements, log=module_log):
+        input_size = len(measurements)
+        result = [
+            measurement
+            for measurement in measurements
+            if measurement.get("distance_overtaker") is not None
+            or measurement.get("distance_stationary") is not None
+        ]
+        log.info(
+            "Removed %s measurements without distance, kept %s confirmed.",
+            input_size - len(result),
+            len(result),
+        )
+        return result
