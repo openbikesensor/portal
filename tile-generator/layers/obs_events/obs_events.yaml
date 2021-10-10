@@ -1,0 +1,29 @@
+layer:
+  id: "obs_events"
+  description: |
+      Single overtaking events with attached measurements
+  buffer_size: 4
+  fields:
+    distance_overtaker: |
+      Overtaker distance (left side in right side traffic), in meters.
+    distance_stationary: |
+      Distance to stationary traffic (right side in right side traffic), in meters.
+    direction: |
+      -1 for driving backwards, 1 for forwards
+    way_id: |
+      The ID of the OSM way (road segment) that was determined for this event.
+    course: |
+      Direction of travel, as reported by GPS, in degree from North.
+    speed: |
+      Speed of travel, as reported by GPS, in meters per second (?).
+  defaults:
+    srs: EPSG:3785
+  datasource:
+    srid: 3857
+    geometry_field: geometry
+    key_field: event_id
+    key_field_as_attribute: no
+    query: (SELECT event_id, geometry, distance_overtaker, distance_stationary, direction, course, speed, way_id FROM layer_obs_events(!bbox!, z(!scale_denominator!))) AS t
+
+schema:
+  - ./layer.sql

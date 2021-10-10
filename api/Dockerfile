@@ -12,7 +12,10 @@ RUN echo update-notifier=false >> ~/.npmrc
 RUN npm ci
 
 ADD scripts /opt/obs/api/scripts/
-RUN cd scripts && pip install -e .
+ADD tools /opt/obs/api/tools/
+ADD requirements.txt /opt/obs/api/
+RUN pip install -r requirements.txt
+RUN pip install -e ./scripts
 
 ADD views /opt/obs/api/views/
 ADD src /opt/obs/api/src/

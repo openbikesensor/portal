@@ -66,7 +66,7 @@ Compose](https://docs.docker.com/compose/install/) onto your machine, and
 cloning the repository, all you need to do is:
 
 ```bash
-docker-compose up -d --build
+docker-compose up -d --build frontend
 ```
 
 If this does not work, please open an issue and describe the problem you're
@@ -97,7 +97,7 @@ somebody to help you ;)
 You are advised not to use the dockerized mongodb service and instead do a
 proper MongoDB setup on a server that is backed up and secured.
 
-You can run the API in docker, but it is prefered to run it as a restricted
+You can run the application in docker, but it is prefered to run it as a restricted
 user in its own directory somewhere where it cannot escape ;)
 
 The frontend should be built using `npm run build` and then served from a
@@ -168,3 +168,10 @@ to the logged email content that *would* have been sent, check your docker log:
 ```bash
 docker-compose logs -f api
 ```
+
+## Tileserver generation
+
+The above instructions do not include the serving of vector tiles with the
+collected data. That is to be set up separately. Please follow the instructions
+in [tile-generator](./tile-generator/README.md).
+

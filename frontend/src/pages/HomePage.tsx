@@ -4,21 +4,37 @@ import {Message, Grid, Loader, Header, Item} from 'semantic-ui-react'
 import {useObservable} from 'rxjs-hooks'
 import {of, from} from 'rxjs'
 import {map, switchMap} from 'rxjs/operators'
-import {fromLonLat} from 'ol/proj'
 
 import api from 'api'
-import {Stats, Map, Page, RoadsLayer} from 'components'
+import {Stats, Page} from 'components'
+import {useConfig} from 'config'
 
 import {TrackListItem} from './TracksPage'
 import styles from './HomePage.module.scss'
 
+import 'ol/ol.css';
+import {obsRoads} from '../mapstyles'
+import ReactMapGl from 'react-map-gl'
+
 function WelcomeMap() {
+  const config = useConfig()
+  const mapStyle = React.useMemo(() => obsRoads(), [])
+  const [viewport, setViewport] = React.useState({
+    longitude: 0,
+    latitude: 0,
+    zoom: 0,
+  });
+
+  React.useEffect(() => {
+    if (config?.mapHome)  {
+    setViewport(config.mapHome)
+    }
+  }, [config])
+
   return (
-    <Map className={styles.welcomeMap}>
-      <RoadsLayer />
-      <Map.BaseLayer />
-      <Map.View />
-    </Map>
+    <div className={styles.welcomeMap}>
+      <ReactMapGl mapStyle={mapStyle} width="100%" height="100%" onViewportChange={setViewport } {...viewport } />
+    </div>
   )
 }
 

@@ -30,6 +30,10 @@ const configSchema = Joi.object({
     debug: Joi.boolean().default(process.env.NODE_ENV !== 'production'),
   }).required(),
 
+  postgres: Joi.object({
+    url: Joi.string().required(),
+  }).required(),
+
   redisUrl: Joi.string().required(),
 
   oAuth2Clients: Joi.array()

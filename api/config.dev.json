@@ -6,7 +6,10 @@
   "mail": false,
   "mongodb": {
     "url": "mongodb://mongo/obsTest",
-    "debug": true
+    "debug": false
+  },
+  "postgres": {
+    "url": "postgresql+asyncpg://obs:obs@postgres/obs"
   },
   "redisUrl": "redis://redis",
   "oAuth2Clients": [

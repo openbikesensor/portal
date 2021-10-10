@@ -8,8 +8,8 @@ export type UserProfile = {
 
 export type TrackData = {
   track: Feature<LineString>,
-  allMeasurements: FeatureCollection,
-  confirmedMeasurements: FeatureCollection,
+  measurements: FeatureCollection,
+  overtakingEvents: FeatureCollection,
 }
 
 export type TrackStatistics = {

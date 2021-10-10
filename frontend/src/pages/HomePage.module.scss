@@ -1,6 +1,7 @@
 .welcomeMap {
   height: 60rem;
   max-height: 70vh;
+  position: relative;
 
   @media screen and (max-width: 767px) {
     margin: -35px -32px 0 -32px;

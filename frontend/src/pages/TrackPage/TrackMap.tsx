@@ -155,7 +155,7 @@ export default function TrackMap({trackData, show, ...props}: {trackData: TrackD
     const trackPointsD2: Feature<Point>[] = []
     const trackPointsUntaggedD1: Feature<Point>[] = []
     const trackPointsUntaggedD2: Feature<Point>[] = []
-    const filteredPoints: TrackPoint[] = trackData?.allMeasurements?.features.filter(isValidTrackPoint) ?? []
+    const filteredPoints: TrackPoint[] = trackData?.measurements?.features.filter(isValidTrackPoint) ?? []
 
     for (const feature of filteredPoints) {
       const {
@@ -198,7 +198,7 @@ export default function TrackMap({trackData, show, ...props}: {trackData: TrackD
 
     const viewExtent = points.length ? trackVectorSource.getExtent() : null
     return {trackVectorSource, trackPointsD1, trackPointsD2, trackPointsUntaggedD1, trackPointsUntaggedD2, viewExtent}
-  }, [trackData?.allMeasurements?.features])
+  }, [trackData?.measurements?.features])
 
   return (
     <Map {...props}>

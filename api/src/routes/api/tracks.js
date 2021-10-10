@@ -364,8 +364,8 @@ router.get(
   auth.optional,
   wrapRoute(async (req, res) => {
     const FILE_BY_KEY = {
-      allMeasurements: 'all_measurements.json',
-      confirmedMeasurements: 'confirmed_measurements.json',
+      measurements: 'measurements.json',
+      overtakingEvents: 'overtakingEvents.json',
       track: 'track.json',
     };
 

@@ -2,6 +2,11 @@ import React from 'react'
 
 interface Config {
   apiUrl: string
+  mapHome: {
+    latitude: number
+    longitude: number
+    zoom: number
+  }
 }
 
 async function loadConfig(): Promise<Config> {

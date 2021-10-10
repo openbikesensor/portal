@@ -22,7 +22,7 @@ proj4.defs(
 )
 register(proj4)
 
-const MapContext = React.createContext()
+export const MapContext = React.createContext()
 const MapLayerContext = React.createContext()
 
 export function Map({children, ...props}) {
@@ -162,6 +162,7 @@ Map.GroupLayer = GroupLayer
 Map.TileLayer = TileLayer
 Map.VectorLayer = VectorLayer
 Map.View = View
+Map.Layer = Layer
 Map.BaseLayer = BaseLayer
 
 export default Map

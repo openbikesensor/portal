@@ -6,6 +6,7 @@ const queue = require('./queue');
 require('./db');
 const { Track } = require('./models');
 const { API_ROOT_DIR, PROCESSING_DIR, OBS_FACE_CACHE_DIR, PROCESSING_OUTPUT_DIR } = require('./paths');
+const config = require('./config');
 
 queue.process('processTrack', async (job) => {
   const track = await Track.findById(job.data.trackId);
@@ -47,6 +48,7 @@ queue.process('processTrack', async (job) => {
     const settingsFilePath = path.join(inputDirectory, 'track-settings.json');
     console.log(`[${track.slug}] Create settings at ${settingsFilePath}`);
     const settings = {
+      trackId: String(track._id),
       settingsGeneratedAt: new Date().getTime(),
       filters: [
         // TODO: Add actual privacy zones from user database
@@ -69,11 +71,10 @@ queue.process('processTrack', async (job) => {
 
     // TODO: Generate track transformation settings (privacy zones etc)
     // const settingsFilePath = path.join(inputDirectory, 'track-settings.json');
-    //
     const child = spawn(
-      'python',
+      'python3',
       [
-        path.join(API_ROOT_DIR, 'src', 'process_track.py'),
+        path.join(API_ROOT_DIR, 'tools', 'process_track.py'),
         '--input',
         inputFilePath,
         '--output',
@@ -87,6 +88,9 @@ queue.process('processTrack', async (job) => {
       ],
       {
         cwd: PROCESSING_DIR,
+        env: {
+          POSTGRES_URL: config.postgres.url,
+        },
       },
     );
 

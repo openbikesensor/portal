@@ -17,6 +17,9 @@
     "url": "mongodb://mongo/obs",
     "debug": false
   },
+  "postgres": {
+    "url": "postgresql+asyncpg://user:pass@host/dbname"
+  },
   "redisUrl": "redis://redis",
   "oAuth2Clients": [
     {
