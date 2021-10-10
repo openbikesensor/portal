@@ -17,6 +17,7 @@
 # along with the OpenBikeSensor Scripts Collection.  If not, see
 # <http://www.gnu.org/licenses/>.
 
+import sys
 import logging
 
 from .MeasurementFilter import MeasurementFilter
@@ -24,20 +25,18 @@ from .MeasurementFilter import MeasurementFilter
 module_log = logging.getLogger(__name__)
 
 
-class RequiredFieldsFilter(MeasurementFilter):
-    def __init__(self):
-        self.required_fields = [
-            "time",
-            "longitude",
-            "latitude",
-        ]
-
+class DistanceMeasuredFilter(MeasurementFilter):
     def filter(self, measurements, log=module_log):
         input_size = len(measurements)
         result = [
             measurement
             for measurement in measurements
-            if all(measurement.get(field) is not None for field in self.required_fields)
+            if measurement.get("distance_overtaker") is not None
+            or measurement.get("distance_stationary") is not None
         ]
-        log.info("Removed %s invalid measurements", input_size - len(result))
+        log.info(
+            "Removed %s measurements without distance, kept %s confirmed.",
+            input_size - len(result),
+            len(result),
+        )
         return result

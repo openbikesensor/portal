@@ -21,5 +21,6 @@ from .MeasurementFilter import MeasurementFilter
 from .PrivacyFilter import PrivacyFilter, AnonymizationMode
 from .ChainFilter import ChainFilter
 from .RequiredFieldsFilter import RequiredFieldsFilter
+from .DistanceMeasuredFilter import DistanceMeasuredFilter
 from .ConfirmedFilter import ConfirmedFilter
 from .PrivacyZonesFilter import PrivacyZonesFilter, PrivacyZone

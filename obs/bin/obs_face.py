@@ -32,7 +32,7 @@ import coloredlogs
 
 from obs.face.importer import ImportMeasurementsCsv
 from obs.face.annotate import AnnotateMeasurements
-from obs.face.filter import RequiredFieldsFilter
+from obs.face.filter import RequiredFieldsFilter, ChainFilter, DistanceMeasuredFilter
 from obs.face.geojson import ExportMeasurements, ExportRoadAnnotation
 from obs.face.osm import DataSource as OSMDataSource
 from obs.face.filter import PrivacyFilter, AnonymizationMode
@@ -81,7 +81,11 @@ def process_datasets(datasets, path_annotated, osm, skip_if_json_exists=True, pa
     log.info("annotating datasets")
 
     annotator = AnnotateMeasurements(osm, cache_dir=path_cache)
-    measurement_filter = RequiredFieldsFilter()
+    measurement_filter = ChainFilter(
+        RequiredFieldsFilter(),
+        DistanceMeasuredFilter(),
+    )
+
     importer = ImportMeasurementsCsv(right_hand_traffic=right_hand_traffic)
 
     input_queue = Queue()
