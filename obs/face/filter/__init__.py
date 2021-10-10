@@ -22,3 +22,4 @@ from .PrivacyFilter import PrivacyFilter, AnonymizationMode
 from .ChainFilter import ChainFilter
 from .RequiredFieldsFilter import RequiredFieldsFilter
 from .ConfirmedFilter import ConfirmedFilter
+from .PrivacyZonesFilter import PrivacyZonesFilter
