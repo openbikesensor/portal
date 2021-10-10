@@ -6,7 +6,15 @@ import json
 
 from obs.face.importer import ImportMeasurementsCsv
 from obs.face.annotate import AnnotateMeasurements
-from obs.face.filter import PrivacyFilter, ChainFilter, AnonymizationMode, RequiredFieldsFilter, ConfirmedFilter
+from obs.face.filter import (
+    PrivacyFilter,
+    ChainFilter,
+    AnonymizationMode,
+    RequiredFieldsFilter,
+    ConfirmedFilter,
+    PrivacyZone,
+    PrivacyZonesFilter,
+)
 from obs.face.osm import DataSource as OSMDataSource
 
 log = logging.getLogger(__name__)
@@ -33,6 +41,12 @@ def main():
         dest="cache_dir",
         help="path where the visualization data will be stored",
     )
+    parser.add_argument(
+        "--settings",
+        type=argparse.FileType("rt", encoding="utf-8"),
+        default=None,
+        help="path where the visualization data will be stored",
+    )
 
     args = parser.parse_args()
 
@@ -53,6 +67,9 @@ def process(args):
 
     os.makedirs(args.output, exist_ok=True)
 
+    log.info("Loading settings")
+    settings = json.load(args.settings)
+
     log.info("Annotating and filtering CSV file")
     measurements, statistics = ImportMeasurementsCsv().read(
         filename_input,
@@ -60,16 +77,38 @@ def process(args):
         dataset_id=dataset_id,
     )
 
-    measurements = AnnotateMeasurements(osm, cache_dir=args.cache_dir).annotate(measurements)
+    measurements = AnnotateMeasurements(osm, cache_dir=args.cache_dir).annotate(
+        measurements
+    )
 
-    valid_measurements = ChainFilter(
+    filters_from_settings = []
+    for filter_description in settings.get("filters", []):
+        filter_type = filter_description.get("type")
+        if filter_type == "PrivacyZonesFilter":
+            privacy_zones = [
+                PrivacyZone(
+                    latitude=zone.get("latitude"),
+                    longitude=zone.get("longitude"),
+                    radius=zone.get("radius"),
+                )
+                for zone in filter_description.get("config", {}).get("privacyZones", [])
+            ]
+            filters_from_settings.append(PrivacyZonesFilter(privacy_zones))
+        else:
+            log.warning("Ignoring unknown filter type %r in settings file", filter_type)
+
+    input_filter = ChainFilter(
         RequiredFieldsFilter(),
         PrivacyFilter(
-          user_id_mode=AnonymizationMode.REMOVE,
-          measurement_id_mode=AnonymizationMode.REMOVE,
+            user_id_mode=AnonymizationMode.REMOVE,
+            measurement_id_mode=AnonymizationMode.REMOVE,
         ),
-    ).filter(measurements, log=log)
-    confirmed_measurements = ConfirmedFilter().filter(valid_measurements, log=log)
+        *filters_from_settings,
+    )
+    confirmed_filter = ConfirmedFilter()
+
+    valid_measurements = input_filter.filter(measurements, log=log)
+    confirmed_measurements = confirmed_filter.filter(valid_measurements, log=log)
 
     # write out
     confirmed_measurements_json = {
@@ -121,14 +160,14 @@ def process(args):
     }
 
     statistics_json = {
-        "recordedAt": statistics['t_min'].isoformat(),
-        "recordedUntil": statistics['t_max'].isoformat(),
-        "duration": statistics['t'],
-        "length": statistics['d'],
-        "segments": statistics['n_segments'],
-        "numEvents": statistics['n_confirmed'],
-        "numMeasurements": statistics['n_measurements'],
-        "numValid": statistics['n_valid'],
+        "recordedAt": statistics["t_min"].isoformat(),
+        "recordedUntil": statistics["t_max"].isoformat(),
+        "duration": statistics["t"],
+        "length": statistics["d"],
+        "segments": statistics["n_segments"],
+        "numEvents": statistics["n_confirmed"],
+        "numMeasurements": statistics["n_measurements"],
+        "numValid": statistics["n_valid"],
     }
 
     for output_filename, data in [
@@ -137,8 +176,9 @@ def process(args):
         ("track.json", track_json),
         ("statistics.json", statistics_json),
     ]:
-        with open(os.path.join(args.output, output_filename), 'w') as fp:
+        with open(os.path.join(args.output, output_filename), "w") as fp:
             json.dump(data, fp, indent=4)
+
 
 if __name__ == "__main__":
     main()

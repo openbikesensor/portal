@@ -39,9 +39,24 @@ queue.process('processTrack', async (job) => {
 
     // copy original file to processing dir
     const inputFilePath = path.join(inputDirectory, 'track.csv');
-    const originalFilePath = track.getOriginalFilePath()
+    const originalFilePath = track.getOriginalFilePath();
     console.log(`[${track.slug}] Copy ${originalFilePath} to ${inputFilePath}`);
     await fs.promises.copyFile(originalFilePath, inputFilePath);
+
+    // create track settings file
+    const settingsFilePath = path.join(inputDirectory, 'track-settings.json');
+    console.log(`[${track.slug}] Create settings at ${settingsFilePath}`);
+    const settings = {
+      settingsGeneratedAt: new Date().getTime(),
+      filters: [
+        // TODO: Add actual privacy zones from user database
+        /* {
+          type: 'PrivacyZonesFilter',
+          config: { privacyZones: [{ longitude: 10, latitude: 10, radius: 250 }] },
+        }, */
+      ],
+    };
+    await fs.promises.writeFile(settingsFilePath, JSON.stringify(settings));
 
     // Create output directory
     const outputDirectory = path.join(PROCESSING_OUTPUT_DIR, filePath);
@@ -54,6 +69,7 @@ queue.process('processTrack', async (job) => {
 
     // TODO: Generate track transformation settings (privacy zones etc)
     // const settingsFilePath = path.join(inputDirectory, 'track-settings.json');
+    //
     const child = spawn(
       'python',
       [
@@ -64,6 +80,8 @@ queue.process('processTrack', async (job) => {
         outputDirectory,
         '--path-cache',
         OBS_FACE_CACHE_DIR,
+        '--settings',
+        settingsFilePath,
         // '--anonymize-user-id', 'remove',
         // '--anonymize-measurement-id', 'remove',
       ],
@@ -103,7 +121,7 @@ queue.process('processTrack', async (job) => {
 
     // Maybe we have found out the recording date, regenerate the automatic
     // title (if not yet manually set)
-    await track.autoGenerateTitle()
+    await track.autoGenerateTitle();
   } catch (err) {
     console.error('Processing failed:', err);
     track.processingLog += String(err) + '\n' + err.stack + '\n';

@@ -19,6 +19,7 @@ const TRACKS_DIR = path.join(DATA_DIR, 'tracks');
 const OBS_FACE_CACHE_DIR = path.join(DATA_DIR, 'obs-face-cache');
 
 module.exports = {
+  API_ROOT_DIR,
   DATA_DIR,
   PROCESSING_DIR,
   PROCESSING_OUTPUT_DIR,
