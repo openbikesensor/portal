@@ -18,7 +18,6 @@
 # <http://www.gnu.org/licenses/>.
 
 from enum import Enum
-from dataclasses import dataclass
 import hashlib
 import logging
 from typing import List
@@ -31,14 +30,20 @@ from .MeasurementFilter import MeasurementFilter
 module_log = logging.getLogger(__name__)
 
 
-@dataclass
 class PrivacyZone:
     latitude: float
     longitude: float
-    radius: float = 200 # in meters
+    radius: float = 200  # in meters
 
-    def contains(self, lat: float, lng:float) -> bool:
-        return geodesic((lat, lng), (self.latitude, self.longitude)).meters <= self.radius
+    def __init__(self, latitude, longitude, radius):
+        self.latitude = latitude
+        self.longitude = longitude
+        self.radius = radius
+
+    def contains(self, lat: float, lng: float) -> bool:
+        return (
+            geodesic((lat, lng), (self.latitude, self.longitude)).meters <= self.radius
+        )
 
 
 class PrivacyZonesFilter(MeasurementFilter):
@@ -52,7 +57,10 @@ class PrivacyZonesFilter(MeasurementFilter):
         # - maybe do not filter zones that are just being passed through without stop
         def _process():
             for measurement in measurements:
-                in_zone = any(zone.contains(measurement['latitude'], measurement['longitude']) for zone in self.privacy_zones)
+                in_zone = any(
+                    zone.contains(measurement["latitude"], measurement["longitude"])
+                    for zone in self.privacy_zones
+                )
                 if not in_zone:
                     yield measurement
 
