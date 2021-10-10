@@ -109,27 +109,28 @@ class TileSource:
         return tiles
 
     def get_required_tiles(self, lat, lon, zoom, extend=0):
+        # extract only valid coordinates
+        lat_lon = [(lat_, lon_) for lat_, lon_ in zip(lat, lon) if lat_ and lon_]
+
         # derive tolerance, measured in degree
-        i = len(lat) // 2
-        s_lat, s_lon = LocalMap.get_scale_at(lat[i], lon[i])
+        i = len(lat_lon) // 2
+        s_lat, s_lon = LocalMap.get_scale_at(lat_lon[i][0], lat_lon[i][1])
         tol_lat = s_lat * extend
         tol_lon = s_lon * extend
 
         tiles = set()
 
         # go through each point in the lat-lon-list
-        for lat_, lon_ in zip(lat, lon):
-            # make sure it's a valid coordinate
-            if lat_ and lon_:
-                # consider the corners of a box, centered at the point (lat_, lon_) and size 2 tol_lat x 2 tol_lan
-                for lat__ in (lat_ - tol_lat, lat_ + tol_lat):
-                    for lon__ in (lon_ - tol_lon, lon_ + tol_lon):
-                        # make sure it's a valid coordinate
-                        if -90 <= lat__ <= +90 and -180.0 <= lon__ <= +180:
-                            # get tile position
-                            x, y = self.latlon2tile(zoom, lat_, lon_)
-                            # and add to set
-                            tiles.add((zoom, x, y))
+        for lat_, lon_ in lat_lon:
+            # consider the corners of a box, centered at the point (lat_, lon_) and size 2 tol_lat x 2 tol_lan
+            for lat__ in (lat_ - tol_lat, lat_ + tol_lat):
+                for lon__ in (lon_ - tol_lon, lon_ + tol_lon):
+                    # make sure it's a valid coordinate
+                    if -90 <= lat__ <= +90 and -180.0 <= lon__ <= +180:
+                        # get tile position
+                        x, y = self.latlon2tile(zoom, lat_, lon_)
+                        # and add to set
+                        tiles.add((zoom, x, y))
 
         return tiles
 
