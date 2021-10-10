@@ -5,7 +5,7 @@ interface Config {
 }
 
 async function loadConfig(): Promise<Config> {
-  const response = await fetch('./config.json')
+  const response = await fetch(__webpack_public_path__ + 'config.json')
   const config = await response.json()
   return config
 }
