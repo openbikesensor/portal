@@ -5,7 +5,7 @@ const { spawn } = require('child_process');
 const queue = require('./queue');
 require('./db');
 const { Track } = require('./models');
-const { PROCESSING_DIR, OBS_FACE_CACHE_DIR, PROCESSING_OUTPUT_DIR } = require('./paths');
+const { API_ROOT_DIR, PROCESSING_DIR, OBS_FACE_CACHE_DIR, PROCESSING_OUTPUT_DIR } = require('./paths');
 
 queue.process('processTrack', async (job) => {
   const track = await Track.findById(job.data.trackId);
@@ -55,8 +55,9 @@ queue.process('processTrack', async (job) => {
     // TODO: Generate track transformation settings (privacy zones etc)
     // const settingsFilePath = path.join(inputDirectory, 'track-settings.json');
     const child = spawn(
-      'obs-process-track',
+      'python',
       [
+        path.join(API_ROOT_DIR, 'src', 'process_track.py'),
         '--input',
         inputFilePath,
         '--output',
