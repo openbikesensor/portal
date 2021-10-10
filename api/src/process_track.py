@@ -6,10 +6,8 @@ import json
 
 from obs.face.importer import ImportMeasurementsCsv
 from obs.face.annotate import AnnotateMeasurements
-from obs.face.filter import MeasurementFilter
-from obs.face.geojson import ExportMeasurements, ExportRoadAnnotation
+from obs.face.filter import PrivacyFilter, ChainFilter, AnonymizationMode, RequiredFieldsFilter, ConfirmedFilter
 from obs.face.osm import DataSource as OSMDataSource
-from obs.face.filter import PrivacyFilter
 
 log = logging.getLogger(__name__)
 
@@ -55,19 +53,23 @@ def process(args):
 
     os.makedirs(args.output, exist_ok=True)
 
-    filename_log = os.path.join(args.output, f"{dataset_id}.log")
-
     log.info("Annotating and filtering CSV file")
-    with open(filename_log, "w") as logfile:
-        measurements, statistics = ImportMeasurementsCsv().read(
-            filename_input,
-            user_id="dummy",
-            dataset_id=dataset_id,
-            log=logfile,
-        )
-        measurements = AnnotateMeasurements(osm, cache_dir=args.cache_dir).annotate(measurements)
-        confirmed_measurements = MeasurementFilter().filter(measurements, log=logfile)
-        valid_measurements = MeasurementFilter(remove_unconfirmed=False).filter(measurements, log=logfile)
+    measurements, statistics = ImportMeasurementsCsv().read(
+        filename_input,
+        user_id="dummy",
+        dataset_id=dataset_id,
+    )
+
+    measurements = AnnotateMeasurements(osm, cache_dir=args.cache_dir).annotate(measurements)
+
+    valid_measurements = ChainFilter(
+        RequiredFieldsFilter(),
+        PrivacyFilter(
+          user_id_mode=AnonymizationMode.REMOVE,
+          measurement_id_mode=AnonymizationMode.REMOVE,
+        ),
+    ).filter(measurements, log=log)
+    confirmed_measurements = ConfirmedFilter().filter(valid_measurements, log=log)
 
     # write out
     confirmed_measurements_json = {
