@@ -258,7 +258,7 @@ class AnnotationProcess(Process):
             file_log.addHandler(stream_handler)
             file_log.addFilter(PrefixLogFilter(dataset["filename_relative"] + ": "))
             file_log.parent = log
-            file_log.setLevel(logging.INFO)
+            file_log.setLevel(logging.WARNING)
 
             try:
                 measurements, statistics = self.importer.read(
