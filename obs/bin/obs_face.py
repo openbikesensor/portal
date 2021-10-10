@@ -189,6 +189,15 @@ def combine_statistics(a, b):
     return stats
 
 
+class PrefixLogFilter:
+    def __init__(self, prefix):
+        self.prefix = prefix
+
+    def filter(self, record):
+        record.msg = self.prefix + record.msg
+        return True
+
+
 class AnnotationProcess(Process):
     def __init__(self, process_id, job_queue, result_queue, importer, annotator, measurement_filter, path_annotated,
                  skip_if_json_exists):
@@ -234,29 +243,55 @@ class AnnotationProcess(Process):
                 log.debug("[%s] cached result in %s is outdated, recomputing ", self.process_name, filename_json)
 
         if do_annotate:
-            filename_log = os.path.join(self.path_annotated,
-                                        os.path.splitext(dataset["filename_relative"])[0] + '.log')
+            filename_log = os.path.join(
+                self.path_annotated,
+                os.path.splitext(dataset["filename_relative"])[0] + ".log",
+            )
 
             os.makedirs(os.path.dirname(filename_log), exist_ok=True)
-            with open(filename_log, "w") as logfile:
-                try:
-                    measurements, statistics = self.importer.read(dataset["filename"], user_id=dataset["user_id"],
-                                                                  dataset_id=dataset["filename_relative"],
-                                                                  log=logfile)
-                    measurements = self.annotator.annotate(measurements)
 
-                    measurements = self.measurement_filter.filter(measurements, log=logfile)
+            # Create a per-file logger
+            file_log = logging.Logger(name=dataset["filename_relative"])
+            file_log.addHandler(logging.FileHandler(filename_log, mode="w"))
+            stream_handler = logging.StreamHandler(sys.stderr)
+            stream_handler.setLevel(logging.WARNING)
+            file_log.addHandler(stream_handler)
+            file_log.addFilter(PrefixLogFilter(dataset["filename_relative"] + ": "))
+            file_log.parent = log
+            file_log.setLevel(logging.INFO)
 
-                    dataset_annotated = {"measurements": measurements, "statistics": statistics}
-                    # write out
-                    os.makedirs(os.path.dirname(filename_json), exist_ok=True)
-                    with open(filename_json, 'w') as outfile:
-                        outfile.write(jsons.dumps(dataset_annotated))
-                    log.debug("[%s] wrote annotated results to %s", self.process_name, filename_json)
+            try:
+                measurements, statistics = self.importer.read(
+                    dataset["filename"],
+                    user_id=dataset["user_id"],
+                    dataset_id=dataset["filename_relative"],
+                    log=file_log,
+                )
+                measurements = self.annotator.annotate(measurements)
 
-                except (ValueError, IOError):
-                    log.exception("[%s] Annotation failed with error", self.process_name)
-                    dataset_annotated = None
+                measurements = self.measurement_filter.filter(
+                    measurements, log=file_log
+                )
+
+                dataset_annotated = {
+                    "measurements": measurements,
+                    "statistics": statistics,
+                }
+                # write out
+                os.makedirs(os.path.dirname(filename_json), exist_ok=True)
+                with open(filename_json, "w") as outfile:
+                    outfile.write(jsons.dumps(dataset_annotated))
+                file_log.debug(
+                    "[%s] wrote annotated results to %s",
+                    self.process_name,
+                    filename_json,
+                )
+
+            except (ValueError, IOError):
+                file_log.exception(
+                    "[%s] Annotation failed with error", self.process_name
+                )
+                dataset_annotated = None
 
         return dataset_annotated
 

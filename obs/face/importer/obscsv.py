@@ -22,13 +22,16 @@ import pytz
 import datetime
 import math
 import gzip
-import sys
 import urllib
+import logging
+import textwrap
 
 import numpy as np
 from tzwhere import tzwhere
 from haversine import haversine, Unit
 import gpstime
+
+module_log = logging.getLogger(__name__)
 
 
 from obs.face.mapping import AzimuthalEquidistant as LocalMap
@@ -66,38 +69,40 @@ class ImportMeasurementsCsv:
         if self.correct_timezone:
             self.timezone_lookup = tzwhere.tzwhere(forceTZ=False)
 
-    def read(self, filename, user_id="unknown", dataset_id="unknown", log=sys.stdout):
-        log.write("importing {}\n".format(filename))
+    def read(self, filename, user_id="unknown", dataset_id="unknown", log=module_log):
+        log.debug("Importing: %s", filename)
 
         measurements, metadata = self.read_csv(filename, user_id, dataset_id, log)
         n = len(measurements)
-        log.write("read {} measurements\n".format(len(measurements)))
+        log.debug("read %s measurements", len(measurements))
 
         self.correct_gps_time(measurements, metadata)
 
         if self.correct_timezone:
-            log.write("correcting timezones\n")
+            log.debug("correcting timezones")
             self.correct_measurement_timezones(measurements, log)
 
         if self.derive_missing_velocities:
-            log.write("deriving missing velocities\n")
+            log.debug("deriving missing velocities")
             self.derive_velocity(measurements, log)
 
         stats = self.compute_statistics(measurements)
 
-        log.write("Statistics:\n")
-        log.write("total files:            {}\n".format(stats["n_files"]))
-        log.write("total measurements:     {}\n".format(stats["n_measurements"]))
-        log.write("valid measurements:     {}\n".format(stats["n_valid"]))
-        log.write("confirmed measurements: {}\n".format(stats["n_confirmed"]))
-        log.write("time range:             {} to {}\n".format(stats["t_min"], stats["t_max"]))
-        log.write("continuous time:        {}s\n".format(stats["t"]))
-        log.write("continuous distance:    {}m\n".format(stats["d"]))
-        log.write("continuous segments:    {}\n".format(stats["n_segments"]))
+        log.info(textwrap.dedent("""
+            Statistics:
+            total files:            %(n_files)s
+            total measurements:     %(n_measurements)s
+            valid measurements:     %(n_valid)s
+            confirmed measurements: %(n_confirmed)s
+            time range:             %(t_min)s to %(t_max)s
+            continuous time:        %(t)s
+            continuous distance:    %(d)sm
+            continuous segments:    %(n_segments)s
+        """).strip(), stats)
 
         return measurements, stats
 
-    def read_csv(self, filename, user_id, dataset_id, log=sys.stdout):
+    def read_csv(self, filename, user_id, dataset_id, log=module_log):
         measurements = []
         try:
             if filename.endswith('.gz'):
@@ -122,7 +127,7 @@ class ImportMeasurementsCsv:
                                 metadata = {}
 
                         format_id = self.identify_format(line, metadata)
-                        log.write("file identified as format version {}\n".format(format_id))
+                        log.debug("file identified as format version %s", format_id)
                         if format_id in ["1.0", "1.1", "1.2", "1.3"]:
                             extractors = self.create_field_extractors_v1(line, metadata, format_id)
                             format_uninitialized = False
@@ -144,7 +149,7 @@ class ImportMeasurementsCsv:
                         measurements.append(measurement)
 
         except csv.Error as e:
-            log.write("error while reading CSV in line {}: {}".format(line_count, e))
+            log.error("error while reading CSV in line %s: %s", line_count, e)
             raise ValueError("error while reading CSV in line {}: {}".format(line_count, e))
 
         return measurements, metadata
@@ -176,7 +181,7 @@ class ImportMeasurementsCsv:
             if m['time'] is not None:
                 m['time'] = convert_gps_to_utc(m['time'])
 
-    def correct_measurement_timezones(self, measurements, log=sys.stdout):
+    def correct_measurement_timezones(self, measurements, log=module_log):
         for m in measurements:
             t = m["time"]
             lat = m["latitude"]
@@ -185,7 +190,7 @@ class ImportMeasurementsCsv:
                 timezone_name = self.timezone_lookup.tzNameAt(lat, lon)
                 if timezone_name is None:
                     # no timezone is found, keep UTC
-                    log.write("ERROR: no timezone found for coordinates {} {} in ".format(lat, lon, m["measurement_id"]))
+                    log.error("ERROR: no timezone found for coordinates (%s, %s) in %s", lat, lon, m["measurement_id"])
                 else:
                     timezone = pytz.timezone(timezone_name)
                     # this timezone conversion is required, as the pytz.timezone object could not be
@@ -255,8 +260,7 @@ class ImportMeasurementsCsv:
                     measurements[i]["egomotion_is_derived"] = True
                 else:
                     measurements[i]["egomotion_is_derived"] = False
-        log.write("{} measurements processed, derived values for {} measurements (speed: {}, course: {})\n".format(
-            len(measurements), n_derived, n_speed_derived, n_direction_derived))
+        log.info("%s measurements processed, derived values for %s measurements (speed: %s, course: %s)", len(measurements), n_derived, n_speed_derived, n_direction_derived)
 
     @staticmethod
     def to_local_tangent(p):
