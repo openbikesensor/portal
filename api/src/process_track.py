@@ -7,13 +7,14 @@ import json
 from obs.face.importer import ImportMeasurementsCsv
 from obs.face.annotate import AnnotateMeasurements
 from obs.face.filter import (
-    PrivacyFilter,
-    ChainFilter,
     AnonymizationMode,
-    RequiredFieldsFilter,
+    ChainFilter,
     ConfirmedFilter,
+    DistanceMeasuredFilter,
+    PrivacyFilter,
     PrivacyZone,
     PrivacyZonesFilter,
+    RequiredFieldsFilter,
 )
 from obs.face.osm import DataSource as OSMDataSource
 
@@ -105,10 +106,14 @@ def process(args):
         ),
         *filters_from_settings,
     )
-    confirmed_filter = ConfirmedFilter()
+    events_filter = DistanceMeasuredFilter()
+    confirmed_filter = ChainFilter(
+        ConfirmedFilter(),
+    )
 
-    valid_measurements = input_filter.filter(measurements, log=log)
-    confirmed_measurements = confirmed_filter.filter(valid_measurements, log=log)
+    track_measurements = input_filter.filter(measurements, log=log)
+    event_measurements = events_filter.filter(track_measurements , log=log)
+    confirmed_measurements = confirmed_filter.filter(track_measurements, log=log)
 
     # write out
     confirmed_measurements_json = {
@@ -144,8 +149,7 @@ def process(args):
                     "confirmed": m in confirmed_measurements,
                 },
             }
-            for m in valid_measurements
-            if m["distance_overtaker"] or m["distance_stationary"]
+            for m in event_measurements
         ],
     }
 
@@ -154,7 +158,7 @@ def process(args):
         "geometry": {
             "type": "LineString",
             "coordinates": [
-                [m["latitude"], m["longitude"]] for m in valid_measurements
+                [m["latitude"], m["longitude"]] for m in track_measurements
             ],
         },
     }
