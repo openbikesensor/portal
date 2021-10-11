@@ -287,9 +287,9 @@ class AnnotationProcess(Process):
                     filename_json,
                 )
 
-            except (ValueError, IOError):
-                file_log.exception(
-                    "[%s] Annotation failed with error", self.process_name
+            except (ValueError, IOError) as e:
+                file_log.error(
+                    "[%s] Annotation failed with error: %s", self.process_name, str(e)
                 )
                 dataset_annotated = None
 
