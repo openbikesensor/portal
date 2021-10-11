@@ -104,6 +104,7 @@ class ImportMeasurementsCsv:
 
     def read_csv(self, filename, user_id, dataset_id, log=module_log):
         measurements = []
+        metadata = {}
         try:
             if filename.endswith('.gz'):
                 opener = gzip.open(filename, 'rt', encoding='utf-8')
