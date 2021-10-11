@@ -94,12 +94,14 @@ class ExportMeasurements:
 
             self.features.append(feature)
 
+    def get_data(self):
+        return {"type": "FeatureCollection", "features": self.features}
+
     def finalize(self):
         log.info("%s samples, %s valid (%s valid lat/lon, %s valid distance, %s confirmed)",
                   self.n_samples, self.n_valid, self.n_valid_latlon, self.n_valid_dist, self.n_confirmed)
 
-        data = {"type": "FeatureCollection",
-                "features": self.features}
+        data = self.get_data()
 
         os.makedirs(os.path.dirname(self.filename), exist_ok=True)
 
