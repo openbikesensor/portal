@@ -27,7 +27,7 @@ as described in the main [README](../README.md).
 ```bash
 mkdir -p /opt/openbikesensor
 cd /opt/openbikesensor
-git clone https://github.com/openbikesensor/portal source/
+git clone --recursive https://github.com/openbikesensor/portal source/
 ```
 
 ### Configure `traefik.toml`
@@ -53,7 +53,7 @@ Change the domain where it occurs, such as in `Host()` rules.
 ### Configure frontend
 
 ```bash
-cp source/frontend/config.json.example config/frontend.json
+cp source/frontend/config.example.json config/frontend.json
 vim frontend/src/config.json
 ```
 
