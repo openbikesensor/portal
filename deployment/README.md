@@ -53,7 +53,7 @@ Change the domain where it occurs, such as in `Host()` rules.
 ### Configure frontend
 
 ```bash
-cp source/frontend/config.json.example config/frontend.json
+cp source/frontend/config.example.json config/frontend.json
 vim frontend/src/config.json
 ```
 
