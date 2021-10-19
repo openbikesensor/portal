@@ -32,7 +32,7 @@ services:
       context: ./source/api
     volumes:
       - ./data/api-data:/data
-      - ./config/api-config.json:/opt/obs/api/config.json
+      - ./config/api.json:/opt/obs/api/config.json
     environment:
       - MONGODB_URL=mongo://mongo/obs
     restart: on-failure
@@ -56,7 +56,7 @@ services:
       context: ./source/api
     volumes:
       - ./data/api-data:/data
-      - ./config/api-config.json:/opt/obs/api/config.json
+      - ./config/api.json:/opt/obs/api/config.json
     links:
       - mongo
       - redis
