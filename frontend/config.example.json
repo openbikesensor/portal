@@ -1,7 +1,7 @@
 {
-  "apiUrl": "https://api.example.com",
+  "apiUrl": "https://portal.example.com/api",
   "auth": {
-    "server": "https://api.example.com",
+    "server": "https://portal.example.com/api",
     "clientId": "CHANGEME",
     "scope": "*",
     "redirectUri": "https://example.com/redirect"
