@@ -1,7 +1,7 @@
 {
   "cookieSecret": "!!!<<<CHANGEME>>>!!!",
   "jwtSecret": "!!!<<<CHANGEME>>>!!!",
-  "baseUrl": "https://api.example.com/",
+  "baseUrl": "https://portal.example.com/api",
   "mainFrontendUrl": "https://portal.example.com/",
   "mail": {
     "from": "Sender Name <sender@example.com>",
