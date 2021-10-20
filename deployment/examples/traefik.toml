@@ -23,7 +23,8 @@
 # https://doc.traefik.io/traefik/v2.4/https/acme/#configuration-examples
 [certificatesResolvers.leresolver.acme]
   email = "info@example.com"
-  storage = "acme.json"
+  storage = "acme/acme.json"
+
   [certificatesResolvers.leresolver.acme.httpChallenge]
     # used during the challenge
     entryPoint = "web"
