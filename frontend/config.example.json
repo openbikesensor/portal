@@ -4,7 +4,7 @@
     "server": "https://portal.example.com/api",
     "clientId": "CHANGEME",
     "scope": "*",
-    "redirectUri": "https://example.com/redirect"
+    "redirectUri": "https://portal.example.com/redirect"
   },
   "imprintUrl": "https://example.com/imprint",
   "privacyPolicyUrl": "https://example.com/privacy",
