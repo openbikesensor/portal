@@ -103,7 +103,7 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
       - ./config/traefik.toml:/traefik.toml
       - ./config/usersfile:/usersfile
-      - ./data/acme.json:/acme.json
+      - ./config/acme:/acme
 
     networks:
       - gateway
