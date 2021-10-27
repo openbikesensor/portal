@@ -1,6 +1,7 @@
 export {default as HomePage} from './HomePage'
 export {default as LoginRedirectPage} from './LoginRedirectPage'
 export {default as LogoutPage} from './LogoutPage'
+export {default as MapPage} from './MapPage'
 export {default as NotFoundPage} from './NotFoundPage'
 export {default as SettingsPage} from './SettingsPage'
 export {default as TrackEditor} from './TrackEditor'

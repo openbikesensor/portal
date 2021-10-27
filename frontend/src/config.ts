@@ -1,12 +1,13 @@
 import React from 'react'
 
-interface Config {
+export interface Config {
   apiUrl: string
   mapHome: {
     latitude: number
     longitude: number
     zoom: number
   }
+  obsMapSource?: string
 }
 
 async function loadConfig(): Promise<Config> {

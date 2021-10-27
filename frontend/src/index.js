@@ -6,6 +6,8 @@ import 'semantic-ui-less/semantic.less'
 import './index.css'
 import App from './App'
 
+import 'maplibre-gl/dist/maplibre-gl.css'
+
 import {Provider} from 'react-redux'
 
 import store from './store'

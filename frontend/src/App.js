@@ -14,6 +14,7 @@ import {
   LoginRedirectPage,
   LogoutPage,
   NotFoundPage,
+  MapPage,
   SettingsPage,
   TrackEditor,
   TrackPage,
@@ -49,6 +50,10 @@ const App = connect((state) => ({login: state.login}))(function App({login}) {
             OpenBikeSensor
           </Link>
 
+          {config?.obsMapSource && <Link component={MenuItemForLink} to="/map" as="a">
+            Map
+          </Link>}
+
           <Link component={MenuItemForLink} to="/tracks" as="a">
             Tracks
           </Link>
@@ -75,6 +80,9 @@ const App = connect((state) => ({login: state.login}))(function App({login}) {
       <Switch>
         <Route path="/" exact>
           <HomePage />
+        </Route>
+        <Route path="/map" exact>
+          <MapPage />
         </Route>
         <Route path="/tracks" exact>
           <TracksPage />

@@ -17,5 +17,6 @@
     "zoom": 15,
     "longitude": 7.8302,
     "latitude": 47.9755
-  }
+  },
+  "obsMapSource": "http://localhost:3002/data/v3.json"
 }

@@ -12,32 +12,31 @@ import {useConfig} from 'config'
 import {TrackListItem} from './TracksPage'
 import styles from './HomePage.module.scss'
 
-import 'ol/ol.css';
+import 'ol/ol.css'
 import {obsRoads} from '../mapstyles'
 import ReactMapGl from 'react-map-gl'
 
-function WelcomeMap() {
+function WelcomeMap({mapSource}: {mapSource: string}) {
+  const mapStyle = React.useMemo(() => obsRoads(mapSource), [mapSource])
   const config = useConfig()
-  const mapStyle = React.useMemo(() => obsRoads(), [])
   const [viewport, setViewport] = React.useState({
     longitude: 0,
     latitude: 0,
     zoom: 0,
-  });
+  })
 
   React.useEffect(() => {
-    if (config?.mapHome)  {
-    setViewport(config.mapHome)
+    if (config?.mapHome) {
+      setViewport(config.mapHome)
     }
   }, [config])
 
   return (
     <div className={styles.welcomeMap}>
-      <ReactMapGl mapStyle={mapStyle} width="100%" height="100%" onViewportChange={setViewport } {...viewport } />
+      <ReactMapGl mapStyle={mapStyle} width="100%" height="100%" onViewportChange={setViewport} {...viewport} />
     </div>
   )
 }
-
 
 function MostRecentTrack() {
   const track: Track | null = useObservable(
@@ -68,12 +67,14 @@ function MostRecentTrack() {
 }
 
 export default function HomePage() {
+  const {obsMapSource: mapSource} = useConfig() || {}
+
   return (
     <Page>
       <Grid stackable>
         <Grid.Row>
           <Grid.Column width={10}>
-            <WelcomeMap />
+            {mapSource ?  <WelcomeMap {...{mapSource}} /> : null}
           </Grid.Column>
           <Grid.Column width={6}>
             <Stats />

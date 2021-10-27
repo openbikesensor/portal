@@ -4,10 +4,10 @@ import {Container} from 'semantic-ui-react'
 
 import styles from './Page.module.scss'
 
-export default function Page({small, children}: {small?: boolean, children: ReactNode}) {
+export default function Page({small, children, fullScreen}: {small?: boolean, children: ReactNode, fullScreen?: boolean}) {
   return (
-    <main className={classnames(styles.page, small && styles.small)}>
-      <Container>{children}</Container>
+    <main className={classnames({page: true, small, fullScreen})}>
+      {fullScreen ? children : <Container>{children}</Container>}
     </main>
   )
 }

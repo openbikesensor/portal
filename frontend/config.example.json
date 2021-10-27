@@ -17,5 +17,6 @@
     "zoom": 15,
     "longitude": 9.1797,
     "latitude": 48.7784
-  }
+  },
+  "obsMapSource": "http://api.example.com/tileserver/data/v3.json"
 }
