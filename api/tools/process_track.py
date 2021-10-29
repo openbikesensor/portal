@@ -23,10 +23,10 @@ from obs.face.filter import (
     PrivacyZonesFilter,
     RequiredFieldsFilter,
 )
-from obs.face.osm import DataSource, OverpassTileSource
-from sqlalchemy import delete, func, select
+from obs.face.osm import DataSource, DatabaseTileSource, OverpassTileSource
+from sqlalchemy import delete
 
-from db import make_session, connect_db, OvertakingEvent
+from obs.face.db import make_session, connect_db, OvertakingEvent, async_session
 
 log = logging.getLogger(__name__)
 
@@ -64,25 +64,27 @@ async def main():
     postgres_url_default = os.environ.get("POSTGRES_URL")
     parser.add_argument(
         "--postgres-url",
-        required=False,
+        required=not postgres_url_default,
         action="store",
-        help="connection string for postgres database, if set, the track result is imported there",
+        help="connection string for postgres database",
         default=postgres_url_default,
     )
 
     args = parser.parse_args()
 
-    if args.cache_dir is None:
-        with tempfile.TemporaryDirectory() as cache_dir:
-            args.cache_dir = cache_dir
+    async with connect_db(args.postgres_url):
+        if args.cache_dir is None:
+            with tempfile.TemporaryDirectory() as cache_dir:
+                args.cache_dir = cache_dir
+                await process(args)
+        else:
             await process(args)
-    else:
-        await process(args)
 
 
 async def process(args):
     log.info("Loading OpenStreetMap data")
-    tile_source = OverpassTileSource(cache_dir=args.cache_dir)
+    tile_source = DatabaseTileSource(async_session.get())
+    # tile_source = OverpassTileSource(args.cache_dir)
     data_source = DataSource(tile_source)
 
     filename_input = os.path.abspath(args.input)
@@ -109,9 +111,9 @@ async def process(args):
         dataset_id=dataset_id,
     )
 
-    input_data = AnnotateMeasurements(data_source, cache_dir=args.cache_dir).annotate(
-        imported_data
-    )
+    input_data = await AnnotateMeasurements(
+        data_source, cache_dir=args.cache_dir
+    ).annotate(imported_data)
 
     filters_from_settings = []
     for filter_description in settings.get("filters", []):
@@ -145,12 +147,12 @@ async def process(args):
     overtaking_events = overtaking_events_filter.filter(measurements, log=log)
 
     exporter = ExportMeasurements("measurements.dummy")
-    exporter.add_measurements(measurements)
+    await exporter.add_measurements(measurements)
     measurements_json = exporter.get_data()
     del exporter
 
     exporter = ExportMeasurements("overtaking_events.dummy")
-    exporter.add_measurements(overtaking_events)
+    await exporter.add_measurements(overtaking_events)
     overtaking_events_json = exporter.get_data()
     del exporter
 
@@ -163,8 +165,12 @@ async def process(args):
     }
 
     statistics_json = {
-        "recordedAt": statistics["t_min"].isoformat(),
-        "recordedUntil": statistics["t_max"].isoformat(),
+        "recordedAt": statistics["t_min"].isoformat()
+        if statistics["t_min"] is not None
+        else None,
+        "recordedUntil": statistics["t_max"].isoformat()
+        if statistics["t_max"] is not None
+        else None,
         "duration": statistics["t"],
         "length": statistics["d"],
         "segments": statistics["n_segments"],
@@ -182,15 +188,11 @@ async def process(args):
         with open(os.path.join(args.output, output_filename), "w") as fp:
             json.dump(data, fp, indent=4)
 
-    if args.postgres_url:
-        log.info("Importing to database.")
-        async with connect_db(args.postgres_url):
-            async with make_session() as session:
-                await clear_track_data(session, settings["trackId"])
-                await import_overtaking_events(
-                    session, settings["trackId"], overtaking_events
-                )
-                await session.commit()
+    log.info("Importing to database.")
+    async with make_session() as session:
+        await clear_track_data(session, settings["trackId"])
+        await import_overtaking_events(session, settings["trackId"], overtaking_events)
+        await session.commit()
 
 
 async def clear_track_data(session, track_id):
@@ -213,7 +215,12 @@ async def import_overtaking_events(session, track_id, overtaking_events):
                 hex_hash=hex_hash,
                 way_id=m["OSM_way_id"],
                 direction_reversed=m["OSM_way_orientation"] < 0,
-                geometry={"type": "Point", "coordinates": [m["longitude"], m["latitude"]]},
+                geometry=json.dumps(
+                    {
+                        "type": "Point",
+                        "coordinates": [m["longitude"], m["latitude"]],
+                    }
+                ),
                 latitude=m["latitude"],
                 longitude=m["longitude"],
                 time=m["time"].astimezone(pytz.utc).replace(tzinfo=None),

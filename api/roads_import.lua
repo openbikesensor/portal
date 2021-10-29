@@ -88,7 +88,7 @@ function osm2pgsql.process_way(object)
     end
 
     roads:add_row({
-      geom = { create = 'linear' },
+      geometry = { create = 'linear' },
       name = tags.name,
       zone = zone,
       tags = tags,

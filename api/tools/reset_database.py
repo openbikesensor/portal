@@ -4,7 +4,7 @@ import logging
 import os
 import asyncio
 
-from db import init_models, connect_db
+from obs.face.db import init_models, connect_db
 
 log = logging.getLogger(__name__)
 
