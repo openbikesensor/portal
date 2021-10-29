@@ -18,3 +18,5 @@
 # <http://www.gnu.org/licenses/>.
 
 from .DataSource import DataSource
+from .OverpassTileSource import OverpassTileSource
+from .DatabaseTileSource import DatabaseTileSource

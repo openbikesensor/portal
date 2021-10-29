@@ -20,31 +20,42 @@
 import logging
 import math
 import numpy as np
+
 # from joblib import Memory
 
 
 log = logging.getLogger(__name__)
 
+
 class Roads:
-    def __init__(self, maps_source, d_max=10.0, d_phi_max=40.0, cache_dir='cache'):
+    def __init__(self, data_source, d_max=10.0, d_phi_max=40.0, cache_dir="cache"):
         self.d_max = d_max
         self.d_phi_max = math.radians(d_phi_max)
 
         # self.memory = Memory(cache_dir, verbose=0, compress=True)
 
-        self.map_source = maps_source
+        self.data_source = data_source
 
     def __del__(self):
         pass
 
     def get_n_closest_ways_oriented(self, sample, n):
         # we will at least need a valid position and moving direction
-        if sample["latitude"] is None or sample["longitude"] is None or sample["course"] is None:
+        if (
+            sample["latitude"] is None
+            or sample["longitude"] is None
+            or sample["course"] is None
+        ):
             return [], [], [], [], []
 
         # find near candidates
-        way_list, dist_x_list, lat_lon_projected_list, dist_phi_list, way_orientation_list = \
-            self.find_near([sample["latitude"], sample["longitude"]], sample["course"])
+        (
+            way_list,
+            dist_x_list,
+            lat_lon_projected_list,
+            dist_phi_list,
+            way_orientation_list,
+        ) = self.find_near([sample["latitude"], sample["longitude"]], sample["course"])
 
         # determine distances
         m = len(way_list)
@@ -78,7 +89,7 @@ class Roads:
 
     def find_near(self, lat_lon, course):
         # find candidates, exclude only those which are safe to exclude
-        ways = self.map_source.find_approximate_near_ways(lat_lon, self.d_max)
+        ways = self.data_source.find_approximate_near_ways(lat_lon, self.d_max)
 
         # then enumerate all candidates an do precise search
         dist_x = []
@@ -86,10 +97,14 @@ class Roads:
         lat_lon_projected = []
         orientation = []
         for way in ways:
-            dist_x_way, lat_lon_projected_way, dist_dir_way, orientation_way = way.distance_of_point(lat_lon, course)
+            (
+                dist_x_way,
+                lat_lon_projected_way,
+                dist_dir_way,
+                orientation_way,
+            ) = way.distance_of_point(lat_lon, course)
             dist_x.append(dist_x_way)
             dist_dir.append(dist_dir_way)
             lat_lon_projected.append(lat_lon_projected_way)
             orientation.append(orientation_way)
         return ways, dist_x, lat_lon_projected, dist_dir, orientation
-

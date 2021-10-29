@@ -25,12 +25,20 @@ from .BeliefPropagationChain import BeliefPropagationChain as BP
 
 
 class AnnotateMeasurements:
-    def __init__(self, map_source, cache_dir='cache', osm_projection="filtered", fully_annotate_unconfirmed=False,
-                 point_way_tolerance=40.0):
+    def __init__(
+        self,
+        data_source,
+        cache_dir="cache",
+        osm_projection="filtered",
+        fully_annotate_unconfirmed=False,
+        point_way_tolerance=40.0,
+    ):
         self.fully_annotate_unconfirmed = fully_annotate_unconfirmed
 
-        self.map_source = map_source
-        self.roads = Roads(map_source, d_max=point_way_tolerance, d_phi_max=90, cache_dir=cache_dir)
+        self.data_source = data_source
+        self.roads = Roads(
+            data_source, d_max=point_way_tolerance, d_phi_max=90, cache_dir=cache_dir
+        )
         self.point_way_tolerance = point_way_tolerance
 
         if osm_projection == "greedy":
@@ -38,11 +46,11 @@ class AnnotateMeasurements:
         elif osm_projection == "filtered":
             self.add_osm_way_id = self.add_osm_way_id_filtered
         else:
-            raise(ValueError("invalid value for osm_projection: " + osm_projection))
+            raise (ValueError("invalid value for osm_projection: " + osm_projection))
 
-    def annotate(self, measurements):
+    async def annotate(self, measurements):
         # ensure that the relevant parts of the map is loaded
-        self.ensure_map_coverage(measurements)
+        await self.ensure_map_coverage(measurements)
 
         # add OSM file id
         measurements = self.add_osm_way_id(measurements)
@@ -52,15 +60,17 @@ class AnnotateMeasurements:
 
         return measurements
 
-    def ensure_map_coverage(self, measurements):
+    async def ensure_map_coverage(self, measurements):
         lat = [m["latitude"] for m in measurements]
         lon = [m["longitude"] for m in measurements]
 
-        self.map_source.ensure_coverage(lat, lon, extend=self.point_way_tolerance)
+        await self.data_source.ensure_coverage(
+            lat, lon, extend=self.point_way_tolerance
+        )
 
     def annotate_ways(self, m):
         way_id = m["OSM_way_id"]
-        way = self.map_source.get_way_by_id(way_id)
+        way = self.data_source.get_way_by_id(way_id)
         if way_id is not None and way is not None:
             tags = way.tags
             if "zone:traffic" in tags:
@@ -91,8 +101,13 @@ class AnnotateMeasurements:
         for m in measurements:
             if m["confirmed"] or True:
                 # way_id, way_orientation, lat_lon_projected = self.roads.get_closest_way_oriented(m)
-                way_id, way_orientation, lat_projected, lon_projected, distance = \
-                    self.roads.get_n_closest_ways_oriented(m, 1)
+                (
+                    way_id,
+                    way_orientation,
+                    lat_projected,
+                    lon_projected,
+                    distance,
+                ) = self.roads.get_n_closest_ways_oriented(m, 1)
                 if way_id:
                     m["OSM_way_id"] = way_id[0]
                     m["OSM_way_orientation"] = way_orientation[0]
@@ -107,11 +122,17 @@ class AnnotateMeasurements:
         measurements_annotated = []
 
         m_prev = None
-        matching_id_prev = ['none']
+        matching_id_prev = ["none"]
 
         chain = []
         for m in measurements:
-            way_id, way_orientation, lat_projected, lon_projected, distance = self.roads.get_n_closest_ways_oriented(m, 3)
+            (
+                way_id,
+                way_orientation,
+                lat_projected,
+                lon_projected,
+                distance,
+            ) = self.roads.get_n_closest_ways_oriented(m, 3)
             m["OSM_way_id"] = way_id
             m["OSM_way_orientation"] = way_orientation
             m["latitude_projected"] = lat_projected
@@ -121,9 +142,9 @@ class AnnotateMeasurements:
             # matching id
             if way_id:
                 matching_distance = distance
-                matching_id = [[]]*len(way_id)
+                matching_id = [[]] * len(way_id)
                 for i, way_id_i in enumerate(way_id):
-                    way = self.map_source.get_way_by_id(way_id_i)
+                    way = self.data_source.get_way_by_id(way_id_i)
                     if "name" in way.tags:
                         matching_id[i] = way.tags["name"]
                     else:
@@ -170,7 +191,7 @@ class AnnotateMeasurements:
 
         for i in range(n):
             c_i = chain[i]
-            phi_i = np.exp(-np.array(c_i["matching_distance"])/a_distance)
+            phi_i = np.exp(-np.array(c_i["matching_distance"]) / a_distance)
             phi_i = phi_i / np.sum(phi_i)
 
             j = i + 1
@@ -182,8 +203,13 @@ class AnnotateMeasurements:
                 w_j = c_j["matching_id"]
 
                 if len(w_i) > 0 and len(w_j) > 0:
-                    psi_ij = [[p_way_id_constant if w_i_k == w_j_l else p_way_id_change
-                               for w_j_l in w_j] for w_i_k in w_i]
+                    psi_ij = [
+                        [
+                            p_way_id_constant if w_i_k == w_j_l else p_way_id_change
+                            for w_j_l in w_j
+                        ]
+                        for w_i_k in w_i
+                    ]
                     psi_ij = np.array(psi_ij)
                 else:
                     psi_ij = np.empty([len(w_i), len(w_j)])
@@ -227,7 +253,9 @@ class AnnotateMeasurements:
     def add_osm_annotations(self, measurements):
         measurements_annotated = []
         for m in measurements:
-            if (self.fully_annotate_unconfirmed or m["confirmed"] is True) and "OSM_way_id" in m:
+            if (
+                self.fully_annotate_unconfirmed or m["confirmed"] is True
+            ) and "OSM_way_id" in m:
                 m["has_OSM_annotations"] = True
                 # replace lat/lon by projected values, but backup original values
                 m["latitude_GPS"] = m["latitude"]

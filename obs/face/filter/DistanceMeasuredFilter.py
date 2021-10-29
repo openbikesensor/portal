@@ -35,7 +35,7 @@ class DistanceMeasuredFilter(MeasurementFilter):
             or measurement.get("distance_stationary") is not None
         ]
         log.info(
-            "Removed %s measurements without distance, kept %s confirmed.",
+            "Removed %s measurements without distance, kept %s.",
             input_size - len(result),
             len(result),
         )

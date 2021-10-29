@@ -39,13 +39,18 @@ class ExportRoadAnnotation:
         self.only_confirmed_measurements = True
         self.right_hand_traffic = right_hand_traffic
 
-    def add_measurements(self, measurements):
+    async def add_measurements(self, measurements):
         for sample in measurements:
             self.n_samples += 1
             # filter measurements
-            if sample["latitude"] is None or sample["longitude"] is None or sample["distance_overtaker"] is None \
-                    or self.only_confirmed_measurements and (sample["confirmed"] is not True) \
-                    or not sample["has_OSM_annotations"]:
+            if (
+                sample["latitude"] is None
+                or sample["longitude"] is None
+                or sample["distance_overtaker"] is None
+                or self.only_confirmed_measurements
+                and (sample["confirmed"] is not True)
+                or not sample["has_OSM_annotations"]
+            ):
                 continue
 
             self.n_valid += 1
@@ -54,7 +59,9 @@ class ExportRoadAnnotation:
             value = sample["distance_overtaker"]
             way_orientation = sample["OSM_way_orientation"]
 
-            self.map_source.ensure_coverage([sample["latitude"]], [sample["longitude"]])
+            await self.map_source.ensure_coverage(
+                [sample["latitude"]], [sample["longitude"]]
+            )
 
             if way_id in self.way_statistics:
                 # way statistic object already created
@@ -64,7 +71,9 @@ class ExportRoadAnnotation:
                 way = self.map_source.get_way_by_id(way_id)
                 if way:
                     # statistic object not created, but OSM way exists
-                    self.way_statistics[way_id] = WayStatistics(way_id, way).add_sample(value, way_orientation)
+                    self.way_statistics[way_id] = WayStatistics(way_id, way).add_sample(
+                        value, way_orientation
+                    )
                     self.n_grouped += 1
                 else:
                     logging.warning("way not found in map")
@@ -82,39 +91,45 @@ class ExportRoadAnnotation:
 
                 way_osm = self.map_source.get_way_by_id(way_stats.way_id)
                 if way_osm:
-                    lateral_offset = 2.0 * direction * (-1 if self.right_hand_traffic else +1)
+                    lateral_offset = (
+                        2.0 * direction * (-1 if self.right_hand_traffic else +1)
+                    )
                     reverse = i == 1
-                    coordinates = way_osm.get_way_coordinates(reverse=reverse, lateral_offset=lateral_offset)
+                    coordinates = way_osm.get_way_coordinates(
+                        reverse=reverse, lateral_offset=lateral_offset
+                    )
                     # exchange lat and lon
                     coordinates = [(p[1], p[0]) for p in coordinates]
                 else:
                     coordinates = []
 
-                feature = {"type": "Feature",
-                           "properties": {"distance_overtaker_mean": way_stats.d_mean[i],
-                                          "distance_overtaker_median": way_stats.d_median[i],
-                                          "distance_overtaker_minimum": way_stats.d_minimum[i],
-                                          "distance_overtaker_n": way_stats.n[i],
-                                          "distance_overtaker_n_below_limit": way_stats.n_lt_limit[i],
-                                          "distance_overtaker_n_above_limit": way_stats.n_geq_limit[i],
-                                          "distance_overtaker_limit": way_stats.d_limit,
-                                          "distance_overtaker_measurements": way_stats.samples[i],
-                                          "zone": way_stats.zone,
-                                          "direction": direction,
-                                          "name": way_stats.name,
-                                          "way_id": way_stats.way_id,
-                                          "valid": way_stats.valid[i],
-                                          },
-                           "geometry": {"type": "LineString", "coordinates": coordinates}}
+                feature = {
+                    "type": "Feature",
+                    "properties": {
+                        "distance_overtaker_mean": way_stats.d_mean[i],
+                        "distance_overtaker_median": way_stats.d_median[i],
+                        "distance_overtaker_minimum": way_stats.d_minimum[i],
+                        "distance_overtaker_n": way_stats.n[i],
+                        "distance_overtaker_n_below_limit": way_stats.n_lt_limit[i],
+                        "distance_overtaker_n_above_limit": way_stats.n_geq_limit[i],
+                        "distance_overtaker_limit": way_stats.d_limit,
+                        "distance_overtaker_measurements": way_stats.samples[i],
+                        "zone": way_stats.zone,
+                        "direction": direction,
+                        "name": way_stats.name,
+                        "way_id": way_stats.way_id,
+                        "valid": way_stats.valid[i],
+                    },
+                    "geometry": {"type": "LineString", "coordinates": coordinates},
+                }
 
                 features.append(feature)
 
-        data = {"type": "FeatureCollection",
-                "features": features}
+        data = {"type": "FeatureCollection", "features": features}
 
         os.makedirs(os.path.dirname(self.filename), exist_ok=True)
 
-        with open(self.filename, 'w') as f:
+        with open(self.filename, "w") as f:
             json.dump(data, f)
 
 
@@ -152,7 +167,9 @@ class WayStatistics:
         if "name" in tags:
             self.name = tags["name"]
 
-        self.d_limit = 1.5 if self.zone == "urban" else 2.0 if self.zone == "rural" else 1.5
+        self.d_limit = (
+            1.5 if self.zone == "urban" else 2.0 if self.zone == "rural" else 1.5
+        )
 
     def add_sample(self, sample, orientation):
         if np.isfinite(sample):

@@ -20,7 +20,6 @@
 import numpy as np
 import logging
 
-from .TileSource import TileSource
 from .WayContainer import WayContainerAABBTree as WayContainer
 from .Way import Way
 
@@ -28,19 +27,21 @@ log = logging.getLogger(__name__)
 
 
 class DataSource:
-    def __init__(self, cache_dir="cache", tile_zoom=14):
+    def __init__(self, tile_source, tile_zoom=14):
         self.nodes = {}
         self.ways = {}
         self.way_container = WayContainer()
 
-        self.loaded_tiles = []
-        self.tile_source = TileSource()
+        self.loaded_tiles = set()
+        self.tile_source = tile_source
         self.tile_zoom = tile_zoom
 
-    def ensure_coverage(self, lat, lon, extend=0.0):
-        tiles = self.tile_source.get_required_tiles(lat, lon, self.tile_zoom, extend=extend)
+    async def ensure_coverage(self, lat, lon, extend=0.0):
+        tiles = self.tile_source.get_required_tiles(
+            lat, lon, self.tile_zoom, extend=extend
+        )
         for tile in tiles:
-            self.add_tile(tile)
+            await self.add_tile(*tile)
 
     def get_way_by_id(self, way_id):
         if way_id and way_id in self.ways:
@@ -48,29 +49,23 @@ class DataSource:
         else:
             return None
 
-    def get_local_map(self):
-        return self.local_map
-
-    def add_tile(self, tile):
+    async def add_tile(self, z, x, y):
         # skip if already in tile list
-        if tile in self.loaded_tiles:
+        if (z, x, y) in self.loaded_tiles:
             return
 
-        # request tile, will be returned as a node-way-relation-split
-        nodes, ways, relations = self.tile_source.get_tile(tile[0], tile[1], tile[2])
-
-        # add nodes
-        self.nodes.update(nodes)
+        # # request tile, will be returned as a node-way-relation-split
+        ways = self.tile_source.get_tile(z, x, y)
 
         # add way objects, and store
-        for way_id, way in ways.items():
+        async for way_id, tags, coordinates in ways:
             if way_id not in self.ways:
-                w = Way(way_id, way, nodes)
+                w = Way(way_id, tags, coordinates)
                 self.ways[way_id] = w
                 self.way_container.insert(w)
 
         # update tile list
-        self.loaded_tiles.append(tile)
+        self.loaded_tiles.add((z, x, y))
 
     def get_map_center(self):
         lat = np.mean([node["lat"] for node in self.nodes.values()])

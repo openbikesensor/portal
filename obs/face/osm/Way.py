@@ -3,21 +3,23 @@ import math
 from obs.face.mapping import EquirectangularFast as LocalMap
 
 
+def get_way_directionality(tags):
+    v = tags.get("oneway")
+    if v in ["yes", "true", "1"]:
+        return 1
+    if v in ["-1", "reverse"]:
+        return -1
+    return 0
+
+
 class Way:
-    def __init__(self, way_id, way, all_nodes):
+    def __init__(self, way_id, tags, coordinates):
         self.way_id = way_id
+        self.tags = tags or {}
 
-        if "tags" in way:
-            self.tags = way["tags"]
-        else:
-            self.tags = {}
-
-        # determine points
-        nodes_way = [all_nodes[i] for i in way["nodes"]]
-
-        lat = np.array([n["lat"] for n in nodes_way])
-        lon = np.array([n["lon"] for n in nodes_way])
-        self.points_lat_lon = np.stack((lat, lon), axis=1)
+        lat = coordinates[:, 0]
+        lon = coordinates[:, 1]
+        self.coordinates = coordinates
 
         # bounding box
         self.a = (min(lat), min(lon))
@@ -35,25 +37,18 @@ class Way:
         # direction
         dx = np.diff(x)
         dy = np.diff(y)
-        direction = np.arctan2(dy, dx)
+        self.direction = np.arctan2(dy, dx)
 
         # determine if way is directed, and which is the "forward" direction
-        directional = self.get_way_directionality(way)
-        if directional == 1:
-            self.is_directional = True
-            self.direction = direction
-        elif directional == -1:
-            self.is_directional = True
-            self.direction = (direction + math.pi) % (2*math.pi)
-        else:
-            self.is_directional = False
-            self.direction = direction
+        directional = get_way_directionality(self.tags)
+        self.is_directional = directional != 0
+
+        # reverse the direction of reverse oneway streets
+        if directional == -1:
+            self.direction = (self.direction + math.pi) % (2 * math.pi)
 
     def get_axis_aligned_bounding_box(self):
         return self.a, self.b
-
-    def axis_aligned_bounding_boxes_overlap(self, a, b):
-        return np.all(self.a < b) and np.all(a < self.b)
 
     def distance_of_point(self, lat_lon, direction_sample):
         # transfer lat_lon to local coordinate system
@@ -75,7 +70,9 @@ class Way:
             p0 = p
 
         # transfer projected point to lat_lon
-        lat_lon_projected_best = self.local_map.transfer_from(x_projected_best[0], x_projected_best[1])
+        lat_lon_projected_best = self.local_map.transfer_from(
+            x_projected_best[0], x_projected_best[1]
+        )
 
         # also check deviation from way direction
         direction_best = self.direction[i_best - 1]
@@ -96,7 +93,9 @@ class Way:
 
     def get_way_coordinates(self, reverse=False, lateral_offset=0):
         if lateral_offset == 0:
-            coordinates = list(reversed(self.points_lat_lon)) if reverse else self.points_lat_lon
+            coordinates = (
+                list(reversed(self.coordinates)) if reverse else self.coordinates
+            )
         else:
             c = self.points_xy
 
@@ -149,20 +148,6 @@ class Way:
 
     @staticmethod
     def distance_periodic(a, b, p=2 * math.pi):
-        p2 = 0.5*p
+        p2 = 0.5 * p
         d = a - b
         return abs((d + p2) % p - p2)
-
-    @staticmethod
-    def get_way_directionality(way):
-        if "tags" in way and "oneway" in way["tags"]:
-            v = way["tags"]["oneway"]
-            if v in ["yes", "true", "1"]:
-                v = +1
-            elif v in ["no", "false", "0"]:
-                v = 0
-            elif v in ["-1", "reverse"]:
-                v = -1
-        else:
-            v = 0
-        return v
