@@ -5,7 +5,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.ext.asyncio import create_async_engine
 from sqlalchemy.orm import sessionmaker
-from sqlalchemy.types import UserDefinedType
+from sqlalchemy.types import UserDefinedType, BIGINT
 from sqlalchemy import (
     Column,
     String,
@@ -78,7 +78,7 @@ class OvertakingEvent(Base):
     id = Column(Integer, autoincrement=True, primary_key=True, index=True)
     track_id = Column(String, index=True)
     hex_hash = Column(String, unique=True, index=True)
-    way_id = Column(Integer, index=True)
+    way_id = Column(BIGINT, index=True)
 
     # whether we were traveling along the way in reverse direction
     direction_reversed = Column(Boolean)
@@ -98,7 +98,7 @@ class OvertakingEvent(Base):
 
 class Road(Base):
     __tablename__ = "road"
-    way_id = Column(Integer, primary_key=True, index=True)
+    way_id = Column(BIGINT, primary_key=True, index=True)
     zone = Column(ZoneType)
     name = Column(String)
     geometry = Column(Geometry)
