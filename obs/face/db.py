@@ -103,3 +103,4 @@ class Road(Base):
     name = Column(String)
     geometry = Column(Geometry)
     tags = Column(HSTORE)
+    directionality = Column(Integer)
