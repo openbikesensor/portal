@@ -24,10 +24,10 @@ RETURNS TABLE(
       r.dir as direction,
       case when road.directionality = 0 then r.dir else 0 end as offset_direction
     FROM road
-    FULL OUTER JOIN (VALUES (1, TRUE), (-1, FALSE)) AS r(dir, rev) ON (road.directionality = 0 or road.directionality = r.dir)
-    FULL OUTER JOIN overtaking_event ON (road.way_id = overtaking_event.way_id and overtaking_event.direction_reversed = r.rev)
-    -- WHERE road.name = 'Schlierbergstraße'
+    LEFT JOIN (VALUES (1, TRUE), (-1, FALSE), (0, FALSE)) AS r(dir, rev) ON (abs(r.dir) != road.directionality)
+    FULL OUTER JOIN overtaking_event ON (road.way_id = overtaking_event.way_id and (road.directionality != 0 or overtaking_event.direction_reversed = r.rev))
+    -- WHERE road.name = 'Merzhauser Straße'
     WHERE road.geometry && bbox
-    GROUP BY road.way_id, road.geometry, road.directionality, direction;
+    GROUP BY road.name, road.way_id, road.geometry, road.directionality, r.dir;
 
 $$ LANGUAGE SQL IMMUTABLE;
