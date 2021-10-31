@@ -1,61 +1,140 @@
 import _ from 'lodash'
 
 import bright from './bright.json'
+import positron from './positron.json'
 
-function getRoadsStyle(sourceUrl = "http://localhost:3002/data/v3.json") {
-  return {
-    "version": 8,
-    "name": "OBS Roads",
-    "sources": {
-      "obs": {"type": "vector", "url": sourceUrl}
+function addRoadsStyle(style, sourceUrl = "http://localhost:3002/data/v3.json") {
+  style.sources.obs = {"type": "vector", "url": sourceUrl}
+
+  // insert before "road_oneway" layer
+  let idx = style.layers.findIndex(l => l.id === 'road_oneway')
+  if (idx === -1) {
+    idx = style.layers.length
+  }
+  style.layers.splice(idx, 0, {
+    "id": "obs",
+    "type": "line",
+    "source": "obs",
+    "source-layer": "obs_roads",
+    "layout": {
+      "line-cap": "round",
+      "line-join": "round"
     },
-    "layers": [
-      {
-        "id": "obs",
-        "type": "line",
-        "source": "obs",
-        "source-layer": "obs_roads",
-        "layout": {"line-cap": "round", "line-join": "round"},
-        "paint": {
-          "line-width": {"stops": [[14, 2], [17, 8]]},
-          "line-color": [
-            "interpolate-hcl",
-            ["linear"],
-            ["get", "distance_overtaker_mean"],
-            1,
-            "rgba(255, 0, 0, 1)",
-            1.3,
-            "rgba(255, 200, 0, 1)",
-            1.5,
-            "rgba(67, 200, 0, 1)",
-            1.7,
-            "rgba(67, 150, 0, 1)"
+    "paint": {
+      "line-width": [
+        "interpolate",
+        ["exponential", 1.5],
+        ["zoom"],
+        12,
+        1,
+        17,
+        [
+          "case",
+          [
+            "!",
+            [
+              "to-boolean",
+              [
+                "get",
+                "distance_overtaker_mean"
+              ]
+            ]
           ],
-          "line-opacity": 1,
-          "line-offset": {"stops": [[14, 1], [17, 7]]}
-        }
-      }
-    ],
-    "id": "obs-roads"
-  }
-}
-
-function mergeStyles(baseStyle, ...extensions) {
-  const style = _.cloneDeep(baseStyle)
-  for (const extension of extensions) {
-    for (const key of Object.keys(extension)) {
-      if (['sources', 'layers', 'id', 'name', 'version'].includes(key)) {
-        continue
-      }
-
-      throw new Error(`cannot use style ${extension.id ?? extension.name} as extension style, it defines ${key}`)
-    }
-    style.sources = {...style.sources, ...extension.sources}
-    style.layers = [...style.layers, ...extension.layers]
-  }
+          2,
+          6
+        ]
+      ],
+      "line-color": [
+        "case",
+        [
+          "!",
+          [
+            "to-boolean",
+            [
+              "get",
+              "distance_overtaker_mean"
+            ]
+          ]
+        ],
+        "#ABC",
+        [
+          "interpolate-hcl",
+          ["linear"],
+          [
+            "get",
+            "distance_overtaker_mean"
+          ],
+          1,
+          "rgba(255, 0, 0, 1)",
+          1.3,
+          "rgba(255, 200, 0, 1)",
+          1.5,
+          "rgba(67, 200, 0, 1)",
+          1.7,
+          "rgba(67, 150, 0, 1)"
+        ]
+      ],
+      "line-opacity": [
+        "interpolate",
+        ["linear"],
+        ["zoom"],
+        12,
+        0,
+        13,
+        [
+          "case",
+          [
+            "!",
+            [
+              "to-boolean",
+              [
+                "get",
+                "distance_overtaker_mean"
+              ]
+            ]
+          ],
+          0,
+          1
+        ],
+        14,
+        [
+          "case",
+          [
+            "!",
+            [
+              "to-boolean",
+              [
+                "get",
+                "distance_overtaker_mean"
+              ]
+            ]
+          ],
+          0,
+          1
+        ],
+        15,
+        1
+      ],
+      "line-offset": [
+        "interpolate",
+        ["exponential", 1.5],
+        ["zoom"],
+        12,
+        ["get", "offset_direction"],
+        19,
+        [
+          "*",
+          ["get", "offset_direction"],
+          8
+        ]
+      ]
+    },
+    "minzoom": 12
+  })
 
   return style
 }
 
+
 export const basemap = bright
-export const obsRoads = (sourceUrl) => mergeStyles(basemap, getRoadsStyle(sourceUrl))
+export const obsRoads = (sourceUrl) => addRoadsStyle(_.cloneDeep(positron), sourceUrl)

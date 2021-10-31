@@ -50,8 +50,12 @@ local MOTORWAY_TYPES = {
   "motorway_link",
 }
 
+local ONEWAY_YES = {"yes", "true", "1"}
+local ONEWAY_REVERSE = {"reverse", "-1"}
+
 local roads = osm2pgsql.define_way_table('road', {
   { column = 'zone', type = 'text', sql_type="zone_type" },
+  { column = 'directionality', type = 'int' },
   { column = 'name', type = 'text' },
   { column = 'geometry', type = 'linestring' },
   { column = 'tags', type = 'hstore' },
@@ -87,10 +91,18 @@ function osm2pgsql.process_way(object)
       end
     end
 
+    local directionality = 0
+    if contains(ONEWAY_YES, tags["oneway"]) then
+      directionality = 1
+    elseif contains(ONEWAY_REVERSE, tags["oneway"]) then
+      directionality = -1
+    end
+
     roads:add_row({
-      geometry = { create = 'linear' },
+      geom = { create = 'linear' },
       name = tags.name,
       zone = zone,
+      directionality = directionality,
       tags = tags,
     })
   end

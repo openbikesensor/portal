@@ -4,12 +4,24 @@ layer:
       Road segment statistics for OBS events
   buffer_size: 4
   fields:
+    distance_overtaker_min: |
+      Overtaker minimum distance in meters.
+    distance_overtaker_max: |
+      Overtaker maximum distance in meters.
     distance_overtaker_mean: |
       Overtaker mean distance in meters.
+    distance_overtaker_median: |
+      Overtaker median distance in meters.
+    distance_overtaker_array: |
+      All overtaker distance values in meters.
+    overtaking_event_count: |
+      Number of overtaking events.
     direction: |
       Contains -1 for events while going along the way backwards, 1 for
       forwards. Each road is emitted twice, if it has data for both directions,
       even if it is oneway.
+    offset_direction: |
+      Factor for offset to shift the line to the driving side. One of -1, 0, 1.
   defaults:
     srs: EPSG:3785
   datasource:
@@ -17,7 +29,21 @@ layer:
     geometry_field: geometry
     key_field: way_id
     key_field_as_attribute: no
-    query: (SELECT way_id, geometry, distance_overtaker_mean, direction FROM layer_obs_roads(!bbox!, z(!scale_denominator!))) AS t
+    query: |
+      (
+        SELECT
+          way_id,
+          geometry,
+          distance_overtaker_mean,
+          distance_overtaker_min,
+          distance_overtaker_max,
+          distance_overtaker_median,
+          distance_overtaker_array,
+          overtaking_event_count,
+          direction,
+          offset_direction
+        FROM layer_obs_roads(!bbox!, z(!scale_denominator!))
+      ) AS t
 
 schema:
   - ./layer.sql
