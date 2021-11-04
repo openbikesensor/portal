@@ -1,10 +1,10 @@
 from setuptools import setup, find_packages
 
-with open('requirements.txt') as f:
-  requires = list(f.readlines())
+with open("requirements.txt") as f:
+    requires = list(f.readlines())
 
 setup(
-    name="obs",
+    name="obs-face",
     version="0.0.1",
     author="OpenBikeSensor Contributors",
     license="LGPL-3.0",

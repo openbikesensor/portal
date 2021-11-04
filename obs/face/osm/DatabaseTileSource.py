@@ -4,7 +4,10 @@ import json
 from sqlalchemy import delete, func, select
 import numpy as np
 
-from obs.face.db import Road
+try:
+    from obs.api.db import Road
+except ImportError:
+    Road = None
 
 from .TileSource import TileSource
 
@@ -13,6 +16,11 @@ log = logging.getLogger(__name__)
 
 class DatabaseTileSource(TileSource):
     def __init__(self, sessionmaker):
+        if Road is None:
+            raise RuntimeError(
+                "Failed to import obs.api.db, so DatabaseTileSource cannot be used. Please install the obs-api in the current environment."
+            )
+
         self.sessionmaker = sessionmaker
 
     async def get_tile(self, z, x, y):
