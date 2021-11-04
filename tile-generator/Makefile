@@ -7,7 +7,7 @@ SHELL         = /bin/bash
 .SHELLFLAGS   = -o pipefail -c
 
 # Make all .env variables available for make targets
-include .env
+include ../.env
 
 # Layers definition and meta data
 TILESET_FILE ?= openmaptiles.yaml

@@ -10,8 +10,10 @@ const LogoutPage = connect(
 )(function LogoutPage({loggedIn}) {
   React.useEffect(() => {
     // no await, just trigger it
-    api.logout()
-  })
+    if (loggedIn) {
+      api.logout()
+    }
+  }, [loggedIn])
 
   return loggedIn ? <Loader active /> : <Redirect to="/" />
 })

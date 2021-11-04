@@ -8,6 +8,13 @@ export interface Config {
     zoom: number
   }
   obsMapSource?: string
+  imprintUrl?: string
+  privacyPolicyUrl?: string
+  mapTileset?: {
+    url?: string
+    minZoom?: number
+    maxZoom?: number
+  }
 }
 
 async function loadConfig(): Promise<Config> {

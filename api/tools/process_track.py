@@ -2,13 +2,18 @@
 import argparse
 import logging
 import os
-import tempfile
+import sys
 import json
 import shutil
 import asyncio
 import hashlib
 import struct
 import pytz
+from os.path import join, dirname, abspath
+from datetime import datetime
+
+from sqlalchemy import delete, select
+from sqlalchemy.orm import joinedload
 
 from obs.face.importer import ImportMeasurementsCsv
 from obs.face.geojson import ExportMeasurements
@@ -24,9 +29,9 @@ from obs.face.filter import (
     RequiredFieldsFilter,
 )
 from obs.face.osm import DataSource, DatabaseTileSource, OverpassTileSource
-from sqlalchemy import delete
 
-from obs.face.db import make_session, connect_db, OvertakingEvent, async_session
+from obs.api.db import make_session, connect_db, OvertakingEvent, async_session, Track
+from obs.api.app import app
 
 log = logging.getLogger(__name__)
 
@@ -40,178 +45,207 @@ async def main():
     )
 
     parser.add_argument(
-        "-i", "--input", required=True, action="store", help="path to input CSV file"
-    )
-    parser.add_argument(
-        "-o", "--output", required=True, action="store", help="path to output directory"
-    )
-    parser.add_argument(
-        "--path-cache",
+        "--loop-delay",
         action="store",
-        default=None,
-        dest="cache_dir",
-        help="path where the visualization data will be stored",
-    )
-    parser.add_argument(
-        "--settings",
-        dest="settings_file",
-        required=True,
-        default=None,
-        help="path to track settings file",
+        type=int,
+        default=10,
+        help="delay between loops, if no track was found in the queue (polling)",
     )
 
-    # https://www.postgresql.org/docs/current/libpq-connect.html#LIBPQ-CONNSTRING
-    postgres_url_default = os.environ.get("POSTGRES_URL")
     parser.add_argument(
-        "--postgres-url",
-        required=not postgres_url_default,
-        action="store",
-        help="connection string for postgres database",
-        default=postgres_url_default,
+        "tracks",
+        metavar="ID_OR_SLUG",
+        nargs="*",
+        help="ID or slug of tracks to process, if not passed, the queue is processed in a loop",
     )
 
     args = parser.parse_args()
 
-    async with connect_db(args.postgres_url):
-        if args.cache_dir is None:
-            with tempfile.TemporaryDirectory() as cache_dir:
-                args.cache_dir = cache_dir
-                await process(args)
+    async with connect_db(app.config.POSTGRES_URL):
+        async with make_session() as session:
+            log.info("Loading OpenStreetMap data")
+            tile_source = DatabaseTileSource(async_session.get())
+            # tile_source = OverpassTileSource(app.config.OBS_FACE_CACHE_DIR)
+            data_source = DataSource(tile_source)
+
+            if args.tracks:
+                await process_tracks(session, data_source, args.tracks)
+            else:
+                await process_tracks_loop(session, data_source, args.loop_delay)
+
+
+async def process_tracks_loop(session, data_source, delay):
+    while True:
+        track = (
+            await session.execute(
+                select(Track)
+                .where(Track.processing_status == "queued")
+                .order_by(Track.processing_queued_at)
+                .options(joinedload(Track.author))
+            )
+        ).scalar()
+
+        if track is None:
+            await asyncio.sleep(delay)
         else:
-            await process(args)
+            try:
+                await process_track(session, track, data_source)
+            except:
+                log.exception("Failed to process track %s. Will continue.", track.slug)
 
 
-async def process(args):
-    log.info("Loading OpenStreetMap data")
-    tile_source = DatabaseTileSource(async_session.get())
-    # tile_source = OverpassTileSource(args.cache_dir)
-    data_source = DataSource(tile_source)
+async def process_tracks(session, data_source, tracks):
+    """
+    Processes the tracks and writes event data to the database.
 
-    filename_input = os.path.abspath(args.input)
-    dataset_id = os.path.splitext(os.path.basename(args.input))[0]
-
-    os.makedirs(args.output, exist_ok=True)
-
-    log.info("Loading settings")
-    settings_path = os.path.abspath(args.settings_file)
-    with open(settings_path, "rt") as f:
-        settings = json.load(f)
-
-    settings_output_path = os.path.abspath(
-        os.path.join(args.output, "track-settings.json")
-    )
-    if settings_path != settings_output_path:
-        log.info("Copy settings to output directory")
-        shutil.copyfile(settings_path, settings_output_path)
-
-    log.info("Annotating and filtering CSV file")
-    imported_data, statistics = ImportMeasurementsCsv().read(
-        filename_input,
-        user_id="dummy",
-        dataset_id=dataset_id,
-    )
-
-    input_data = await AnnotateMeasurements(
-        data_source, cache_dir=args.cache_dir
-    ).annotate(imported_data)
-
-    filters_from_settings = []
-    for filter_description in settings.get("filters", []):
-        filter_type = filter_description.get("type")
-        if filter_type == "PrivacyZonesFilter":
-            privacy_zones = [
-                PrivacyZone(
-                    latitude=zone.get("latitude"),
-                    longitude=zone.get("longitude"),
-                    radius=zone.get("radius"),
+    :param tracks: A list of strings which
+    """
+    for track_id_or_slug in tracks:
+        track = (
+            await session.execute(
+                select(Track)
+                .where(
+                    Track.id == track_id_or_slug
+                    if isinstance(track_id_or_slug, int)
+                    else Track.slug == track_id_or_slug
                 )
-                for zone in filter_description.get("config", {}).get("privacyZones", [])
-            ]
-            filters_from_settings.append(PrivacyZonesFilter(privacy_zones))
-        else:
-            log.warning("Ignoring unknown filter type %r in settings file", filter_type)
+                .options(joinedload(Track.author))
+            )
+        ).scalar()
 
-    track_filter = ChainFilter(
-        RequiredFieldsFilter(),
-        PrivacyFilter(
-            user_id_mode=AnonymizationMode.REMOVE,
-            measurement_id_mode=AnonymizationMode.REMOVE,
-        ),
-        *filters_from_settings,
-    )
-    measurements_filter = DistanceMeasuredFilter()
-    overtaking_events_filter = ConfirmedFilter()
+        if not track:
+            raise ValueError(f"Track {track_id_or_slug!r} not found.")
 
-    track_points = track_filter.filter(input_data, log=log)
-    measurements = measurements_filter.filter(track_points, log=log)
-    overtaking_events = overtaking_events_filter.filter(measurements, log=log)
+        await process_track(session, track, data_source)
 
-    exporter = ExportMeasurements("measurements.dummy")
-    await exporter.add_measurements(measurements)
-    measurements_json = exporter.get_data()
-    del exporter
 
-    exporter = ExportMeasurements("overtaking_events.dummy")
-    await exporter.add_measurements(overtaking_events)
-    overtaking_events_json = exporter.get_data()
-    del exporter
+def to_naive_utc(t):
+    if t is None:
+        return None
+    return t.astimezone(pytz.UTC).replace(tzinfo=None)
 
-    track_json = {
-        "type": "Feature",
-        "geometry": {
-            "type": "LineString",
-            "coordinates": [[m["latitude"], m["longitude"]] for m in track_points],
-        },
-    }
 
-    statistics_json = {
-        "recordedAt": statistics["t_min"].isoformat()
-        if statistics["t_min"] is not None
-        else None,
-        "recordedUntil": statistics["t_max"].isoformat()
-        if statistics["t_max"] is not None
-        else None,
-        "duration": statistics["t"],
-        "length": statistics["d"],
-        "segments": statistics["n_segments"],
-        "numEvents": statistics["n_confirmed"],
-        "numMeasurements": statistics["n_measurements"],
-        "numValid": statistics["n_valid"],
-    }
-
-    for output_filename, data in [
-        ("measurements.json", measurements_json),
-        ("overtakingEvents.json", overtaking_events_json),
-        ("track.json", track_json),
-        ("statistics.json", statistics_json),
-    ]:
-        with open(os.path.join(args.output, output_filename), "w") as fp:
-            json.dump(data, fp, indent=4)
-
-    log.info("Importing to database.")
-    async with make_session() as session:
-        await clear_track_data(session, settings["trackId"])
-        await import_overtaking_events(session, settings["trackId"], overtaking_events)
+async def process_track(session, track, data_source):
+    try:
+        track.processing_status = "complete"
+        track.processed_at = datetime.utcnow()
         await session.commit()
 
+        original_file_path = track.get_original_file_path(app.config)
 
-async def clear_track_data(session, track_id):
+        output_dir = join(
+            app.config.PROCESSING_OUTPUT_DIR, track.author.username, track.slug
+        )
+        os.makedirs(output_dir, exist_ok=True)
+
+        log.info("Annotating and filtering CSV file")
+        imported_data, statistics = ImportMeasurementsCsv().read(
+            original_file_path,
+            user_id="dummy",  # TODO: user username or id or nothing?
+            dataset_id=Track.slug,  # TODO: use track id or slug or nothing?
+        )
+
+        annotator = AnnotateMeasurements(
+            data_source, cache_dir=app.config.OBS_FACE_CACHE_DIR
+        )
+        input_data = await annotator.annotate(imported_data)
+
+        track_filter = ChainFilter(
+            RequiredFieldsFilter(),
+            PrivacyFilter(
+                user_id_mode=AnonymizationMode.REMOVE,
+                measurement_id_mode=AnonymizationMode.REMOVE,
+            ),
+            # TODO: load user privacy zones and create a PrivacyZonesFilter() from them
+        )
+        measurements_filter = DistanceMeasuredFilter()
+        overtaking_events_filter = ConfirmedFilter()
+
+        track_points = track_filter.filter(input_data, log=log)
+        measurements = measurements_filter.filter(track_points, log=log)
+        overtaking_events = overtaking_events_filter.filter(measurements, log=log)
+
+        exporter = ExportMeasurements("measurements.dummy")
+        await exporter.add_measurements(measurements)
+        measurements_json = exporter.get_data()
+        del exporter
+
+        exporter = ExportMeasurements("overtaking_events.dummy")
+        await exporter.add_measurements(overtaking_events)
+        overtaking_events_json = exporter.get_data()
+        del exporter
+
+        track_json = {
+            "type": "Feature",
+            "geometry": {
+                "type": "LineString",
+                "coordinates": [[m["latitude"], m["longitude"]] for m in track_points],
+            },
+        }
+
+        for output_filename, data in [
+            ("measurements.json", measurements_json),
+            ("overtakingEvents.json", overtaking_events_json),
+            ("track.json", track_json),
+        ]:
+            target = join(output_dir, output_filename)
+            log.debug("Writing file %s", target)
+            with open(target, "w") as fp:
+                json.dump(data, fp, indent=4)
+
+        log.info("Import events into database...")
+        await clear_track_data(session, track)
+        await import_overtaking_events(session, track, overtaking_events)
+
+        log.info("Write track statistics and update status...")
+        track.recorded_at = to_naive_utc(statistics["t_min"])
+        track.recorded_until = to_naive_utc(statistics["t_max"])
+        track.duration = statistics["t"]
+        track.length = statistics["d"]
+        track.segments = statistics["n_segments"]
+        track.num_events = statistics["n_confirmed"]
+        track.num_measurements = statistics["n_measurements"]
+        track.num_valid = statistics["n_valid"]
+        track.processing_status = "complete"
+        track.processed_at = datetime.utcnow()
+        await session.commit()
+
+        log.info("Track %s imported.", track.slug)
+    except BaseException as e:
+        await clear_track_data(session, track)
+        track.processing_status = "error"
+        track.processing_log = str(e)
+        track.processed_at = datetime.utcnow()
+
+        await session.commit()
+        raise
+
+
+async def clear_track_data(session, track):
+    track.recorded_at = None
+    track.recorded_until = None
+    track.duration = None
+    track.length = None
+    track.segments = None
+    track.num_events = None
+    track.num_measurements = None
+    track.num_valid = None
+
     await session.execute(
-        delete(OvertakingEvent).where(OvertakingEvent.track_id == track_id)
+        delete(OvertakingEvent).where(OvertakingEvent.track_id == track.id)
     )
 
 
-async def import_overtaking_events(session, track_id, overtaking_events):
+async def import_overtaking_events(session, track, overtaking_events):
     event_models = []
     for m in overtaking_events:
-        sha = hashlib.sha256()
-        sha.update(track_id.encode("utf-8"))
-        sha.update(struct.pack("Q", int(m["time"].timestamp())))
-        hex_hash = sha.hexdigest()
+        hex_hash = hashlib.sha256(
+            struct.pack("QQ", track.id, int(m["time"].timestamp()))
+        ).hexdigest()
 
         event_models.append(
             OvertakingEvent(
-                track_id=track_id,
+                track_id=track.id,
                 hex_hash=hex_hash,
                 way_id=m["OSM_way_id"],
                 direction_reversed=m["OSM_way_orientation"] < 0,

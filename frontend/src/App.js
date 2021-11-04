@@ -42,6 +42,10 @@ const App = connect((state) => ({login: state.login}))(function App({login}) {
   const config = useConfig()
   const apiVersion = useObservable(() => from(api.get('/info')).pipe(pluck('version')))
 
+  React.useEffect(() => {
+    api.loadUser()
+  }, [])
+
   return (
     <Router basename={process.env.PUBLIC_URL || '/'}>
       <Menu fixed="top">

@@ -1,0 +1,3 @@
+./scripts
+sqlalchemy[asyncio]
+asyncpg

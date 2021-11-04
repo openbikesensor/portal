@@ -12,7 +12,13 @@ export type TrackData = {
   overtakingEvents: FeatureCollection,
 }
 
-export type TrackStatistics = {
+export type Track = {
+  slug: string
+  author: UserProfile
+  title: string
+  description?: string
+  createdAt: string
+  public?: boolean
   recordedAt?: Date
   recordedUntil?: Date
   duration?: number
@@ -21,16 +27,6 @@ export type TrackStatistics = {
   numEvents?: number
   numMeasurements?: number
   numValid?: number
-}
-
-export type Track = {
-  slug: string
-  author: UserProfile
-  title: string
-  description?: string
-  createdAt: string
-  public?: boolean
-  statistics?: TrackStatistics
 }
 
 export type TrackPoint = {

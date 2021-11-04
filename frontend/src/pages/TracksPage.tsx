@@ -94,6 +94,14 @@ function maxLength(t, max) {
   }
 }
 
+const COLOR_BY_STATUS = {
+  error: 'red',
+  complete: 'green',
+  created: 'gray',
+  queued: 'orange',
+  processing: 'orange',
+}
+
 export function TrackListItem({track, privateTracks = false}) {
   return (
     <Item key={track.slug}>
@@ -121,6 +129,10 @@ export function TrackListItem({track, privateTracks = false}) {
                 <Icon name="eye slash" fitted /> Private
               </>
             )}
+
+            <span style={{marginLeft: '1em'}}>
+              <Icon color={COLOR_BY_STATUS[track.processingStatus]} name="bolt" fitted /> Processing {track.processingStatus}
+            </span>
           </Item.Extra>
         )}
       </Item.Content>

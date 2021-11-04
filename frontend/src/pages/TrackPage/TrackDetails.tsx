@@ -37,10 +37,10 @@ export default function TrackDetails({track, isAuthor}) {
         </List.Item>
       )}
 
-      {track.statistics?.duration != null && (
+      {track.duration != null && (
         <List.Item>
           <List.Header>Duration</List.Header>
-          {formatDuration(track.statistics.duration)}
+          {formatDuration(track.duration)}
         </List.Item>
       )}
 
@@ -51,24 +51,32 @@ export default function TrackDetails({track, isAuthor}) {
         </List.Item>
       )}
 
-      {track?.statistics?.recordedAt != null && (
+      {track?.recordedAt != null && (
         <List.Item>
           <List.Header>Recorded on</List.Header>
-          <FormattedDate date={track?.statistics.recordedAt} />
+          <FormattedDate date={track?.recordedAt} />
         </List.Item>
       )}
 
-      {track?.statistics?.numEvents != null && (
+      {track?.numEvents != null && (
         <List.Item>
           <List.Header>Confirmed events</List.Header>
-          {track?.statistics.numEvents}
+          {track?.numEvents}
         </List.Item>
       )}
 
-      {track?.statistics?.trackLength != null && (
+      {track?.length != null && (
         <List.Item>
           <List.Header>Length</List.Header>
-          {(track?.statistics.trackLength / 1000).toFixed(2)} km
+          {(track?.length / 1000).toFixed(2)} km
+        </List.Item>
+      )}
+
+
+      {track?.processingStatus != null && (
+        <List.Item>
+          <List.Header>Processing</List.Header>
+          {track.processingStatus}
         </List.Item>
       )}
     </List>

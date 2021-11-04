@@ -16,13 +16,6 @@ services:
       - '27017:27017'
     restart: on-failure
 
-  redis:
-    image: redis
-    volumes:
-      - ./local/redis:/data
-    command: redis-server --appendonly yes
-    restart: on-failure
-
   postgres:
     image: "openmaptiles/postgis:6.0"
     environment:
@@ -37,51 +30,41 @@ services:
   api:
     image: obs-api
     build:
-      context: ./api
+      context: ./api/
+      dockerfile: Dockerfile
     volumes:
-      - ./api/src:/opt/obs/api/src
+      - ./api/obs:/opt/obs/api/obs
+      - ./api/scripts/obs:/opt/obs/scripts/obs
       - ./api/tools:/opt/obs/api/tools
-      - ./api/scripts/obs:/opt/obs/api/scripts/obs
-      - ./api/views:/opt/obs/api/views
+      - ./api/config.dev.py:/opt/obs/api/config.py
       - ./local/api-data:/data
-      - ./api/.migrations.js:/opt/obs/api/.migrations.js
-      - ./api/migrations:/opt/obs/api/migrations/
-      - ./api/config.dev.json:/opt/obs/api/config.json
-    environment:
-      - PORT=3000
-      - MONGODB_URL=mongodb://mongo/obsTest
-      - DATA_DIR=/data
-      - POSTGRES_URL="postgresql+asyncpg://obs:obs@localhost/obs"
     links:
-      - mongo
-      - redis
+      - postgres
+      - keycloak
     ports:
       - '3000:3000'
     restart: on-failure
     command:
-      - npm
-      - run
-      - dev
+      - obs-api
 
   worker:
     image: obs-api
     build:
-      context: ./api
+      context: ./api/
+      dockerfile: Dockerfile
     volumes:
-      - ./api/src:/opt/obs/api/src
+      - ./api/obs:/opt/obs/api/obs
+      - ./api/scripts/obs:/opt/obs/scripts/obs
       - ./api/tools:/opt/obs/api/tools
-      - ./api/scripts/obs:/opt/obs/api/scripts/obs
-      - ./api/views:/opt/obs/api/views
+      - ./api/config.dev.py:/opt/obs/api/config.py
       - ./local/api-data:/data
-      - ./api/config.dev.json:/opt/obs/api/config.json
-    environment:
-      - DATA_DIR=/data
     links:
-      - mongo
-      - redis
+      - postgres
+      - keycloak
     restart: on-failure
-    command: 'bash -c "pip install geopy && npm run dev:worker"'
-
+    command:
+      - python
+      - tools/process_track.py
 
   frontend:
     image: obs-frontend
@@ -99,6 +82,7 @@ services:
       - PORT=3000
     links:
       - api
+      - tileserver
     ports:
       - '3001:3000'
     restart: on-failure
@@ -107,8 +91,7 @@ services:
       - start
 
   openmaptiles-tools:
-    image: "openmaptiles/openmaptiles-tools:${TOOLS_VERSION}"
-    env_file: tile-generator/.env
+    image: openmaptiles/openmaptiles-tools:6.0
     environment:
       # Must match the version of this file (first line)
       # download-osm will use it when generating a composer file
@@ -138,13 +121,11 @@ services:
       - ./tile-generator/cache:/cache
 
   generate-vectortiles:
-    image: "openmaptiles/generate-vectortiles:${TOOLS_VERSION}"
+    image: openmaptiles/generate-vectortiles:6.0
     volumes:
       - ./tile-generator/data:/export
       - ./tile-generator/build/openmaptiles.tm2source:/tm2source
-    env_file: tile-generator/.env
     environment:
-      FILTER_MAPNIK_OUTPUT: ${FILTER_MAPNIK_OUTPUT}
       MBTILES_NAME: ${MBTILES_FILE}
       BBOX: ${BBOX}
       MIN_ZOOM: ${MIN_ZOOM}
@@ -168,4 +149,20 @@ services:
     command:
       - --config
       - /config/tileserver.json
-      # - /data/tiles.mbtiles
+
+  keycloak:
+    image: jboss/keycloak
+    ports:
+      - 3003:8080
+    links:
+      - postgres
+    environment:
+      KEYCLOAK_USER: admin
+      KEYCLOAK_PASSWORD: admin
+      KEYCLOAK_FRONTEND_URL: http://localhost:3003/auth/
+      DB_VENDOR: postgres
+      DB_ADDR: postgres
+      DB_DATABASE: obs
+      DB_USER: obs
+      DB_PASSWORD: obs
+      # DB_SCHEMA: keycloak

@@ -63,6 +63,7 @@ export function FileUploadStatus({
         formData.append('body', file)
 
         xhr = new XMLHttpRequest()
+        xhr.withCredentials = true
 
         const onProgress = (e) => {
           const progress = (e.loaded || 0) / (e.total || 1)
@@ -79,14 +80,14 @@ export function FileUploadStatus({
 
         const config = await configPromise
         if (slug) {
-          xhr.open('PUT', `${config.apiUrl}/api/tracks/${slug}`)
+          xhr.open('PUT', `${config.apiUrl}/tracks/${slug}`)
         } else {
-          xhr.open('POST', `${config.apiUrl}/api/tracks`)
+          xhr.open('POST', `${config.apiUrl}/tracks`)
         }
 
-        const accessToken = await api.getValidAccessToken()
+        // const accessToken = await api.getValidAccessToken()
 
-        xhr.setRequestHeader('Authorization', accessToken)
+        // xhr.setRequestHeader('Authorization', accessToken)
         xhr.send(formData)
       }
 

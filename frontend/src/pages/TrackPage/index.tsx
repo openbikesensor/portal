@@ -57,7 +57,6 @@ const TrackPage = connect((state) => ({login: state.login}))(function TrackPage(
             of(undefined),
             from(api.get(url)).pipe(
               catchError(() => {
-                // history.replace('/tracks')
                 return of(null)
               })
             )
@@ -72,7 +71,7 @@ const TrackPage = connect((state) => ({login: state.login}))(function TrackPage(
         switchMap((url) =>
           from(api.get(url)).pipe(
             catchError(() => {
-              history.replace('/tracks')
+              return of(null)
             })
           )
         ),
@@ -117,8 +116,10 @@ const TrackPage = connect((state) => ({login: state.login}))(function TrackPage(
 
   const {track, trackData, comments} = data || {}
 
+  console.log({track, trackData})
   const loading = track == null || trackData === undefined
-  const processing = ['processing', 'pending'].includes(track?.processingStatus)
+  const processing = ['processing', 'queued', 'created'].includes(track?.processingStatus)
+  const error = track?.processingStatus === 'error'
 
   const [left, setLeft] = React.useState(true)
   const [right, setRight] = React.useState(false)
@@ -131,6 +132,15 @@ const TrackPage = connect((state) => ({login: state.login}))(function TrackPage(
         <Message warning>
           <Message.Content>
             Track data is still being processed, please reload page in a while.
+          </Message.Content>
+        </Message>
+      )}
+
+      {error && (
+        <Message error>
+          <Message.Content>
+            The processing of this track failed, please ask your site
+            administrator for help in debugging the issue.
           </Message.Content>
         </Message>
       )}
