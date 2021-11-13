@@ -92,9 +92,10 @@ function osm2pgsql.process_way(object)
     end
 
     local directionality = 0
-    if contains(ONEWAY_YES, tags["oneway"]) then
+    -- See https://wiki.openstreetmap.org/wiki/Key:oneway section "Implied oneway restriction"
+    if contains(ONEWAY_YES, tags.oneway) or tags.junction == "roundabout" or zone == "motorway" then
       directionality = 1
-    elseif contains(ONEWAY_REVERSE, tags["oneway"]) then
+    elseif contains(ONEWAY_REVERSE, tags.oneway) then
       directionality = -1
     end
 
