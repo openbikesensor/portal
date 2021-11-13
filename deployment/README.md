@@ -112,10 +112,8 @@ docker-compose up -d
 
 ### Updates
 
-The current setup separates local configuration and data, simplifying git updates
-of the `sources`. However upgrades to newer versions may require more actions.
-A more extensive upgrade documentation is being worked on and will be added or
-linked here.
+Before updating make sure that you have properly backed-up your instance so you 
+can always roll back to a pre-update state.
 
 ### Backups
 
