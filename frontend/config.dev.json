@@ -1,5 +1,6 @@
 {
-  "apiUrl": "http://localhost:3000",
+  "apiUrl": "http://localhost:3000/api",
+  "loginUrl": "http://localhost:3000/login",
   "imprintUrl": "https://example.com/imprint",
   "privacyPolicyUrl": "https://example.com/privacy",
   "mapTileset": {

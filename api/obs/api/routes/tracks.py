@@ -7,7 +7,7 @@ from sqlalchemy import select, func
 from sqlalchemy.orm import joinedload
 
 from obs.api.db import Track, User, Comment
-from obs.api.app import app, require_auth, json
+from obs.api.app import api, require_auth, json
 
 from sanic.response import file_stream, empty
 from sanic.exceptions import InvalidUsage, NotFound, Forbidden
@@ -60,7 +60,7 @@ async def _return_tracks(req, extend_query, limit, offset):
     )
 
 
-@app.get("/tracks")
+@api.get("/tracks")
 @parse_parameters
 async def get_tracks(req, limit: int = 20, offset: int = 0, author: str = None):
     def extend_query(q):
@@ -74,7 +74,7 @@ async def get_tracks(req, limit: int = 20, offset: int = 0, author: str = None):
     return await _return_tracks(req, extend_query, limit, offset)
 
 
-@app.get("/tracks/feed")
+@api.get("/tracks/feed")
 @require_auth
 @parse_parameters
 async def get_feed(req, limit: int = 20, offset: int = 0):
@@ -84,7 +84,7 @@ async def get_feed(req, limit: int = 20, offset: int = 0):
     return await _return_tracks(req, extend_query, limit, offset)
 
 
-@app.post("/tracks")
+@api.post("/tracks")
 @require_auth
 async def post_track(req):
     try:
@@ -143,7 +143,7 @@ async def _load_track(req, slug, raise_not_found=True):
     return track
 
 
-@app.get("/tracks/<slug:str>")
+@api.get("/tracks/<slug:str>")
 async def get_track(req, slug: str):
     track = await _load_track(req, slug)
     return json(
@@ -151,7 +151,7 @@ async def get_track(req, slug: str):
     )
 
 
-@app.delete("/tracks/<slug:str>")
+@api.delete("/tracks/<slug:str>")
 @require_auth
 async def delete_track(req, slug: str):
     track = await _load_track(req, slug)
@@ -164,7 +164,7 @@ async def delete_track(req, slug: str):
     return empty()
 
 
-@app.get("/tracks/<slug:str>/data")
+@api.get("/tracks/<slug:str>/data")
 async def get_track_data(req, slug: str):
     track = await _load_track(req, slug)
 
@@ -191,17 +191,17 @@ async def get_track_data(req, slug: str):
     )
 
 
-@app.get("/tracks/<slug:str>/download/original.csv")
+@api.get("/tracks/<slug:str>/download/original.csv")
 async def download_original_file(req, slug: str):
     track = await _load_track(req, slug)
 
     if not track.is_visible_to_private(req.ctx.user):
         raise Forbidden()
 
-    return await file_stream(track.get_original_file_path(app.config))
+    return await file_stream(track.get_original_file_path(req.app.config))
 
 
-@app.put("/tracks/<slug:str>")
+@api.put("/tracks/<slug:str>")
 @require_auth
 async def put_track(req, slug: str):
     track = await _load_track(req, slug)
@@ -254,7 +254,7 @@ async def put_track(req, slug: str):
     )
 
 
-@app.get("/tracks/<slug:str>/comments")
+@api.get("/tracks/<slug:str>/comments")
 @parse_parameters
 async def get_track_comments(req, slug: str, limit: int = 20, offset: int = 0):
     track = await _load_track(req, slug)
@@ -289,7 +289,7 @@ async def get_track_comments(req, slug: str, limit: int = 20, offset: int = 0):
     )
 
 
-@app.post("/tracks/<slug:str>/comments")
+@api.post("/tracks/<slug:str>/comments")
 @require_auth
 async def post_track_comment(req, slug: str):
     track = await _load_track(req, slug)
@@ -326,21 +326,11 @@ async def post_track_comment(req, slug: str):
     return json({"comment": comment.to_dict(for_user_id=req.ctx.user.id)})
 
 
-@app.delete("/tracks/<slug:str>/comments/<uid:str>")
+@api.delete("/tracks/<slug:str>/comments/<uid:str>")
 @require_auth
 async def delete_track_comment(req, slug: str, uid: str):
-    print("XXXXXXXXXXXXXX")
-    print("XXXXXXXXXXXXXX")
-    print("XXXXXXXXXXXXXX")
-    print("XXXXXXXXXXXXXX")
-    print("XXXXXXXXXXXXXX")
-    print("XXXXXXXXXXXXXX")
-    print("XXXXXXXXXXXXXX")
-    print("XXXXXXXXXXXXXX")
-    print("XXXXXXXXXXXXXX")
     track = await _load_track(req, slug)
 
-    print("trackid", track.id, "  uid", uid)
     comment = (
         await req.ctx.db.execute(
             select(Comment)

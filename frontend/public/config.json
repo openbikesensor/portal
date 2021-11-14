@@ -1,11 +1,16 @@
 {
   "apiUrl": "https://api.example.com",
-  "auth": {
-    "server": "https://api.example.com",
-    "clientId": "!!!<<<CHANGEME>>>!!!",
-    "scope": "*",
-    "redirectUri": "https://portal.example.com/redirect"
-  },
   "imprintUrl": "https://portal.example.com/imprint",
-  "privacyPolicyUrl": "https://portal.example.com/privacy"
+  "privacyPolicyUrl": "https://portal.example.com/privacy",
+  "mapTileset": {
+    "url": "https://tiles.wmflabs.org/bw-mapnik/{z}/{x}/{y}.png",
+    "minZoom": 0,
+    "maxZoom": 18
+  },
+  "mapHome": {
+    "zoom": 15,
+    "longitude": 7.8302,
+    "latitude": 47.9755
+  },
+  "obsMapSource": "https://portal.example.com/tileset/data/v3.json"
 }

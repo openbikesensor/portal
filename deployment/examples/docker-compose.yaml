@@ -27,7 +27,7 @@ services:
       - backend
 
   api:
-    image: obs-api
+    image: openbikesensor-api
     build:
       context: ./source/api
     volumes:
@@ -51,7 +51,7 @@ services:
       - backend
 
   worker:
-    image: obs-api
+    image: openbikesensor-api
     build:
       context: ./source/api
     volumes:
@@ -72,11 +72,11 @@ services:
 
   frontend:
     image: obs-frontend
-    volumes:
-       - ./config/frontend.json:/usr/local/apache2/htdocs/config.json
     build:
       context: ./source/frontend
       dockerfile: Dockerfile-prod
+    volumes:
+       - ./config/frontend.json:/usr/local/apache2/htdocs/config.json
     links:
       - api
     restart: on-failure

@@ -19,20 +19,29 @@ KEYCLOAK_URL = "http://localhost:1234/auth/realms/obs/"
 KEYCLOAK_CLIENT_ID = "portal"
 KEYCLOAK_CLIENT_SECRET = "00000000-0000-0000-0000-000000000000"
 
+# Whether the API should run the worker loop, or a dedicated worker is used
+DEDICATED_WORKER = True
+
 # The root of the frontend. Needed for redirecting after login, and for CORS.
-MAIN_FRONTEND_URL = "https://portal.example.com/"
+# Set to None if frontend is served by the API.
+FRONTEND_URL = None
 
-# Mail settings
-MAIL_ENABLED = False
-MAIL_FROM = "Sender Name <sender@example.com>"
-MAIL_SMTP_HOST = "mail.example.com"
-MAIL_SMTP_PORT = 465
-MAIL_STARTTLS = False
-MAIL_SMTP_USERNAME = "sender@example.com"
+# Where to find the compiled frontend assets (must include index.html), or None
+# to disable serving the frontend.
+FRONTEND_DIR = "../frontend/build/"
 
-# Urls to important documents, hosted elsewhere
-IMPRINT_URL = "https://example.com/imprint"
-PRIVACY_POLICY_URL = "https://example.com/privacy"
+# Can be an object or a JSON string
+FRONTEND_CONFIG = {
+    "imprintUrl": "https://example.com/imprint",
+    "privacyPolicyUrl": "https://example.com/privacy",
+    "mapTileset": {
+        "url": "https://tiles.wmflabs.org/bw-mapnik/{z}/{x}/{y}.png",
+        "minZoom": 0,
+        "maxZoom": 18,
+    },
+    "mapHome": {"zoom": 15, "longitude": 7.8302, "latitude": 47.9755},
+    "obsMapSource": "http://localhost:3002/data/v3.json",
+}
 
 # Path overrides:
 # API_ROOT_DIR = "??" # default: api/ inside repository

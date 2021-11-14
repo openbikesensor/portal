@@ -2,7 +2,7 @@ import logging
 
 from sanic.response import json
 
-from obs.api.app import app, require_auth
+from obs.api.app import api, require_auth
 
 log = logging.getLogger(__name__)
 
@@ -20,13 +20,13 @@ def user_to_json(user):
     }
 
 
-@app.get("/user")
+@api.get("/user")
 @require_auth
 async def get_user(req):
     return json(user_to_json(req.ctx.user))
 
 
-@app.put("/user")
+@api.put("/user")
 @require_auth
 async def put_user(req):
     user = req.ctx.user

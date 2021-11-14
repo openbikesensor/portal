@@ -28,7 +28,7 @@ services:
     - ./local/postgres/data:/var/lib/postgresql/data
 
   api:
-    image: obs-api
+    image: openbikesensor-api
     build:
       context: ./api/
       dockerfile: Dockerfile
@@ -37,6 +37,7 @@ services:
       - ./api/scripts/obs:/opt/obs/scripts/obs
       - ./api/tools:/opt/obs/api/tools
       - ./api/config.dev.py:/opt/obs/api/config.py
+      - ./frontend/build:/opt/obs/frontend/build
       - ./local/api-data:/data
     links:
       - postgres
@@ -45,10 +46,10 @@ services:
       - '3000:3000'
     restart: on-failure
     command:
-      - obs-api
+      - openbikesensor-api
 
   worker:
-    image: obs-api
+    image: openbikesensor-api
     build:
       context: ./api/
       dockerfile: Dockerfile
@@ -67,7 +68,7 @@ services:
       - tools/process_track.py
 
   frontend:
-    image: obs-frontend
+    image: openbikesensor-frontend
     build:
       context: ./frontend
     volumes:
@@ -166,3 +167,18 @@ services:
       DB_USER: obs
       DB_PASSWORD: obs
       # DB_SCHEMA: keycloak
+
+  prod-test:
+    image: openbikesensor-portal
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    volumes:
+      - ./api/config.prod-test.py:/opt/obs/api/config.py
+      - ./local/api-data:/data
+    links:
+      - postgres
+      - keycloak
+    ports:
+      - '3000:3000'
+    restart: on-failure

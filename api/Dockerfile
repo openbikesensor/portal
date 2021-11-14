@@ -10,4 +10,4 @@ RUN pip install -e .
 
 EXPOSE 8000
 
-CMD ["obs-api"]
+CMD ["openbikesensor-api"]

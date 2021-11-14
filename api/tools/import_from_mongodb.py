@@ -9,7 +9,7 @@ from sqlalchemy import select
 
 from motor.motor_asyncio import AsyncIOMotorClient
 
-from obs.api.db import make_session, connect_db, User, Track, async_session, Comment
+from obs.api.db import make_session, connect_db, User, Track, Comment
 from obs.api.app import app
 
 log = logging.getLogger(__name__)

@@ -4,7 +4,7 @@ with open("requirements.txt") as f:
     requires = list(f.readlines())
 
 setup(
-    name="obs-api",
+    name="openbikesensor-api",
     version="0.0.1",
     author="OpenBikeSensor Contributors",
     license="LGPL-3.0",
@@ -15,7 +15,7 @@ setup(
     install_requires=requires,
     entry_points={
         "console_scripts": [
-            "obs-api=obs.bin.obs_api:main",
+            "openbikesensor-api=obs.bin.openbikesensor_api:main",
         ]
     },
 )

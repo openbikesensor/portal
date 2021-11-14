@@ -8,7 +8,7 @@ from oic.oic import Client
 from oic.oic.message import AuthorizationResponse, RegistrationResponse
 from oic.utils.authn.client import CLIENT_AUTHN_METHOD
 
-from obs.api.app import app
+from obs.api.app import auth
 from obs.api.db import User
 
 from sanic.response import json, redirect
@@ -19,7 +19,7 @@ log = logging.getLogger(__name__)
 client = Client(client_authn_method=CLIENT_AUTHN_METHOD)
 
 
-@app.before_server_start
+@auth.before_server_start
 async def connect_auth_client(app, loop):
     client.allow["issuer_mismatch"] = True
     pc = client.provider_config(app.config.KEYCLOAK_URL)
@@ -31,7 +31,7 @@ async def connect_auth_client(app, loop):
     )
 
 
-@app.route("/login")
+@auth.route("/login")
 @parse_parameters
 async def login(req, next: str = None):
     session = req.ctx.session
@@ -53,7 +53,7 @@ async def login(req, next: str = None):
     return redirect(login_url)
 
 
-@app.route("/login/redirect")
+@auth.route("/login/redirect")
 async def login_redirect(req):
     session = req.ctx.session
 
@@ -84,7 +84,11 @@ async def login_redirect(req):
     if user is None:
         user = (
             await req.ctx.db.execute(
-                select(User).where(User.email == email and User.username = preferred_username and User.match_by_username_email)
+                select(User).where(
+                    User.email == email
+                    and User.username == preferred_username
+                    and User.match_by_username_email
+                )
             )
         ).scalar()
 

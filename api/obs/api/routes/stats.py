@@ -9,7 +9,7 @@ from sqlalchemy import select, func
 from sanic.response import json
 from sanicargs import parse_parameters
 
-from obs.api.app import app
+from obs.api.app import api
 from obs.api.db import Track, OvertakingEvent, User
 
 
@@ -30,7 +30,7 @@ def round_to(value: float, multiples: float) -> float:
     return round(value / multiples) * multiples
 
 
-@app.route("/stats")
+@api.route("/stats")
 @parse_parameters
 async def stats(req, user: str = None, start: datetime = None, end: datetime = None):
     conditions = [
@@ -51,7 +51,6 @@ async def stats(req, user: str = None, start: datetime = None, end: datetime = N
     if by_user:
         conditions.append(Track.author_id == req.ctx.user.id)
 
-    print(conditions)
     track_condition = reduce(and_, conditions)
     public_track_condition = Track.public and track_condition
 

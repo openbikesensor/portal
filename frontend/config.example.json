@@ -1,11 +1,6 @@
 {
   "apiUrl": "https://portal.example.com/api",
-  "auth": {
-    "server": "https://portal.example.com/api",
-    "clientId": "CHANGEME",
-    "scope": "*",
-    "redirectUri": "https://portal.example.com/redirect"
-  },
+  "loginUrl": "https://portal.example.com/login",
   "imprintUrl": "https://example.com/imprint",
   "privacyPolicyUrl": "https://example.com/privacy",
   "mapTileset": {
@@ -18,5 +13,5 @@
     "longitude": 9.1797,
     "latitude": 48.7784
   },
-  "obsMapSource": "http://api.example.com/tileserver/data/v3.json"
+  "obsMapSource": "http://portal.example.com/tileserver/data/v3.json"
 }

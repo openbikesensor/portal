@@ -20,18 +20,28 @@ KEYCLOAK_CLIENT_ID = "portal"
 KEYCLOAK_CLIENT_SECRET = "76b84224-dc24-4824-bb98-9e1ba15bd58f"
 
 # Whether the API should run the worker loop, or a dedicated worker is used
-DEDICATED_WORKER = True
+DEDICATED_WORKER = False
 
 # The root of the frontend. Needed for redirecting after login, and for CORS.
 # Set to None if frontend is served by the API.
-FRONTEND_URL = "http://localhost:3000/"
+FRONTEND_URL = None
 
 # Where to find the compiled frontend assets (must include index.html), or None
 # to disable serving the frontend.
-FRONTEND_DIR = None
+FRONTEND_DIR = "../frontend/build/"
 
 # Can be an object or a JSON string
-FRONTEND_CONFIG = None
+FRONTEND_CONFIG = {
+    "imprintUrl": "https://example.com/imprint",
+    "privacyPolicyUrl": "https://example.com/privacy",
+    "mapTileset": {
+        "url": "https://tiles.wmflabs.org/bw-mapnik/{z}/{x}/{y}.png",
+        "minZoom": 0,
+        "maxZoom": 18,
+    },
+    "mapHome": {"zoom": 15, "longitude": 7.8302, "latitude": 47.9755},
+    "obsMapSource": "http://localhost:3002/data/v3.json",
+}
 
 # Path overrides:
 # API_ROOT_DIR = "??" # default: api/ inside repository

@@ -1,0 +1,10 @@
+local
+*.user
+frontend/node_modules
+api/.pyenv
+.git
+cache
+data
+tile-generator/cache
+tile-generator/data
+tile-generator/build

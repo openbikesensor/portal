@@ -14,7 +14,7 @@ from slugify import slugify
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.ext.asyncio import create_async_engine
-from sqlalchemy.orm import sessionmaker, relationship
+from sqlalchemy.orm import sessionmaker as SessionMaker, relationship
 from sqlalchemy.types import UserDefinedType, BIGINT, TEXT
 from sqlalchemy import (
     Boolean,
@@ -38,18 +38,18 @@ from sqlalchemy.dialects.postgresql import HSTORE, UUID
 Base = declarative_base()
 
 
-engine = ContextVar("engine")
-async_session = ContextVar("async_session")
+engine = None
+sessionmaker = None
 
 
 @asynccontextmanager
 async def make_session():
-    async with async_session.get()() as session:
+    async with sessionmaker() as session:
         yield session
 
 
 async def init_models():
-    async with engine.get().begin() as conn:
+    async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.drop_all)
         await conn.execute(text('CREATE EXTENSION IF NOT EXISTS "hstore";'))
         await conn.execute(text('CREATE EXTENSION IF NOT EXISTS "postgis";'))
@@ -64,19 +64,19 @@ def random_string(length):
 
 @asynccontextmanager
 async def connect_db(url):
-    engine_ = create_async_engine(url, echo=False)
-    t1 = engine.set(engine_)
+    global engine, sessionmaker
 
-    async_session_ = sessionmaker(engine_, class_=AsyncSession, expire_on_commit=False)
-    t2 = async_session.set(async_session_)
+    engine = create_async_engine(url, echo=False)
+    sessionmaker = SessionMaker(engine, class_=AsyncSession, expire_on_commit=False)
 
     yield
 
     # for AsyncEngine created in function scope, close and
     # clean-up pooled connections
-    await engine_.dispose()
-    engine.reset(t1)
-    async_session.reset(t2)
+    await engine.dispose()
+
+    engine = None
+    sessionmaker = None
 
 
 ZoneType = SqlEnum("rural", "urban", "motorway", name="zone_type")
