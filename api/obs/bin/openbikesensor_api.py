@@ -10,7 +10,13 @@ from obs.api.db import connect_db
 
 
 def main():
-    app.run(host=app.config.HOST, port=app.config.PORT, debug=app.config.DEBUG)
+    debug = app.config.DEBUG
+    app.run(
+        host=app.config.HOST,
+        port=app.config.PORT,
+        debug=debug,
+        auto_reload=app.config.get("AUTO_RELOAD", debug),
+    )
 
 
 if __name__ == "__main__":

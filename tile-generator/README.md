@@ -74,11 +74,18 @@ make generate-tiles-pg
 
 ## Publish vector tiles
 
-The tool [tileserver-gl](http://tileserver.org/) is used to publish the vector
-tiles separately through HTTP. The tileserver runs inside docker, so all you need to do for a development setup is start it:
+The API is capable of serving the generated mbtiles file in XYZ scheme with PBF
+format. Set the config variable `TILES_FILE` to point to your generated file.
+
+The API might be inefficient at publishing the tiles. You might want to try a
+proper tileserver with caching and all if you run into trouble with its
+capabilities.
+
+The URL for the tiles is:
 
 ```
-docker compose up -d tileserver
+http://api.example.com/tiles/{z}/{x}/{y}.pbf
 ```
 
-It is now available at [http://localhost:3002/](http://localhost:3002/).
+The API generates this URL into the `/config.json` as `obsMapSource` if it is
+configured to serve tiles *and* the frontend.

@@ -13,5 +13,10 @@
     "longitude": 7.8302,
     "latitude": 47.9755
   },
-  "obsMapSource": "http://localhost:3002/data/v3.json"
+  "obsMapSource": {
+    "type": "vector",
+    "tiles": ["http://localhost:3000/tiles/{z}/{x}/{y}.pbf"],
+    "minzoom": 12,
+    "maxzoom": 14
+  }
 }

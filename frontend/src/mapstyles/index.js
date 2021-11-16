@@ -3,8 +3,8 @@ import _ from 'lodash'
 import bright from './bright.json'
 import positron from './positron.json'
 
-function addRoadsStyle(style, sourceUrl = "http://localhost:3002/data/v3.json") {
-  style.sources.obs = {"type": "vector", "url": sourceUrl}
+function addRoadsStyle(style, mapSource) {
+  style.sources.obs = mapSource
 
   // insert before "road_oneway" layer
   let idx = style.layers.findIndex(l => l.id === 'road_oneway')

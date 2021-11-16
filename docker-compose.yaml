@@ -39,6 +39,7 @@ services:
       - ./api/config.dev.py:/opt/obs/api/config.py
       - ./frontend/build:/opt/obs/frontend/build
       - ./local/api-data:/data
+      - ./tile-generator/data/:/tiles
     links:
       - postgres
       - keycloak
@@ -140,17 +141,6 @@ services:
       PGHOST: postgres
       PGPORT: 5432
 
-  tileserver:
-    image: klokantech/tileserver-gl
-    ports:
-      - 3002:80
-    volumes:
-      - ./tile-generator/tileserver-gl-config.json:/config/tileserver.json
-      - ./tile-generator/data/:/data
-    command:
-      - --config
-      - /config/tileserver.json
-
   keycloak:
     image: jboss/keycloak
     ports:
@@ -166,19 +156,3 @@ services:
       DB_DATABASE: obs
       DB_USER: obs
       DB_PASSWORD: obs
-      # DB_SCHEMA: keycloak
-
-  prod-test:
-    image: openbikesensor-portal
-    build:
-      context: ./
-      dockerfile: Dockerfile
-    volumes:
-      - ./api/config.prod-test.py:/opt/obs/api/config.py
-      - ./local/api-data:/data
-    links:
-      - postgres
-      - keycloak
-    ports:
-      - '3000:3000'
-    restart: on-failure

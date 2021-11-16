@@ -12,5 +12,8 @@
     "longitude": 7.8302,
     "latitude": 47.9755
   },
-  "obsMapSource": "https://portal.example.com/tileset/data/v3.json"
+  "obsMapSource": {
+    "type": "vector",
+    "url": "https://portal.example.com/tileset/data/v3.json"
+  }
 }

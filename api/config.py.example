@@ -4,6 +4,7 @@ PORT = 3000
 
 # Extended log output, but slower
 DEBUG = False
+AUTO_RESTART = DEBUG
 
 # Required to encrypt or sign sessions, cookies, tokens, etc.
 SECRET = "!!!<<<CHANGEME>>>!!!"
@@ -40,8 +41,16 @@ FRONTEND_CONFIG = {
         "maxZoom": 18,
     },
     "mapHome": {"zoom": 15, "longitude": 7.8302, "latitude": 47.9755},
-    "obsMapSource": "http://localhost:3002/data/v3.json",
+    "obsMapSource": {
+        "type": "vector",
+        "url": "http://localhost:3002/data/v3.json",
+    },
 }
+
+# If the API should serve generated tiles, this is the path where the tiles are
+# built. This is an experimental option and probably very inefficient, a proper
+# tileserver should be prefered. Set to None to disable.
+TILES_FILE = None
 
 # Path overrides:
 # API_ROOT_DIR = "??" # default: api/ inside repository
@@ -50,5 +59,9 @@ FRONTEND_CONFIG = {
 # PROCESSING_OUTPUT_DIR = "??"  # default: DATA_DIR/processing-output
 # TRACKS_DIR = "??" # default: DATA_DIR/tracks
 # OBS_FACE_CACHE_DIR = "??" # default: DATA_DIR/obs-face-cache
+
+# Additional allowed origins for CORS headers. The FRONTEND_URL is included by
+# default. Python list, or whitespace separated string.
+ADDITIONAL_CORS_ORIGINS = None
 
 # vim: set ft=python :

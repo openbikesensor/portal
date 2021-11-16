@@ -7,7 +7,7 @@ import {map, switchMap} from 'rxjs/operators'
 
 import api from 'api'
 import {Stats, Page} from 'components'
-import {useConfig} from 'config'
+import {useConfig, MapSource} from 'config'
 
 import {TrackListItem} from './TracksPage'
 import styles from './HomePage.module.scss'
@@ -16,7 +16,7 @@ import 'ol/ol.css'
 import {obsRoads} from '../mapstyles'
 import ReactMapGl from 'react-map-gl'
 
-function WelcomeMap({mapSource}: {mapSource: string}) {
+function WelcomeMap({mapSource}: {mapSource: MapSource}) {
   const mapStyle = React.useMemo(() => obsRoads(mapSource), [mapSource])
   const config = useConfig()
   const [viewport, setViewport] = React.useState({

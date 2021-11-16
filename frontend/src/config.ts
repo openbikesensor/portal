@@ -1,5 +1,15 @@
 import React from 'react'
 
+export type MapSoure = {
+  type: 'vector'
+  url: string,
+} | {
+  type: 'vector',
+  tiles: string[],
+  minzoom: number,
+  maxzoom: number,
+}
+
 export interface Config {
   apiUrl: string
   mapHome: {
@@ -7,7 +17,7 @@ export interface Config {
     longitude: number
     zoom: number
   }
-  obsMapSource?: string
+  obsMapSource?: MapSoure
   imprintUrl?: string
   privacyPolicyUrl?: string
   mapTileset?: {

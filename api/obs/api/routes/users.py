@@ -21,9 +21,8 @@ def user_to_json(user):
 
 
 @api.get("/user")
-@require_auth
 async def get_user(req):
-    return json(user_to_json(req.ctx.user))
+    return json(user_to_json(req.ctx.user) if req.ctx.user else None)
 
 
 @api.put("/user")

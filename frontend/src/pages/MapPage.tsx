@@ -12,7 +12,7 @@ import {obsRoads} from '../mapstyles'
 import ReactMapGl from 'react-map-gl'
 
 function BigMap({mapSource, config}: {mapSource: string ,config: Config}) {
-  const mapStyle = React.useMemo(() => obsRoads(mapSource), [mapSource])
+  const mapStyle = React.useMemo(() => mapSource && obsRoads(mapSource), [mapSource])
   const [viewport, setViewport] = React.useState({
     longitude: 0,
     latitude: 0,
@@ -24,6 +24,10 @@ function BigMap({mapSource, config}: {mapSource: string ,config: Config}) {
       setViewport(config.mapHome)
     }
   }, [config])
+
+  if (!mapStyle) {
+    return null
+  }
 
   return (
     <div className={styles.mapContainer}>
