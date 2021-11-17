@@ -61,7 +61,7 @@ async def process_tracks(data_source, tracks):
 
     :param tracks: A list of strings which
     """
-    with make_session() as session:
+    async with make_session() as session:
         for track_id_or_slug in tracks:
             track = (
                 await session.execute(

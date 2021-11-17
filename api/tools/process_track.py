@@ -44,8 +44,7 @@ async def main():
         data_source = DataSource(tile_source)
 
         if args.tracks:
-            async with make_session() as session:
-                await process_tracks(session, data_source, args.tracks)
+            await process_tracks(data_source, args.tracks)
         else:
             await process_tracks_loop(data_source, args.loop_delay)
 
