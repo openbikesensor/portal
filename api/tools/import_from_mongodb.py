@@ -2,6 +2,7 @@
 import argparse
 import asyncio
 import logging
+import json
 from datetime import datetime
 from uuid import uuid4
 
@@ -29,6 +30,14 @@ async def main():
         help="url to the mongodb, in format mongodb://user:pass@host/dbname",
     )
 
+    parser.add_argument(
+        "--keycloak-users-file",
+        metavar="FILE",
+        type=argparse.FileType("wt", encoding="utf-8"),
+        help="a file to write a JSON of all old users to, for importing to keycloak",
+        default=None,
+    )
+
     args = parser.parse_args()
 
     async with connect_db(app.config.POSTGRES_URL):
@@ -36,14 +45,16 @@ async def main():
             mongo = AsyncIOMotorClient(args.mongodb_url).get_default_database()
 
             log.debug("Connected to mongodb and postgres.")
-            user_id_map = await import_users(mongo, session)
+            user_id_map = await import_users(mongo, session, args.keycloak_users_file)
 
             await import_tracks(mongo, session, user_id_map)
 
             await session.commit()
 
 
-async def import_users(mongo, session):
+async def import_users(mongo, session, keycloak_users_file):
+    keycloak_users = []
+
     old_id_by_email = {}
     async for user in mongo.users.find({}):
         old_id_by_email[user["email"]] = user["_id"]
@@ -61,6 +72,21 @@ async def import_users(mongo, session):
             updated_at=user.get("updatedAt") or datetime.utcnow(),
         )
 
+        needs_email_verification = user.get("needsEmailValidation", True)
+        required_actions = ["UPDATE_PASSWORD"]
+        if needs_email_verification:
+            required_actions.append("VERIFY_EMAIL")
+
+        keycloak_users.append(
+            {
+                "username": user["username"],
+                "email": user["email"],
+                "enabled": True,
+                "requiredActions": required_actions,
+                "emailVerified": not needs_email_verification,
+            }
+        )
+
         session.add(new_user)
         log.info("Creating user %s", new_user.username)
 
@@ -70,6 +96,10 @@ async def import_users(mongo, session):
     result = await session.scalars(select(User))
     for user in result:
         id_map[old_id_by_email[user.email]] = user.id
+
+    if keycloak_users_file:
+        json.dump(keycloak_users, keycloak_users_file, indent=4)
+        log.info("Wrote keycloak users file to %s.", keycloak_users_file.name)
 
     return id_map
 
