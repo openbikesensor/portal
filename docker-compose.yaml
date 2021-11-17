@@ -84,7 +84,6 @@ services:
       - PORT=3000
     links:
       - api
-      - tileserver
     ports:
       - '3001:3000'
     restart: on-failure
