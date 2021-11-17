@@ -80,7 +80,7 @@ Now navigate to http://localhost:3003/ and follow these steps:
 
 * Click "Administration Console" and log in with `admin` / `admin`
 * Hover over the realm name on the top left and click "Add realm"
-* Name the Realm `OBS Dev` (spelling matters) and create it
+* Name the Realm `obs-dev` (spelling matters) and create it
 * In the sidebar, navigate to Configure -> Clients, and click "Create" on the top right
 * Client ID is `portal`. Hit "Save".
 * In the Tab "Settings", edit the new client's "Access Type" to `confidential`
