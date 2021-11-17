@@ -93,7 +93,14 @@ async def login_redirect(req):
         ).scalar()
 
         if user:
+            log.info(
+                "Re-matched existing user %s (sub: %s) based on email and username (%s)",
+                user.id,
+                user.sub,
+                preferred_username,
+            )
             user.match_by_username_email = False
+            user.sub = sub
 
     if user is None:
         log.info(
@@ -104,7 +111,7 @@ async def login_redirect(req):
         user = User(sub=sub, username=preferred_username, email=email)
         req.ctx.db.add(user)
     else:
-        log.info("Logged in known user (id: %s).", user.id)
+        log.info("Logged in known user (id: %s, sub: %s).", user.id, user.sub)
 
         if email != user.email:
             log.debug("Updating user (id: %s) email from auth system.", user.id)

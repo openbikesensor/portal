@@ -61,7 +61,6 @@ async def import_users(mongo, session, keycloak_users_file):
 
         new_user = User(
             sub=str(uuid4()),
-            match_by_username_email=True,
             email=user["email"],
             username=user["username"],
             bio=user.get("bio"),
@@ -70,22 +69,24 @@ async def import_users(mongo, session, keycloak_users_file):
             api_key=str(user["_id"]),
             created_at=user.get("createdAt") or datetime.utcnow(),
             updated_at=user.get("updatedAt") or datetime.utcnow(),
+            match_by_username_email=True,
         )
 
-        needs_email_verification = user.get("needsEmailValidation", True)
-        required_actions = ["UPDATE_PASSWORD"]
-        if needs_email_verification:
-            required_actions.append("VERIFY_EMAIL")
+        if keycloak_users_file:
+            needs_email_verification = user.get("needsEmailValidation", True)
+            required_actions = ["UPDATE_PASSWORD"]
+            if needs_email_verification:
+                required_actions.append("VERIFY_EMAIL")
 
-        keycloak_users.append(
-            {
-                "username": user["username"],
-                "email": user["email"],
-                "enabled": True,
-                "requiredActions": required_actions,
-                "emailVerified": not needs_email_verification,
-            }
-        )
+            keycloak_users.append(
+                {
+                    "username": new_user.username,
+                    "email": new_user.email,
+                    "enabled": True,
+                    "requiredActions": required_actions,
+                    "emailVerified": not needs_email_verification,
+                }
+            )
 
         session.add(new_user)
         log.info("Creating user %s", new_user.username)
@@ -98,7 +99,7 @@ async def import_users(mongo, session, keycloak_users_file):
         id_map[old_id_by_email[user.email]] = user.id
 
     if keycloak_users_file:
-        json.dump(keycloak_users, keycloak_users_file, indent=4)
+        json.dump({"users": keycloak_users}, keycloak_users_file, indent=4)
         log.info("Wrote keycloak users file to %s.", keycloak_users_file.name)
 
     return id_map
@@ -111,6 +112,8 @@ def parse_datetime(s):
 
 
 async def import_tracks(mongo, session, user_id_map):
+    track_count = 0
+
     async for track in mongo.tracks.find({}):
         stats = track.get("statistics") or {}
         new_track = Track(
@@ -139,7 +142,6 @@ async def import_tracks(mongo, session, user_id_map):
         )
 
         session.add(new_track)
-        log.info("Creating track %s", new_track.slug)
 
         comment_ids = track.get("comments") or []
         if comment_ids:
@@ -154,6 +156,10 @@ async def import_tracks(mongo, session, user_id_map):
                 )
                 new_track.comments.append(new_comment)
                 session.add(new_comment)
+
+        track_count += 1
+
+    log.info("Created %s tracks", track_count)
 
     await session.commit()
 
