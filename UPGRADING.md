@@ -20,12 +20,20 @@ explicitly. Once we implement them, their usage will be described in the
   it will need to be mounted to `api/config.py` in the container. Ignore the
   Keycloak options for now.
 * Run the database reset script: `docker-compose run --rm api python tools/reset_database.py`
-* Run the database migration script: `docker-compose run --rm api python
-  tools/import_from_mongodb.py mongodb://mongo/obs`. You might need to adjust
-  the URL.
+* Run the database migration script: 
+    
+    ```bash
+    docker-compose run --rm \
+        -v $PWD/export:/export \
+        api \
+        python tools/import_from_mongodb.py mongodb://mongo/obs \
+        --keycloak-users-file /export/users.json
+    ```
 * Shut down the `mongo` service, you can now remove it from docker-compose.yaml
 * Start `keycloak` and configure it, similarly to how it was configured in the
   development setup (but choose more secure options). Update the API config
-  file to match your keycloak configuration.
-* Start `api`, `worker` and `frontend`
+  file to match your keycloak configuration. Import the file
+  `export/users.json` into your realm, it will re-add all the users from the
+  old installation. You should delete the file and `export/` folder afterwards.
+* Start `api`, `worker` and `frontend`.
 
