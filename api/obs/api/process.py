@@ -149,7 +149,7 @@ async def process_track(session, track, data_source):
             "type": "Feature",
             "geometry": {
                 "type": "LineString",
-                "coordinates": [[m["latitude"], m["longitude"]] for m in track_points],
+                "coordinates": [[m["longitude"], m["latitude"]] for m in track_points],
             },
         }
 
