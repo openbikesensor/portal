@@ -7,36 +7,12 @@ import {map, switchMap} from 'rxjs/operators'
 
 import api from 'api'
 import {Stats, Page} from 'components'
-import {useConfig, MapSource} from 'config'
 
 import {TrackListItem} from './TracksPage'
+import {RoadsMap} from './MapPage'
 import styles from './HomePage.module.scss'
 
 import 'ol/ol.css'
-import {obsRoads} from '../mapstyles'
-import ReactMapGl from 'react-map-gl'
-
-function WelcomeMap({mapSource}: {mapSource: MapSource}) {
-  const mapStyle = React.useMemo(() => obsRoads(mapSource), [mapSource])
-  const config = useConfig()
-  const [viewport, setViewport] = React.useState({
-    longitude: 0,
-    latitude: 0,
-    zoom: 0,
-  })
-
-  React.useEffect(() => {
-    if (config?.mapHome) {
-      setViewport(config.mapHome)
-    }
-  }, [config])
-
-  return (
-    <div className={styles.welcomeMap}>
-      <ReactMapGl mapStyle={mapStyle} width="100%" height="100%" onViewportChange={setViewport} {...viewport} />
-    </div>
-  )
-}
 
 function MostRecentTrack() {
   const track: Track | null = useObservable(
@@ -67,14 +43,14 @@ function MostRecentTrack() {
 }
 
 export default function HomePage() {
-  const {obsMapSource: mapSource} = useConfig() || {}
-
   return (
     <Page>
       <Grid stackable>
         <Grid.Row>
           <Grid.Column width={10}>
-            {mapSource ?  <WelcomeMap {...{mapSource}} /> : null}
+            <div className={styles.welcomeMap}>
+              <RoadsMap />
+            </div>
           </Grid.Column>
           <Grid.Column width={6}>
             <Stats />

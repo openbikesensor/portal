@@ -9,9 +9,9 @@ import styles from './MapPage.module.scss'
 
 import 'ol/ol.css'
 import {obsRoads} from '../mapstyles'
-import ReactMapGl from 'react-map-gl'
+import ReactMapGl, {AttributionControl } from 'react-map-gl'
 
-function BigMap({mapSource, config}: {mapSource: string ,config: Config}) {
+function RoadsMapInner({mapSource, config}: {mapSource: string ,config: Config}) {
   const mapStyle = React.useMemo(() => mapSource && obsRoads(mapSource), [mapSource])
   const [viewport, setViewport] = React.useState({
     longitude: 0,
@@ -30,13 +30,17 @@ function BigMap({mapSource, config}: {mapSource: string ,config: Config}) {
   }
 
   return (
-    <div className={styles.mapContainer}>
-      <ReactMapGl mapStyle={mapStyle} width="100%" height="100%" onViewportChange={setViewport} {...viewport} />
-    </div>
+    <ReactMapGl mapStyle={mapStyle} width="100%" height="100%" onViewportChange={setViewport} {...viewport}>
+      <AttributionControl style={{right: 0, bottom: 0}} customAttribution={[
+        '<a href="https://openstreetmap.org/copyright" target="_blank" rel="nofollow noopener">© OpenStreetMap contributors</a>',
+        '<a href="https://openmaptiles.org/" target="_blank" rel="nofollow noopener">© OpenMapTiles</a>',
+        '<a href="https://openbikesensor.org/" target="_blank" rel="nofollow noopener">© OpenBikeSensor</a>',
+      ]} />
+    </ReactMapGl>
   )
 }
 
-export default function MapPage() {
+export function RoadsMap(props) {
   const config = useConfig() || {}
   if (!config) return null;
   const {obsMapSource: mapSource} = config
@@ -44,8 +48,16 @@ export default function MapPage() {
   if (!mapSource) return null;
 
   return (
+    <RoadsMapInner {...{mapSource, config}} {...props} />
+  )
+}
+
+export default function MapPage() {
+  return (
     <Page fullScreen>
-      <BigMap {...{mapSource, config}} />
+      <div className={styles.mapContainer}>
+        <RoadsMap />
+      </div>
     </Page>
   )
 }
