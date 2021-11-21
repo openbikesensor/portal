@@ -1,239 +1,85 @@
 import React from 'react'
-import {Vector as VectorSource} from 'ol/source'
-import {LineString, Point} from 'ol/geom'
-import Feature from 'ol/Feature'
-import {fromLonLat} from 'ol/proj'
-import {Fill, Stroke, Style, Text, Circle} from 'ol/style'
+import {Source, Layer} from 'react-map-gl'
 
-import {Map} from 'components'
-import type {TrackData, TrackPoint} from 'types'
+import type {TrackData} from 'types'
+import {CustomMap} from '../MapPage'
 
-const isValidTrackPoint = (point: TrackPoint): boolean => {
-  const longitude = point.geometry?.coordinates?.[0]
-  const latitude = point.geometry?.coordinates?.[1]
+import {colorByDistance} from '../../mapstyles'
 
-  return latitude != null && longitude != null && (latitude !== 0 || longitude !== 0)
-}
-
-const WARN_DISTANCE = 2
-const MIN_DISTANCE = 1.5
-
-const evaluateDistanceColor = function (distance: number) {
-  if (distance < MIN_DISTANCE) {
-    return 'red'
-  } else if (distance < WARN_DISTANCE) {
-    return 'orange'
-  } else {
-    return 'green'
+export default function TrackMap({
+  trackData,
+  showTrack,
+  pointsMode = 'overtakingEvents',
+  side = 'overtaker',
+  ...props
+}: {
+  trackData: TrackData
+  showTrack: boolean
+  pointsMode: 'none' | 'overtakingEvents' | 'measurements'
+  side: 'overtaker' | 'stationary'
+}) {
+  if (!trackData) {
+    return null
   }
-}
-
-const evaluateDistanceForFillColor = function (distance: number) {
-  const redFill = new Fill({color: 'rgba(255, 0, 0, 0.2)'})
-  const orangeFill = new Fill({color: 'rgba(245,134,0,0.2)'})
-  const greenFill = new Fill({color: 'rgba(50, 205, 50, 0.2)'})
-
-  switch (evaluateDistanceColor(distance)) {
-    case 'red':
-      return redFill
-    case 'orange':
-      return orangeFill
-    case 'green':
-      return greenFill
-  }
-}
-
-const evaluateDistanceForStrokeColor = function (distance: number) {
-  const redStroke = new Stroke({color: 'rgb(255, 0, 0)'})
-  const orangeStroke = new Stroke({color: 'rgb(245,134,0)'})
-  const greenStroke = new Stroke({color: 'rgb(50, 205, 50)'})
-
-  switch (evaluateDistanceColor(distance)) {
-    case 'red':
-      return redStroke
-    case 'orange':
-      return orangeStroke
-    case 'green':
-      return greenStroke
-  }
-}
-
-const createTextStyle = function (distance: number, resolution: number) {
-  return new Text({
-    textAlign: 'center',
-    textBaseline: 'middle',
-    font: 'normal 18px/1 Arial',
-    text: resolution < 6 ? '' + Number(distance).toFixed(2) : '',
-    fill: new Fill({color: evaluateDistanceColor(distance)}),
-    stroke: new Stroke({color: 'white', width: 2}),
-    offsetX: 0,
-    offsetY: 0,
-  })
-}
-
-function pointStyleFunction(feature, resolution) {
-  let distance = feature.get('distance')
-  let radius = 200 / resolution
-
-  return new Style({
-    image: new Circle({
-      radius: radius < 20 ? radius : 20,
-      fill: evaluateDistanceForFillColor(distance),
-      stroke: evaluateDistanceForStrokeColor(distance),
-    }),
-    text: createTextStyle(distance, resolution),
-  })
-}
-
-function PointLayer({features, title, visible, zIndex}) {
-  return (
-    <Map.VectorLayer {...{title, visible, zIndex}} style={pointStyleFunction} source={new VectorSource({features})} />
-  )
-}
-
-const trackStroke = new Stroke({width: 4, color: 'rgb(30,144,255)'})
-const trackLayerStyle = new Style({stroke: trackStroke})
-
-function trackLayerStyleWithArrows(feature, resolution) {
-  const geometry = feature.getGeometry()
-
-  let styles = [trackLayerStyle]
-
-  // Numbers are in pixels
-  const arrowLength = 10 * resolution
-  const arrowSpacing = 200 * resolution
-
-  const a = arrowLength / Math.sqrt(2)
-  let spaceSinceLast = 0
-
-  geometry.forEachSegment(function (start, end) {
-    const dx = end[0] - start[0]
-    const dy = end[1] - start[1]
-    const d = Math.sqrt(dx * dx + dy * dy)
-    const rotation = Math.atan2(dy, dx)
-    spaceSinceLast += d
-
-    while (spaceSinceLast > arrowSpacing) {
-      spaceSinceLast -= arrowSpacing
-
-      let offsetAlongLine = (d - spaceSinceLast) / d
-      let pos = [start[0] + dx * offsetAlongLine, start[1] + dy * offsetAlongLine]
-
-      const lineStr1 = new LineString([pos, [pos[0] - a, pos[1] + a]])
-      lineStr1.rotate(rotation, pos)
-      const lineStr2 = new LineString([pos, [pos[0] - a, pos[1] - a]])
-      lineStr2.rotate(rotation, pos)
-
-      styles.push(
-        new Style({
-          geometry: lineStr1,
-          stroke: trackStroke,
-        })
-      )
-      styles.push(
-        new Style({
-          geometry: lineStr2,
-          stroke: trackStroke,
-        })
-      )
-    }
-  })
-
-  return styles
-}
-
-export default function TrackMap({trackData, show, ...props}: {trackData: TrackData}) {
-  const {
-    trackVectorSource,
-    trackPointsD1,
-    trackPointsD2,
-    trackPointsUntaggedD1,
-    trackPointsUntaggedD2,
-    viewExtent,
-  } = React.useMemo(() => {
-    const trackPointsD1: Feature<Point>[] = []
-    const trackPointsD2: Feature<Point>[] = []
-    const trackPointsUntaggedD1: Feature<Point>[] = []
-    const trackPointsUntaggedD2: Feature<Point>[] = []
-    const filteredPoints: TrackPoint[] = trackData?.measurements?.features.filter(isValidTrackPoint) ?? []
-
-    for (const feature of filteredPoints) {
-      const {
-        geometry: {
-          coordinates: [latitude, longitude],
-        },
-        properties: {confirmed: flag, distanceOvertaker: d1, distanceStationary: d2},
-      } = feature
-
-      const p = fromLonLat([longitude, latitude])
-
-      const geometry = new Point(p)
-
-      if (flag && d1) {
-        trackPointsD1.push(new Feature({distance: d1, geometry}))
-      }
-
-      if (flag && d2) {
-        trackPointsD2.push(new Feature({distance: d2, geometry}))
-      }
-
-      if (!flag && d1) {
-        trackPointsUntaggedD1.push(new Feature({distance: d1, geometry}))
-      }
-
-      if (!flag && d2) {
-        trackPointsUntaggedD2.push(new Feature({distance: d2, geometry}))
-      }
-    }
-
-    const points: Coordinate[] =
-      trackData?.track.geometry.coordinates.map(([latitude, longitude]) => {
-        return fromLonLat([longitude, latitude])
-      }) ?? []
-
-    //Simplify to 1 point per 2 meter
-    const trackVectorSource = new VectorSource({
-      features: [new Feature(new LineString(points).simplify(2))],
-    })
-
-    const viewExtent = points.length ? trackVectorSource.getExtent() : null
-    return {trackVectorSource, trackPointsD1, trackPointsD2, trackPointsUntaggedD1, trackPointsUntaggedD2, viewExtent}
-  }, [trackData?.measurements?.features])
 
   return (
-    <Map {...props}>
-      <Map.BaseLayer zIndex={10} />
-      <Map.VectorLayer
-        visible
-        updateWhileAnimating={false}
-        updateWhileInteracting={false}
-        source={trackVectorSource}
-        style={trackLayerStyleWithArrows}
-        zIndex={100}
-      />
+    <div style={props.style}>
+      <CustomMap>
+        {showTrack && (
+          <Source id="route" type="geojson" data={trackData.track}>
+            <Layer
+              id="route"
+              type="line"
+              paint={{
+                'line-width': ['interpolate', ['linear'], ['zoom'], 14, 2, 17, 5],
+                'line-color': '#F06292',
+              }}
+            />
+          </Source>
+        )}
 
-      <Map.GroupLayer title="Tagged Points" visible>
-        <PointLayer features={trackPointsD1} title="Left" visible={show.left} zIndex={101} />
-        <PointLayer features={trackPointsD2} title="Right" visible={show.right} zIndex={101} />
-      </Map.GroupLayer>
+        {pointsMode !== 'none' && (
+          <Source id="overtakingEvents" type="geojson" data={trackData[pointsMode]}>
+            <Layer
+              id="overtakingEvents"
+              type="circle"
+              paint={{
+                'circle-radius': ['interpolate', ['linear'], ['zoom'], 14, 5, 17, 10],
+                'circle-color': colorByDistance('distance_' + side),
+              }}
+            />
 
-      <Map.GroupLayer title="Untagged Points" fold="close" visible>
-        <PointLayer
-          features={trackPointsUntaggedD1}
-          title="Left Untagged"
-          visible={show.leftUnconfirmed}
-          zIndex={101}
-        />
-        <PointLayer
-          features={trackPointsUntaggedD2}
-          title="Right Untagged"
-          visible={show.rightUnconfirmed}
-          zIndex={101}
-        />
-      </Map.GroupLayer>
-
-      <Map.View />
-      <Map.FitView extent={viewExtent} />
-    </Map>
+            {[
+              ['distance_overtaker', 'right'],
+              ['distance_stationary', 'left'],
+            ].map(([p, a]) => (
+              <Layer
+                key={p}
+                {...{
+                  id: p,
+                  type: 'symbol',
+                  minzoom: 15,
+                  layout: {
+                    'text-field': ['number-format', ['get', p], {'min-fraction-digits': 2, 'max-fraction-digits': 2}],
+                    'text-allow-overlap': true,
+                    'text-font': ['Open Sans Bold', 'Arial Unicode MS Regular'],
+                    'text-size': 12,
+                    'text-keep-upright': false,
+                    'text-anchor': a,
+                    'text-radial-offset': 1,
+                    'text-rotate': ['get', 'course'],
+                  },
+                  paint: {
+                    'text-halo-color': 'rgba(255, 255, 255, 1)',
+                    'text-halo-width': 1,
+                    'text-opacity': ['interpolate', ['linear'], ['zoom'], 15, 0, 15.3, 1],
+                  },
+                }}
+              />
+            ))}
+          </Source>
+        )}
+      </CustomMap>
+    </div>
   )
 }

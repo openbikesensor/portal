@@ -9,10 +9,8 @@ import api from 'api'
 import {Stats, Page} from 'components'
 
 import {TrackListItem} from './TracksPage'
-import {RoadsMap} from './MapPage'
+import {CustomMap} from './MapPage'
 import styles from './HomePage.module.scss'
-
-import 'ol/ol.css'
 
 function MostRecentTrack() {
   const track: Track | null = useObservable(
@@ -49,7 +47,7 @@ export default function HomePage() {
         <Grid.Row>
           <Grid.Column width={10}>
             <div className={styles.welcomeMap}>
-              <RoadsMap />
+              <CustomMap mode='roads' />
             </div>
           </Grid.Column>
           <Grid.Column width={6}>

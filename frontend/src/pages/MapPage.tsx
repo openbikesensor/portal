@@ -1,18 +1,22 @@
 import React from 'react'
-// import {Grid, Loader, Header, Item} from 'semantic-ui-react'
 
-// import api from 'api'
 import {Page} from 'components'
 import {useConfig, Config} from 'config'
+import ReactMapGl, {AttributionControl } from 'react-map-gl'
 
 import styles from './MapPage.module.scss'
 
-import 'ol/ol.css'
-import {obsRoads} from '../mapstyles'
-import ReactMapGl, {AttributionControl } from 'react-map-gl'
+import {obsRoads, basemap } from '../mapstyles'
 
-function RoadsMapInner({mapSource, config}: {mapSource: string ,config: Config}) {
-  const mapStyle = React.useMemo(() => mapSource && obsRoads(mapSource), [mapSource])
+function CustomMapInner({mapSource, config, mode, children}: {mapSource: string, config: Config, mode?: 'roads'}) {
+  const mapStyle = React.useMemo(() => {
+    if (mode === 'roads') {
+      return mapSource && obsRoads(mapSource)
+    } else {
+      return basemap
+    }
+  }, [mapSource, mode])
+
   const [viewport, setViewport] = React.useState({
     longitude: 0,
     latitude: 0,
@@ -32,15 +36,17 @@ function RoadsMapInner({mapSource, config}: {mapSource: string ,config: Config})
   return (
     <ReactMapGl mapStyle={mapStyle} width="100%" height="100%" onViewportChange={setViewport} {...viewport}>
       <AttributionControl style={{right: 0, bottom: 0}} customAttribution={[
-        '<a href="https://openstreetmap.org/copyright" target="_blank" rel="nofollow noopener">© OpenStreetMap contributors</a>',
-        '<a href="https://openmaptiles.org/" target="_blank" rel="nofollow noopener">© OpenMapTiles</a>',
-        '<a href="https://openbikesensor.org/" target="_blank" rel="nofollow noopener">© OpenBikeSensor</a>',
+        '<a href="https://openstreetmap.org/copyright" target="_blank" rel="nofollow noopener noreferrer">© OpenStreetMap contributors</a>',
+        '<a href="https://openmaptiles.org/" target="_blank" rel="nofollow noopener noreferrer">© OpenMapTiles</a>',
+        '<a href="https://openbikesensor.org/" target="_blank" rel="nofollow noopener noreferrer">© OpenBikeSensor</a>',
       ]} />
+
+      {children}
     </ReactMapGl>
   )
 }
 
-export function RoadsMap(props) {
+export function CustomMap(props) {
   const config = useConfig() || {}
   if (!config) return null;
   const {obsMapSource: mapSource} = config
@@ -48,7 +54,7 @@ export function RoadsMap(props) {
   if (!mapSource) return null;
 
   return (
-    <RoadsMapInner {...{mapSource, config}} {...props} />
+    <CustomMapInner {...{mapSource, config}} {...props} />
   )
 }
 
@@ -56,7 +62,7 @@ export default function MapPage() {
   return (
     <Page fullScreen>
       <div className={styles.mapContainer}>
-        <RoadsMap />
+        <CustomMap mode='roads' />
       </div>
     </Page>
   )

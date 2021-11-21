@@ -73,7 +73,7 @@ export default function TrackDetails({track, isAuthor}) {
       )}
 
 
-      {track?.processingStatus != null && (
+      {track?.processingStatus != null && track?.processingStatus != 'error' && (
         <List.Item>
           <List.Header>Processing</List.Header>
           {track.processingStatus}

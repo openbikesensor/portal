@@ -15,8 +15,6 @@
     "luxon": "^1.27.0",
     "maplibre-gl": "^2.0.0-pre.1",
     "node-sass": "^4.14.1",
-    "ol": "^6.5.0",
-    "ol-mapbox-style": "^6.5.1",
     "pkce": "^1.0.0-beta2",
     "proj4": "^2.7.2",
     "react": "^17.0.2",
@@ -64,7 +62,6 @@
     "@craco/craco": "^6.1.2",
     "@semantic-ui-react/craco-less": "^1.2.1",
     "@types/lodash": "^4.14.169",
-    "@types/ol": "^6.5.0",
     "@types/react-redux": "^7.1.16",
     "@types/react-router-dom": "^5.1.7",
     "semantic-ui-less": "^2.4.1"

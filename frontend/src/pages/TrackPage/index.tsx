@@ -1,6 +1,6 @@
 import React from 'react'
 import {connect} from 'react-redux'
-import {Table, Checkbox, Segment, Dimmer, Grid, Loader, Header, Message} from 'semantic-ui-react'
+import {List, Dropdown, Checkbox, Segment, Dimmer, Grid, Loader, Header, Message, Container} from 'semantic-ui-react'
 import {useParams, useHistory} from 'react-router-dom'
 import {concat, combineLatest, of, from, Subject} from 'rxjs'
 import {pluck, distinctUntilChanged, map, switchMap, startWith, catchError} from 'rxjs/operators'
@@ -16,10 +16,50 @@ import TrackComments from './TrackComments'
 import TrackDetails from './TrackDetails'
 import TrackMap from './TrackMap'
 
+import styles from './TrackPage.module.scss'
+
 function useTriggerSubject() {
   const subject$ = React.useMemo(() => new Subject(), [])
   const trigger = React.useCallback(() => subject$.next(null), [subject$])
   return [trigger, subject$]
+}
+
+function TrackMapSettings({showTrack, setShowTrack, pointsMode, setPointsMode, side, setSide}) {
+  return (
+    <>
+      <Header as="h4">Map settings</Header>
+      <List>
+        <List.Item>
+          <Checkbox checked={showTrack} onChange={(e, d) => setShowTrack(d.checked)} /> Show track
+        </List.Item>
+        <List.Item>
+          <List.Header>Points</List.Header>
+          <Dropdown
+            selection
+            value={pointsMode}
+            onChange={(e, d) => setPointsMode(d.value)}
+            options={[
+              {key: 'none', value: 'none', text: 'None'},
+              {key: 'overtakingEvents', value: 'overtakingEvents', text: 'Confirmed'},
+              {key: 'measurements', value: 'measurements', text: 'All measurements'},
+            ]}
+          />
+        </List.Item>
+        <List.Item>
+          <List.Header>Side (for color)</List.Header>
+          <Dropdown
+            selection
+            value={side}
+            onChange={(e, d) => setSide(d.value)}
+            options={[
+              {key: 'overtaker', value: 'overtaker', text: 'Overtaker (Left)'},
+              {key: 'stationary', value: 'stationary', text: 'Stationary (Right)'},
+            ]}
+          />
+        </List.Item>
+      </List>
+    </>
+  )
 }
 
 const TrackPage = connect((state) => ({login: state.login}))(function TrackPage({login}) {
@@ -105,60 +145,47 @@ const TrackPage = connect((state) => ({login: state.login}))(function TrackPage(
     [slug, reloadComments]
   )
 
-  const onDownloadOriginal = React.useCallback(
-    () => {
-      api.downloadFile(`/tracks/${slug}/download/original.csv`)
-    },
-    [slug]
-  )
+  const onDownloadOriginal = React.useCallback(() => {
+    api.downloadFile(`/tracks/${slug}/download/original.csv`)
+  }, [slug])
 
   const isAuthor = login?.username === data?.track?.author?.username
 
   const {track, trackData, comments} = data || {}
 
-  console.log({track, trackData})
   const loading = track == null || trackData === undefined
   const processing = ['processing', 'queued', 'created'].includes(track?.processingStatus)
   const error = track?.processingStatus === 'error'
 
-  const [left, setLeft] = React.useState(true)
-  const [right, setRight] = React.useState(false)
-  const [leftUnconfirmed, setLeftUnconfirmed] = React.useState(false)
-  const [rightUnconfirmed, setRightUnconfirmed] = React.useState(false)
+  const [showTrack, setShowTrack] = React.useState(true)
+  const [pointsMode, setPointsMode] = React.useState('overtakingEvents') // none|overtakingEvents|measurements
+  const [side, setSide] = React.useState('overtaker') // overtaker|stationary
 
   return (
-    <Page>
-      {processing && (
-        <Message warning>
-          <Message.Content>
-            Track data is still being processed, please reload page in a while.
-          </Message.Content>
-        </Message>
-      )}
+    <Page
+      stage={
+        <div className={styles.stage}>
+          <Loader active={loading} />
+          <Dimmer.Dimmable blurring dimmed={loading}>
+            <TrackMap {...{track, trackData, pointsMode, side, showTrack}} style={{height: '80vh'}} />
+          </Dimmer.Dimmable>
 
-      {error && (
-        <Message error>
-          <Message.Content>
-            The processing of this track failed, please ask your site
-            administrator for help in debugging the issue.
-          </Message.Content>
-        </Message>
-      )}
+          <div className={styles.details}>
+            {processing && (
+              <Message warning>
+                <Message.Content>Track data is still being processed, please reload page in a while.</Message.Content>
+              </Message>
+            )}
 
-      <Grid stackable>
-        <Grid.Row>
-          <Grid.Column width={12}>
-            <div style={{position: 'relative'}}>
-              <Loader active={loading} />
-              <Dimmer.Dimmable blurring dimmed={loading}>
-                <TrackMap
-                  {...{track, trackData, show: {left, right, leftUnconfirmed, rightUnconfirmed}}}
-                  style={{height: '60vh', minHeight: 400}}
-                />
-              </Dimmer.Dimmable>
-            </div>
-          </Grid.Column>
-          <Grid.Column width={4}>
+            {error && (
+              <Message error>
+                <Message.Content>
+                  The processing of this track failed, please ask your site administrator for help in debugging the
+                  issue.
+                </Message.Content>
+              </Message>
+            )}
+
             <Segment>
               {track && (
                 <>
@@ -168,57 +195,33 @@ const TrackPage = connect((state) => ({login: state.login}))(function TrackPage(
                 </>
               )}
             </Segment>
+          </div>
+        </div>
+      }
+    >
+      <Grid stackable>
+        <Grid.Row>
+          <Grid.Column width={12}>
+            {track?.description && (
+              <Segment basic>
+                <Header as="h2" dividing>
+                  Description
+                </Header>
+                <Markdown>{track.description}</Markdown>
+              </Segment>
+            )}
 
-            <Header as="h4">Map settings</Header>
-
-            <Table compact>
-              <Table.Header>
-                <Table.Row>
-                  <Table.HeaderCell>Left</Table.HeaderCell>
-                  <Table.HeaderCell textAlign="center">Show distance of</Table.HeaderCell>
-                  <Table.HeaderCell textAlign="right">Right</Table.HeaderCell>
-                </Table.Row>
-              </Table.Header>
-
-              <Table.Body>
-                <Table.Row>
-                  <Table.Cell>
-                    <Checkbox checked={left} onChange={(e, d) => setLeft(d.checked)} />{' '}
-                  </Table.Cell>
-                  <Table.Cell textAlign="center">Events</Table.Cell>
-                  <Table.Cell textAlign="right">
-                    <Checkbox checked={right} onChange={(e, d) => setRight(d.checked)} />{' '}
-                  </Table.Cell>
-                </Table.Row>
-                <Table.Row>
-                  <Table.Cell>
-                    <Checkbox checked={leftUnconfirmed} onChange={(e, d) => setLeftUnconfirmed(d.checked)} />{' '}
-                  </Table.Cell>
-                  <Table.Cell textAlign="center">Other points</Table.Cell>
-                  <Table.Cell textAlign="right">
-                    <Checkbox checked={rightUnconfirmed} onChange={(e, d) => setRightUnconfirmed(d.checked)} />{' '}
-                  </Table.Cell>
-                </Table.Row>
-              </Table.Body>
-            </Table>
+            <TrackComments
+              {...{hideLoader: loading, comments, login}}
+              onSubmit={onSubmitComment}
+              onDelete={onDeleteComment}
+            />
+          </Grid.Column>
+          <Grid.Column width={4}>
+            <TrackMapSettings {...{showTrack, setShowTrack, pointsMode, setPointsMode, side, setSide}} />
           </Grid.Column>
         </Grid.Row>
       </Grid>
-
-      {track?.description && (
-        <Segment basic>
-          <Header as="h2" dividing>
-            Description
-          </Header>
-          <Markdown>{track.description}</Markdown>
-        </Segment>
-      )}
-
-      <TrackComments
-        {...{hideLoader: loading, comments, login}}
-        onSubmit={onSubmitComment}
-        onDelete={onDeleteComment}
-      />
 
       {/* <pre>{JSON.stringify(data, null, 2)}</pre> */}
     </Page>
