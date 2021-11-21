@@ -25,42 +25,50 @@ from obs.face.filter import (
     RequiredFieldsFilter,
 )
 
+from obs.face.osm import DataSource, DatabaseTileSource
+
 from obs.api.db import OvertakingEvent, Track, make_session
 from obs.api.app import app
 
 log = logging.getLogger(__name__)
 
 
-async def process_tracks_loop(data_source, delay):
+async def process_tracks_loop(delay):
     while True:
-        async with make_session() as session:
-            track = (
-                await session.execute(
-                    select(Track)
-                    .where(Track.processing_status == "queued")
-                    .order_by(Track.processing_queued_at)
-                    .options(joinedload(Track.author))
-                )
-            ).scalar()
+        try:
+            async with make_session() as session:
+                track = (
+                    await session.execute(
+                        select(Track)
+                        .where(Track.processing_status == "queued")
+                        .order_by(Track.processing_queued_at)
+                        .options(joinedload(Track.author))
+                    )
+                ).scalar()
 
-            if track is None:
-                await asyncio.sleep(delay)
-                continue
+                if track is None:
+                    await asyncio.sleep(delay)
+                    continue
 
-            try:
+                tile_source = DatabaseTileSource()
+                data_source = DataSource(tile_source)
+
                 await process_track(session, track, data_source)
-            except:
-                log.exception("Failed to process track %s. Will continue.", track.slug)
-                await asyncio.sleep(1)
-                continue
+        except:
+            log.exception("Failed to process track. Will continue.")
+            await asyncio.sleep(1)
+            continue
 
 
-async def process_tracks(data_source, tracks):
+async def process_tracks(tracks):
     """
     Processes the tracks and writes event data to the database.
 
     :param tracks: A list of strings which
     """
+    tile_source = DatabaseTileSource()
+    data_source = DataSource(tile_source)
+
     async with make_session() as session:
         for track_id_or_slug in tracks:
             track = (
@@ -202,7 +210,9 @@ async def import_overtaking_events(session, track, overtaking_events):
     event_models = []
     for m in overtaking_events:
         hex_hash = hashlib.sha256(
-            struct.pack("QQ", track.id, int(m["time"].timestamp()))
+            struct.pack(
+                "ddQ", m["latitude"], m["longitude"], int(m["time"].timestamp())
+            )
         ).hexdigest()
 
         event_models.append(

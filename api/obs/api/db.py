@@ -69,7 +69,7 @@ async def connect_db(url):
     engine = create_async_engine(url, echo=False)
     sessionmaker = SessionMaker(engine, class_=AsyncSession, expire_on_commit=False)
 
-    yield
+    yield engine
 
     # for AsyncEngine created in function scope, close and
     # clean-up pooled connections

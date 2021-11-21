@@ -40,7 +40,7 @@ function TrackList({privateTracks}: {privateTracks: boolean}) {
 
   const data: {
     tracks: Track[]
-    tracksCount: number
+    trackCount: number
   } | null = useObservable(
     (_$, inputs$) =>
       inputs$.pipe(
@@ -56,9 +56,9 @@ function TrackList({privateTracks}: {privateTracks: boolean}) {
     [page, privateTracks]
   )
 
-  const {tracks, tracksCount} = data || {tracks: [], tracksCount: 0}
+  const {tracks, trackCount} = data || {tracks: [], trackCount: 0}
   const loading = !data
-  const totalPages = Math.ceil(tracksCount / pageSize)
+  const totalPages = Math.ceil(trackCount / pageSize)
 
   return (
     <div>

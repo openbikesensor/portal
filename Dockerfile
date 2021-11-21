@@ -28,11 +28,14 @@ WORKDIR /opt/obs/api
 ADD api/requirements.txt  /opt/obs/api/
 RUN pip install -r requirements.txt
 
+ADD tile-generator /opt/obs/tile-generator
+
 ADD api/scripts /opt/obs/scripts
 RUN pip install -e /opt/obs/scripts
 
 ADD api/setup.py  /opt/obs/api/
 ADD api/obs /opt/obs/api/obs/
+ADD api/tools /opt/obs/api/tools/
 RUN pip install -e /opt/obs/api/
 
 COPY --from=frontend-builder /opt/obs/frontend/build /opt/obs/frontend/build

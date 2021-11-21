@@ -77,7 +77,10 @@ async def login_redirect(req):
     # {'sub': '3798e2da-b208-4a1a-98c0-08fecfea1345', 'email_verified': True, 'preferred_username': 'test', 'email': 'test@example.com'}
     sub = userinfo["sub"]
     preferred_username = userinfo["preferred_username"]
-    email = userinfo["email"]
+    email = userinfo.get("email")
+
+    if email is None:
+        raise ValueError("user has no email set, please configure keycloak to require emails")
 
     user = (await req.ctx.db.execute(select(User).where(User.sub == sub))).scalar()
 

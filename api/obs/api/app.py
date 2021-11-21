@@ -166,11 +166,16 @@ if INDEX_HTML and exists(INDEX_HTML):
         if req.app.config.get("TILES_FILE"):
             result["obsMapSource"] = {
                 "type": "vector",
-                "tiles": [req.app.url_for("tiles", zoom="{zoom}", x="{x}", y="{y}")],
+                "tiles": [
+                    req.app.url_for("tiles", zoom="000", x="111", y="222.pbf")
+                    .replace("000", "{z}")
+                    .replace("111", "{x}")
+                    .replace("222", "{y}")
+                ],
                 "minzoom": 12,
                 "maxzoom": 14,
             }
-        return json_response()
+        return json_response(result)
 
     @app.get("/<path:path>")
     def get_frontend_static(req, path):

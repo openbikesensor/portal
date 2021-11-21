@@ -1,6 +1,9 @@
-import gzip
+from gzip import decompress
 from sqlite3 import connect
 from sanic.response import raw
+
+from sqlalchemy import select, text
+from sqlalchemy.sql.expression import table, column
 
 from obs.api.app import app
 
@@ -30,28 +33,43 @@ def get_tile(filename, zoom, x, y):
 # regenerate approx. once each day
 TILE_CACHE_MAX_AGE = 3600 * 24
 
-if app.config.get("TILES_FILE"):
 
-    @app.route(r"/tiles/<zoom:int>/<x:int>/<y:(\d+)\.pbf>")
-    async def tiles(req, zoom: int, x: int, y: str):
+@app.route(r"/tiles/<zoom:int>/<x:int>/<y:(\d+)\.pbf>")
+async def tiles(req, zoom: int, x: int, y: str):
+    if app.config.get("TILES_FILE"):
         tile = get_tile(req.app.config.TILES_FILE, int(zoom), int(x), int(y))
 
-        gzip = "gzip" in req.headers["accept-encoding"]
+    else:
+        data = column("data")
+        key = column("key")
+        mvts = table("mvts", data, key)
 
-        headers = {}
-        headers["Vary"] = "Accept-Encoding"
+        tile = await req.ctx.db.scalar(
+            text(f"select data from getmvt(:zoom, :x, :y) as b(data, key);").bindparams(
+                zoom=int(zoom),
+                x=int(x),
+                y=int(y),
+            )
+        )
+        print("TILE", tile)
 
-        if req.app.config.DEBUG:
-            headers["Cache-Control"] = "no-cache"
-        else:
-            headers["Cache-Control"] = f"public, max-age={TILE_CACHE_MAX_AGE}"
+    gzip = "gzip" in req.headers["accept-encoding"]
 
-        # The tiles in the mbtiles file are gzip-compressed already, so we
-        # serve them actually as-is, and only decompress them if the browser
-        # doesn't accept gzip
-        if gzip:
-            headers["Content-Encoding"] = "gzip"
-        else:
-            tile = gzip.decompress(tile)
+    headers = {}
+    headers["Vary"] = "Accept-Encoding"
 
-        return raw(tile, content_type="application/x-protobuf", headers=headers)
+    if req.app.config.DEBUG:
+        headers["Cache-Control"] = "no-cache"
+    else:
+        headers["Cache-Control"] = f"public, max-age={TILE_CACHE_MAX_AGE}"
+
+    # The tiles in the mbtiles file are gzip-compressed already, so we
+    # serve them actually as-is, and only decompress them if the browser
+    # doesn't accept gzip
+    if gzip:
+        headers["Content-Encoding"] = "gzip"
+
+    if not gzip:
+        tile = decompress(tile)
+
+    return raw(tile, content_type="application/x-protobuf", headers=headers)

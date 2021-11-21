@@ -11,7 +11,7 @@ DEDICATED_WORKER = True
 FRONTEND_URL = "http://localhost:3001/"
 FRONTEND_DIR = None
 FRONTEND_CONFIG = None
-TILES_FILE = "/tiles/tiles.mbtiles"
+TILES_FILE = None  # "/tiles/tiles.mbtiles"
 DATA_DIR = "/data"
 ADDITIONAL_CORS_ORIGINS = [
     "http://localhost:8880/",  # for maputnik on 8880

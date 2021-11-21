@@ -55,39 +55,35 @@ vim docker-compose.yaml
 
 Change the domain where it occurs, such as in `Host()` rules.
 
-### Configure frontend
+### Create a keycloak instance
+
+Follow the official guides to create your own keycloak server:
+
+https://www.keycloak.org/documentation
+
+Documenting the details of this is out of scope for our project. Please make sure to configure:
+
+* an admin account for yourself
+* a realm for the portal
+* a client in that realm with "Access Type" set to "confidential" and a
+  redirect URL of this pattern: `https://portal.example.com/login/redirect`
+
+### Configure portal
 
 ```bash
-cp source/frontend/config.example.json config/frontend.json
-vim frontend/src/config.json
+cp source/api/config.py.example config/config.py
 ```
 
-* Change all URLs to your domain
-* Create a UUID by using `uuidgen` and set the `clientId`
-* Change the coordinates of the map center to your liking
-
-### Configure API
-
-```bash
-cp source/api/config.json.example config/api.json
-vim config/api.json
-```
-
-* Change all URLs to your domain
-* Generate and set a random `cookieSecret` (for example with `uuidgen`)
-* Generate and set a random `jwtSecret` (for example with `uuidgen`)
-* Configure you SMTP mail server
-* Set the `clientId` for the `oAuth2Client` of the portal (from step 3)
+Then edit `config/config.py` to your heart's content (and matching the
+configuration of the keycloak). Do not forget to generate a secure secret
+string.
 
 ### Build container and run them
 
 ```bash
-docker-compose up -d
+docker-compose build portal
+docker-compose up -d portal
 ```
-
-The services are being built the first time this is run. It can take some
-minutes.
-
 
 ## Miscellaneous
 
@@ -105,10 +101,6 @@ If something went wrong, you can reconfigure your config files and rerun:
 docker-compose build
 docker-compose up -d
 ```
-
-#### Common issues
-- Errors about TLS issues on User cration point to something amiss in the mail server configuration.
-- Errors about unknown client point to ClientID mismatch between ``api.json`` and ``frontend.json``
 
 ### Updates
 

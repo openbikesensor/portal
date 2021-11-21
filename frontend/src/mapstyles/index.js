@@ -26,7 +26,7 @@ function addRoadsStyle(style, mapSource) {
         ["exponential", 1.5],
         ["zoom"],
         12,
-        1,
+        2,
         17,
         [
           "case",
