@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-import argparse
 import logging
 import asyncio
 import tempfile
@@ -41,26 +40,10 @@ def parse_pg_url(url=app.config.POSTGRES_URL):
 async def main():
     logging.basicConfig(level=logging.DEBUG, format="%(levelname)s: %(message)s")
 
-    parser = argparse.ArgumentParser(
-        description="processes a single track for use in the portal, "
-        "using the obs.face algorithms"
-    )
-
-    parser.add_argument(
-        "--prepare",
-        action="store_true",
-        help="prepare and import SQL functions for tile generation",
-    )
-
-    args = parser.parse_args()
-
-    if args.prepare:
-        with tempfile.TemporaryDirectory() as build_dir:
-            await generate_data_yml(build_dir)
-            sql_snippets = await generate_sql(build_dir)
-            await import_sql(sql_snippets)
-
-    await generate_tiles()
+    with tempfile.TemporaryDirectory() as build_dir:
+        await generate_data_yml(build_dir)
+        sql_snippets = await generate_sql(build_dir)
+        await import_sql(sql_snippets)
 
 
 async def _run(cmd):
@@ -160,19 +143,6 @@ async def import_sql(sql_snippets):
             async with make_session() as session:
                 await session.execute(text(statement))
                 await session.commit()
-
-
-async def generate_tiles():
-    pass
-    # .PHONY: generate-tiles-pg
-    # generate-tiles-pg: all start-db
-    # 	@echo "Generating tiles into $(MBTILES_LOCAL_FILE) (will delete if already exists) using PostGIS ST_MVT()..."
-    # 	@rm -rf "$(MBTILES_LOCAL_FILE)"
-    # # For some reason Ctrl+C doesn't work here without the -T. Must be pressed twice to stop.
-    # 	$(DOCKER_COMPOSE) run -T $(DC_OPTS) openmaptiles-tools generate-tiles
-    # 	@echo "Updating generated tile metadata ..."
-    # 	$(DOCKER_COMPOSE) run $(DC_OPTS) openmaptiles-tools \
-    # 			mbtiles-tools meta-generate "$(MBTILES_LOCAL_FILE)" $(TILESET_FILE) --auto-minmax --show-ranges
 
 
 if __name__ == "__main__":

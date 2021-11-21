@@ -1,12 +1,12 @@
 HOST = "0.0.0.0"
 PORT = 3000
-DEBUG = False
+DEBUG = True
 AUTO_RESTART = True
 SECRET = "!!!!!!!!!!!!CHANGE ME!!!!!!!!!!!!"
 POSTGRES_URL = "postgresql+asyncpg://obs:obs@postgres/obs"
 KEYCLOAK_URL = "http://keycloak:8080/auth/realms/obs-dev/"
 KEYCLOAK_CLIENT_ID = "portal"
-KEYCLOAK_CLIENT_SECRET = "76b84224-dc24-4824-bb98-9e1ba15bd58f"
+KEYCLOAK_CLIENT_SECRET = "c385278e-bd2e-4f13-9937-34b0c0f44c2d"
 DEDICATED_WORKER = True
 FRONTEND_URL = "http://localhost:3001/"
 FRONTEND_DIR = None

@@ -98,6 +98,32 @@ every time you reset the keycloak datbaase, which is inside the PostgreSQL. The
 script `api/tools/reset_database.py` does *not* affect the state of the
 keycloak database, however, so this should be rather rare.
 
+### Prepare database
+
+Start the PostgreSQL database:
+
+```bash
+docker-compose up -d postgres
+```
+
+Then initialize an empty database, creating all extensions and tables
+automatically:
+
+```bash
+docker-compose run --rm api tools/reset_database.py
+```
+
+You should import OpenStreetMap data now, see below for instructions.
+
+To serve dynamic vector tiles from the API, run the following command once:
+
+```bash
+docker-compose run --rm api tools/prepare_sql_tiles.py
+```
+
+You might need to re-run this command after updates, to (re-)create the
+functions in the SQL database that are used when generating vector tiles.
+
 ### Boot the application
 
 Now you can run the remaining parts of the application:
@@ -106,22 +132,53 @@ Now you can run the remaining parts of the application:
 docker-compose up -d --build api worker frontend
 ```
 
-If this does not work, please open an issue and describe the problem you're
-having, as it is important to us that onboarding is super easy :)
-
 Your frontend should be running at http://localhost:3001 and the API at
 http://localhost:3000 -- but you probably only need to access the frontend for
-testing. The frontend dev server also proxies all unknown requests to the API,
-so the frontend always just requests data at its own URL.
+testing. 
 
 ### Migrating (Development)
 
 Migrations are not implemented yet. Once we need them, we'll add them and
 document the usage here.
 
-## Tileserver generation
+
+## Import OpenStreetMap data
+
+You need to import road information from OpenStreetMap for the portal to work.
+This information is stored in your PostgreSQL database and used when processing
+tracks (instead of querying the Overpass API), as well as for vector tile
+generation.
+
+* Install `osm2pgsql`. 
+* Download the area(s) you would like to import from [GeoFabrik](https://download.geofabrik.de). 
+* Import each file like this:
+
+    ```bash
+    osm2pgsql --create --hstore --style api/roads_import.lua -O flex \
+      -H localhost -d obs -U obs \
+      path/to/downloaded/myarea-latest.osm.pbf 
+    ```
+
+You might need to adjust the host, database and username (`-H`, `-d`, `-U`) to
+your setup, and also provide the correct password when queried. This process
+should take a few seconds to minutes, depending on the area size. You can run
+the process multiple times, with the same or different area files, to import or
+update the data. You can also truncate the `road` table before importing if you
+want to remove outdated road information. 
+
+Refer to the documentation of `osm2pgsql` for assistance. We are using "flex
+mode", the provided script `api/roads_import.lua` describes the transformations
+and extractions to perform on the original data.
+
+## Static tile generation
 
 The above instructions do not include the serving of vector tiles with the
 collected data. That is to be set up separately. Please follow the instructions
 in [tile-generator](./tile-generator/README.md).
 
+
+### Troubleshooting
+
+If any step of the instructions does not work for you, please open an issue and
+describe the problem you're having, as it is important to us that onboarding is
+super easy :)
