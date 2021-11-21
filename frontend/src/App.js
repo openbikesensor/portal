@@ -24,10 +24,6 @@ import {
 import {Avatar, LoginButton} from 'components'
 import api from 'api'
 
-import packageJson from '../package.json'
-
-const {version} = packageJson
-
 // This component removes the "navigate" prop before rendering a Menu.Item,
 // which is a workaround for an annoying warning that is somehow caused by the
 // <Link /> and <Menu.Item /> combination.
@@ -177,13 +173,8 @@ const App = connect((state) => ({login: state.login}))(function App({login}) {
                 <Header as="h5">Info</Header>
                 <List>
                   <List.Item>
-                    <a href={`https://github.com/openbikesensor/portal/releases/tag/v${version}`} target="_blank" rel="noreferrer">
-                      Frontend v{version}
-                    </a>
-                  </List.Item>
-                  <List.Item>
                     <a href={`https://github.com/openbikesensor/portal${apiVersion ? `/releases/tag/v${apiVersion}` : ''}`} target="_blank" rel="noreferrer">
-                      API v{apiVersion ?? '...'}
+                      {apiVersion ? `v${apiVersion}` : 'Fetching version...'}
                     </a>
                   </List.Item>
                 </List>
