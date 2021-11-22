@@ -195,11 +195,8 @@ if not app.config.DEDICATED_WORKER:
 
     async def worker():
         from obs.api.process import process_tracks_loop
-        from obs.face.osm import DataSource, DatabaseTileSource
-
-        data_source = DataSource(DatabaseTileSource())
 
         # run forever
-        await process_tracks_loop(data_source, 10)
+        await process_tracks_loop(10)
 
     app.add_task(worker())
