@@ -15,6 +15,8 @@
   },
   "obsMapSource": {
     "type": "vector",
-    "url": "http://portal.example.com/tileserver/data/v3.json"
+    "tiles": ["https://portal.example.com/tiles/{z}/{x}/{y}.pbf"],
+    "minzoom": 12,
+    "maxzoom": 14
   }
 }
