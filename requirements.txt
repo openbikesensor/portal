@@ -11,5 +11,3 @@ coloredlogs==15.0
 httpx==0.17.1
 gpstime==0.4.6
 geopy==2.2.0
-sqlalchemy[asyncio]~=1.4.25
-asyncpg~=0.24.0
