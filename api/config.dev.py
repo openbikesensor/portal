@@ -9,6 +9,7 @@ KEYCLOAK_CLIENT_ID = "portal"
 KEYCLOAK_CLIENT_SECRET = "c385278e-bd2e-4f13-9937-34b0c0f44c2d"
 DEDICATED_WORKER = True
 FRONTEND_URL = "http://localhost:3001/"
+FRONTEND_HTTPS = False
 FRONTEND_DIR = None
 FRONTEND_CONFIG = None
 TILES_FILE = None  # "/tiles/tiles.mbtiles"

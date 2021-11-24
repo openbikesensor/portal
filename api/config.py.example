@@ -26,6 +26,7 @@ DEDICATED_WORKER = True
 # The root of the frontend. Needed for redirecting after login, and for CORS.
 # Set to None if frontend is served by the API.
 FRONTEND_URL = None
+FRONTEND_HTTPS = True
 
 # Where to find the compiled frontend assets (must include index.html), or None
 # to disable serving the frontend.

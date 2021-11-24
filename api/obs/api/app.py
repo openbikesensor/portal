@@ -157,10 +157,11 @@ if INDEX_HTML and exists(INDEX_HTML):
     @app.get("/config.json")
     def get_frontend_config(req):
         base_path = req.server_path.replace("config.json", "")
+        scheme = 'https' if req.app.config.FRONTEND_HTTPS else req.scheme
         result = {
             **req.app.config.FRONTEND_CONFIG,
-            "apiUrl": f"{req.scheme}://{req.host}{base_path}api",
-            "loginUrl": f"{req.scheme}://{req.host}{base_path}login",
+            "apiUrl": f"{scheme}://{req.host}{base_path}api",
+            "loginUrl": f"{scheme}://{req.host}{base_path}login",
         }
         print(req.app.config)
         if req.app.config.get("TILES_FILE"):
