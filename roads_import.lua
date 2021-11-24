@@ -58,7 +58,7 @@ local roads = osm2pgsql.define_way_table('road', {
   { column = 'directionality', type = 'int' },
   { column = 'name', type = 'text' },
   { column = 'geometry', type = 'linestring' },
-  { column = 'tags', type = 'hstore' },
+  { column = 'oneway', type = 'bool' },
 })
 
 function osm2pgsql.process_way(object)
@@ -92,11 +92,15 @@ function osm2pgsql.process_way(object)
     end
 
     local directionality = 0
+    local oneway = tags.oneway
+
     -- See https://wiki.openstreetmap.org/wiki/Key:oneway section "Implied oneway restriction"
     if contains(ONEWAY_YES, tags.oneway) or tags.junction == "roundabout" or zone == "motorway" then
       directionality = 1
+      oneway = true
     elseif contains(ONEWAY_REVERSE, tags.oneway) then
       directionality = -1
+      oneway = true
     end
 
     roads:add_row({
@@ -104,7 +108,7 @@ function osm2pgsql.process_way(object)
       name = tags.name,
       zone = zone,
       directionality = directionality,
-      tags = tags,
+      oneway = oneway,
     })
   end
 end

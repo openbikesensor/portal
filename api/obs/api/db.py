@@ -127,8 +127,8 @@ class Road(Base):
     zone = Column(ZoneType)
     name = Column(String)
     geometry = Column(Geometry)
-    tags = Column(HSTORE)
     directionality = Column(Integer)
+    oneway = Column(Boolean)
 
 
 NOW = text("NOW()")
