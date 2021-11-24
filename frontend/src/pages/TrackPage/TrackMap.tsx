@@ -63,11 +63,12 @@ export default function TrackMap({
                     'text-field': ['number-format', ['get', p], {'min-fraction-digits': 2, 'max-fraction-digits': 2}],
                     'text-allow-overlap': true,
                     'text-font': ['Open Sans Bold', 'Arial Unicode MS Regular'],
-                    'text-size': 12,
+                    'text-size': 14,
                     'text-keep-upright': false,
                     'text-anchor': a,
                     'text-radial-offset': 1,
                     'text-rotate': ['get', 'course'],
+                    'text-rotation-alignment': 'map',
                   },
                   paint: {
                     'text-halo-color': 'rgba(255, 255, 255, 1)',
