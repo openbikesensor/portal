@@ -38,12 +38,13 @@ async def login(req, next: str = None):
     session["state"] = rndstr()
     session["nonce"] = rndstr()
     session["next"] = next
+    scheme = 'https' if req.app.config.FRONTEND_HTTPS else req.scheme
     args = {
         "client_id": client.client_id,
         "response_type": "code",
         "scope": ["openid"],
         "nonce": session["nonce"],
-        "redirect_uri": req.scheme + "://" + req.host + "/login/redirect",
+        "redirect_uri": scheme + "://" + req.host + "/login/redirect",
         "state": session["state"],
     }
 
