@@ -9,6 +9,7 @@ import time
 from obs.face.mapping.LocalMap import EquirectangularFast as LocalMap
 
 from .TileSource import TileSource
+from .Way import Way
 
 log = logging.getLogger(__name__)
 
@@ -81,7 +82,7 @@ class OverpassTileSource(TileSource):
                 [[nodes[i]["lat"], nodes[i]["lon"]] for i in way["nodes"]]
             )
 
-            yield way_id, way.get("tags"), coordinates
+            yield Way.from_tags(way_id, coordinates, way.get("tags"))
 
     def request_tile(self, zoom, x_tile, y_tile):
         # construct the query

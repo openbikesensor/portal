@@ -146,26 +146,9 @@ class WayStatistics:
         self.d_median = [0, 0]
         self.d_minimum = [0, 0]
 
-        self.zone = "unknown"
-        self.oneway = False
-        self.name = "unknown"
-
-        tags = way.tags
-        if "zone:traffic" in tags:
-            zone = tags["zone:traffic"]
-            if zone == "DE:urban":
-                zone = "urban"
-            elif zone == "DE:rural":
-                zone = "rural"
-            elif zone == "DE:motorway":
-                zone = "motorway"
-            self.zone = zone
-
-        if "oneway" in tags:
-            self.oneway = tags["oneway"] == "yes"
-
-        if "name" in tags:
-            self.name = tags["name"]
+        self.zone = way.zone
+        self.oneway = way.oneway
+        self.name = way.name
 
         self.d_limit = (
             1.5 if self.zone == "urban" else 2.0 if self.zone == "rural" else 1.5

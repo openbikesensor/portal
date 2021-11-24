@@ -58,11 +58,12 @@ class DataSource:
         ways = self.tile_source.get_tile(z, x, y)
 
         # add way objects, and store
-        async for way_id, tags, coordinates in ways:
-            if way_id not in self.ways:
-                w = Way(way_id, tags, coordinates)
-                self.ways[way_id] = w
-                self.way_container.insert(w)
+        async for way in ways:
+            if way.way_id in self.ways:
+                continue
+
+            self.ways[way.way_id] = way
+            self.way_container.insert(way)
 
         # update tile list
         self.loaded_tiles.add((z, x, y))

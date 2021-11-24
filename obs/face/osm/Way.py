@@ -3,7 +3,7 @@ import math
 from obs.face.mapping import EquirectangularFast as LocalMap
 
 
-def get_way_directionality(tags):
+def directionality_from_tags(tags):
     v = tags.get("oneway")
     if v in ["yes", "true", "1"]:
         return 1
@@ -11,11 +11,34 @@ def get_way_directionality(tags):
         return -1
     return 0
 
+def zone_from_tags(tags):
+    zone = tags.get("zone:traffic")
+
+    if not zone:
+        return None
+
+    if zone.endswith("urban"):
+        return "urban"
+
+    if zone.endswith("rural"):
+        return "rural"
+
+    if zone.endswith("motorway"):
+        return "motorway"
+
+    return zone
+
+def oneway_from_tags(tags):
+    return tags.get('oneway') in ('yes', 'true', '1')
+
 
 class Way:
-    def __init__(self, way_id, tags, coordinates):
+    def __init__(self, way_id, coordinates, zone, oneway, name, directionality):
         self.way_id = way_id
-        self.tags = tags or {}
+        self.zone = zone
+        self.oneway = oneway
+        self.name = name
+        self.directionality = directionality
 
         lat = coordinates[:, 0]
         lon = coordinates[:, 1]
@@ -40,12 +63,27 @@ class Way:
         self.direction = np.arctan2(dy, dx)
 
         # determine if way is directed, and which is the "forward" direction
-        directional = get_way_directionality(self.tags)
-        self.is_directional = directional != 0
+        self.is_directional = directionality != 0
 
         # reverse the direction of reverse oneway streets
-        if directional == -1:
+        if directionality == -1:
             self.direction = (self.direction + math.pi) % (2 * math.pi)
+
+    @classmethod
+    def from_tags(cls, way_id, coordinates, tags):
+        zone = zone_from_tags(tags)
+        oneway = oneway_from_tags(tags)
+        name = tags.get("name")
+        directionality = directionality_from_tags(tags)
+        return cls(
+            way_id,
+            coordinates,
+            zone,
+            oneway,
+            name,
+            directionality,
+        )
+
 
     def get_axis_aligned_bounding_box(self):
         return self.a, self.b

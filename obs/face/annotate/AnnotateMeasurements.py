@@ -72,27 +72,13 @@ class AnnotateMeasurements:
         way_id = m["OSM_way_id"]
         way = self.data_source.get_way_by_id(way_id)
         if way_id is not None and way is not None:
-            tags = way.tags
-            if "zone:traffic" in tags:
-                zone = tags["zone:traffic"]
-                if zone == "DE:urban":
-                    zone = "urban"
-                elif zone == "DE:rural":
-                    zone = "rural"
-                elif zone == "DE:motorway":
-                    zone = "motorway"
-                m["OSM_zone"] = zone
+            m["OSM_zone"] = way.zone
+            m["OSM_name"] = way.name
+            m["OSM_oneway"] = way.oneway
 
-            if "maxspeed" in tags:
-                m["OSM_maxspeed"] = tags["maxspeed"]
-            if "name" in tags:
-                m["OSM_name"] = tags["name"]
-            if "oneway" in tags:
-                m["OSM_oneway"] = tags["oneway"]
-            if "lanes" in tags:
-                m["OSM_lanes"] = tags["lanes"]
-            if "highway" in tags:
-                m["OSM_highway"] = tags["highway"]
+            # m["OSM_maxspeed"] = tags["maxspeed"]
+            # m["OSM_lanes"] = tags["lanes"]
+            # m["OSM_highway"] = tags["highway"]
 
         return m
 
@@ -145,10 +131,7 @@ class AnnotateMeasurements:
                 matching_id = [[]] * len(way_id)
                 for i, way_id_i in enumerate(way_id):
                     way = self.data_source.get_way_by_id(way_id_i)
-                    if "name" in way.tags:
-                        matching_id[i] = way.tags["name"]
-                    else:
-                        matching_id[i] = str(way_id_i)
+                    matching_id[i] = way.name or str(way_id_i)
             else:
                 matching_id = matching_id_prev
                 matching_distance = [0] * len(matching_id)
