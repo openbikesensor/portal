@@ -162,10 +162,7 @@ if INDEX_HTML and exists(INDEX_HTML):
             **req.app.config.FRONTEND_CONFIG,
             "apiUrl": f"{scheme}://{req.host}{base_path}api",
             "loginUrl": f"{scheme}://{req.host}{base_path}login",
-        }
-        print(req.app.config)
-        if req.app.config.get("TILES_FILE"):
-            result["obsMapSource"] = {
+            "obsMapSource": {
                 "type": "vector",
                 "tiles": [
                     req.app.url_for("tiles", zoom="000", x="111", y="222.pbf")
@@ -176,6 +173,8 @@ if INDEX_HTML and exists(INDEX_HTML):
                 "minzoom": 12,
                 "maxzoom": 14,
             }
+        }
+
         return json_response(result)
 
     @app.get("/<path:path>")
