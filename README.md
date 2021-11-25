@@ -106,8 +106,15 @@ Start the PostgreSQL database:
 docker-compose up -d postgres
 ```
 
-Then initialize an empty database, creating all extensions and tables
-automatically:
+The first time you start postgres, a lot of extensions will be installed. This
+takes a while, so check the logs of the docker container until you see:
+
+> PostgreSQL init process complete; ready for start up.
+
+If you don't wait long enough, the following commands might fail.
+
+Next, initialize an empty database, creating all extensions and tables
+for the application at once:
 
 ```bash
 docker-compose run --rm api tools/reset_database.py
