@@ -121,9 +121,9 @@ async def login_redirect(req):
             log.debug("Updating user (id: %s) email from auth system.", user.id)
             user.email = email
 
-        if preferred_username != user.username:
-            log.debug("Updating user (id: %s) username from auth system.", user.id)
-            user.username = preferred_username
+        # if preferred_username != user.username:
+        #     log.debug("Updating user (id: %s) username from auth system.", user.id)
+        #     user.username = preferred_username
 
     await req.ctx.db.commit()
 
