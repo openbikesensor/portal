@@ -13,13 +13,20 @@ explicitly. Once we implement them, their usage will be described in the
 * Update the codebase
 * Update docker-compose.yaml from the example. Leave the MongoDB service in
   place for now, but update all other service descriptions. You can remove
-  `redis` already.
-* Start up the `mongo` and `postgres` services
-* Build the new images (e.g. with `docker-compose build`)
+  `redis` already. Generate a better password than the default for your
+  postgres user.
+* Start up the `mongo` and `postgres` services.
+* Build the new image (e.g. with `docker-compose build portal`)
 * Configure your API. The example config file is `api/config.py.example`, and
   it will need to be mounted to `api/config.py` in the container. Ignore the
   Keycloak options for now.
-* Run the database reset script: `docker-compose run --rm api python tools/reset_database.py`
+* Prepare the database: 
+  
+    ```bash
+    docker-compose run --rm portal python tools/reset_database.py
+    docker-compose run --rm portal python tools/prepare_sql_tiles.py
+    ```
+* Import OSM data (see README)
 * Run the database migration script: 
     
     ```bash
