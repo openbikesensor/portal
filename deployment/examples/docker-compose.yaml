@@ -8,14 +8,14 @@ networks:
     internal: true
 
 services:
-  mongo:
-    image: mongo
-    tty: true
+  postgres:
+    image: "openmaptiles/postgis:6.0"
+    environment:
+      POSTGRES_USER: obs
+      POSTGRES_PASSWORD: obs
+      POSTGRES_DB: obs
     volumes:
-      - ./data/mongo:/data/db
-    restart: on-failure
-    networks:
-      - backend
+    - ./data/postgres/data:/var/lib/postgresql/data
 
   portal:
     image: openbikesensor-portal
@@ -26,12 +26,15 @@ services:
       - ./config/config.py:/opt/obs/api/config.py
       - ./data/tiles/:/tiles
     restart: on-failure
+    links:
+      - postgres
     labels:
       - traefik.http.routers.portal.rule=Host(`portal.example.com`)
       - traefik.http.routers.portal.entrypoints=websecure
       - traefik.http.routers.portal.tls=true
       - traefik.http.routers.portal.tls.certresolver=leresolver
       - traefik.docker.network=gateway
+      - traefik.http.services.whoami.loadbalancer.server.port=80
     networks:
       - gateway
       - backend
