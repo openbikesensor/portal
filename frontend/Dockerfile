@@ -1,4 +1,4 @@
-FROM node:14
+FROM node:17
 
 WORKDIR /opt/obs/frontend
 ADD package.json package-lock.json /opt/obs/frontend/

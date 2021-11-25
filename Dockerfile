@@ -4,7 +4,7 @@
 # Build the frontend AS builder
 #############################################
 
-FROM node:14 as frontend-builder
+FROM node:17 as frontend-builder
 
 WORKDIR /opt/obs/frontend
 ADD frontend/package.json frontend/package-lock.json /opt/obs/frontend/
