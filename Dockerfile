@@ -11,7 +11,7 @@ ADD frontend/package.json frontend/package-lock.json /opt/obs/frontend/
 RUN echo update-notifier=false >> ~/.npmrc
 RUN npm ci
 
-ADD frontend/tsconfig.json frontend/craco.config.js /opt/obs/frontend/
+ADD frontend/tsconfig.json frontend/index.html frontend/webpack.config.js /opt/obs/frontend/
 ADD frontend/src /opt/obs/frontend/src/
 ADD frontend/public /opt/obs/frontend/public/
 
