@@ -7,7 +7,7 @@ import {from} from 'rxjs'
 import {pluck} from 'rxjs/operators'
 
 import {useConfig} from 'config'
-import styles from './App.module.scss'
+import styles from './App.module.less'
 
 import {
   HomePage,

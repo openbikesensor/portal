@@ -10,7 +10,7 @@ import {Stats, Page} from 'components'
 
 import {TrackListItem} from './TracksPage'
 import {CustomMap} from './MapPage'
-import styles from './HomePage.module.scss'
+import styles from './HomePage.module.less'
 
 function MostRecentTrack() {
   const track: Track | null = useObservable(

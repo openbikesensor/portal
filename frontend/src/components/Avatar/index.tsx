@@ -2,7 +2,7 @@ import React from 'react'
 import {Comment} from 'semantic-ui-react'
 import classnames from 'classnames'
 
-import './styles.scss'
+import './styles.less'
 
 function hashCode(s) {
   let hash = 0

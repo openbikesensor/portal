@@ -4,7 +4,7 @@ import {Page} from 'components'
 import {useConfig, Config} from 'config'
 import ReactMapGl, {AttributionControl } from 'react-map-gl'
 
-import styles from './MapPage.module.scss'
+import styles from './MapPage.module.less'
 
 import {obsRoads, basemap } from '../mapstyles'
 

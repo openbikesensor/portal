@@ -16,7 +16,7 @@ import TrackComments from './TrackComments'
 import TrackDetails from './TrackDetails'
 import TrackMap from './TrackMap'
 
-import styles from './TrackPage.module.scss'
+import styles from './TrackPage.module.less'
 
 function useTriggerSubject() {
   const subject$ = React.useMemo(() => new Subject(), [])
