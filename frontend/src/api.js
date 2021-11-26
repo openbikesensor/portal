@@ -4,7 +4,7 @@ import {setLogin} from 'reducers/login'
 import configPromise from 'config'
 import download from 'downloadjs'
 
-function getFileNameFromContentDispostionHeader(contentDisposition: string): string | undefined {
+function getFileNameFromContentDispostionHeader(contentDisposition) {
   const standardPattern = /filename=(["']?)(.+)\1/i
   const wrongPattern = /filename=([^"'][^;"'\n]+)/i
 
