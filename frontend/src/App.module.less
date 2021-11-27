@@ -1,7 +1,7 @@
 @import 'styles.less';
 
 :global(#root) {
-  padding-top: 60px;
+  padding-top: @menuHeight;
 
   display: flex;
   flex-direction: column;
@@ -9,6 +9,12 @@
 
   html, body, & {
     min-height: 100%;
+  }
+}
+
+.menu {
+  > :global(.ui.container) {
+    height: @menuHeight;
   }
 }
 

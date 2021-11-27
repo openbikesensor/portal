@@ -42,9 +42,9 @@ const App = connect((state) => ({login: state.login}))(function App({login}) {
     api.loadUser()
   }, [])
 
-  return (
-    <Router basename={process.env.PUBLIC_URL || '/'}>
-      <Menu fixed="top">
+  return config ? (
+    <Router basename={config.basename}>
+      <Menu fixed="top" className={styles.menu}>
         <Container>
           <Link to="/" component={MenuItemForLink} header className={styles.pageTitle}>
             OpenBikeSensor
@@ -184,7 +184,7 @@ const App = connect((state) => ({login: state.login}))(function App({login}) {
         </Container>
       </div>
     </Router>
-  )
+  ) : null
 })
 
 export default App

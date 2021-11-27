@@ -73,7 +73,7 @@ export default function Stats({user = null}: {user?: null | string}) {
           <Statistic.Group widths={2} size="tiny">
             <Statistic>
               <Statistic.Value>{stats ? `${Number(stats?.trackLength / 1000).toFixed(1)} km` : '...'}</Statistic.Value>
-              <Statistic.Label>Total track length</Statistic.Label>
+              <Statistic.Label>Total xtrack length</Statistic.Label>
             </Statistic>
             <Statistic>
               <Statistic.Value>{stats ? formatDuration(stats?.trackDuration) : '...'}</Statistic.Value>

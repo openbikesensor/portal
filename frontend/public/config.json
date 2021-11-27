@@ -2,6 +2,7 @@
   "apiUrl": "https://api.example.com",
   "imprintUrl": "https://portal.example.com/imprint",
   "privacyPolicyUrl": "https://portal.example.com/privacy",
+  "basename": "/",
   "mapTileset": {
     "url": "https://tiles.wmflabs.org/bw-mapnik/{z}/{x}/{y}.png",
     "minZoom": 0,

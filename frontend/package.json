@@ -4,11 +4,13 @@
   "private": true,
   "scripts": {
     "start": "webpack-dev-server",
-    "build": "webpack"
+    "build": "NODE_ENV=production webpack"
   },
   "dependencies": {
+    "@babel/runtime": "^7.16.3",
     "classnames": "^2.3.1",
     "downloadjs": "^1.4.7",
+    "fomantic-ui-less": "^2.8.8",
     "luxon": "^1.28.0",
     "maplibre-gl": "^1.15.2",
     "pkce": "^1.0.0-beta2",
@@ -25,7 +27,6 @@
     "rxjs": "^6.6.7",
     "rxjs-hooks": "^0.6.2",
     "sass": "^1.43.5",
-    "fomantic-ui-less": "^2.8.8",
     "semantic-ui-react": "^2.0.4",
     "ts-loader": "^9.2.6",
     "typescript": "^4.5.2"
@@ -47,12 +48,13 @@
       "last 1 safari version"
     ]
   },
-  "proxy": "http://api:3000",
   "devDependencies": {
     "@babel/core": "^7.16.0",
+    "@babel/plugin-transform-runtime": "^7.16.4",
     "@babel/preset-env": "^7.16.4",
     "@babel/preset-react": "^7.16.0",
     "@babel/preset-typescript": "^7.16.0",
+    "@pmmmwh/react-refresh-webpack-plugin": "^0.5.2",
     "@types/lodash": "^4.14.177",
     "@types/node": "^14.17.34",
     "@types/react": "^17.0.37",
@@ -60,8 +62,10 @@
     "@types/react-redux": "^7.1.20",
     "@types/react-router-dom": "^5.3.2",
     "babel-loader": "^8.2.3",
-    "css-loader": "^6.5.1",
+    "css-loader": "^5.2.7",
+    "html-webpack-plugin": "^5.5.0",
     "less-loader": "^10.2.0",
+    "react-refresh": "^0.11.0",
     "style-loader": "^3.3.1",
     "webpack": "^5.64.4",
     "webpack-cli": "^4.9.1",
