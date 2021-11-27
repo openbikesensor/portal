@@ -4,13 +4,13 @@
   "sources": {
     "openmaptiles": {
       "type": "vector",
-      "tiles": ["https://portal.openbikesensor.org/tiles/data/basemap/{z}/{x}/{y}.pbf"],
+      "tiles": ["https://portal.openbikesensor.org/basemap/data/basemap/{z}/{x}/{y}.pbf"],
       "minzoom": 0,
       "maxzoom": 14
     }
   },
   "sprite": "https://openmaptiles.github.io/osm-bright-gl-style/sprite",
-  "glyphs": "https://portal.openbikesensor.org/tiles/fonts/{fontstack}/{range}.pbf?key={key}",
+  "glyphs": "https://portal.openbikesensor.org/basemap/fonts/{fontstack}/{range}.pbf?key={key}",
   "layers": [
     {
       "id": "background",
