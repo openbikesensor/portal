@@ -226,10 +226,15 @@ class Track(Base):
         return self.is_visible_to_private(user) or self.public
 
     def generate_slug(self, new_title_or_filename=None):
-        input_text = (
-            new_title_or_filename or self.title or self.original_file_name or "track"
-        )
-        self.slug = slugify(input_text, separator="_") + "-" + random_string(6)
+        input_text = new_title_or_filename or self.title or self.original_file_name
+
+        if input_text is not None:
+            self.slug = slugify(input_text, separator="_") + "-"
+        else:
+            self.slug = ""
+
+        # make unique
+        self.slug += random_string(8)
 
     async def prevent_duplicates(self, session, file_body):
         hex_hash = hashlib.sha512(file_body).hexdigest()
