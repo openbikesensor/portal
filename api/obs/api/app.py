@@ -157,7 +157,7 @@ if INDEX_HTML and exists(INDEX_HTML):
     @app.get("/config.json")
     def get_frontend_config(req):
         base_path = req.server_path.replace("config.json", "")
-        scheme = 'https' if req.app.config.FRONTEND_HTTPS else req.scheme
+        scheme = "https" if req.app.config.FRONTEND_HTTPS else req.scheme
         result = {
             **req.app.config.FRONTEND_CONFIG,
             "apiUrl": f"{scheme}://{req.host}{base_path}api",
@@ -172,7 +172,7 @@ if INDEX_HTML and exists(INDEX_HTML):
                 ],
                 "minzoom": 12,
                 "maxzoom": 14,
-            }
+            },
         }
 
         return json_response(result)

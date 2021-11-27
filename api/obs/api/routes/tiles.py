@@ -14,13 +14,11 @@ def get_tile(filename, zoom, x, y):
     https://github.com/TileStache/TileStache/blob/master/TileStache/MBTiles.py
     """
 
-    print(filename)
     db = connect(filename)
     db.text_factory = bytes
 
     fmt = db.execute("SELECT value FROM metadata WHERE name='format'").fetchone()[0]
     if fmt != b"pbf":
-        print(repr(b"pbf"), " versus ", repr(fmt))
         raise ValueError("mbtiles file is in wrong format: %s" % fmt)
 
     content = db.execute(
@@ -51,7 +49,6 @@ async def tiles(req, zoom: int, x: int, y: str):
                 y=int(y),
             )
         )
-        print("TILE", tile)
 
     gzip = "gzip" in req.headers["accept-encoding"]
 
