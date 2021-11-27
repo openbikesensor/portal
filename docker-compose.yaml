@@ -78,15 +78,14 @@ services:
       - ./frontend/public:/opt/obs/frontend/public
       - ./frontend/tsconfig.json:/opt/obs/frontend/tsconfig.json
       - ./frontend/package.json:/opt/obs/frontend/package.json
+      - ./frontend/webpack.config.js:/opt/obs/frontend/webpack.config.js
 
       # Overwrite the default config with the development mode configuration
       - ./frontend/config.dev.json:/opt/obs/frontend/public/config.json
-    environment:
-      - PORT=3000
     links:
       - api
     ports:
-      - '3001:3000'
+      - '3001:3001'
     restart: on-failure
     command:
       - npm

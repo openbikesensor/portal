@@ -1,10 +1,9 @@
 import logging
-import os
 import re
 from json import JSONEncoder, dumps
 from functools import wraps, partial
 from urllib.parse import urlparse
-from os.path import dirname, join, normpath, abspath, exists, isfile
+from os.path import dirname, join, normpath, abspath
 from datetime import datetime, date
 
 from sanic import Sanic, Blueprint
@@ -14,11 +13,11 @@ from sanic.response import (
     file as file_response,
     html as html_response,
 )
-from sanic.exceptions import Unauthorized, NotFound
+from sanic.exceptions import Unauthorized
 from sanic_session import Session, InMemorySessionInterface
 
 from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
+from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import sessionmaker
 
 from obs.api.db import User, make_session, connect_db
@@ -187,54 +186,16 @@ def json(*args, **kwargs):
     return json_response(*args, **kwargs, dumps=partial(dumps, cls=CustomJsonEncoder))
 
 
-from . import routes
-
-INDEX_HTML = (
-    join(app.config.FRONTEND_DIR, "index.html")
-    if app.config.get("FRONTEND_DIR")
-    else None
+from routes import (
+    info,
+    login,
+    stats,
+    tiles,
+    tracks,
+    users,
 )
-if INDEX_HTML and exists(INDEX_HTML):
 
-    @app.get("/config.json")
-    def get_frontend_config(req):
-        result = {
-            "basename": req.ctx.frontend_base_path,
-            **req.app.config.FRONTEND_CONFIG,
-            "apiUrl": f"{req.ctx.api_url}/api",
-            "loginUrl": f"{req.ctx.api_url}/login",
-            "obsMapSource": {
-                "type": "vector",
-                "tiles": [
-                    req.ctx.api_url
-                    + req.app.url_for("tiles", zoom="000", x="111", y="222.pbf")
-                    .replace("000", "{z}")
-                    .replace("111", "{x}")
-                    .replace("222", "{y}")
-                ],
-                "minzoom": 12,
-                "maxzoom": 14,
-            },
-        }
-
-        return json_response(result)
-
-    with open(INDEX_HTML, "rt") as f:
-        index_file_contents = f.read()
-
-    @app.get("/<path:path>")
-    def get_frontend_static(req, path):
-        print("++++++++++++++++++++++++++++++++++++++++++++++++", path)
-        if path.startswith("api/"):
-            raise NotFound()
-
-        file = join(app.config.FRONTEND_DIR, path)
-        if not exists(file) or not path or not isfile(file):
-            return html_response(
-                index_file_contents.replace("__BASE_HREF__", req.ctx.frontend_url + "/")
-            )
-
-        return file_response(file)
+from routes import frontend
 
 
 app.blueprint(api)
