@@ -8,7 +8,12 @@ from os.path import dirname, join, normpath, abspath, exists, isfile
 from datetime import datetime, date
 
 from sanic import Sanic, Blueprint
-from sanic.response import text, json as json_response, file as file_response
+from sanic.response import (
+    text,
+    json as json_response,
+    file as file_response,
+    html as html_response,
+)
 from sanic.exceptions import Unauthorized, NotFound
 from sanic_session import Session, InMemorySessionInterface
 
@@ -96,6 +101,43 @@ async def app_disconnect_db(app, loop):
         await app.ctx._db_engine_ctx.__aexit__(None, None, None)
 
 
+def remove_right(l, r):
+    if l.endswith(r):
+        return l[: -len(r)]
+    return l
+
+
+@app.middleware("request")
+async def inject_urls(req):
+    if req.app.config.FRONTEND_HTTPS:
+        req.ctx.frontend_scheme = "https"
+    elif req.app.config.FRONTEND_URL:
+        req.ctx.frontend_scheme = (
+            "http" if req.app.config.FRONTEND_URL.startswith("http://") else "https"
+        )
+    else:
+        req.ctx.frontend_scheme = req.scheme
+
+    req.ctx.api_scheme = req.ctx.frontend_scheme  # just use the same for now
+    req.ctx.api_base_path = remove_right(req.server_path, req.path)
+    req.ctx.api_url = f"{req.ctx.frontend_scheme}://{req.host}{req.ctx.api_base_path}"
+
+    if req.app.config.FRONTEND_URL:
+        req.ctx.frontend_base_path = "/" + urlparse(
+            req.app.config.FRONTEND_URL
+        ).path.strip("/")
+        req.ctx.frontend_url = req.app.config.FRONTEND_URL.rstrip("/")
+    elif app.config.FRONTEND_DIR:
+        req.ctx.frontend_base_path = req.ctx.api_base_path
+        req.ctx.frontend_url = req.ctx.api_url
+
+    else:
+        req.ctx.frontend_base_path = "/"
+        req.ctx.frontend_url = (
+            f"{req.ctx.frontend_scheme}://{req.host}{req.ctx.frontend_base_path}"
+        )
+
+
 @app.middleware("request")
 async def inject_session(req):
     req.ctx._session_ctx = make_session()
@@ -156,16 +198,16 @@ if INDEX_HTML and exists(INDEX_HTML):
 
     @app.get("/config.json")
     def get_frontend_config(req):
-        base_path = req.server_path.replace("config.json", "")
-        scheme = "https" if req.app.config.FRONTEND_HTTPS else req.scheme
         result = {
+            "basename": req.ctx.frontend_base_path,
             **req.app.config.FRONTEND_CONFIG,
-            "apiUrl": f"{scheme}://{req.host}{base_path}api",
-            "loginUrl": f"{scheme}://{req.host}{base_path}login",
+            "apiUrl": f"{req.ctx.api_url}/api",
+            "loginUrl": f"{req.ctx.api_url}/login",
             "obsMapSource": {
                 "type": "vector",
                 "tiles": [
-                    req.app.url_for("tiles", zoom="000", x="111", y="222.pbf")
+                    req.ctx.api_url
+                    + req.app.url_for("tiles", zoom="000", x="111", y="222.pbf")
                     .replace("000", "{z}")
                     .replace("111", "{x}")
                     .replace("222", "{y}")
@@ -177,14 +219,21 @@ if INDEX_HTML and exists(INDEX_HTML):
 
         return json_response(result)
 
+    with open(INDEX_HTML, "rt") as f:
+        index_file_contents = f.read()
+
     @app.get("/<path:path>")
     def get_frontend_static(req, path):
+        print("++++++++++++++++++++++++++++++++++++++++++++++++", path)
         if path.startswith("api/"):
             raise NotFound()
 
         file = join(app.config.FRONTEND_DIR, path)
         if not exists(file) or not path or not isfile(file):
-            file = INDEX_HTML
+            return html_response(
+                index_file_contents.replace("__BASE_HREF__", req.ctx.frontend_url + "/")
+            )
+
         return file_response(file)
 
 

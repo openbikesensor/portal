@@ -78,6 +78,14 @@ Then edit `config/config.py` to your heart's content (and matching the
 configuration of the keycloak). Do not forget to generate a secure secret
 string.
 
+Also set `PROXIES_COUNT = 1` in your config, even if that option is not
+included in the example file. Read the [sanic
+docs](https://sanic.readthedocs.io/en/v20.12.3/sanic/config.html) for why this
+needs to be done. If your reverse proxy supports it, you can also use a
+forwarded secret to secure your proxy target from spoofing. This is not
+required if your application server does not listen on a public interface, but
+it is recommended anyway, if possible.
+
 ### Build container and run them
 
 ```bash

@@ -38,13 +38,12 @@ async def login(req, next: str = None):
     session["state"] = rndstr()
     session["nonce"] = rndstr()
     session["next"] = next
-    scheme = 'https' if req.app.config.FRONTEND_HTTPS else req.scheme
     args = {
         "client_id": client.client_id,
         "response_type": "code",
         "scope": ["openid"],
         "nonce": session["nonce"],
-        "redirect_uri": scheme + "://" + req.host + "/login/redirect",
+        "redirect_uri": req.ctx.frontend_url + "/login/redirect",
         "state": session["state"],
     }
 
@@ -81,7 +80,9 @@ async def login_redirect(req):
     email = userinfo.get("email")
 
     if email is None:
-        raise ValueError("user has no email set, please configure keycloak to require emails")
+        raise ValueError(
+            "user has no email set, please configure keycloak to require emails"
+        )
 
     user = (await req.ctx.db.execute(select(User).where(User.sub == sub))).scalar()
 
