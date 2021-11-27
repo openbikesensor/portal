@@ -38,10 +38,6 @@ async def tiles(req, zoom: int, x: int, y: str):
         tile = get_tile(req.app.config.TILES_FILE, int(zoom), int(x), int(y))
 
     else:
-        data = column("data")
-        key = column("key")
-        mvts = table("mvts", data, key)
-
         tile = await req.ctx.db.scalar(
             text(f"select data from getmvt(:zoom, :x, :y) as b(data, key);").bindparams(
                 zoom=int(zoom),
