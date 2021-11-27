@@ -186,7 +186,7 @@ def json(*args, **kwargs):
     return json_response(*args, **kwargs, dumps=partial(dumps, cls=CustomJsonEncoder))
 
 
-from routes import (
+from .routes import (
     info,
     login,
     stats,
@@ -195,7 +195,7 @@ from routes import (
     users,
 )
 
-from routes import frontend
+from .routes import frontend
 
 
 app.blueprint(api)
