@@ -80,7 +80,7 @@ string.
 
 Also set `PROXIES_COUNT = 1` in your config, even if that option is not
 included in the example file. Read the 
-[sanic docs](https://sanicframework.org/en/guide/advanced/proxy-headers.html) 
+[Sanic docs](https://sanicframework.org/en/guide/advanced/proxy-headers.html) 
 for why this needs to be done. If your reverse proxy supports it, you can also
 use a forwarded secret to secure your proxy target from spoofing. This is not
 required if your application server does not listen on a public interface, but

@@ -4,11 +4,18 @@ This repository contains the source code required to run the
 [OpenBikeSensor](https://openbikesensor.org) data collection portal. It is
 separated into components:
 
-* **api**: The backend service, written in JavaScript for Node.js, using
-  express.js, and a MongoDB for metadata storage.
+* **api**: The backend service, written in Python 3 with
+  [Sanic](https://sanicframework.org/),
+  [SQLAlchemy](https://www.sqlalchemy.org/), and a PostgreSQL/PostGIS database
+  for storage. It also depends highly on
+  [OpenMapTiles](https://openmaptiles.org) to generate vector tiles of the
+  data.
 * **frontend**: A React single-page application that allows access to the data,
   provides summaries and visualizations, and lets users adjust settings and
   manage and publish their tracks.
+
+Check out the [Architecture Documentation](docs/architecture.md) for more
+details on what parts the whole application is made of.
 
 ## Clone the Project
 

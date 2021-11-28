@@ -7,7 +7,7 @@ different.  This article describes the standard production setup.
 
 ## General overview of the components
 
-* **api**: A python process using sanic to provide a HTTP interface. Everything
+* **api**: A python process using Sanic to provide a HTTP interface. Everything
   revolves around this.
 * **postgresql**: A database instance.
 * **frontend**: A React based web application.
@@ -36,7 +36,7 @@ the developers of the OpenBikeSensor portal.
 
 ## API
 
-The API is written in Python 3 with [sanic](https://sanicframework.org/) for
+The API is written in Python 3 with [Sanic](https://sanicframework.org/) for
 HTTP handling. It supports Python 3.6+ and comes with a list of dependencies
 that is required. One of those is `openmaptiles-tools`, which is installed from
 git (see `api/requirements.txt`). The API also depends on the `obs.face`
