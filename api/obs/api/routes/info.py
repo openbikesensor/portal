@@ -1,7 +1,5 @@
 import logging
 
-# from sqlalchemy import select
-
 from obs.api.app import api
 
 from sanic.response import json

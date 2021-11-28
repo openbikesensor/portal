@@ -22,7 +22,7 @@ client = Client(client_authn_method=CLIENT_AUTHN_METHOD)
 @auth.before_server_start
 async def connect_auth_client(app, loop):
     client.allow["issuer_mismatch"] = True
-    pc = client.provider_config(app.config.KEYCLOAK_URL)
+    client.provider_config(app.config.KEYCLOAK_URL)
     client.store_registration_info(
         RegistrationResponse(
             client_id=app.config.KEYCLOAK_CLIENT_ID,
@@ -122,6 +122,7 @@ async def login_redirect(req):
             log.debug("Updating user (id: %s) email from auth system.", user.id)
             user.email = email
 
+        # TODO: re-add username change when we can safely rename users
         # if preferred_username != user.username:
         #     log.debug("Updating user (id: %s) username from auth system.", user.id)
         #     user.username = preferred_username

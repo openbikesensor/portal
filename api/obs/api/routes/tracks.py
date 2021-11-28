@@ -211,7 +211,7 @@ async def put_track(req, slug: str):
 
     try:
         body = req.json["track"]
-    except:
+    except BaseException:
         body = {}
 
     if "title" in body:

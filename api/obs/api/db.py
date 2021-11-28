@@ -59,7 +59,7 @@ async def init_models():
 
 def random_string(length):
     letters = string.ascii_lowercase + string.digits
-    return "".join(random.choice(letters) for i in range(length))
+    return "".join(random.choice(letters) for _ in range(length))
 
 
 @asynccontextmanager

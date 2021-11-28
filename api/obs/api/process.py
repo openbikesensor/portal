@@ -54,7 +54,7 @@ async def process_tracks_loop(delay):
                 data_source = DataSource(tile_source)
 
                 await process_track(session, track, data_source)
-        except:
+        except BaseException:
             log.exception("Failed to process track. Will continue.")
             await asyncio.sleep(1)
             continue
