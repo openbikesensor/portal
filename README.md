@@ -80,30 +80,30 @@ Then clone the repository as described above.
 Login will not be possible until you configure the keycloak realm correctly. Boot your keycloak instance:
 
 ```bash
-docker-compose up -d --build keycloak
+docker-compose up -d keycloak
 ```
 
 Now navigate to http://localhost:3003/ and follow these steps:
 
-* Click "Administration Console" and log in with `admin` / `admin`
-* Hover over the realm name on the top left and click "Add realm"
-* Name the Realm `obs-dev` (spelling matters) and create it
-* In the sidebar, navigate to Configure -> Clients, and click "Create" on the top right
-* Client ID is `portal`. Hit "Save".
-* In the Tab "Settings", edit the new client's "Access Type" to `confidential`
-  and enter as "Valid Redirect URIs": `http://localhost:3000/login/redirect`,
-  then "Save"
-* Under "Credentials", copy the "Secret" and paste it into `api/config.dev.py`
+- Click *Administration Console* and log in with `admin` / `admin`.
+- Hover over the realm name on the top left and click *Add realm*.
+- Name the Realm `obs-dev` (spelling matters) and create it.
+- In the sidebar, navigate to *Configure* &rarr; *Clients*, and click *Create* on the top right.
+- *Client ID* should be `portal`. Click *Save*.
+- In the Tab *Settings*, edit the new client's *Access Type* to *confidential*
+  and enter as *Valid Redirect URIs*: `http://localhost:3000/login/redirect`,
+  then *Save*
+- Under *Credentials*, copy the *Secret* and paste it into `api/config.dev.py`
   as `KEYCLOAK_CLIENT_SECRET`. Please do not commit this change to git.
-* In the sidebar, navigate to Manage -> Users, and click "Add user" on the top right.
-* Give the user a name (e.g. `test`), leave the rest as-is.
-* Under the tab "Credentials", set a new password, and make it non-temporary.
-  Press "Set Password".
+- In the sidebar, navigate to *Manage* &rarr; *Users*, and click *Add user* on the top right.
+- Give the user a name (e.g. `test`), leave the rest as-is.
+- Under the tab *Credentials*, choose a new password, and make it
+  non-temporary. Click *Set Password*.
 
 We are going to automate this process. For now, you will have to repeat it
-every time you reset the keycloak datbaase, which is inside the PostgreSQL. The
-script `api/tools/reset_database.py` does *not* affect the state of the
-keycloak database, however, so this should be rather rare.
+every time you reset your keycloak settings, which are stored inside the
+PostgreSQL as well. Luckily, the script `api/tools/reset_database.py` does
+*not* affect the state of the keycloak database, so this should be rather rare.
 
 ### Prepare database
 
@@ -118,18 +118,18 @@ takes a while, so check the logs of the docker container until you see:
 
 > PostgreSQL init process complete; ready for start up.
 
-If you don't wait long enough, the following commands might fail.
+If you don't wait long enough, the following commands might fail. In this case,
+you can always stop the container, remove the data directory (`local/postgres`)
+and restart the process.
 
-Next, initialize an empty database, creating all extensions and tables
-for the application at once:
+Next, initialize an empty database, which applies the database schema for the
+application:
 
 ```bash
 docker-compose run --rm api tools/reset_database.py
 ```
 
-You should import OpenStreetMap data now, see below for instructions.
-
-To serve dynamic vector tiles from the API, run the following command once:
+To be able serve dynamic vector tiles from the API, run the following command once:
 
 ```bash
 docker-compose run --rm api tools/prepare_sql_tiles.py
@@ -137,6 +137,8 @@ docker-compose run --rm api tools/prepare_sql_tiles.py
 
 You might need to re-run this command after updates, to (re-)create the
 functions in the SQL database that are used when generating vector tiles.
+
+You should also import OpenStreetMap data now, see below for instructions.
 
 ### Boot the application
 
@@ -161,7 +163,10 @@ document the usage here.
 You need to import road information from OpenStreetMap for the portal to work.
 This information is stored in your PostgreSQL database and used when processing
 tracks (instead of querying the Overpass API), as well as for vector tile
-generation.
+generation. The process applies to both development and production setups. For
+development, you should choose a small area for testing, such as your local
+county or city, to keep the amount of data small. For production use you have
+to import the whole region you are serving.
 
 * Install `osm2pgsql`. 
 * Download the area(s) you would like to import from [GeoFabrik](https://download.geofabrik.de). 
@@ -174,24 +179,25 @@ generation.
     ```
 
 You might need to adjust the host, database and username (`-H`, `-d`, `-U`) to
-your setup, and also provide the correct password when queried. This process
-should take a few seconds to minutes, depending on the area size. You can run
-the process multiple times, with the same or different area files, to import or
-update the data. You can also truncate the `road` table before importing if you
-want to remove outdated road information. 
+your setup, and also provide the correct password when queried. For the
+development setup the password is `obs`. For production, you might need to
+expose the containers port and/or create a TCP tunnel, for example with SSH,
+such that you can run the import from your local host and write to the remote
+database.
+
+The import process should take a few seconds to minutes, depending on the area
+size. A whole country might even take one or more hours. You should probably
+not try to import `planet.osm.pbf`. 
+
+You can run the process multiple times, with the same or different area files,
+to import or update the data. You can also truncate the `road` table before
+importing if you want to remove outdated road information. 
 
 Refer to the documentation of `osm2pgsql` for assistance. We are using "flex
 mode", the provided script `api/roads_import.lua` describes the transformations
 and extractions to perform on the original data.
 
-## Static tile generation
-
-The above instructions do not include the serving of vector tiles with the
-collected data. That is to be set up separately. Please follow the instructions
-in [tile-generator](./tile-generator/README.md).
-
-
-### Troubleshooting
+## Troubleshooting
 
 If any step of the instructions does not work for you, please open an issue and
 describe the problem you're having, as it is important to us that onboarding is

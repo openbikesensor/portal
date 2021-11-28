@@ -15,9 +15,9 @@ server's IP address. This documentation uses `portal.example.com` as an
 example. The API is hosted at `https://portal.example.com/api`, while the main
 frontend is reachable at the domain root.
 
-## Steps
+## Setup instructions
 
-### Clone the repo
+### Clone the repository
 
 First create a folder somewhere in your system, in the example we use 
 `/opt/openbikesensor` and export it as `$ROOT` to more easily refer to it.
@@ -29,11 +29,13 @@ export ROOT=/opt/openbikesensor
 mkdir -p $ROOT
 cd $ROOT
 git clone --recursive https://github.com/openbikesensor/portal source/
-# ... or if you accidentally cloned non --recursive, to fix it run:
+# If you accidentally cloned without --recursive, fix it by running:
 # git submodule update --init --recursive
 ```
 
-Unles otherwise mentioned, commandlines below assume your `cwd` to be `$ROOT`
+Unless otherwise mentioned, commands below assume your current working
+directory to be `$ROOT`.
+
 
 ### Configure `traefik.toml`
 
@@ -43,8 +45,9 @@ cp source/deployment/examples/traefik.toml config/traefik.toml
 vim config/traefik.toml
 ```
 
-Configure your email in the `config/traefik.toml`. This email is uses by
-Let's Encrypt to send you some mails regarding your certificates.
+Configure your email in the `config/traefik.toml`. This email is used by
+*Let's Encrypt* to send you some emails regarding your certificates.
+
 
 ### Configure `docker-compose.yaml`
 
@@ -53,20 +56,36 @@ cp source/deployment/examples/docker-compose.yaml docker-compose.yaml
 vim docker-compose.yaml
 ```
 
-Change the domain where it occurs, such as in `Host()` rules.
+* Change the domain where it occurs, such as in `Host()` rules. 
+* Generate a secure password for the PostgreSQL database user. You will need to
+  configure this in the application later.
+
 
 ### Create a keycloak instance
 
-Follow the official guides to create your own keycloak server:
+Follow the [official guides](https://www.keycloak.org/documentation) to create
+your own keycloak server. You can run the keycloak in docker and include it in
+your `docker-compose.yaml`, if you like.
 
-https://www.keycloak.org/documentation
+Documenting the details of this is out of scope for our project. Please make
+sure to configure:
 
-Documenting the details of this is out of scope for our project. Please make sure to configure:
-
-* an admin account for yourself
-* a realm for the portal
-* a client in that realm with "Access Type" set to "confidential" and a
+* An admin account for yourself
+* A realm for the portal
+* A client in that realm with "Access Type" set to "confidential" and a
   redirect URL of this pattern: `https://portal.example.com/login/redirect`
+
+
+### Prepare database
+
+Follow the procedure outlined in [README.md](../README.md) under "Prepare
+database".
+
+
+### Import OpenStreetMap data
+
+Follow the procedure outlined in [README.md](../README.md) under "Import OpenStreetMap data".
+
 
 ### Configure portal
 
@@ -92,6 +111,32 @@ it is recommended anyway, if possible.
 docker-compose build portal
 docker-compose up -d portal
 ```
+
+## Running a dedicated worker
+
+Extend your `docker-compose.yaml` with the following service:
+
+```yaml
+  worker:
+    image: openbikesensor-portal
+    build:
+      context: ./source
+    volumes:
+      - ./data/api-data:/data
+      - ./config/config.py:/opt/obs/api/config.py
+    restart: on-failure
+    links:
+      - postgres
+    networks:
+      - backend
+    command:
+      - python
+      - tools/process_track.py
+```
+
+Change the `DEDICATED_WORKER` option in your config to `True` to stop
+processing tracks in the portal container. Then restart the `portal` service
+and start the `worker` service.
 
 ## Miscellaneous
 
@@ -119,4 +164,34 @@ can always roll back to a pre-update state.
 
 To backup your instances private data you only need to backup the ``$ROOT`` folder.
 This should contain everything needed to start your instance again, no persistent
-data lives in docker containers.
+data lives in docker containers. You should stop the containers for a clean backup.
+
+This backup contains the imported OSM data as well. That is of course a lot of
+redundant data, but very nice to have for a quick restore operation. If you
+want to generate smaller, nonredundant backups, or backups during live
+operation of the database, use a tool like `pg_dump` and extract only the
+required tables:
+
+* `overtaking_event`
+* `track`
+* `user` (make sure to reference `public.user`, not the postgres user table)
+* `comment`
+
+You might also instead use the `--exclude-table` option to ignore the `road`
+table only (adjust connection parameters and names):
+
+```bash
+pg_dump -h localhost -d obs -U obs -n public -T road -f backup-`date +%F`.sql
+```
+
+Also back up the raw uploaded files, i.e. the `local/api-data/tracks`
+directory. The processed data can be regenerated, but you can also back that
+up, from `local/api-data/processing-output`.
+
+Finally, make sure to create a backup of your keycloak instance. Refer to the
+keycloak documentation for how to export its data in a restorable way. This
+should work very well if you are storing keycloak data in the PostgreSQL and
+exporting that with an exclusion pattern instead of an explicit list.
+
+And then, please test your backup and restore strategy before going live, or at
+least before you need it!

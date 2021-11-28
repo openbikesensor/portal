@@ -10,12 +10,14 @@ explicitly. Once we implement them, their usage will be described in the
 
 * Shut down all services
 * Obviously, now is a good time to perform a full backup ;)
-* Update the codebase
+* Update the codebase (`git pull`, `git submodule update`).
 * Update docker-compose.yaml from the example. Leave the MongoDB service in
   place for now, but update all other service descriptions. You can remove
   `redis` already. Generate a better password than the default for your
-  postgres user.
-* Start up the `mongo` and `postgres` services.
+  postgres user. Traefik rules have been simplified as all routes are handled
+  by the portal service now.
+* Start up the `mongo` and `postgres` services. Wait for postgres to finish
+  initializing (see [README](README.md)).
 * Build the new image (e.g. with `docker-compose build portal`)
 * Configure your API. The example config file is `api/config.py.example`, and
   it will need to be mounted to `api/config.py` in the container. Ignore the
@@ -26,13 +28,13 @@ explicitly. Once we implement them, their usage will be described in the
     docker-compose run --rm portal python tools/reset_database.py
     docker-compose run --rm portal python tools/prepare_sql_tiles.py
     ```
-* Import OSM data (see README)
+* Import OSM data (see [README](README.md)).
 * Run the database migration script: 
     
     ```bash
     docker-compose run --rm \
         -v $PWD/export:/export \
-        api \
+        portal \
         python tools/import_from_mongodb.py mongodb://mongo/obs \
         --keycloak-users-file /export/users.json
     ```
@@ -42,5 +44,6 @@ explicitly. Once we implement them, their usage will be described in the
   file to match your keycloak configuration. Import the file
   `export/users.json` into your realm, it will re-add all the users from the
   old installation. You should delete the file and `export/` folder afterwards.
-* Start `api`, `worker` and `frontend`.
+* Start `portal`.
+* Consider configuring a worker service. See [deployment/README.md](deployment/README.md).
 
