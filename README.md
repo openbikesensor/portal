@@ -196,3 +196,35 @@ in [tile-generator](./tile-generator/README.md).
 If any step of the instructions does not work for you, please open an issue and
 describe the problem you're having, as it is important to us that onboarding is
 super easy :)
+
+## License
+  
+    Copyright (C) 2020-2021 OpenBikeSensor Contributors
+    Contact: https://openbikesensor.org
+    
+    The OpenBikeSensor Portal is free software: you can redistribute it
+    and/or modify it under the terms of the GNU Lesser General Public License
+    as published by the Free Software Foundation, either version 3 of the
+    License, or (at your option) any later version.
+    
+    The OpenBikeSensor Portal is distributed in the hope that it will be
+    useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser
+    General Public License for more details.
+    
+    You should have received a copy of the GNU Lesser General Public License
+    along with the OpenBikeSensor Portal. If not, see
+    <http://www.gnu.org/licenses/>.
+
+See also [`COPYING`](./COPYING) and [`COPYING.LESSER`](./COPYING.LESSER).
+
+The above does not apply to the files listed below, their respective licenses
+are included in a file next to each of them, named accordingly:
+
+* `frontend/src/mapstyles/bright.json`
+* `frontend/src/mapstyles/positron.json`
+
+There are lots of other licenses to consider when using this software,
+especially in conjunction with imported data and other tools. Check out the
+[Licenses Documentation](docs/licenses.md) for an (unofficial) overview of the
+license landscape surrounding this project.
