@@ -19,7 +19,7 @@ log = logging.getLogger(__name__)
 TILE_GENERATOR = normpath(
     abspath(join(app.config.API_ROOT_DIR, "..", "tile-generator"))
 )
-TILESET_FILE = join(TILE_GENERATOR, "openmaptiles.yaml")
+TILESET_FILE = join(TILE_GENERATOR, "openbikesensor.yaml")
 
 
 def parse_pg_url(url=app.config.POSTGRES_URL):
@@ -78,7 +78,7 @@ async def generate_data_yml(build_dir):
         ]
     )
 
-    tm2source = join(build_dir, "openmaptiles.tm2source")
+    tm2source = join(build_dir, "openbikesensor.tm2source")
     os.makedirs(tm2source, exist_ok=True)
 
     with open(join(tm2source, "data.yml"), "wt") as f:

@@ -1,12 +1,9 @@
-Copyright (c) 2016, KlokanTech.com & OpenMapTiles contributors.  
-All rights reserved.  
+Copyright (c) 2016, KlokanTech.com & OpenMapTiles contributors.
+Copyright (c) 2015, CartoDB Inc.
+All rights reserved.
 
-The vector tile schema has been developed by Klokan Technologies GmbH and
-was initially modelled after the cartography of the CARTO's Positron basemap
-with permission from CartoDB Inc.
-The vector tile schema has been refined and improved in cooperation with
-the Wikimedia Foundation and is heavily influenced by years of
-Paul Norman's experience of creating maps from OpenStreetMap data.
+Derived from "CartoDB Basemaps" (https://github.com/CartoDB/CartoDB-basemaps)
+designed by Stamen and Paul Norman for CartoDB Inc., licensed under CC-BY 3.0.
 
 # Code license: BSD 3-Clause License
 
@@ -37,10 +34,14 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 # Design license: CC-BY 4.0
 
-The cartography and visual design features of the map tile schema (also known as
-the "look and feel" of the map) are licensed under the Creative Commons
-Attribution 4.0 license.
+The visual design features of the style (also known as the "look and feel" of
+the map) are licensed under the Creative Commons Attribution 4.0 license.
+
 To view a copy of the license, visit http://creativecommons.org/licenses/by/4.0/.
+
+Attribution for the design defined in this repository needs not to be provided
+on map images, but should be reasonably accessible from maps based on this style
+(for example, in a webpage linked from copyright notice on the map).
 
 Products or services using maps derived from OpenMapTiles schema need to visibly
 credit "OpenMapTiles.org" or reference "OpenMapTiles" with a link to
@@ -49,12 +50,13 @@ http://openmaptiles.org/.
 For a browsable electronic map based on OpenMapTiles and OpenStreetMap data, the
 credit should appear in the corner of the map. For example:
 
-[© OpenMapTiles](http://openmaptiles.org/) [© OpenStreetMap contributors](http://www.openstreetmap.org/copyright)
+[© OpenMapTiles](http://openmaptiles.org/)
+[© OpenStreetMap contributors](http://www.openstreetmap.org/copyright)
 
 For printed and static maps a similar attribution should be made in a textual
 description near the image, in the same fashion as if you cite a photograph.
 
 Exceptions to OpenMapTiles attribution requirement can be in a written form granted
-by Klokan Technologies GmbH (info@klokantech.com).  
+by Klokan Technologies GmbH (info@klokantech.com).
 The project contributors grant Klokan Technologies GmbH the license to give such
 exceptions on a commercial basis.
