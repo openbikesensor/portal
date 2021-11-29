@@ -1,13 +1,14 @@
 import React from 'react'
 
+import ReactMapGl, {AttributionControl, NavigationControl, Layer, Source} from 'react-map-gl'
+
 import {Page} from 'components'
 import {useConfig, Config} from 'config'
 import {useHistory, useLocation} from 'react-router-dom'
-import ReactMapGl, {AttributionControl } from 'react-map-gl'
 
 import styles from './MapPage.module.less'
 
-import {obsRoads, basemap } from '../mapstyles'
+import {roadsLayer, basemap} from '../mapstyles'
 
 function parseHash(v) {
   if (!v) return null
@@ -37,52 +38,47 @@ function useViewportFromUrl() {
   return [value || EMPTY_VIEWPORT, setter]
 }
 
-function CustomMapInner({viewportFromUrl, mapSource, config, mode, children}: {viewportFromUrl?: boolean, mapSource: string, config: Config, mode?: 'roads'}) {
-  const mapStyle = React.useMemo(() => {
-    if (mode === 'roads') {
-      return mapSource && obsRoads(mapSource)
-    } else {
-      return basemap
-    }
-  }, [mapSource, mode])
-
+export function CustomMap({viewportFromUrl, children, boundsFromJson}: {viewportFromUrl?: boolean, children: React.ReactNode}) {
   const [viewportState, setViewportState] = React.useState(EMPTY_VIEWPORT)
   const [viewportUrl, setViewportUrl] = useViewportFromUrl()
 
   const [viewport, setViewport] = viewportFromUrl ? [viewportUrl, setViewportUrl] : [viewportState, setViewportState]
 
+
+  const config = useConfig()
   React.useEffect(() => {
     if (config?.mapHome && viewport.zoom === 0) {
       setViewport(config.mapHome)
     }
   }, [config])
 
-  if (!mapStyle) {
-    return null
-  }
-
   return (
-    <ReactMapGl mapStyle={mapStyle} width="100%" height="100%" onViewportChange={setViewport} {...viewport}>
+    <ReactMapGl mapStyle={basemap} width="100%" height="100%" onViewportChange={setViewport} {...viewport}>
       <AttributionControl style={{right: 0, bottom: 0}} customAttribution={[
         '<a href="https://openstreetmap.org/copyright" target="_blank" rel="nofollow noopener noreferrer">© OpenStreetMap contributors</a>',
         '<a href="https://openmaptiles.org/" target="_blank" rel="nofollow noopener noreferrer">© OpenMapTiles</a>',
         '<a href="https://openbikesensor.org/" target="_blank" rel="nofollow noopener noreferrer">© OpenBikeSensor</a>',
       ]} />
+  <NavigationControl style={{left: 0, top: 0}} />
 
       {children}
     </ReactMapGl>
   )
 }
 
-export function CustomMap(props) {
-  const config = useConfig() || {}
-  if (!config) return null;
-  const {obsMapSource: mapSource} = config
+export function RoadsMap() {
+  const {obsMapSource} = useConfig() || {}
 
-  if (!mapSource) return null;
+  if (!obsMapSource) {
+    return null;
+  }
 
   return (
-    <CustomMapInner {...{mapSource, config}} {...props} />
+    <CustomMap viewportFromUrl>
+      <Source id="obs" {...obsMapSource}>
+        <Layer {...roadsLayer} />
+      </Source>
+    </CustomMap>
   )
 }
 
@@ -90,7 +86,7 @@ export default function MapPage() {
   return (
     <Page fullScreen>
       <div className={styles.mapContainer}>
-        <CustomMap mode='roads' viewportFromUrl />
+        <RoadsMap />
       </div>
     </Page>
   )

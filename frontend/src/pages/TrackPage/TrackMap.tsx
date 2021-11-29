@@ -4,7 +4,7 @@ import {Source, Layer} from 'react-map-gl'
 import type {TrackData} from 'types'
 import {CustomMap} from '../MapPage'
 
-import {colorByDistance} from '../../mapstyles'
+import {colorByDistance, trackLayer} from '../../mapstyles'
 
 export default function TrackMap({
   trackData,
@@ -27,14 +27,7 @@ export default function TrackMap({
       <CustomMap>
         {showTrack && (
           <Source id="route" type="geojson" data={trackData.track}>
-            <Layer
-              id="route"
-              type="line"
-              paint={{
-                'line-width': ['interpolate', ['linear'], ['zoom'], 14, 2, 17, 5],
-                'line-color': '#F06292',
-              }}
-            />
+            <Layer id="route" {...trackLayer} />
           </Source>
         )}
 
