@@ -28,10 +28,16 @@ import api from 'api'
 // which is a workaround for an annoying warning that is somehow caused by the
 // <Link /> and <Menu.Item /> combination.
 function MenuItemForLink({navigate, ...props}) {
-  return <Menu.Item {...props} />
+  return <Menu.Item {...props} onClick={(e) => {
+    e.preventDefault()
+    navigate()
+  }} />
 }
 function DropdownItemForLink({navigate, ...props}) {
-  return <Dropdown.Item {...props} />
+  return <Dropdown.Item {...props}onClick={(e) => {
+    e.preventDefault()
+    navigate()
+  }} />
 }
 
 const App = connect((state) => ({login: state.login}))(function App({login}) {
