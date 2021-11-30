@@ -19,8 +19,8 @@ const SettingsPage = connect((state) => ({login: state.login}), {setLogin})(func
       setLoading(true)
       setErrors(null)
       try {
-        const response = await api.put('/user', {body: {user: changes}})
-        setLogin(response.user)
+        const response = await api.put('/user', {body: changes})
+        setLogin(response)
       } catch (err) {
         setErrors(err.errors)
       } finally {
@@ -29,6 +29,19 @@ const SettingsPage = connect((state) => ({login: state.login}), {setLogin})(func
     },
     [setLoading, setLogin, setErrors]
   )
+
+  const onGenerateNewKey = React.useCallback(async () => {
+    setLoading(true)
+    setErrors(null)
+    try {
+      const response = await api.put('/user', {body: {updateApiKey: true}})
+      setLogin(response)
+    } catch (err) {
+      setErrors(err.errors)
+    } finally {
+      setLoading(false)
+    }
+  }, [setLoading, setLogin, setErrors])
 
   return (
     <Page>
@@ -41,7 +54,7 @@ const SettingsPage = connect((state) => ({login: state.login}), {setLogin})(func
 
             <Form onSubmit={handleSubmit(onSave)} loading={loading}>
               <Ref innerRef={findInput(register)}>
-                <Form.Input error={errors?.username} label="Username" name="username" defaultValue={login.username} />
+                <Form.Input error={errors?.username} label="Username" name="username" defaultValue={login.username} disabled />
               </Ref>
               <Form.Field error={errors?.bio}>
                 <label>Bio</label>
@@ -62,7 +75,7 @@ const SettingsPage = connect((state) => ({login: state.login}), {setLogin})(func
             </Form>
           </Grid.Column>
           <Grid.Column width={6}>
-            <ApiKeyDialog {...{login}} />
+            <ApiKeyDialog {...{login, onGenerateNewKey}} />
 
             <Divider />
 
@@ -101,7 +114,7 @@ function CopyInput({value, ...props}) {
 
 const selectField = findInput((ref) => ref?.select())
 
-function ApiKeyDialog({login}) {
+function ApiKeyDialog({login, onGenerateNewKey}) {
   const config = useConfig()
   const [show, setShow] = React.useState(false)
   const onClick = React.useCallback(
@@ -112,6 +125,14 @@ function ApiKeyDialog({login}) {
     [setShow]
   )
 
+  const onGenerateNewKeyInner = React.useCallback(
+    (e) => {
+      e.preventDefault()
+      onGenerateNewKey()
+    },
+    [onGenerateNewKey]
+  )
+
   return (
     <>
       <Header as="h2">Your API Key</Header>
@@ -120,11 +141,15 @@ function ApiKeyDialog({login}) {
         configuration interface to allow direct upload from the device.
       </p>
       <p>Please protect your API Key carefully as it allows full control over your account.</p>
-      <div style={{height: 40, marginBottom: 16}}>
+      <div style={{minHeight: 40, marginBottom: 16}}>
         {show ? (
-          <Ref innerRef={selectField}>
-            <CopyInput label="Personal API key" value={login.apiKey} />
-          </Ref>
+          login.apiKey ? (
+            <Ref innerRef={selectField}>
+              <CopyInput label="Personal API Key" value={login.apiKey} />
+            </Ref>
+          ) : (
+            <Message warning content='You have no API Key, please generate one below.' />
+          )
         ) : (
           <Button onClick={onClick}>
             <Icon name="lock" /> Show API Key
@@ -132,7 +157,14 @@ function ApiKeyDialog({login}) {
         )}
       </div>
       <p>The API URL should be set to:</p>
-      <CopyInput label="API URL" value={config?.apiUrl ?? '...'} />
+      <div style={{marginBottom: 16}}>
+        <CopyInput label="API URL" value={config?.apiUrl ?? '...'} />
+      </div>
+      <p>
+        You can generate a new API Key here, which will invalidate the old one, disconnecting all devices you used it on
+        from your account.
+      </p>
+      <Button onClick={onGenerateNewKeyInner}>Generate new API key</Button>
     </>
   )
 }

@@ -1,6 +1,9 @@
 import logging
+import os
+import binascii
 
 from sanic.response import json
+from sanic.exceptions import InvalidUsage
 
 from obs.api.app import api, require_auth
 
@@ -16,7 +19,7 @@ def user_to_json(user):
         "bio": user.bio,
         "image": user.image,
         "areTracksVisibleForAll": user.are_tracks_visible_for_all,
-        # "apiKey": user.api_key,
+        "apiKey": user.api_key,
     }
 
 
@@ -29,13 +32,17 @@ async def get_user(req):
 @require_auth
 async def put_user(req):
     user = req.ctx.user
+    data = req.json
 
-    for key in ["username", "email", "bio", "image"]:
-        if key in req.json and isinstance(req.json[key], (str, type(None))):
-            setattr(user, key, req.json[key])
+    for key in ["email", "bio", "image"]:
+        if key in data and isinstance(data[key], (str, type(None))):
+            setattr(user, key, data[key])
 
-    if "areTracksVisibleForAll" in req.json:
-        user.are_tracks_visible_for_all = bool(req.json["areTracksVisibleForAll"])
+    if "areTracksVisibleForAll" in data:
+        user.are_tracks_visible_for_all = bool(data["areTracksVisibleForAll"])
+
+    if data.get("updateApiKey"):
+        user.api_key = binascii.b2a_hex(os.urandom(16)).decode("ascii")
 
     await req.ctx.db.commit()
     return json(user_to_json(req.ctx.user))
