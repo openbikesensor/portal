@@ -10,6 +10,7 @@ import {switchMap, distinctUntilChanged} from 'rxjs/operators'
 
 import {Page} from 'components'
 import {useConfig, Config} from 'config'
+import api from 'api'
 
 import {roadsLayer, basemap} from '../mapstyles'
 
@@ -103,6 +104,10 @@ export function CustomMap({
   )
 }
 
+const UNITS = {distanceOvertaker: 'm', distanceStationary: 'm', speed: 'm/s'}
+const LABELS = {distanceOvertaker: 'Overtaker', distanceStationary: 'Stationary', speed: 'Speed'}
+const ZONE_COLORS = {urban: 'olive', rural: 'brown', motorway: 'purple'}
+
 function CurrentRoadInfo({clickLocation}) {
   const info = useObservable(
     (_$, inputs$) =>
@@ -139,43 +144,46 @@ function CurrentRoadInfo({clickLocation}) {
       'No road found.'
     ) : (
       <>
-        <Header as="h1">{loading ? '...' : info?.road.name || 'Unnamed way'}</Header>
+        <Header as="h3">{loading ? '...' : info?.road.name || 'Unnamed way'}</Header>
 
-        <List>
-          <List.Item>
-            <List.Header>Zone</List.Header>
+        {info?.road.zone && (
+          <Label size="small" color={ZONE_COLORS[info?.road.zone]}>
             {info?.road.zone}
-          </List.Item>
-          <List.Item>
-            <List.Header>Tags</List.Header>
-            {info?.road.oneway && (
-              <Label size="small" color="blue">
-                <Icon name="long arrow alternate right" fitted /> oneway
-              </Label>
-            )}
-          </List.Item>
+          </Label>
+        )}
 
-            <List.Item>
-              <List.Header>Statistics</List.Header>
-              <Table size='small' compact>
-                <Table.Header>
-                <Table.Row><Table.HeaderCell></Table.HeaderCell>
-                  <Table.HeaderCell>n</Table.HeaderCell>
-                  <Table.HeaderCell>min</Table.HeaderCell>
-                  <Table.HeaderCell>q50</Table.HeaderCell>
-                  <Table.HeaderCell>max</Table.HeaderCell>
-                  <Table.HeaderCell>mean</Table.HeaderCell>
-                </Table.Row>
-              </Table.Header>
-                <Table.Body>
-                  {['distanceOvertaker', 'distanceStationary', 'speed'].map(prop => <Table.Row key={prop}>
-                  <Table.Cell>{prop}</Table.Cell>
-                  {['count', 'min', 'median', 'max', 'mean'].map(stat => <Table.Cell key={stat}>{info?.[prop]?.statistics?.[stat]?.toFixed(3)}</Table.Cell>)}
-                </Table.Row>)}
-              </Table.Body>
-              </Table>
-          </List.Item>
-        </List>
+        {info?.road.oneway && (
+          <Label size="small" color="blue">
+            <Icon name="long arrow alternate right" fitted /> oneway
+          </Label>
+        )}
+
+        <Table size="small" compact>
+          <Table.Header>
+            <Table.Row>
+              <Table.HeaderCell>Property</Table.HeaderCell>
+              <Table.HeaderCell>n</Table.HeaderCell>
+              <Table.HeaderCell>min</Table.HeaderCell>
+              <Table.HeaderCell>q50</Table.HeaderCell>
+              <Table.HeaderCell>max</Table.HeaderCell>
+              <Table.HeaderCell>mean</Table.HeaderCell>
+              <Table.HeaderCell>unit</Table.HeaderCell>
+            </Table.Row>
+          </Table.Header>
+          <Table.Body>
+            {['distanceOvertaker', 'distanceStationary', 'speed'].map((prop) => (
+              <Table.Row key={prop}>
+                <Table.Cell>{LABELS[prop]}</Table.Cell>
+                {['count', 'min', 'median', 'max', 'mean'].map((stat) => (
+                  <Table.Cell key={stat}>
+                    {info?.[prop]?.statistics?.[stat]?.toFixed(stat === 'count' ? 0 : 3)}
+                  </Table.Cell>
+                ))}
+                <Table.Cell>{UNITS[prop]}</Table.Cell>
+              </Table.Row>
+            ))}
+          </Table.Body>
+        </Table>
       </>
     )
 
