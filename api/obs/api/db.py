@@ -4,6 +4,7 @@ from contextlib import asynccontextmanager
 from datetime import datetime
 import os
 from os.path import join, dirname
+from json import loads
 import re
 import math
 import aiofiles
@@ -93,7 +94,7 @@ class Geometry(UserDefinedType):
         return func.ST_GeomFromGeoJSON(bindvalue, type_=self)
 
     def column_expression(self, col):
-        return func.ST_AsGeoJSON(col, type_=self)
+        return func.ST_AsGeoJSON(func.ST_Transform(col, 4326), type_=self)
 
 
 class OvertakingEvent(Base):
@@ -129,6 +130,16 @@ class Road(Base):
     geometry = Column(Geometry)
     directionality = Column(Integer)
     oneway = Column(Boolean)
+
+    def to_dict(self):
+        return {
+            "way_id": self.way_id,
+            "zone": self.zone,
+            "name": self.name,
+            "directionality": self.directionality,
+            "oneway": self.oneway,
+            "geometry": loads(self.geometry),
+        }
 
 
 NOW = text("NOW()")

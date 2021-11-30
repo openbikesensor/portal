@@ -193,6 +193,7 @@ from .routes import (
     tiles,
     tracks,
     users,
+    mapdetails,
 )
 
 from .routes import frontend

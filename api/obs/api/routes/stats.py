@@ -27,6 +27,8 @@ MINUMUM_RECORDING_DATE = datetime(2010, 1, 1)
 
 
 def round_to(value: float, multiples: float) -> float:
+    if value is None:
+        return None
     return round(value / multiples) * multiples
 
 
