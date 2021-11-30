@@ -1,0 +1,31 @@
+#!/bin/bash
+
+set -e
+
+ROOT_DIR="$(readlink -f "$(dirname "${BASH_SOURCE[0]}")")"
+echo $ROOT_DIR
+
+NEXT=$1
+CURRENT=$(cat $ROOT_DIR/api/obs/api/__init__.py | grep '__version__' |  awk '{print $3}' | grep -Eo '[0-9._a-zA-Z-]+')
+
+
+echo "$CURRENT ----> $NEXT"
+echo ""
+echo "Press <Return> to continue, <Ctrl+C> to abort"
+read
+
+sed -i "s|^  version: $CURRENT|  version: ${NEXT}|" $ROOT_DIR/tile-generator/openbikesensor.yaml
+sed -i 's|^__version__ = "'$CURRENT'"|__version__ = "'${NEXT}'"|' $ROOT_DIR/api/obs/api/__init__.py
+
+
+git commit -m "Release: ${NEXT}" \
+    tile-generator/openbikesensor.yaml \
+    api/obs/api/__init__.py
+
+git tag $NEXT
+
+cat << EOF
+Created commit and tagged it with ${NEXT}. You can push it now with:
+
+  git push origin ${NEXT}
+EOF
