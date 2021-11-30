@@ -2,13 +2,42 @@ import React from 'react'
 
 import {Page} from 'components'
 import {useConfig, Config} from 'config'
+import {useHistory, useLocation} from 'react-router-dom'
 import ReactMapGl, {AttributionControl } from 'react-map-gl'
 
 import styles from './MapPage.module.less'
 
 import {obsRoads, basemap } from '../mapstyles'
 
-function CustomMapInner({mapSource, config, mode, children}: {mapSource: string, config: Config, mode?: 'roads'}) {
+function parseHash(v) {
+  if (!v) return null
+  const m = v.match(/^#([0-9\.]+)\/([0-9\.]+)\/([0-9\.]+)$/)
+  if (!m) return null
+    return {
+      zoom: Number.parseFloat(m[1]),
+      latitude: Number.parseFloat(m[2]),
+      longitude: Number.parseFloat(m[3]),
+    }
+}
+const EMPTY_VIEWPORT = {longitude: 0, latitude: 0, zoom: 0}
+
+function buildHash(v) {
+  return `${v.zoom.toFixed(2)}/${v.latitude}/${v.longitude}`
+}
+
+function useViewportFromUrl() {
+  const history = useHistory()
+  const location = useLocation()
+  const value = React.useMemo(() => parseHash(location.hash), [location.hash])
+  const setter = React.useCallback((v) => {
+    history.replace({
+      hash: buildHash(v)
+    })
+  }, [history])
+  return [value || EMPTY_VIEWPORT, setter]
+}
+
+function CustomMapInner({viewportFromUrl, mapSource, config, mode, children}: {viewportFromUrl?: boolean, mapSource: string, config: Config, mode?: 'roads'}) {
   const mapStyle = React.useMemo(() => {
     if (mode === 'roads') {
       return mapSource && obsRoads(mapSource)
@@ -17,14 +46,13 @@ function CustomMapInner({mapSource, config, mode, children}: {mapSource: string,
     }
   }, [mapSource, mode])
 
-  const [viewport, setViewport] = React.useState({
-    longitude: 0,
-    latitude: 0,
-    zoom: 0,
-  })
+  const [viewportState, setViewportState] = React.useState(EMPTY_VIEWPORT)
+  const [viewportUrl, setViewportUrl] = useViewportFromUrl()
+
+  const [viewport, setViewport] = viewportFromUrl ? [viewportUrl, setViewportUrl] : [viewportState, setViewportState]
 
   React.useEffect(() => {
-    if (config?.mapHome) {
+    if (config?.mapHome && viewport.zoom === 0) {
       setViewport(config.mapHome)
     }
   }, [config])
@@ -62,7 +90,7 @@ export default function MapPage() {
   return (
     <Page fullScreen>
       <div className={styles.mapContainer}>
-        <CustomMap mode='roads' />
+        <CustomMap mode='roads' viewportFromUrl />
       </div>
     </Page>
   )
