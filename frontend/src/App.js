@@ -28,16 +28,26 @@ import api from 'api'
 // which is a workaround for an annoying warning that is somehow caused by the
 // <Link /> and <Menu.Item /> combination.
 function MenuItemForLink({navigate, ...props}) {
-  return <Menu.Item {...props} onClick={(e) => {
-    e.preventDefault()
-    navigate()
-  }} />
+  return (
+    <Menu.Item
+      {...props}
+      onClick={(e) => {
+        e.preventDefault()
+        navigate()
+      }}
+    />
+  )
 }
 function DropdownItemForLink({navigate, ...props}) {
-  return <Dropdown.Item {...props}onClick={(e) => {
-    e.preventDefault()
-    navigate()
-  }} />
+  return (
+    <Dropdown.Item
+      {...props}
+      onClick={(e) => {
+        e.preventDefault()
+        navigate()
+      }}
+    />
+  )
 }
 
 const App = connect((state) => ({login: state.login}))(function App({login}) {
@@ -56,9 +66,11 @@ const App = connect((state) => ({login: state.login}))(function App({login}) {
             OpenBikeSensor
           </Link>
 
-          {config?.obsMapSource && <Link component={MenuItemForLink} to="/map" as="a">
-            Map
-          </Link>}
+          {config?.obsMapSource && (
+            <Link component={MenuItemForLink} to="/map" as="a">
+              Map
+            </Link>
+          )}
 
           <Link component={MenuItemForLink} to="/tracks" as="a">
             Tracks
@@ -179,7 +191,13 @@ const App = connect((state) => ({login: state.login}))(function App({login}) {
                 <Header as="h5">Info</Header>
                 <List>
                   <List.Item>
-                    <a href={`https://github.com/openbikesensor/portal${apiVersion ? `/releases/tag/v${apiVersion}` : ''}`} target="_blank" rel="noreferrer">
+                    <a
+                      href={`https://github.com/openbikesensor/portal${
+                        apiVersion ? `/releases/tag/v${apiVersion}` : ''
+                      }`}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
                       {apiVersion ? `v${apiVersion}` : 'Fetching version...'}
                     </a>
                   </List.Item>
