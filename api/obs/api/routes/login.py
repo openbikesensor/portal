@@ -43,7 +43,7 @@ async def login(req, next: str = None):
         "response_type": "code",
         "scope": ["openid"],
         "nonce": session["nonce"],
-        "redirect_uri": req.ctx.frontend_url + "/login/redirect",
+        "redirect_uri": req.ctx.api_url + "/login/redirect",
         "state": session["state"],
     }
 
