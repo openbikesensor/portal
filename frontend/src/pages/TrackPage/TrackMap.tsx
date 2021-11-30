@@ -24,7 +24,7 @@ export default function TrackMap({
 
   return (
     <div style={props.style}>
-      <CustomMap>
+      <CustomMap boundsFromJson={trackData.track}>
         {showTrack && (
           <Source id="route" type="geojson" data={trackData.track}>
             <Layer id="route" {...trackLayer} />
