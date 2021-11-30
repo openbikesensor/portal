@@ -12,12 +12,6 @@
   }
 }
 
-.menu {
-  > :global(.ui.container) {
-    height: @menuHeight;
-  }
-}
-
 .footer {
   margin-top: auto;
   min-height: 12rem;
@@ -79,6 +73,11 @@
 }
 
 .menu {
+  > :global(.ui.container) {
+    height: @menuHeight;
+    align-items: stretch;
+  }
+
   align-items: center;
   justify-content: center;
   color: white;
