@@ -1,25 +1,23 @@
 var HtmlWebpackPlugin = require('html-webpack-plugin')
 const ReactRefreshWebpackPlugin = require('@pmmmwh/react-refresh-webpack-plugin')
+const MiniCssExtractPlugin = require('mini-css-extract-plugin')
 
 const path = require('path')
-
-const shouldUseSourceMap = process.env.GENERATE_SOURCEMAP !== 'false'
-
 
 const resolveApp = (relativePath) => path.resolve(__dirname, relativePath)
 const appSrc = resolveApp('src')
 
 module.exports = function (webpackEnv) {
-  const isEnvProduction = webpackEnv === 'production'
+  const isEnvProduction = webpackEnv.production
   const isEnvDevelopment = !isEnvProduction
 
   const apiUrl = process.env.API_URL || 'http://localhost:3000'
   const baseUrl = process.env.BASE_URL || isEnvDevelopment ? 'http://localhost:3001' : '__BASE_HREF__'
   const port = process.env.PORT || 3001
 
+  const sourceMap = isEnvDevelopment || Boolean(process.env.GENERATE_SOURCEMAP)
 
   const getStyleLoaders = (modules, withLess) => {
-    const sourceMap = isEnvProduction ? shouldUseSourceMap : isEnvDevelopment
     const loaders = [
       isEnvDevelopment && require.resolve('style-loader'),
       isEnvProduction && {
@@ -96,11 +94,7 @@ module.exports = function (webpackEnv) {
     entry: './src/index.js',
     mode: isEnvProduction ? 'production' : isEnvDevelopment && 'development',
     cache: isEnvDevelopment && {type: 'filesystem'},
-    devtool: isEnvProduction
-      ? shouldUseSourceMap
-        ? 'source-map'
-        : false
-      : isEnvDevelopment && 'cheap-module-source-map',
+    devtool: sourceMap && (isEnvProduction ? 'source-map' : 'cheap-module-source-map'),
     output: {
       // The build folder.
       path: path.resolve(__dirname, 'build'),
@@ -149,6 +143,8 @@ module.exports = function (webpackEnv) {
       }),
 
       isEnvDevelopment && new ReactRefreshWebpackPlugin(),
+
+      isEnvProduction && new MiniCssExtractPlugin(),
     ].filter(Boolean),
     devServer: {
       port,
@@ -180,8 +176,8 @@ module.exports = function (webpackEnv) {
               configFile: false,
               cacheDirectory: true,
               cacheCompression: false,
-              sourceMaps: true,
-              inputSourceMap: true,
+              sourceMaps: sourceMap,
+              inputSourceMap: sourceMap,
 
               plugins: [
                 isEnvDevelopment && 'react-refresh/babel',

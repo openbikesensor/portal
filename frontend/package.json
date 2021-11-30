@@ -3,8 +3,8 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "start": "webpack-dev-server --mode development",
-    "build": "webpack --mode production"
+    "start": "webpack-dev-server --env development",
+    "build": "webpack --env production"
   },
   "dependencies": {
     "@babel/runtime": "^7.16.3",
@@ -13,6 +13,7 @@
     "fomantic-ui-less": "^2.8.8",
     "luxon": "^1.28.0",
     "maplibre-gl": "^1.15.2",
+    "mini-css-extract-plugin": "^2.4.5",
     "pkce": "^1.0.0-beta2",
     "postcss-flexbugs-fixes": "^5.0.2",
     "postcss-loader": "^6.2.1",
