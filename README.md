@@ -17,6 +17,10 @@ separated into components:
 Check out the [Architecture Documentation](docs/architecture.md) for more
 details on what parts the whole application is made of.
 
+This project follows [semantic versioning](https://semver.org). Refer to [issue
+#44](https://github.com/openbikesensor/portal/issues/44) for a description of
+what that means for our project and what is considered the public interface.
+
 ## Clone the Project
 
 First of all, you must clone this project. This project uses submodules,
