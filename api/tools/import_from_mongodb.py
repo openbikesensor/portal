@@ -38,21 +38,37 @@ async def main():
         default=None,
     )
 
+    parser.add_argument(
+        "--keep-api-keys",
+        action="store_true",
+        help="keep the old API keys (very insecure!) instead of generating new ones",
+        default=False,
+    )
+
     args = parser.parse_args()
+
+    if args.keep_api_keys:
+        log.warning(
+            "Importing users with their old API keys. These keys are very insecure and "
+            "could provide access to user data to third parties. Consider to notify "
+            "your users about the need to generate a new API key through their profile pages."
+        )
 
     async with connect_db(app.config.POSTGRES_URL):
         async with make_session() as session:
             mongo = AsyncIOMotorClient(args.mongodb_url).get_default_database()
 
             log.debug("Connected to mongodb and postgres.")
-            user_id_map = await import_users(mongo, session, args.keycloak_users_file)
+            user_id_map = await import_users(
+                mongo, session, args.keycloak_users_file, args.keep_api_keys
+            )
 
             await import_tracks(mongo, session, user_id_map)
 
             await session.commit()
 
 
-async def import_users(mongo, session, keycloak_users_file):
+async def import_users(mongo, session, keycloak_users_file, keep_api_keys):
     keycloak_users = []
 
     old_id_by_email = {}
@@ -66,11 +82,15 @@ async def import_users(mongo, session, keycloak_users_file):
             bio=user.get("bio"),
             image=user.get("image"),
             are_tracks_visible_for_all=user.get("areTracksVisibleForAll") or False,
-            api_key=str(user["_id"]),
             created_at=user.get("createdAt") or datetime.utcnow(),
             updated_at=user.get("updatedAt") or datetime.utcnow(),
             match_by_username_email=True,
         )
+
+        if keep_api_keys:
+            new_user.api_key = str(user["_id"])
+        else:
+            new_user.generate_api_key()
 
         if keycloak_users_file:
             needs_email_verification = user.get("needsEmailValidation", True)

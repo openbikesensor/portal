@@ -38,6 +38,11 @@ explicitly. Once we implement them, their usage will be described in the
         python tools/import_from_mongodb.py mongodb://mongo/obs \
         --keycloak-users-file /export/users.json
     ```
+  There is an option `--keep-api-keys` which means the users won't have to
+  reconfigure the devices they used their API key in. **However**, please try
+  to avoid this option if at all possible, as the old keys are *very* insecure.
+  The default without this option to generate a new, secure API key for each
+  user.
 * Shut down the `mongo` service, you can now remove it from docker-compose.yaml
 * Start `keycloak` and configure it, similarly to how it was configured in the
   development setup (but choose more secure options). Update the API config

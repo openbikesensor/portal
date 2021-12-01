@@ -10,6 +10,7 @@ import math
 import aiofiles
 import random
 import string
+import secrets
 from slugify import slugify
 
 from sqlalchemy.ext.declarative import declarative_base
@@ -336,6 +337,13 @@ class User(Base):
     # `sub` is updated to the new sub and this flag is disabled. This is for
     # migrating *to* the external authentication scheme.
     match_by_username_email = Column(Boolean, server_default=false())
+
+    def generate_api_key(self):
+        """
+        Generates a new :py:obj:`api_key` into this instance. The new key is
+        sourced from a secure random source and is urlsafe.
+        """
+        self.api_key = secrets.token_urlsafe(24)
 
     def to_dict(self, for_user_id=None):
         return {

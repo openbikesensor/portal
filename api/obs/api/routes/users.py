@@ -1,6 +1,4 @@
 import logging
-import os
-import binascii
 
 from sanic.response import json
 from sanic.exceptions import InvalidUsage
@@ -42,7 +40,7 @@ async def put_user(req):
         user.are_tracks_visible_for_all = bool(data["areTracksVisibleForAll"])
 
     if data.get("updateApiKey"):
-        user.api_key = binascii.b2a_hex(os.urandom(16)).decode("ascii")
+        user.generate_api_key()
 
     await req.ctx.db.commit()
     return json(user_to_json(req.ctx.user))
