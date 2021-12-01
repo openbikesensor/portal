@@ -194,8 +194,10 @@ size. A whole country might even take one or more hours. You should probably
 not try to import `planet.osm.pbf`. 
 
 You can run the process multiple times, with the same or different area files,
-to import or update the data. You can also truncate the `road` table before
-importing if you want to remove outdated road information. 
+to import or update the data. However, for this to work, the actual [command
+line arguments](https://osm2pgsql.org/doc/manual.html#running-osm2pgsql) are a
+bit different each time, including when first importing, and the disk space
+required is much higher. 
 
 Refer to the documentation of `osm2pgsql` for assistance. We are using "flex
 mode", the provided script `api/roads_import.lua` describes the transformations
