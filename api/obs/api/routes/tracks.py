@@ -7,7 +7,7 @@ from sqlalchemy import select, func
 from sqlalchemy.orm import joinedload
 
 from obs.api.db import Track, User, Comment
-from obs.api.app import api, require_auth, json
+from obs.api.app import api, require_auth, read_api_key, json
 
 from sanic.response import file_stream, empty
 from sanic.exceptions import InvalidUsage, NotFound, Forbidden
@@ -85,6 +85,7 @@ async def get_feed(req, limit: int = 20, offset: int = 0):
 
 
 @api.post("/tracks")
+@read_api_key
 @require_auth
 async def post_track(req):
     try:

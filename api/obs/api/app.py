@@ -173,6 +173,44 @@ def require_auth(fn):
     return wrapper
 
 
+def read_api_key(fn):
+    """
+    A middleware decorator to read the API Key of a user. It is an opt-in to
+    allow usage with API Keys on certain urls. Combine with require_auth to
+    actually check whether a user was authenticated through this. If a login
+    session exists, the api key is ignored.
+    """
+
+    @wraps(fn)
+    async def wrapper(req, *args, **kwargs):
+        # try to parse a token if one exists, unless a user is already authenticated
+        if (
+            not req.ctx.user
+            and isinstance(req.token, str)
+            and req.token.lower().startswith("obsuserid ")
+        ):
+            try:
+                api_key = req.token.split()[1]
+            except LookupError:
+                api_key = None
+
+            if api_key:
+                user = (
+                    await req.ctx.db.execute(
+                        select(User).where(User.api_key == api_key.strip())
+                    )
+                ).scalar()
+
+                if not user:
+                    raise Unauthorized("invalid OBSUserId token")
+
+                req.ctx.user = user
+
+        return await fn(req, *args, **kwargs)
+
+    return wrapper
+
+
 class CustomJsonEncoder(JSONEncoder):
     def default(self, obj):
         if isinstance(obj, (datetime, date)):
