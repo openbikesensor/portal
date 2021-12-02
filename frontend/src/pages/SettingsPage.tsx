@@ -158,7 +158,7 @@ function ApiKeyDialog({login, onGenerateNewKey}) {
       </div>
       <p>The API URL should be set to:</p>
       <div style={{marginBottom: 16}}>
-        <CopyInput label="API URL" value={config?.apiUrl ?? '...'} />
+        <CopyInput label="API URL" value={config?.apiUrl?.replace(/\/api$/, '') ?? '...'} />
       </div>
       <p>
         You can generate a new API Key here, which will invalidate the old one, disconnecting all devices you used it on
