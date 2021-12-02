@@ -25,8 +25,8 @@ explicitly. Once we implement them, their usage will be described in the
 * Prepare the database: 
   
     ```bash
-    docker-compose run --rm portal python tools/reset_database.py
-    docker-compose run --rm portal python tools/prepare_sql_tiles.py
+    docker-compose run --rm api python tools/reset_database.py
+    docker-compose run --rm api python tools/prepare_sql_tiles.py
     ```
 * Import OSM data (see [README](README.md)).
 * Run the database migration script: 
@@ -34,7 +34,7 @@ explicitly. Once we implement them, their usage will be described in the
     ```bash
     docker-compose run --rm \
         -v $PWD/export:/export \
-        portal \
+        api \
         python tools/import_from_mongodb.py mongodb://mongo/obs \
         --keycloak-users-file /export/users.json
     ```
@@ -49,6 +49,6 @@ explicitly. Once we implement them, their usage will be described in the
   file to match your keycloak configuration. Import the file
   `export/users.json` into your realm, it will re-add all the users from the
   old installation. You should delete the file and `export/` folder afterwards.
-* Start `portal`.
+* Start `api`.
 * Consider configuring a worker service. See [deployment/README.md](deployment/README.md).
 
