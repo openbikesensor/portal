@@ -1,5 +1,6 @@
 import React, {useState, useCallback} from 'react'
 import _ from 'lodash'
+import {Sidebar, Button} from 'semantic-ui-react'
 import {Layer, Source} from 'react-map-gl'
 
 import {Page, Map} from 'components'
@@ -8,8 +9,8 @@ import {useConfig} from 'config'
 import {roadsLayer} from '../../mapstyles'
 
 import RoadInfo from './RoadInfo'
+import LayerSidebar from './LayerSidebar'
 import styles from './styles.module.less'
-
 
 export default function MapPage() {
   const {obsMapSource} = useConfig() || {}
@@ -30,6 +31,8 @@ export default function MapPage() {
     [setClickLocation]
   )
 
+  const [layerSidebar, setLayerSidebar] = useState(true)
+
   if (!obsMapSource) {
     return null
   }
@@ -37,13 +40,27 @@ export default function MapPage() {
   return (
     <Page fullScreen>
       <div className={styles.mapContainer}>
-        <Map viewportFromUrl onClick={onClick}>
-          <Source id="obs" {...obsMapSource}>
-            <Layer {...roadsLayer} />
-          </Source>
+        {layerSidebar && <div className={styles.mapSidebar}><LayerSidebar /></div>}
+        <div className={styles.map}>
+          <Map viewportFromUrl onClick={onClick}>
+            <Button
+              style={{
+                position: 'absolute',
+                left: 44,
+                top: 9,
+              }}
+              primary
+              icon="bars"
+              active={layerSidebar}
+              onClick={() => setLayerSidebar(layerSidebar ? false : true)}
+            />
+            <Source id="obs" {...obsMapSource}>
+              <Layer {...roadsLayer} />
+            </Source>
 
-          <RoadInfo {...{clickLocation}} />
-        </Map>
+            <RoadInfo {...{clickLocation}} />
+          </Map>
+        </div>
       </div>
     </Page>
   )

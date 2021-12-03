@@ -2,8 +2,21 @@
 
 .mapContainer {
   height: calc(100vh - @menuHeight);
-  background: red;
+  background: #F0F0F3;
   position: relative;
+  display: flex;
+  align-items: stretch;
+}
+
+.mapSidebar {
+  width: 20rem;
+  background: white;
+  border-right: 1px solid @borderColor;
+  padding: 1rem;
+}
+
+.map {
+  flex: 1 1 0;
 }
 
 .mapInfoBox {
@@ -15,3 +28,4 @@
   overflow: auto;
   margin: 20px;
 }
+

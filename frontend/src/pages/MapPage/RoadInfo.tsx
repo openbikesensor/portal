@@ -8,6 +8,8 @@ import {switchMap, distinctUntilChanged} from 'rxjs/operators'
 
 import api from 'api'
 
+import styles from './styles.module.less'
+
 const UNITS = {distanceOvertaker: 'm', distanceStationary: 'm', speed: 'm/s'}
 const LABELS = {distanceOvertaker: 'Overtaker', distanceStationary: 'Stationary', speed: 'Speed'}
 const ZONE_COLORS = {urban: 'olive', rural: 'brown', motorway: 'purple'}
@@ -90,7 +92,7 @@ export default function RoadInfo({clickLocation}) {
 
   const loading = info == null
 
-  const offsetDirection = info?.road.oneway ? 0 : direction === 'forwards' ? 1 : -1 // TODO: change based on left-hand/right-hand traffic
+  const offsetDirection = info?.road?.oneway ? 0 : direction === 'forwards' ? 1 : -1 // TODO: change based on left-hand/right-hand traffic
 
   const content =
     !loading && !info.road ? (

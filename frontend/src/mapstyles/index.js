@@ -4,6 +4,7 @@ import bright from './bright.json'
 import positron from './positron.json'
 
 export {bright, positron}
+export const baseMapStyles = {bright, positron}
 
 export function colorByDistance(attribute = 'distance_overtaker_mean', fallback = '#ABC') {
   return [

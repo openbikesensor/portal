@@ -1,4 +1,5 @@
 import React, {useState, useCallback, useMemo, useEffect} from 'react'
+import {connect} from 'react-redux'
 import _ from 'lodash'
 import ReactMapGl, {WebMercatorViewport, AttributionControl, NavigationControl} from 'react-map-gl'
 import turfBbox from '@turf/bbox'
@@ -6,9 +7,12 @@ import {useHistory, useLocation} from 'react-router-dom'
 
 import {useConfig} from 'config'
 
-import {basemap} from '../../mapstyles'
+import {baseMapStyles} from '../../mapstyles'
+
 
 const EMPTY_VIEWPORT = {longitude: 0, latitude: 0, zoom: 0}
+
+export const withBaseMapStyle = connect((state) => ({baseMapStyle: state.mapConfig?.baseMap?.style ?? 'positron'}))
 
 function parseHash(v) {
   if (!v) return null
@@ -41,15 +45,17 @@ function useViewportFromUrl() {
 }
 
 
-export default function Map({
+function Map({
   viewportFromUrl,
   children,
   boundsFromJson,
+  baseMapStyle,
   ...props
 }: {
   viewportFromUrl?: boolean
-  children: React.ReactNode
-  boundsFromJson: GeoJSON.Geometry
+    children: React.ReactNode
+    boundsFromJson: GeoJSON.Geometry
+  baseMapStyle: string
 }) {
   const [viewportState, setViewportState] = useState(EMPTY_VIEWPORT)
   const [viewportUrl, setViewportUrl] = useViewportFromUrl()
@@ -81,7 +87,7 @@ export default function Map({
   }, [boundsFromJson])
 
   return (
-    <ReactMapGl mapStyle={basemap} width="100%" height="100%" onViewportChange={setViewport} {...viewport} {...props}>
+    <ReactMapGl mapStyle={baseMapStyles[baseMapStyle]} width="100%" height="100%" onViewportChange={setViewport} {...viewport} {...props}>
       <AttributionControl
         style={{right: 0, bottom: 0}}
         customAttribution={[
@@ -96,3 +102,5 @@ export default function Map({
     </ReactMapGl>
   )
 }
+
+export default withBaseMapStyle(Map)
