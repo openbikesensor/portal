@@ -84,6 +84,9 @@ async def mapdetails_road(req):
 
     arrays = numpy.array(arrays).T.astype(numpy.float64)
 
+    if len(arrays) == 0:
+        arrays = numpy.array([[], [], []])
+
     def array_stats(arr, rounder):
         arr = arr[~numpy.isnan(arr)]
         n = len(arr)
