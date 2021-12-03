@@ -2,7 +2,7 @@ import React from 'react'
 import {Source, Layer} from 'react-map-gl'
 
 import type {TrackData} from 'types'
-import {CustomMap} from '../MapPage'
+import {Map} from 'components'
 
 import {colorByDistance, trackLayer} from '../../mapstyles'
 
@@ -24,7 +24,7 @@ export default function TrackMap({
 
   return (
     <div style={props.style}>
-      <CustomMap boundsFromJson={trackData.track}>
+      <Map boundsFromJson={trackData.track}>
         {showTrack && (
           <Source id="route" type="geojson" data={trackData.track}>
             <Layer id="route" {...trackLayer} />
@@ -73,7 +73,7 @@ export default function TrackMap({
             ))}
           </Source>
         )}
-      </CustomMap>
+      </Map>
     </div>
   )
 }

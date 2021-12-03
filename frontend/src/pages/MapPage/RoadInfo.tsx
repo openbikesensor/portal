@@ -1,108 +1,12 @@
-import React, {useState, useCallback, useMemo, useEffect} from 'react'
+import React, {useState, useCallback} from 'react'
 import _ from 'lodash'
 import {Segment, Menu, Header, Label, Icon, Table} from 'semantic-ui-react'
-import ReactMapGl, {WebMercatorViewport, AttributionControl, NavigationControl, Layer, Source} from 'react-map-gl'
-import turfBbox from '@turf/bbox'
-import {useHistory, useLocation} from 'react-router-dom'
+import {Layer, Source} from 'react-map-gl'
 import {of, from, concat} from 'rxjs'
 import {useObservable} from 'rxjs-hooks'
 import {switchMap, distinctUntilChanged} from 'rxjs/operators'
 
-import {Page} from 'components'
-import {useConfig} from 'config'
 import api from 'api'
-
-import {roadsLayer, basemap} from '../mapstyles'
-
-import styles from './MapPage.module.less'
-
-const EMPTY_VIEWPORT = {longitude: 0, latitude: 0, zoom: 0}
-
-function parseHash(v) {
-  if (!v) return null
-  const m = v.match(/^#([0-9\.]+)\/([0-9\.]+)\/([0-9\.]+)$/)
-  if (!m) return null
-  return {
-    zoom: Number.parseFloat(m[1]),
-    latitude: Number.parseFloat(m[2]),
-    longitude: Number.parseFloat(m[3]),
-  }
-}
-
-function buildHash(v) {
-  return `${v.zoom.toFixed(2)}/${v.latitude}/${v.longitude}`
-}
-
-function useViewportFromUrl() {
-  const history = useHistory()
-  const location = useLocation()
-  const value = useMemo(() => parseHash(location.hash), [location.hash])
-  const setter = useCallback(
-    (v) => {
-      history.replace({
-        hash: buildHash(v),
-      })
-    },
-    [history]
-  )
-  return [value || EMPTY_VIEWPORT, setter]
-}
-
-export function CustomMap({
-  viewportFromUrl,
-  children,
-  boundsFromJson,
-  ...props
-}: {
-  viewportFromUrl?: boolean
-  children: React.ReactNode
-  boundsFromJson: GeoJSON.Geometry
-}) {
-  const [viewportState, setViewportState] = useState(EMPTY_VIEWPORT)
-  const [viewportUrl, setViewportUrl] = useViewportFromUrl()
-
-  const [viewport, setViewport] = viewportFromUrl ? [viewportUrl, setViewportUrl] : [viewportState, setViewportState]
-
-  const config = useConfig()
-  useEffect(() => {
-    if (config?.mapHome && viewport.latitude === 0 && viewport.longitude === 0 && !boundsFromJson) {
-      setViewport(config.mapHome)
-    }
-  }, [config, boundsFromJson])
-
-  useEffect(() => {
-    if (boundsFromJson) {
-      const [minX, minY, maxX, maxY] = turfBbox(boundsFromJson)
-      const vp = new WebMercatorViewport({width: 1000, height: 800}).fitBounds(
-        [
-          [minX, minY],
-          [maxX, maxY],
-        ],
-        {
-          padding: 20,
-          offset: [0, -100],
-        }
-      )
-      setViewport(_.pick(vp, ['zoom', 'latitude', 'longitude']))
-    }
-  }, [boundsFromJson])
-
-  return (
-    <ReactMapGl mapStyle={basemap} width="100%" height="100%" onViewportChange={setViewport} {...viewport} {...props}>
-      <AttributionControl
-        style={{right: 0, bottom: 0}}
-        customAttribution={[
-          '<a href="https://openstreetmap.org/copyright" target="_blank" rel="nofollow noopener noreferrer">© OpenStreetMap contributors</a>',
-          '<a href="https://openmaptiles.org/" target="_blank" rel="nofollow noopener noreferrer">© OpenMapTiles</a>',
-          '<a href="https://openbikesensor.org/" target="_blank" rel="nofollow noopener noreferrer">© OpenBikeSensor</a>',
-        ]}
-      />
-      <NavigationControl style={{left: 10, top: 10}} />
-
-      {children}
-    </ReactMapGl>
-  )
-}
 
 const UNITS = {distanceOvertaker: 'm', distanceStationary: 'm', speed: 'm/s'}
 const LABELS = {distanceOvertaker: 'Overtaker', distanceStationary: 'Stationary', speed: 'Speed'}
@@ -144,7 +48,7 @@ function RoadStatsTable({data}) {
   )
 }
 
-function CurrentRoadInfo({clickLocation}) {
+export default function RoadInfo({clickLocation}) {
   const [direction, setDirection] = useState('forwards')
 
   const onClickDirection = useCallback(
@@ -186,7 +90,7 @@ function CurrentRoadInfo({clickLocation}) {
 
   const loading = info == null
 
-  const offsetDirection = info?.road.oneway ? 0 : direction === 'forwards' ? 1 : -1; // TODO: change based on left-hand/right-hand traffic
+  const offsetDirection = info?.road.oneway ? 0 : direction === 'forwards' ? 1 : -1 // TODO: change based on left-hand/right-hand traffic
 
   const content =
     !loading && !info.road ? (
@@ -234,7 +138,7 @@ function CurrentRoadInfo({clickLocation}) {
               'line-width': ['interpolate', ['linear'], ['zoom'], 14, 6, 17, 12],
               'line-color': '#18FFFF',
               'line-opacity': 0.5,
-              ...({
+              ...{
                 'line-offset': [
                   'interpolate',
                   ['exponential', 1.5],
@@ -244,8 +148,7 @@ function CurrentRoadInfo({clickLocation}) {
                   19,
                   offsetDirection * 8,
                 ],
-              })
-
+              },
             }}
           />
         </Source>
@@ -257,43 +160,5 @@ function CurrentRoadInfo({clickLocation}) {
         </div>
       )}
     </>
-  )
-}
-
-export default function MapPage() {
-  const {obsMapSource} = useConfig() || {}
-  const [clickLocation, setClickLocation] = useState<{longitude: number; latitude: number} | null>(null)
-
-  const onClick = useCallback(
-    (e) => {
-      let node = e.target
-      while (node) {
-        if (node?.classList?.contains(styles.mapInfoBox)) {
-          return
-        }
-        node = node.parentNode
-      }
-
-      setClickLocation({longitude: e.lngLat[0], latitude: e.lngLat[1]})
-    },
-    [setClickLocation]
-  )
-
-  if (!obsMapSource) {
-    return null
-  }
-
-  return (
-    <Page fullScreen>
-      <div className={styles.mapContainer}>
-        <CustomMap viewportFromUrl onClick={onClick}>
-          <Source id="obs" {...obsMapSource}>
-            <Layer {...roadsLayer} />
-          </Source>
-
-          <CurrentRoadInfo {...{clickLocation}} />
-        </CustomMap>
-      </div>
-    </Page>
   )
 }

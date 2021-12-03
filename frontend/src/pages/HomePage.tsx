@@ -6,10 +6,9 @@ import {of, from} from 'rxjs'
 import {map, switchMap} from 'rxjs/operators'
 
 import api from 'api'
-import {Stats, Page} from 'components'
+import {Stats, Page, Map} from 'components'
 
 import {TrackListItem} from './TracksPage'
-import {CustomMap} from './MapPage'
 import styles from './HomePage.module.less'
 
 function MostRecentTrack() {
@@ -47,7 +46,7 @@ export default function HomePage() {
         <Grid.Row>
           <Grid.Column width={10}>
             <div className={styles.welcomeMap}>
-              <CustomMap mode='roads' />
+              <Map />
             </div>
           </Grid.Column>
           <Grid.Column width={6}>
