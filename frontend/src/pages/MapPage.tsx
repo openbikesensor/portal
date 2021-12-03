@@ -1,6 +1,6 @@
-import React from 'react'
+import React, {useState, useCallback, useMemo, useEffect} from 'react'
 import _ from 'lodash'
-import {Segment, List, Header, Label, Icon, Table} from 'semantic-ui-react'
+import {Segment, Menu, Header, Label, Icon, Table} from 'semantic-ui-react'
 import ReactMapGl, {WebMercatorViewport, AttributionControl, NavigationControl, Layer, Source} from 'react-map-gl'
 import turfBbox from '@turf/bbox'
 import {useHistory, useLocation} from 'react-router-dom'
@@ -9,7 +9,7 @@ import {useObservable} from 'rxjs-hooks'
 import {switchMap, distinctUntilChanged} from 'rxjs/operators'
 
 import {Page} from 'components'
-import {useConfig, Config} from 'config'
+import {useConfig} from 'config'
 import api from 'api'
 
 import {roadsLayer, basemap} from '../mapstyles'
@@ -36,8 +36,8 @@ function buildHash(v) {
 function useViewportFromUrl() {
   const history = useHistory()
   const location = useLocation()
-  const value = React.useMemo(() => parseHash(location.hash), [location.hash])
-  const setter = React.useCallback(
+  const value = useMemo(() => parseHash(location.hash), [location.hash])
+  const setter = useCallback(
     (v) => {
       history.replace({
         hash: buildHash(v),
@@ -58,19 +58,19 @@ export function CustomMap({
   children: React.ReactNode
   boundsFromJson: GeoJSON.Geometry
 }) {
-  const [viewportState, setViewportState] = React.useState(EMPTY_VIEWPORT)
+  const [viewportState, setViewportState] = useState(EMPTY_VIEWPORT)
   const [viewportUrl, setViewportUrl] = useViewportFromUrl()
 
   const [viewport, setViewport] = viewportFromUrl ? [viewportUrl, setViewportUrl] : [viewportState, setViewportState]
 
   const config = useConfig()
-  React.useEffect(() => {
+  useEffect(() => {
     if (config?.mapHome && viewport.latitude === 0 && viewport.longitude === 0 && !boundsFromJson) {
       setViewport(config.mapHome)
     }
   }, [config, boundsFromJson])
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (boundsFromJson) {
       const [minX, minY, maxX, maxY] = turfBbox(boundsFromJson)
       const vp = new WebMercatorViewport({width: 1000, height: 800}).fitBounds(
@@ -107,8 +107,55 @@ export function CustomMap({
 const UNITS = {distanceOvertaker: 'm', distanceStationary: 'm', speed: 'm/s'}
 const LABELS = {distanceOvertaker: 'Overtaker', distanceStationary: 'Stationary', speed: 'Speed'}
 const ZONE_COLORS = {urban: 'olive', rural: 'brown', motorway: 'purple'}
+const CARDINAL_DIRECTIONS = ['north', 'north-east', 'east', 'south-east', 'south', 'south-west', 'west', 'north-west']
+const getCardinalDirection = (bearing) =>
+  bearing == null
+    ? 'unknown'
+    : CARDINAL_DIRECTIONS[
+        Math.floor(((bearing / 360.0) * CARDINAL_DIRECTIONS.length + 0.5) % CARDINAL_DIRECTIONS.length)
+      ] + ' bound'
+
+function RoadStatsTable({data}) {
+  return (
+    <Table size="small" compact>
+      <Table.Header>
+        <Table.Row>
+          <Table.HeaderCell>Property</Table.HeaderCell>
+          <Table.HeaderCell>n</Table.HeaderCell>
+          <Table.HeaderCell>min</Table.HeaderCell>
+          <Table.HeaderCell>q50</Table.HeaderCell>
+          <Table.HeaderCell>max</Table.HeaderCell>
+          <Table.HeaderCell>mean</Table.HeaderCell>
+          <Table.HeaderCell>unit</Table.HeaderCell>
+        </Table.Row>
+      </Table.Header>
+      <Table.Body>
+        {['distanceOvertaker', 'distanceStationary', 'speed'].map((prop) => (
+          <Table.Row key={prop}>
+            <Table.Cell>{LABELS[prop]}</Table.Cell>
+            {['count', 'min', 'median', 'max', 'mean'].map((stat) => (
+              <Table.Cell key={stat}>{data[prop]?.statistics?.[stat]?.toFixed(stat === 'count' ? 0 : 3)}</Table.Cell>
+            ))}
+            <Table.Cell>{UNITS[prop]}</Table.Cell>
+          </Table.Row>
+        ))}
+      </Table.Body>
+    </Table>
+  )
+}
 
 function CurrentRoadInfo({clickLocation}) {
+  const [direction, setDirection] = useState('forwards')
+
+  const onClickDirection = useCallback(
+    (e, {name}) => {
+      e.preventDefault()
+      e.stopPropagation()
+      setDirection(name)
+    },
+    [setDirection]
+  )
+
   const info = useObservable(
     (_$, inputs$) =>
       inputs$.pipe(
@@ -139,6 +186,8 @@ function CurrentRoadInfo({clickLocation}) {
 
   const loading = info == null
 
+  const offsetDirection = info?.road.oneway ? 0 : direction === 'forwards' ? 1 : -1; // TODO: change based on left-hand/right-hand traffic
+
   const content =
     !loading && !info.road ? (
       'No road found.'
@@ -158,32 +207,19 @@ function CurrentRoadInfo({clickLocation}) {
           </Label>
         )}
 
-        <Table size="small" compact>
-          <Table.Header>
-            <Table.Row>
-              <Table.HeaderCell>Property</Table.HeaderCell>
-              <Table.HeaderCell>n</Table.HeaderCell>
-              <Table.HeaderCell>min</Table.HeaderCell>
-              <Table.HeaderCell>q50</Table.HeaderCell>
-              <Table.HeaderCell>max</Table.HeaderCell>
-              <Table.HeaderCell>mean</Table.HeaderCell>
-              <Table.HeaderCell>unit</Table.HeaderCell>
-            </Table.Row>
-          </Table.Header>
-          <Table.Body>
-            {['distanceOvertaker', 'distanceStationary', 'speed'].map((prop) => (
-              <Table.Row key={prop}>
-                <Table.Cell>{LABELS[prop]}</Table.Cell>
-                {['count', 'min', 'median', 'max', 'mean'].map((stat) => (
-                  <Table.Cell key={stat}>
-                    {info?.[prop]?.statistics?.[stat]?.toFixed(stat === 'count' ? 0 : 3)}
-                  </Table.Cell>
-                ))}
-                <Table.Cell>{UNITS[prop]}</Table.Cell>
-              </Table.Row>
-            ))}
-          </Table.Body>
-        </Table>
+        {info?.road.oneway ? null : (
+          <Menu size="tiny" fluid secondary>
+            <Menu.Item header>Direction</Menu.Item>
+            <Menu.Item name="forwards" active={direction === 'forwards'} onClick={onClickDirection}>
+              {getCardinalDirection(info?.forwards?.bearing)}
+            </Menu.Item>
+            <Menu.Item name="backwards" active={direction === 'backwards'} onClick={onClickDirection}>
+              {getCardinalDirection(info?.backwards?.bearing)}
+            </Menu.Item>
+          </Menu>
+        )}
+
+        {info?.[direction] && <RoadStatsTable data={info[direction]} />}
       </>
     )
 
@@ -197,7 +233,19 @@ function CurrentRoadInfo({clickLocation}) {
             paint={{
               'line-width': ['interpolate', ['linear'], ['zoom'], 14, 6, 17, 12],
               'line-color': '#18FFFF',
-              'line-opacity': 0.8,
+              'line-opacity': 0.5,
+              ...({
+                'line-offset': [
+                  'interpolate',
+                  ['exponential', 1.5],
+                  ['zoom'],
+                  12,
+                  offsetDirection,
+                  19,
+                  offsetDirection * 8,
+                ],
+              })
+
             }}
           />
         </Source>
@@ -214,10 +262,18 @@ function CurrentRoadInfo({clickLocation}) {
 
 export default function MapPage() {
   const {obsMapSource} = useConfig() || {}
-  const [clickLocation, setClickLocation] = React.useState<{longitude: number; latitude: number} | null>(null)
+  const [clickLocation, setClickLocation] = useState<{longitude: number; latitude: number} | null>(null)
 
-  const onClick = React.useCallback(
+  const onClick = useCallback(
     (e) => {
+      let node = e.target
+      while (node) {
+        if (node?.classList?.contains(styles.mapInfoBox)) {
+          return
+        }
+        node = node.parentNode
+      }
+
       setClickLocation({longitude: e.lngLat[0], latitude: e.lngLat[1]})
     },
     [setClickLocation]
