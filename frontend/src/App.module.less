@@ -1,8 +1,6 @@
 @import 'styles.less';
 
 :global(#root) {
-  padding-top: @menuHeight;
-
   display: flex;
   flex-direction: column;
   justify-content: stretch;
@@ -72,7 +70,10 @@
   }
 }
 
-.menu {
+.menu.menu {
+  flex: 0 0 auto;
+  margin: 0;
+
   > :global(.ui.container) {
     height: @menuHeight;
     align-items: stretch;
@@ -81,7 +82,10 @@
   align-items: center;
   justify-content: center;
   color: white;
-  flex: 1 0 auto;
+  border-radius: 0;
+  border-right: 0;
+  border-left: 0;
+  border-top: 0;
 
   ul {
     margin: 0;
@@ -104,5 +108,22 @@
         }
       }
     }
+  }
+}
+
+.banner {
+  padding: 8px;
+  z-index: 100;
+  border-bottom: 1px solid #DDD;
+
+  &.warning {
+    background: #FFD54F;
+    border-color: #FBC02D;
+    color: #263238;
+  }
+  &.info {
+    background: #4FC3F7;
+    border-color: #0D47A1;
+    color: #0D47A1;
   }
 }

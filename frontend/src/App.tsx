@@ -1,4 +1,5 @@
 import React from 'react'
+import classnames from 'classnames'
 import {connect} from 'react-redux'
 import {List, Grid, Container, Menu, Header, Dropdown} from 'semantic-ui-react'
 import {BrowserRouter as Router, Switch, Route, Link} from 'react-router-dom'
@@ -50,6 +51,10 @@ function DropdownItemForLink({navigate, ...props}) {
   )
 }
 
+function Banner({text, style = 'warning'}: {text: string, style: 'warning' | 'info'}) {
+  return <div className={classnames(styles.banner, styles[style])}>{text}</div>
+}
+
 const App = connect((state) => ({login: state.login}))(function App({login}) {
   const config = useConfig()
   const apiVersion = useObservable(() => from(api.get('/info')).pipe(pluck('version')))
@@ -60,7 +65,8 @@ const App = connect((state) => ({login: state.login}))(function App({login}) {
 
   return config ? (
     <Router basename={config.basename}>
-      <Menu fixed="top" className={styles.menu}>
+      {config?.banner && <Banner {...config.banner} />}
+      <Menu className={styles.menu}>
         <Container>
           <Link to="/" component={MenuItemForLink} header className={styles.pageTitle}>
             OpenBikeSensor

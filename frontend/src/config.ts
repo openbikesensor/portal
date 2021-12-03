@@ -20,6 +20,10 @@ export interface Config {
   obsMapSource?: MapSoure
   imprintUrl?: string
   privacyPolicyUrl?: string
+  banner?: {
+    text: string
+    style?: "warning" | "info"
+  }
 }
 
 async function loadConfig(): Promise<Config> {
