@@ -5,13 +5,7 @@ from sanic.exceptions import NotFound
 
 from obs.api.app import app
 
-INDEX_HTML = (
-    join(app.config.FRONTEND_DIR, "index.html")
-    if app.config.get("FRONTEND_DIR")
-    else None
-)
-if INDEX_HTML and exists(INDEX_HTML):
-
+if app.config.FRONTEND_CONFIG:
     @app.get("/config.json")
     def get_frontend_config(req):
         result = {
@@ -35,12 +29,18 @@ if INDEX_HTML and exists(INDEX_HTML):
 
         return response.json(result)
 
+
+INDEX_HTML = (
+    join(app.config.FRONTEND_DIR, "index.html")
+    if app.config.get("FRONTEND_DIR")
+    else None
+)
+if INDEX_HTML and exists(INDEX_HTML):
     with open(INDEX_HTML, "rt") as f:
         index_file_contents = f.read()
 
     @app.get("/<path:path>")
     def get_frontend_static(req, path):
-        print("++++++++++++++++++++++++++++++++++++++++++++++++", path)
         if path.startswith("api/"):
             raise NotFound()
 

@@ -79,11 +79,11 @@ services:
       - ./frontend/tsconfig.json:/opt/obs/frontend/tsconfig.json
       - ./frontend/package.json:/opt/obs/frontend/package.json
       - ./frontend/webpack.config.js:/opt/obs/frontend/webpack.config.js
-
-      # Overwrite the default config with the development mode configuration
-      - ./frontend/config.dev.json:/opt/obs/frontend/public/config.json
     links:
       - api
+    environment:
+      # used for proxy only
+      - API_URL=http://api:3000/
     ports:
       - '3001:3001'
     restart: on-failure

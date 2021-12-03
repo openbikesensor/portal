@@ -159,6 +159,7 @@ module.exports = function (webpackEnv) {
         webSocketURL: `ws://0.0.0.0:${port}/ws`,
       },
       proxy: {
+        '/config.json': apiUrl,
         '/api': apiUrl,
         '/login': apiUrl,
       },
