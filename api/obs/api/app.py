@@ -117,9 +117,17 @@ async def inject_urls(req):
     else:
         req.ctx.frontend_scheme = req.scheme
 
-    req.ctx.api_scheme = req.ctx.frontend_scheme  # just use the same for now
-    req.ctx.api_base_path = remove_right(req.server_path, req.path)
-    req.ctx.api_url = f"{req.ctx.frontend_scheme}://{req.host}{req.ctx.api_base_path}"
+    if req.app.config.get("API_URL"):
+        req.ctx.api_url = req.app.config.API_URL.rstrip("/")
+        api_url_parsed = urlparse(req.ctx.api_url)
+        req.ctx.api_scheme = api_url_parsed.scheme  # just use the same for now
+        req.ctx.api_base_path = api_url_parsed.path
+    else:
+        req.ctx.api_scheme = req.ctx.frontend_scheme  # just use the same for now
+        req.ctx.api_base_path = remove_right(req.server_path, req.path)
+        req.ctx.api_url = (
+            f"{req.ctx.frontend_scheme}://{req.host}{req.ctx.api_base_path}"
+        )
 
     if req.app.config.FRONTEND_URL:
         req.ctx.frontend_base_path = "/" + urlparse(
