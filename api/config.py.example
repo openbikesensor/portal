@@ -36,11 +36,6 @@ FRONTEND_DIR = "../frontend/build/"
 FRONTEND_CONFIG = {
     "imprintUrl": "https://example.com/imprint",
     "privacyPolicyUrl": "https://example.com/privacy",
-    "mapTileset": {
-        "url": "https://tiles.wmflabs.org/bw-mapnik/{z}/{x}/{y}.png",
-        "minZoom": 0,
-        "maxZoom": 18,
-    },
     "mapHome": {"zoom": 15, "longitude": 7.8302, "latitude": 47.9755},
     "obsMapSource": {
         "type": "vector",
