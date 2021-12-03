@@ -1,13 +1,24 @@
+@import "styles.less";
+
 .stage {
   position: relative;
   margin-bottom: 32px;
 }
 
-.details.details {
-  position: absolute;
-  width: 320px;
-  top: 16px;
-  right: 16px;
-  max-height: calc(100% - 32px);
-  overflow: auto;
+@media @desktop {
+  .details.details {
+    position: absolute;
+    width: 320px;
+    top: 16px;
+    right: 16px;
+    max-height: calc(100% - 32px);
+    overflow: auto;
+  }
+}
+
+@media @mobile {
+  .details > :global(.ui.segment) {
+    box-shadow: none;
+    border: none;
+  }
 }

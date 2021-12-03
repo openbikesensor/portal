@@ -45,7 +45,7 @@ const SettingsPage = connect((state) => ({login: state.login}), {setLogin})(func
 
   return (
     <Page>
-      <Grid centered relaxed divided>
+      <Grid centered relaxed divided stackable>
         <Grid.Row>
           <Grid.Column width={8}>
             <Header as="h2">Your profile</Header>

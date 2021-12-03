@@ -95,7 +95,7 @@ const TrackEditor = connect((state) => ({login: state.login}))(function TrackEdi
 
   return (
     <Page>
-      <Grid centered relaxed divided>
+      <Grid centered relaxed divided stackable>
         <Grid.Row>
           <Grid.Column width={10}>
             <Header as="h2">Edit {track ? track.title || 'Unnamed track' : 'track'}</Header>
