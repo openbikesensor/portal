@@ -15,8 +15,10 @@ explicitly. Once we implement them, their usage will be described in the
   folder.
   * Leave the MongoDB service in place for now.
   * Update all other service descriptions. 
-  * You can remove `redis` already. Generate a better password than the default for your
-    postgres user. Traefik rules have been simplified as all routes are handled
+  * You can remove `redis` already. 
+  * Generate a better password than the default for your
+    postgres user.
+  * Traefik rules have been simplified as all routes are handled
     by the portal service now.
 * Start up the `mongo` and `postgres` services. Wait for postgres to finish
   initializing (see [README](README.md)).
