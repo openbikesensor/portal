@@ -5,9 +5,9 @@
   "privacyPolicyUrl": "https://example.com/privacy",
   "basename": "/",
   "mapHome": {
-    "zoom": 15,
-    "longitude": 9.1797,
-    "latitude": 48.7784
+    "zoom": 6,
+    "longitude": 10.2,
+    "latitude": 51.3
   },
   "obsMapSource": {
     "type": "vector",

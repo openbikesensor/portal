@@ -36,7 +36,7 @@ FRONTEND_DIR = "../frontend/build/"
 FRONTEND_CONFIG = {
     "imprintUrl": "https://example.com/imprint",
     "privacyPolicyUrl": "https://example.com/privacy",
-    "mapHome": {"zoom": 15, "longitude": 7.8302, "latitude": 47.9755},
+    "mapHome": {"zoom": 6, "longitude": 10.2, "latitude": 51.3},
 }
 
 # If the API should serve generated tiles, this is the path where the tiles are
