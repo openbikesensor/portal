@@ -37,10 +37,6 @@ FRONTEND_CONFIG = {
     "imprintUrl": "https://example.com/imprint",
     "privacyPolicyUrl": "https://example.com/privacy",
     "mapHome": {"zoom": 15, "longitude": 7.8302, "latitude": 47.9755},
-    "obsMapSource": {
-        "type": "vector",
-        "url": "http://localhost:3002/data/v3.json",
-    },
 }
 
 # If the API should serve generated tiles, this is the path where the tiles are
