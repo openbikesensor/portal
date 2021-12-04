@@ -1,4 +1,5 @@
 import produce from 'immer'
+import _ from 'lodash'
 
 type BaseMapStyle = 'positron' | 'bright'
 type MapConfigState  = {
@@ -13,18 +14,15 @@ const initialState: MapConfigState = {
   },
 }
 
-export function setBasemapStyle(style: BaseMapStyle) {
-  return {type: 'MAPCONFIG.SET_BASEMAP_STYLE', payload: {style}}
+export function setMapConfigFlag(flag: string, value: unknown) {
+  return {type: 'MAPCONFIG.SET_FLAG', payload: {flag, value}}
 }
 
 export default function mapConfigReducer(state = initialState, action) {
   switch (action.type) {
-    case 'MAPCONFIG.SET_BASEMAP_STYLE':
+    case 'MAPCONFIG.SET_FLAG':
       return produce(state, draft => {
-        if (!draft.baseMap) {
-          draft.baseMap = {}
-        }
-        draft.baseMap.style = action.payload.style
+        _.set(draft, action.payload.flag, action.payload.value)
       })
 
     default:

@@ -1,18 +1,72 @@
-import React, {useState, useCallback} from 'react'
+import React, {useState, useCallback, useMemo} from 'react'
 import _ from 'lodash'
-import {Sidebar, Button} from 'semantic-ui-react'
+import {Button} from 'semantic-ui-react'
 import {Layer, Source} from 'react-map-gl'
+import produce from 'immer'
+import {connect} from 'react-redux'
 
 import {Page, Map} from 'components'
 import {useConfig} from 'config'
-
-import {roadsLayer} from '../../mapstyles'
+import {colorByDistance} from 'mapstyles'
 
 import RoadInfo from './RoadInfo'
 import LayerSidebar from './LayerSidebar'
 import styles from './styles.module.less'
 
-export default function MapPage() {
+
+const untaggedRoadsLayer = {
+  id: 'obs_roads_untagged',
+  type: 'line',
+  source: 'obs',
+  'source-layer': 'obs_roads',
+  filter: ['!', ['to-boolean', ['get', 'distance_overtaker_mean']]],
+  layout: {
+    'line-cap': 'round',
+    'line-join': 'round',
+  },
+  paint: {
+    'line-width': [
+      'interpolate',
+      ['exponential', 1.5],
+      ['zoom'],
+      12,
+      2,
+      17,
+      2,
+    ],
+    'line-color': "#ABC",
+    'line-opacity': [
+      'interpolate',
+      ['linear'],
+      ['zoom'],
+      14,
+      0,
+      15,
+      1,
+    ],
+    'line-offset': [
+      'interpolate',
+      ['exponential', 1.5],
+      ['zoom'],
+      12,
+      ['get', 'offset_direction'],
+      19,
+      ['*', ['get', 'offset_direction'], 8],
+    ],
+  },
+  minzoom: 12,
+}
+
+const getRoadsLayer = attribute => produce(untaggedRoadsLayer, draft => {
+  draft.id = 'obs_roads_normal'
+  draft.filter = draft.filter[1] // remove '!'
+  draft.paint['line-width'][6] = 6
+  draft.paint['line-color'] = colorByDistance(attribute)
+  draft.paint['line-opacity'][3] = 12
+  draft.paint['line-opacity'][5] = 13
+})
+
+function MapPage({mapConfig}) {
   const {obsMapSource} = useConfig() || {}
   const [clickLocation, setClickLocation] = useState<{longitude: number; latitude: number} | null>(null)
 
@@ -32,6 +86,10 @@ export default function MapPage() {
   )
 
   const [layerSidebar, setLayerSidebar] = useState(true)
+
+  const showUntagged = mapConfig?.obsRoads?.showUntagged ?? true
+  const roadsLayerColorAttribute = mapConfig?.obsRoads?.attribute ?? 'distance_overtaker_mean'
+  const roadsLayer = useMemo(() => getRoadsLayer(roadsLayerColorAttribute ), [roadsLayerColorAttribute ])
 
   if (!obsMapSource) {
     return null
@@ -55,7 +113,8 @@ export default function MapPage() {
               onClick={() => setLayerSidebar(layerSidebar ? false : true)}
             />
             <Source id="obs" {...obsMapSource}>
-              <Layer {...roadsLayer} />
+              {showUntagged && <Layer key={untaggedRoadsLayer.id} {...untaggedRoadsLayer} />}
+              <Layer key={roadsLayer.id} {...roadsLayer} />
             </Source>
 
             <RoadInfo {...{clickLocation}} />
@@ -65,3 +124,5 @@ export default function MapPage() {
     </Page>
   )
 }
+
+export default connect((state) => ({mapConfig: state.mapConfig}))(MapPage)

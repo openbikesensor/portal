@@ -27,51 +27,6 @@ export function colorByDistance(attribute = 'distance_overtaker_mean', fallback 
   ]
 }
 
-export const roadsLayer = {
-  id: 'obs',
-  type: 'line',
-  source: 'obs',
-  'source-layer': 'obs_roads',
-  layout: {
-    'line-cap': 'round',
-    'line-join': 'round',
-  },
-  paint: {
-    'line-width': [
-      'interpolate',
-      ['exponential', 1.5],
-      ['zoom'],
-      12,
-      2,
-      17,
-      ['case', ['!', ['to-boolean', ['get', 'distance_overtaker_mean']]], 2, 6],
-    ],
-    'line-color': colorByDistance(),
-    'line-opacity': [
-      'interpolate',
-      ['linear'],
-      ['zoom'],
-      12,
-      0,
-      13,
-      ['case', ['!', ['to-boolean', ['get', 'distance_overtaker_mean']]], 0, 1],
-      14,
-      ['case', ['!', ['to-boolean', ['get', 'distance_overtaker_mean']]], 0, 1],
-      15,
-      1,
-    ],
-    'line-offset': [
-      'interpolate',
-      ['exponential', 1.5],
-      ['zoom'],
-      12,
-      ['get', 'offset_direction'],
-      19,
-      ['*', ['get', 'offset_direction'], 8],
-    ],
-  },
-  minzoom: 12,
-}
 
 export const trackLayer = {
   type: 'line',
