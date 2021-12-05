@@ -1,8 +1,13 @@
 import React from 'react'
+import _ from 'lodash'
 import {connect} from 'react-redux'
-import {List, Select, Header, Checkbox} from 'semantic-ui-react'
+import {List, Select, Input, Divider, Checkbox} from 'semantic-ui-react'
 
-import * as mapConfigActions from 'reducers/mapConfig'
+import {
+  MapConfig,
+  setMapConfigFlag as setMapConfigFlagAction,
+  initialState as defaultMapConfig,
+} from 'reducers/mapConfig'
 
 const BASEMAP_STYLE_OPTIONS = [
   {value: 'positron', key: 'positron', text: 'Positron'},
@@ -17,8 +22,14 @@ const ROAD_ATTRIBUTE_OPTIONS = [
   {value: 'overtaking_event_count', key: 'overtaking_event_count', text: 'Event count'},
 ]
 
-function LayerSidebar({mapConfig, setMapConfigFlag}) {
-  const showUntagged = mapConfig?.obsRoads?.showUntagged ?? true
+function LayerSidebar({
+  mapConfig,
+  setMapConfigFlag,
+}: {
+  mapConfig: MapConfig
+  setMapConfigFlag: (flag: string, value: unknown) => void
+}) {
+  const {baseMap: {style}, obsRoads: {show, showUntagged, attribute, maxCount}} = mapConfig
 
   return (
     <div>
@@ -27,28 +38,60 @@ function LayerSidebar({mapConfig, setMapConfigFlag}) {
           <List.Header>Basemap Style</List.Header>
           <Select
             options={BASEMAP_STYLE_OPTIONS}
-            value={mapConfig?.baseMap?.style ?? 'positron'}
+            value={style}
             onChange={(_e, {value}) => setMapConfigFlag('baseMap.style', value)}
           />
         </List.Item>
-        <Header as='h4' dividing>OBS Roads</Header>
+        <Divider />
         <List.Item>
-          <Checkbox label='Show untagged roads' checked={showUntagged}
+          <Checkbox
+            checked={showUntagged}
             onChange={() => setMapConfigFlag('obsRoads.showUntagged', !showUntagged)}
+            label="Untagged roads"
+          />
+        </List.Item>
+        <Divider />
+        <List.Item>
+          <Checkbox
+            checked={show}
+            onChange={() => setMapConfigFlag('obsRoads.show', !show)}
+            label="OBS Roads"
           />
         </List.Item>
         <List.Item>
-          <List.Header style={{marginBlock: 8}}>Color based on</List.Header>
+          <List.Header>Color based on</List.Header>
           <Select
             fluid
             options={ROAD_ATTRIBUTE_OPTIONS}
-            value={mapConfig?.obsRoads?.attribute ?? 'distance_overtaker_mean'}
+            value={attribute}
             onChange={(_e, {value}) => setMapConfigFlag('obsRoads.attribute', value)}
           />
         </List.Item>
+        {attribute.endsWith('_count') ? (
+          <List.Item>
+            <List.Header>Maximum value</List.Header>
+            <Input
+              fluid
+              type="number"
+              value={maxCount}
+              onChange={(_e, {value}) => setMapConfigFlag('obsRoads.maxCount', value)}
+            />
+          </List.Item>
+        ) : null}
       </List>
     </div>
   )
 }
 
-export default connect((state) => ({mapConfig: state.mapConfig}), mapConfigActions)(LayerSidebar)
+export default connect(
+  (state) => ({
+    mapConfig: _.merge(
+      {},
+      defaultMapConfig,
+      (state as any).mapConfig as MapConfig,
+      //
+    ),
+  }),
+  {setMapConfigFlag: setMapConfigFlagAction}
+  //
+)(LayerSidebar)

@@ -7,12 +7,11 @@ import {connect} from 'react-redux'
 
 import {Page, Map} from 'components'
 import {useConfig} from 'config'
-import {colorByDistance} from 'mapstyles'
+import {colorByDistance, colorByCount, reds} from 'mapstyles'
 
 import RoadInfo from './RoadInfo'
 import LayerSidebar from './LayerSidebar'
 import styles from './styles.module.less'
-
 
 const untaggedRoadsLayer = {
   id: 'obs_roads_untagged',
@@ -25,25 +24,9 @@ const untaggedRoadsLayer = {
     'line-join': 'round',
   },
   paint: {
-    'line-width': [
-      'interpolate',
-      ['exponential', 1.5],
-      ['zoom'],
-      12,
-      2,
-      17,
-      2,
-    ],
-    'line-color': "#ABC",
-    'line-opacity': [
-      'interpolate',
-      ['linear'],
-      ['zoom'],
-      14,
-      0,
-      15,
-      1,
-    ],
+    'line-width': ['interpolate', ['exponential', 1.5], ['zoom'], 12, 2, 17, 2],
+    'line-color': '#ABC',
+    'line-opacity': ['interpolate', ['linear'], ['zoom'], 14, 0, 15, 1],
     'line-offset': [
       'interpolate',
       ['exponential', 1.5],
@@ -57,14 +40,23 @@ const untaggedRoadsLayer = {
   minzoom: 12,
 }
 
-const getRoadsLayer = attribute => produce(untaggedRoadsLayer, draft => {
-  draft.id = 'obs_roads_normal'
-  draft.filter = draft.filter[1] // remove '!'
-  draft.paint['line-width'][6] = 6
-  draft.paint['line-color'] = colorByDistance(attribute)
-  draft.paint['line-opacity'][3] = 12
-  draft.paint['line-opacity'][5] = 13
-})
+const getRoadsLayer = (colorAttribute, maxCount) =>
+  produce(untaggedRoadsLayer, (draft) => {
+    draft.id = 'obs_roads_normal'
+    if (colorAttribute.endsWith('_count')) {
+      delete draft.filter
+    } else {
+      draft.filter = draft.filter[1] // remove '!'
+    }
+      draft.paint['line-width'][6] = 6 // scale bigger on zoom
+    draft.paint['line-color'] = colorAttribute.startsWith('distance_')
+      ? colorByDistance(colorAttribute)
+      : colorAttribute.endsWith('_count')
+      ? colorByCount(colorAttribute, maxCount, reds)
+      : '#DDD'
+    draft.paint['line-opacity'][3] = 12
+    draft.paint['line-opacity'][5] = 13
+  })
 
 function MapPage({mapConfig}) {
   const {obsMapSource} = useConfig() || {}
@@ -89,7 +81,11 @@ function MapPage({mapConfig}) {
 
   const showUntagged = mapConfig?.obsRoads?.showUntagged ?? true
   const roadsLayerColorAttribute = mapConfig?.obsRoads?.attribute ?? 'distance_overtaker_mean'
-  const roadsLayer = useMemo(() => getRoadsLayer(roadsLayerColorAttribute ), [roadsLayerColorAttribute ])
+  const roadsLayerMaxCount = mapConfig?.obsRoads?.maxCount ?? 20
+  const roadsLayer = useMemo(() => getRoadsLayer(roadsLayerColorAttribute, roadsLayerMaxCount), [
+    roadsLayerColorAttribute,
+    roadsLayerMaxCount,
+  ])
 
   if (!obsMapSource) {
     return null
@@ -98,7 +94,11 @@ function MapPage({mapConfig}) {
   return (
     <Page fullScreen>
       <div className={styles.mapContainer}>
-        {layerSidebar && <div className={styles.mapSidebar}><LayerSidebar /></div>}
+        {layerSidebar && (
+          <div className={styles.mapSidebar}>
+            <LayerSidebar />
+          </div>
+        )}
         <div className={styles.map}>
           <Map viewportFromUrl onClick={onClick}>
             <Button
