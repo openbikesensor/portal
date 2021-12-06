@@ -3,11 +3,11 @@ import _ from 'lodash'
 import {Button} from 'semantic-ui-react'
 import {Layer, Source} from 'react-map-gl'
 import produce from 'immer'
-import {connect} from 'react-redux'
 
 import {Page, Map} from 'components'
 import {useConfig} from 'config'
 import {colorByDistance, colorByCount, reds} from 'mapstyles'
+import {useMapConfig} from 'reducers/mapConfig'
 
 import RoadInfo from './RoadInfo'
 import LayerSidebar from './LayerSidebar'
@@ -48,7 +48,7 @@ const getRoadsLayer = (colorAttribute, maxCount) =>
     } else {
       draft.filter = draft.filter[1] // remove '!'
     }
-      draft.paint['line-width'][6] = 6 // scale bigger on zoom
+    draft.paint['line-width'][6] = 6 // scale bigger on zoom
     draft.paint['line-color'] = colorAttribute.startsWith('distance_')
       ? colorByDistance(colorAttribute)
       : colorAttribute.endsWith('_count')
@@ -58,9 +58,51 @@ const getRoadsLayer = (colorAttribute, maxCount) =>
     draft.paint['line-opacity'][5] = 13
   })
 
-function MapPage({mapConfig}) {
+const getEventsLayer = () => ({
+  id: 'obs_events',
+  type: 'circle',
+  source: 'obs',
+  'source-layer': 'obs_events',
+  paint: {
+    'circle-radius': ['interpolate', ['linear'], ['zoom'], 14, 3, 17, 8],
+    'circle-color': colorByDistance('distance_overtaker'),
+  },
+  minzoom: 11,
+})
+
+const getEventsTextLayer = () => ({
+  id: 'obs_events_text',
+  type: 'symbol',
+  minzoom: 18,
+  source: 'obs',
+  'source-layer': 'obs_events',
+  layout: {
+    'text-field': [
+      'number-format',
+      ['get', 'distance_overtaker'],
+      {'min-fraction-digits': 2, 'max-fraction-digits': 2},
+    ],
+    'text-allow-overlap': true,
+    'text-font': ['Open Sans Bold', 'Arial Unicode MS Regular'],
+    'text-size': 14,
+    'text-keep-upright': false,
+    'text-anchor': 'left',
+    'text-radial-offset': 1,
+    'text-rotate': ['-', 90, ['*', ['get', 'course'], 180/Math.PI]],
+    'text-rotation-alignment': 'map',
+  },
+  paint: {
+    'text-halo-color': 'rgba(255, 255, 255, 1)',
+    'text-halo-width': 1,
+    'text-opacity': ['interpolate', ['linear'], ['zoom'], 15, 0, 15.3, 1],
+  },
+})
+
+export default function MapPage() {
   const {obsMapSource} = useConfig() || {}
   const [clickLocation, setClickLocation] = useState<{longitude: number; latitude: number} | null>(null)
+
+  const mapConfig = useMapConfig()
 
   const onClick = useCallback(
     (e) => {
@@ -79,13 +121,27 @@ function MapPage({mapConfig}) {
 
   const [layerSidebar, setLayerSidebar] = useState(true)
 
-  const showUntagged = mapConfig?.obsRoads?.showUntagged ?? true
-  const roadsLayerColorAttribute = mapConfig?.obsRoads?.attribute ?? 'distance_overtaker_mean'
-  const roadsLayerMaxCount = mapConfig?.obsRoads?.maxCount ?? 20
-  const roadsLayer = useMemo(() => getRoadsLayer(roadsLayerColorAttribute, roadsLayerMaxCount), [
-    roadsLayerColorAttribute,
-    roadsLayerMaxCount,
-  ])
+  const {
+    obsRoads: {attribute, maxCount},
+  } = mapConfig
+
+  const layers = []
+
+  if (mapConfig.obsRoads.show && mapConfig.obsRoads.showUntagged) {
+    layers.push(untaggedRoadsLayer)
+  }
+
+  const roadsLayer = useMemo(() => getRoadsLayer(attribute, maxCount), [attribute, maxCount])
+  if (mapConfig.obsRoads.show) {
+    layers.push(roadsLayer)
+  }
+
+  const eventsLayer = useMemo(() => getEventsLayer(), [])
+  const eventsTextLayer = useMemo(() => getEventsTextLayer(), [])
+  if (mapConfig.obsEvents.show) {
+    layers.push(eventsLayer)
+    layers.push(eventsTextLayer)
+  }
 
   if (!obsMapSource) {
     return null
@@ -113,8 +169,9 @@ function MapPage({mapConfig}) {
               onClick={() => setLayerSidebar(layerSidebar ? false : true)}
             />
             <Source id="obs" {...obsMapSource}>
-              {showUntagged && <Layer key={untaggedRoadsLayer.id} {...untaggedRoadsLayer} />}
-              <Layer key={roadsLayer.id} {...roadsLayer} />
+              {layers.map((layer) => (
+                <Layer key={layer.id} {...layer} />
+              ))}
             </Source>
 
             <RoadInfo {...{clickLocation}} />
@@ -124,5 +181,3 @@ function MapPage({mapConfig}) {
     </Page>
   )
 }
-
-export default connect((state) => ({mapConfig: state.mapConfig}))(MapPage)

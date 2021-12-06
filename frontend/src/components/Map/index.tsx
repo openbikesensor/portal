@@ -1,7 +1,8 @@
 import React, {useState, useCallback, useMemo, useEffect} from 'react'
+import classnames from 'classnames'
 import {connect} from 'react-redux'
 import _ from 'lodash'
-import ReactMapGl, {WebMercatorViewport, AttributionControl, NavigationControl} from 'react-map-gl'
+import ReactMapGl, {WebMercatorViewport, ScaleControl, NavigationControl} from 'react-map-gl'
 import turfBbox from '@turf/bbox'
 import {useHistory, useLocation} from 'react-router-dom'
 
@@ -9,12 +10,14 @@ import {useConfig} from 'config'
 
 import {baseMapStyles} from '../../mapstyles'
 
+import styles from './styles.module.less'
 
-const EMPTY_VIEWPORT = {longitude: 0, latitude: 0, zoom: 0}
+interface Viewport {longitude: number; latitude: number; zoom: number}
+const EMPTY_VIEWPORT: Viewport = {longitude: 0, latitude: 0, zoom: 0}
 
 export const withBaseMapStyle = connect((state) => ({baseMapStyle: state.mapConfig?.baseMap?.style ?? 'positron'}))
 
-function parseHash(v) {
+function parseHash(v: string): Viewport | null {
   if (!v) return null
   const m = v.match(/^#([0-9\.]+)\/([0-9\.]+)\/([0-9\.]+)$/)
   if (!m) return null
@@ -25,11 +28,11 @@ function parseHash(v) {
   }
 }
 
-function buildHash(v) {
+function buildHash(v: Viewport): string {
   return `${v.zoom.toFixed(2)}/${v.latitude}/${v.longitude}`
 }
 
-function useViewportFromUrl() {
+function useViewportFromUrl(): [Viewport|null, (v: Viewport) => void] {
   const history = useHistory()
   const location = useLocation()
   const value = useMemo(() => parseHash(location.hash), [location.hash])
@@ -44,7 +47,6 @@ function useViewportFromUrl() {
   return [value || EMPTY_VIEWPORT, setter]
 }
 
-
 function Map({
   viewportFromUrl,
   children,
@@ -53,8 +55,8 @@ function Map({
   ...props
 }: {
   viewportFromUrl?: boolean
-    children: React.ReactNode
-    boundsFromJson: GeoJSON.Geometry
+  children: React.ReactNode
+  boundsFromJson: GeoJSON.Geometry
   baseMapStyle: string
 }) {
   const [viewportState, setViewportState] = useState(EMPTY_VIEWPORT)
@@ -64,7 +66,7 @@ function Map({
 
   const config = useConfig()
   useEffect(() => {
-    if (config?.mapHome && viewport.latitude === 0 && viewport.longitude === 0 && !boundsFromJson) {
+    if (config?.mapHome && viewport?.latitude === 0 && viewport?.longitude === 0 && !boundsFromJson) {
       setViewport(config.mapHome)
     }
   }, [config, boundsFromJson])
@@ -87,16 +89,17 @@ function Map({
   }, [boundsFromJson])
 
   return (
-    <ReactMapGl mapStyle={baseMapStyles[baseMapStyle]} width="100%" height="100%" onViewportChange={setViewport} {...viewport} {...props}>
-      <AttributionControl
-        style={{right: 0, bottom: 0}}
-        customAttribution={[
-          '<a href="https://openstreetmap.org/copyright" target="_blank" rel="nofollow noopener noreferrer">© OpenStreetMap contributors</a>',
-          '<a href="https://openmaptiles.org/" target="_blank" rel="nofollow noopener noreferrer">© OpenMapTiles</a>',
-          '<a href="https://openbikesensor.org/" target="_blank" rel="nofollow noopener noreferrer">© OpenBikeSensor</a>',
-        ]}
-      />
+    <ReactMapGl
+      mapStyle={baseMapStyles[baseMapStyle]}
+      width="100%"
+      height="100%"
+      onViewportChange={setViewport}
+      {...viewport}
+      {...props}
+      className={classnames(styles.map, props.className)}
+    >
       <NavigationControl style={{left: 10, top: 10}} />
+      <ScaleControl maxWidth={200} unit="metric" style={{left: 10, bottom: 10}} />
 
       {children}
     </ReactMapGl>

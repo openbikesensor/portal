@@ -1,3 +1,5 @@
+import {useMemo} from 'react'
+import {useSelector} from 'react-redux'
 import produce from 'immer'
 import _ from 'lodash'
 
@@ -14,11 +16,14 @@ export type MapConfig = {
   baseMap: {
     style: BaseMapStyle
   }
-  obsRoads:{
+  obsRoads: {
     show: boolean
     showUntagged: boolean
     attribute: RoadAttribute
     maxCount: number
+  }
+  obsEvents: {
+    show: boolean
   }
 }
 
@@ -32,19 +37,27 @@ export const initialState: MapConfig = {
     attribute: 'distance_overtaker_median',
     maxCount: 20,
   },
+  obsEvents: {
+    show: false,
+  },
 }
 
-type MapConfigAction =
-  {type: 'MAP_CONFIG.SET_FLAG', payload: {flag: string, value: any}}
+type MapConfigAction = {type: 'MAP_CONFIG.SET_FLAG'; payload: {flag: string; value: any}}
 
 export function setMapConfigFlag(flag: string, value: unknown): MapConfigAction {
   return {type: 'MAP_CONFIG.SET_FLAG', payload: {flag, value}}
 }
 
+export function useMapConfig() {
+  const mapConfig = useSelector((state) => state.mapConfig)
+  const result = useMemo(() => _.merge({}, initialState, mapConfig), [mapConfig])
+  return result
+}
+
 export default function mapConfigReducer(state: MapConfig = initialState, action: MapConfigAction) {
   switch (action.type) {
     case 'MAP_CONFIG.SET_FLAG':
-      return produce(state, draft => {
+      return produce(state, (draft) => {
         _.set(draft, action.payload.flag, action.payload.value)
       })
 

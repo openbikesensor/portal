@@ -1,0 +1,24 @@
+.colorMapLegend {
+  position: relative;
+  margin: 1rem;
+  font-size: 10pt;
+  letter-spacing: -0.2pt;
+}
+
+.tick {
+  position: absolute;
+  top: calc(100% + 2px);
+  left: 0;
+  transform: translateX(-50%);
+  text-align: center;
+
+  &::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: -4px;
+    height: 6px;
+    border-left: 1px solid currentcolor;
+    left: 50%;
+  }
+}
