@@ -1,8 +1,8 @@
-import React from 'react'
+import React, {useCallback} from 'react'
 import {connect} from 'react-redux'
-import {Button, Message, Item, Menu, Loader, Pagination, Icon} from 'semantic-ui-react'
+import {Button, Message, Item, Header, Loader, Pagination, Icon} from 'semantic-ui-react'
 import {useObservable} from 'rxjs-hooks'
-import {Link, useHistory, useRouteMatch} from 'react-router-dom'
+import {Link} from 'react-router-dom'
 import {of, from, concat} from 'rxjs'
 import {map, switchMap, distinctUntilChanged} from 'rxjs/operators'
 import _ from 'lodash'
@@ -11,33 +11,6 @@ import type {Track} from 'types'
 import {Avatar, Page, StripMarkdown} from 'components'
 import api from 'api'
 import {useQueryParam} from 'query'
-
-function TracksPageTabs() {
-  const history = useHistory()
-
-  const onClick = React.useCallback(
-    (e, data) => {
-      history.push(data.name)
-    },
-    [history]
-  )
-
-  const isOwnTracksPage = Boolean(useRouteMatch('/my/tracks'))
-
-  return (
-    <Menu pointing secondary>
-      <Menu.Item name="/tracks" active={!isOwnTracksPage} {...{onClick}}>
-        Tracks
-      </Menu.Item>
-      <Menu.Item name="/my/tracks" active={isOwnTracksPage} {...{onClick}} />
-      <Menu.Item name="/upload" position="right" {...{onClick}}>
-        <Button color="green" compact size="small">
-          Upload
-        </Button>
-      </Menu.Item>
-    </Menu>
-  )
-}
 
 function TrackList({privateTracks}: {privateTracks: boolean}) {
   const [page, setPage] = useQueryParam<number>('page', 1, Number)
@@ -147,10 +120,26 @@ export function TrackListItem({track, privateTracks = false}) {
   )
 }
 
+function UploadButton({navigate, ...props}) {
+  const onClick = useCallback(
+    (e) => {
+      e.preventDefault()
+      navigate()
+    },
+    [navigate]
+  )
+  return (
+    <Button onClick={onClick} {...props} color="green" style={{float: 'right'}}>
+      Upload
+    </Button>
+  )
+}
+
 const TracksPage = connect((state) => ({login: (state as any).login}))(function TracksPage({login, privateTracks}) {
   return (
     <Page>
-      {login ? <TracksPageTabs /> : null}
+      <Header as='h2'>{privateTracks ? 'My tracks' : 'Public tracks'}</Header>
+      {privateTracks && <Link component={UploadButton} to="/upload" />}
       <TrackList {...{privateTracks}} />
     </Page>
   )

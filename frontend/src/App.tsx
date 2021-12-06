@@ -84,14 +84,19 @@ const App = connect((state) => ({login: state.login}))(function App({login}) {
 
           <Menu.Menu position="right">
             {login ? (
-              <Dropdown item trigger={<Avatar user={login} className={styles.avatar} />}>
-                <Dropdown.Menu>
-                  <Link to="/upload" component={DropdownItemForLink} icon="cloud upload" text="Upload tracks" />
-                  <Link to="/settings" component={DropdownItemForLink} icon="cog" text="Settings" />
-                  <Dropdown.Divider />
-                  <Link to="/logout" component={DropdownItemForLink} icon="sign-out" text="Logout" />
-                </Dropdown.Menu>
-              </Dropdown>
+              <>
+                <Link component={MenuItemForLink} to="/my/tracks" as="a">
+                  My Tracks
+                </Link>
+                <Dropdown item trigger={<Avatar user={login} className={styles.avatar} />}>
+                  <Dropdown.Menu>
+                    <Link to="/upload" component={DropdownItemForLink} icon="cloud upload" text="Upload tracks" />
+                    <Link to="/settings" component={DropdownItemForLink} icon="cog" text="Settings" />
+                    <Dropdown.Divider />
+                    <Link to="/logout" component={DropdownItemForLink} icon="sign-out" text="Logout" />
+                  </Dropdown.Menu>
+                </Dropdown>
+              </>
             ) : (
               <Menu.Item>
                 <LoginButton compact />
