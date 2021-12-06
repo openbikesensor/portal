@@ -20,7 +20,9 @@ sed -i 's|^__version__ = "'$CURRENT'"|__version__ = "'${NEXT}'"|' $ROOT_DIR/api/
 
 git commit -m "Release: ${NEXT}" \
     tile-generator/openbikesensor.yaml \
-    api/obs/api/__init__.py
+    api/obs/api/__init__.py \
+    CHANGELOG.md \
+    UPGRADING.md \
 
 git tag $NEXT
 
