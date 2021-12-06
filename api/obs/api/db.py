@@ -145,6 +145,8 @@ class Road(Base):
 
 NOW = text("NOW()")
 
+class DuplicateTrackFileError(ValueError):
+    pass
 
 class Track(Base):
     __tablename__ = "track"
@@ -262,7 +264,7 @@ class Track(Base):
         )
 
         if duplicate_count:
-            raise ValueError("duplicate file")
+            raise DuplicateTrackFileError()
 
         self.original_file_hash = hex_hash
 

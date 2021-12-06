@@ -6,7 +6,7 @@ from os.path import join, exists, isfile
 from sqlalchemy import select, func
 from sqlalchemy.orm import joinedload
 
-from obs.api.db import Track, User, Comment
+from obs.api.db import Track, User, Comment, DuplicateTrackFileError
 from obs.api.app import api, require_auth, read_api_key, json
 
 from sanic.response import file_stream, empty
@@ -112,7 +112,11 @@ async def post_track(req):
         else req.ctx.user.are_tracks_visible_for_all,
     )
     track.generate_slug()
-    await track.prevent_duplicates(req.ctx.db, file.body)
+    try:
+        await track.prevent_duplicates(req.ctx.db, file.body)
+    except DuplicateTrackFileError:
+        raise InvalidUsage("Track file is not unique")
+
     track.uploaded_by_user_agent = normalize_user_agent(req.headers["user-agent"])
     track.original_file_name = file.name
     await track.write_to_original_file(req.app.config, file.body)

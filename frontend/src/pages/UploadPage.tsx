@@ -49,7 +49,7 @@ export function FileUploadStatus({
 }: {
   id: string
   file: File
-  onComplete: (result: FileUploadResult) => void
+  onComplete: (id: string, result: FileUploadResult) => void
   slug?: string
 }) {
   const [progress, setProgress] = React.useState(0)

@@ -13,7 +13,7 @@ from sanic.response import (
     file as file_response,
     html as html_response,
 )
-from sanic.exceptions import Unauthorized
+from sanic.exceptions import Unauthorized, SanicException
 from sanic_session import Session, InMemorySessionInterface
 
 from sqlalchemy import select
@@ -30,6 +30,20 @@ c = app.config
 
 api = Blueprint("api", url_prefix="/api")
 auth = Blueprint("auth", url_prefix="")
+
+
+@api.exception(SanicException, BaseException)
+def _handle_sanic_errors(_request, exception):
+    log.error("Exception in handler: %s", exception, exc_info=True)
+    return json_response(
+        {
+            "errors": {
+                type(exception).__name__: str(exception),
+            },
+        },
+        status=exception.status_code if hasattr(exception, "status_code") else 500,
+    )
+
 
 # Configure paths
 def configure_paths(c):
