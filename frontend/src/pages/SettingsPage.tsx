@@ -48,7 +48,7 @@ const SettingsPage = connect((state) => ({login: state.login}), {setLogin})(func
       <Grid centered relaxed divided stackable>
         <Grid.Row>
           <Grid.Column width={8}>
-            <Header as="h2">Your profile</Header>
+            <Header as="h2">My profile</Header>
 
             <Message info>All of this information is public.</Message>
 
@@ -141,7 +141,7 @@ function ApiKeyDialog({login, onGenerateNewKey}) {
 
   return (
     <>
-      <Header as="h2">Your API Key</Header>
+      <Header as="h2">My API Key</Header>
       <p>
         Here you find your API Key, for use in the OpenBikeSensor. You can to copy and paste it into your sensor's
         configuration interface to allow direct upload from the device.

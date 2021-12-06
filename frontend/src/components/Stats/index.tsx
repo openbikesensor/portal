@@ -65,7 +65,7 @@ export default function Stats({user = null}: {user?: null | string}) {
 
   return (
     <>
-      <Header as="h2">Statistics</Header>
+      <Header as="h2">{user && 'My '}Statistics</Header>
 
       <div>
         <Segment attached="top">
