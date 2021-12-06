@@ -5,7 +5,9 @@
   flex-direction: column;
   justify-content: stretch;
 
-  html, body, & {
+  html,
+  body,
+  & {
     min-height: 100%;
   }
 }
@@ -18,14 +20,20 @@
   background: @obsColorB4;
   color: @obsColorW;
 
-  h1, h2, h3, h4, h5, h6 {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     &:global(.ui.header) {
       color: inherit;
     }
   }
 
   a {
-    &, &:hover {
+    &,
+    &:hover {
       color: inherit;
     }
 
@@ -65,7 +73,8 @@
   font-weight: 600;
   font-size: 18pt;
 
-  &, &:hover {
+  &,
+  &:hover {
     color: @obsColorB4;
   }
 }
@@ -114,16 +123,16 @@
 .banner {
   padding: 8px;
   z-index: 100;
-  border-bottom: 1px solid #DDD;
+  border-bottom: 1px solid #ddd;
 
   &.warning {
-    background: #FFD54F;
-    border-color: #FBC02D;
+    background: #ffd54f;
+    border-color: #fbc02d;
     color: #263238;
   }
   &.info {
-    background: #4FC3F7;
-    border-color: #0D47A1;
-    color: #0D47A1;
+    background: #4fc3f7;
+    border-color: #0d47a1;
+    color: #0d47a1;
   }
 }

@@ -5,9 +5,7 @@ import {Redirect} from 'react-router-dom'
 
 import api from 'api'
 
-const LogoutPage = connect(
-  (state) => ({loggedIn: Boolean(state.login)}),
-)(function LogoutPage({loggedIn}) {
+const LogoutPage = connect((state) => ({loggedIn: Boolean(state.login)}))(function LogoutPage({loggedIn}) {
   React.useEffect(() => {
     // no await, just trigger it
     if (loggedIn) {

@@ -13,18 +13,18 @@ export default function ColorMapLegend({map}: {map: ColorMap}) {
         <defs>
           <linearGradient id="gradient" x1="0" x2="1" y1="0" y2="0">
             {map.map(([value, color]) => (
-              <stop key={value} offset={normalizeValue(value) * 100 + '%'} stop-color={color} />
+              <stop key={value} offset={normalizeValue(value) * 100 + '%'} stopColor={color} />
             ))}
           </linearGradient>
         </defs>
 
         <rect id="rect1" x="0" y="0" width="100%" height="100%" fill="url(#gradient)" />
       </svg>
-      {map.map(([value]) => <span className={styles.tick} key={value}
-        style={{left: normalizeValue(value)*100 + '%'}}
-      >
-        {value.toFixed(2)}
-      </span>)}
+      {map.map(([value]) => (
+        <span className={styles.tick} key={value} style={{left: normalizeValue(value) * 100 + '%'}}>
+          {value.toFixed(2)}
+        </span>
+      ))}
     </div>
   )
 }

@@ -1,14 +1,16 @@
 import React from 'react'
 
-export type MapSoure = {
-  type: 'vector'
-  url: string,
-} | {
-  type: 'vector',
-  tiles: string[],
-  minzoom: number,
-  maxzoom: number,
-}
+export type MapSoure =
+  | {
+      type: 'vector'
+      url: string
+    }
+  | {
+      type: 'vector'
+      tiles: string[]
+      minzoom: number
+      maxzoom: number
+    }
 
 export interface Config {
   apiUrl: string
@@ -22,7 +24,7 @@ export interface Config {
   privacyPolicyUrl?: string
   banner?: {
     text: string
-    style?: "warning" | "info"
+    style?: 'warning' | 'info'
   }
 }
 

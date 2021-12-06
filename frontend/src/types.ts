@@ -7,9 +7,9 @@ export type UserProfile = {
 }
 
 export type TrackData = {
-  track: Feature<LineString>,
-  measurements: FeatureCollection,
-  overtakingEvents: FeatureCollection,
+  track: Feature<LineString>
+  measurements: FeatureCollection
+  overtakingEvents: FeatureCollection
 }
 
 export type Track = {
@@ -30,12 +30,12 @@ export type Track = {
 }
 
 export type TrackPoint = {
-  type: 'Feature',
-  geometry: Point,
+  type: 'Feature'
+  geometry: Point
   properties: {
-    distanceOvertaker: null | number,
-    distanceStationary: null | number,
-  },
+    distanceOvertaker: null | number
+    distanceStationary: null | number
+  }
 }
 
 export type TrackComment = {

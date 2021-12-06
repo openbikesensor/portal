@@ -1,7 +1,20 @@
 import React from 'react'
 import _ from 'lodash'
 import {connect} from 'react-redux'
-import {Divider, Message, Confirm, Grid, Button, Icon, Popup, Form, Ref, TextArea, Checkbox, Header} from 'semantic-ui-react'
+import {
+  Divider,
+  Message,
+  Confirm,
+  Grid,
+  Button,
+  Icon,
+  Popup,
+  Form,
+  Ref,
+  TextArea,
+  Checkbox,
+  Header,
+} from 'semantic-ui-react'
 import {useHistory, useParams, Link} from 'react-router-dom'
 import {concat, of, from} from 'rxjs'
 import {pluck, distinctUntilChanged, map, switchMap} from 'rxjs/operators'

@@ -26,9 +26,15 @@ function TracksPageTabs() {
 
   return (
     <Menu pointing secondary>
-      <Menu.Item name="/tracks" active={!isOwnTracksPage} {...{onClick}}>Tracks</Menu.Item>
+      <Menu.Item name="/tracks" active={!isOwnTracksPage} {...{onClick}}>
+        Tracks
+      </Menu.Item>
       <Menu.Item name="/my/tracks" active={isOwnTracksPage} {...{onClick}} />
-      <Menu.Item name="/upload" position='right' {...{onClick}}><Button color='green' compact size='small'>Upload</Button></Menu.Item>
+      <Menu.Item name="/upload" position="right" {...{onClick}}>
+        <Button color="green" compact size="small">
+          Upload
+        </Button>
+      </Menu.Item>
     </Menu>
   )
 }
@@ -131,7 +137,8 @@ export function TrackListItem({track, privateTracks = false}) {
             )}
 
             <span style={{marginLeft: '1em'}}>
-              <Icon color={COLOR_BY_STATUS[track.processingStatus]} name="bolt" fitted /> Processing {track.processingStatus}
+              <Icon color={COLOR_BY_STATUS[track.processingStatus]} name="bolt" fitted /> Processing{' '}
+              {track.processingStatus}
             </span>
           </Item.Extra>
         )}

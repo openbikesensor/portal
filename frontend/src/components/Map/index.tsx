@@ -12,7 +12,11 @@ import {baseMapStyles} from '../../mapstyles'
 
 import styles from './styles.module.less'
 
-interface Viewport {longitude: number; latitude: number; zoom: number}
+interface Viewport {
+  longitude: number
+  latitude: number
+  zoom: number
+}
 const EMPTY_VIEWPORT: Viewport = {longitude: 0, latitude: 0, zoom: 0}
 
 export const withBaseMapStyle = connect((state) => ({baseMapStyle: state.mapConfig?.baseMap?.style ?? 'positron'}))
@@ -32,7 +36,7 @@ function buildHash(v: Viewport): string {
   return `${v.zoom.toFixed(2)}/${v.latitude}/${v.longitude}`
 }
 
-function useViewportFromUrl(): [Viewport|null, (v: Viewport) => void] {
+function useViewportFromUrl(): [Viewport | null, (v: Viewport) => void] {
   const history = useHistory()
   const location = useLocation()
   const value = useMemo(() => parseHash(location.hash), [location.hash])

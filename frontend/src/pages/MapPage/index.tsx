@@ -88,7 +88,7 @@ const getEventsTextLayer = () => ({
     'text-keep-upright': false,
     'text-anchor': 'left',
     'text-radial-offset': 1,
-    'text-rotate': ['-', 90, ['*', ['get', 'course'], 180/Math.PI]],
+    'text-rotate': ['-', 90, ['*', ['get', 'course'], 180 / Math.PI]],
     'text-rotation-alignment': 'map',
   },
   paint: {

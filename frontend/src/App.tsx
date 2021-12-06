@@ -51,7 +51,7 @@ function DropdownItemForLink({navigate, ...props}) {
   )
 }
 
-function Banner({text, style = 'warning'}: {text: string, style: 'warning' | 'info'}) {
+function Banner({text, style = 'warning'}: {text: string; style: 'warning' | 'info'}) {
   return <div className={classnames(styles.banner, styles[style])}>{text}</div>
 }
 

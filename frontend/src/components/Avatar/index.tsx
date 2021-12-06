@@ -26,13 +26,13 @@ export default function Avatar({user, className}) {
   }
 
   if (!username) {
-    return <div className={classnames(className, "avatar", "empty-avatar")} />
+    return <div className={classnames(className, 'avatar', 'empty-avatar')} />
   }
 
   const color = getColor(username)
 
   return (
-    <div className={classnames(className, "avatar", "text-avatar")} style={{background: color}}>
+    <div className={classnames(className, 'avatar', 'text-avatar')} style={{background: color}}>
       {username && <span>{username[0]}</span>}
     </div>
   )

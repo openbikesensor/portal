@@ -20,10 +20,7 @@ export default function TrackDetails({track, isAuthor}) {
 
       {track.originalFileName != null && (
         <List.Item>
-          {isAuthor && (
-            <div style={{float: 'right'}}>
-            </div>
-          )}
+          {isAuthor && <div style={{float: 'right'}}></div>}
 
           <List.Header>Original Filename</List.Header>
           <code>{track.originalFileName}</code>
@@ -71,7 +68,6 @@ export default function TrackDetails({track, isAuthor}) {
           {(track?.length / 1000).toFixed(2)} km
         </List.Item>
       )}
-
 
       {track?.processingStatus != null && track?.processingStatus != 'error' && (
         <List.Item>

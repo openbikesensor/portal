@@ -54,7 +54,13 @@ const SettingsPage = connect((state) => ({login: state.login}), {setLogin})(func
 
             <Form onSubmit={handleSubmit(onSave)} loading={loading}>
               <Ref innerRef={findInput(register)}>
-                <Form.Input error={errors?.username} label="Username" name="username" defaultValue={login.username} disabled />
+                <Form.Input
+                  error={errors?.username}
+                  label="Username"
+                  name="username"
+                  defaultValue={login.username}
+                  disabled
+                />
               </Ref>
               <Form.Field error={errors?.bio}>
                 <label>Bio</label>
@@ -148,7 +154,7 @@ function ApiKeyDialog({login, onGenerateNewKey}) {
               <CopyInput label="Personal API Key" value={login.apiKey} />
             </Ref>
           ) : (
-            <Message warning content='You have no API Key, please generate one below.' />
+            <Message warning content="You have no API Key, please generate one below." />
           )
         ) : (
           <Button onClick={onClick}>

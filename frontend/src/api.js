@@ -47,7 +47,7 @@ class API {
 
   async makeLoginUrl() {
     const config = await configPromise
-    const url = new URL(config.loginUrl || (config.apiUrl + '/login'))
+    const url = new URL(config.loginUrl || config.apiUrl + '/login')
     url.searchParams.append('next', window.location.href) // bring us back to the current page
     return url.toString()
   }
