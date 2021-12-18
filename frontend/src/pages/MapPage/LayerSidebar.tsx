@@ -93,6 +93,13 @@ function LayerSidebar({
             ) : null}
           </>
         )}
+        {showRoads && (
+          <>
+            <List.Item>
+              <ColorMapLegend map={_.chunk(colorByDistance('distance_overtaker')[3].slice(3), 2)} />
+            </List.Item>
+          </>
+        )}
         <Divider />
         <List.Item>
           <Checkbox
@@ -107,7 +114,7 @@ function LayerSidebar({
             <Header as="h4">Event points</Header>
           </label>
         </List.Item>
-        {(showEvents || showRoads) && (
+        {showEvents && (
           <>
             <List.Item>
               <ColorMapLegend map={_.chunk(colorByDistance('distance_overtaker')[3].slice(3), 2)} />
