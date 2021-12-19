@@ -33,8 +33,9 @@ export function colormapToScale(colormap, value, min, max) {
 export const viridis = simplifyColormap(viridisBase.map(rgbArrayToColor), 20)
 export const grayscale = ['#FFFFFF', '#000000']
 export const reds = [
-  ['rgba', 255, 0, 0, 0],
-  ['rgba', 255, 0, 0, 1],
+  'rgba( 255, 0, 0, 0)',
+  'rgba( 255, 0, 0, 255)',
+]
 ]
 
 export function colorByCount(attribute = 'event_count', maxCount, colormap = viridis) {
