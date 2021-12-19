@@ -165,8 +165,8 @@ const App = connect((state) => ({login: state.login}))(function App({login}) {
                 <Header as="h5">Get involved</Header>
                 <List>
                   <List.Item>
-                    <a href="https://openbikesensor.org/slack" target="_blank" rel="noreferrer">
-                      Slack
+                    <a href="https://forum.openbikesensor.org/" target="_blank" rel="noreferrer">
+                      Get help in forum
                     </a>
                   </List.Item>
                   <List.Item>
