@@ -8,7 +8,7 @@ import {
   setMapConfigFlag as setMapConfigFlagAction,
   initialState as defaultMapConfig,
 } from 'reducers/mapConfig'
-import {colorByDistance} from 'mapstyles'
+import {colorByDistance, colorByCount, reds} from 'mapstyles'
 import {ColorMapLegend} from 'components'
 
 const BASEMAP_STYLE_OPTIONS = [
