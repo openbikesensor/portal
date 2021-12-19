@@ -1,4 +1,4 @@
-version: '3'
+version: '3.5'
 
 networks:
   gateway:
@@ -15,7 +15,9 @@ services:
       POSTGRES_PASSWORD: obs
       POSTGRES_DB: obs
     volumes:
-    - ./data/postgres/data:/var/lib/postgresql/data
+      - ./data/postgres/data:/var/lib/postgresql/data
+    labels:
+      - traefik.enable=false
 
   portal:
     image: openbikesensor-portal
@@ -34,13 +36,13 @@ services:
       - traefik.http.routers.portal.tls=true
       - traefik.http.routers.portal.tls.certresolver=leresolver
       - traefik.docker.network=gateway
-      - traefik.http.services.whoami.loadbalancer.server.port=80
+      - traefik.http.services.portal.loadbalancer.server.port=80
     networks:
       - gateway
       - backend
 
   traefik:
-    image: traefik:2.4.8
+    image: traefik:2.5.5
     restart: always
     ports:
       - "80:80"
