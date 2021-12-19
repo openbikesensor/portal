@@ -81,6 +81,7 @@ function LayerSidebar({
               />
             </List.Item>
             {attribute.endsWith('_count') ? (
+             <>
               <List.Item>
                 <List.Header>Maximum value</List.Header>
                 <Input
@@ -90,14 +91,15 @@ function LayerSidebar({
                   onChange={(_e, {value}) => setMapConfigFlag('obsRoads.maxCount', value)}
                 />
               </List.Item>
-            ) : null}
-          </>
-        )}
-        {showRoads && (
-          <>
-            <List.Item>
-              <ColorMapLegend map={_.chunk(colorByDistance('distance_overtaker')[3].slice(3), 2)} />
-            </List.Item>
+              <List.Item>
+                <ColorMapLegend map={_.chunk(colorByCount('obsRoads.maxCount',mapConfig.obsRoads.maxCount, reds).slice(3), 2)} />
+              </List.Item></>
+            ) :
+            (
+              <List.Item>
+                <ColorMapLegend map={_.chunk(colorByDistance('distance_overtaker')[3].slice(3), 2)} />
+              </List.Item>
+            )}
           </>
         )}
         <Divider />
