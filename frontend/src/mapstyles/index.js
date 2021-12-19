@@ -36,7 +36,6 @@ export const reds = [
   'rgba( 255, 0, 0, 0)',
   'rgba( 255, 0, 0, 255)',
 ]
-]
 
 export function colorByCount(attribute = 'event_count', maxCount, colormap = viridis) {
   return colormapToScale(colormap, ['case', ['to-boolean', ['get', attribute]], ['get', attribute], 0], 0, maxCount)
