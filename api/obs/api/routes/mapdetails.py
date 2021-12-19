@@ -108,7 +108,7 @@ async def mapdetails_road(req):
     def partition(arr, cond):
         return arr[:, cond], arr[:, ~cond]
 
-    forwards, backwards = partition(data, mask)
+    forwards, backwards = partition(data, ~mask)
     print("for", forwards.dtype, "back", backwards.dtype)
 
     def array_stats(arr, rounder):
