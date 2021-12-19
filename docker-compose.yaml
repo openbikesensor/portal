@@ -65,7 +65,7 @@ services:
       - postgres
       - keycloak
     restart: on-failure
-    command:
+    entrypoint:
       - python
       - tools/process_track.py
 
