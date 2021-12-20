@@ -18,6 +18,12 @@ services:
       - ./data/postgres/data:/var/lib/postgresql/data
     labels:
       - traefik.enable=false
+    networks:
+      - backend
+    # Uncomment, when you want to run osm2pgsql
+    #  - gateway
+    #ports:
+    #  - '127.0.0.1:5432:5432'
 
   portal:
     image: openbikesensor-portal
@@ -36,7 +42,7 @@ services:
       - traefik.http.routers.portal.tls=true
       - traefik.http.routers.portal.tls.certresolver=leresolver
       - traefik.docker.network=gateway
-      - traefik.http.services.portal.loadbalancer.server.port=80
+      - traefik.http.services.portal.loadbalancer.server.port=3000
     networks:
       - gateway
       - backend

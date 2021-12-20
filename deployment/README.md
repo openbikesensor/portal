@@ -36,7 +36,6 @@ git clone --recursive https://github.com/openbikesensor/portal source/
 Unless otherwise mentioned, commands below assume your current working
 directory to be `$ROOT`.
 
-
 ### Configure `traefik.toml`
 
 ```bash
@@ -47,7 +46,6 @@ vim config/traefik.toml
 
 Configure your email in the `config/traefik.toml`. This email is used by
 *Let's Encrypt* to send you some emails regarding your certificates.
-
 
 ### Configure `docker-compose.yaml`
 
@@ -60,12 +58,43 @@ vim docker-compose.yaml
 * Generate a secure password for the PostgreSQL database user. You will need to
   configure this in the application later.
 
+### Create a docker network
+
+The `docker-compose.yml` [requires an external docker network called](examples/docker-compose.yaml#L4)
+`gateway`.
+Thus, create the docker network:
+
+```
+docker network create gateway
+```
+
+If you don't create it, you will see the following error:
+
+> ERROR: Network gateway declared as external, but could not be found.
+
+Please create the network manually using `docker network create gateway` and
+try again.
+
+### Start traefik
+
+Now is a good time to start and test traefik:
+
+```
+docker-compose up -d traefik
+```
+
+Open your domain (e.g., `https://portal.example.com/`) should work already, but
+it should give you an HTTPS securiy warning, since no service is configured to
+handle the domain yet. Beacuse of this, you should also see a
+`404 page not found` when you confirm the warning.
 
 ### Create a keycloak instance
 
 Follow the [official guides](https://www.keycloak.org/documentation) to create
-your own keycloak server. You can run the keycloak in docker and include it in
-your `docker-compose.yaml`, if you like.
+your own keycloak server. If you like, You can run the keycloak in docker as
+well. Thus, you can include it in your `docker-compose.yaml` and use traefik.
+
+Keep in mind, that your keycloak server requires a separate domain.
 
 Documenting the details of this is out of scope for our project. Please make
 sure to configure:
@@ -74,18 +103,6 @@ sure to configure:
 * A realm for the portal
 * A client in that realm with "Access Type" set to "confidential" and a
   redirect URL of this pattern: `https://portal.example.com/login/redirect`
-
-
-### Prepare database
-
-Follow the procedure outlined in [README.md](../README.md) under "Prepare
-database".
-
-
-### Import OpenStreetMap data
-
-Follow the procedure outlined in [README.md](../README.md) under "Import OpenStreetMap data".
-
 
 ### Configure portal
 
@@ -105,10 +122,27 @@ use a forwarded secret to secure your proxy target from spoofing. This is not
 required if your application server does not listen on a public interface, but
 it is recommended anyway, if possible.
 
-### Build container and run them
+### Build portal container
 
 ```bash
 docker-compose build portal
+```
+
+This container is used for the next three steps.
+
+### Prepare database
+
+Follow the procedure outlined in [README.md](../README.md#prepare-database)
+under "Prepare database".
+
+### Import OpenStreetMap data
+
+Follow the procedure outlined in [README.md](../README.md#import-openstreetmap-data)
+under "Import OpenStreetMap data".
+
+#### Run portal container
+
+```bash
 docker-compose up -d portal
 ```
 
@@ -134,7 +168,7 @@ Extend your `docker-compose.yaml` with the following service:
       - tools/process_track.py
 ```
 
-Change the `DEDICATED_WORKER` option in your config to `True` to stop
+Change the `DEDICATED_WORKER` option in your `config.py` to `True` to stop
 processing tracks in the portal container. Then restart the `portal` service
 and start the `worker` service.
 

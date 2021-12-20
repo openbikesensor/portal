@@ -172,13 +172,14 @@ development, you should choose a small area for testing, such as your local
 county or city, to keep the amount of data small. For production use you have
 to import the whole region you are serving.
 
-* Install `osm2pgsql`. 
+* Install `osm2pgsql`. We tested it with version 1.5.1. If the version of your
+  package manger is older, we recommend to [install it from the soruces](https://github.com/openstreetmap/osm2pgsql).
 * Download the area(s) you would like to import from [GeoFabrik](https://download.geofabrik.de). 
 * Import each file like this:
 
     ```bash
     osm2pgsql --create --hstore --style api/roads_import.lua -O flex \
-      -H localhost -d obs -U obs \
+      -H localhost -d obs -U obs -W \
       path/to/downloaded/myarea-latest.osm.pbf 
     ```
 

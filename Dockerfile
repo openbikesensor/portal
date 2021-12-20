@@ -40,7 +40,7 @@ RUN pip install -e /opt/obs/api/
 
 COPY --from=frontend-builder /opt/obs/frontend/build /opt/obs/frontend/build
 
-EXPOSE 8000
+EXPOSE 3000
 
 CMD ["openbikesensor-api"]
 
