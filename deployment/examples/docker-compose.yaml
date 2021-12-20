@@ -30,7 +30,7 @@ services:
     build:
       context: ./source
     volumes:
-      - ./data/api-data:/data
+      - ./data/api-data:/opt/obs/data
       - ./config/config.py:/opt/obs/api/config.py
       - ./data/tiles/:/tiles
     restart: on-failure

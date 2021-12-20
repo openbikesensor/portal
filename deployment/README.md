@@ -169,7 +169,7 @@ Extend your `docker-compose.yaml` with the following service:
     build:
       context: ./source
     volumes:
-      - ./data/api-data:/data
+      - ./data/api-data:/opt/obs/data
       - ./config/config.py:/opt/obs/api/config.py
     restart: on-failure
     links:
