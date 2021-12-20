@@ -79,8 +79,16 @@ sure to configure:
 ### Prepare database
 
 Follow the procedure outlined in [README.md](../README.md) under "Prepare
-database".
+database". Whenever the docker-compose service `api` is referenced, replace it
+with `portal`, which contains the same python code as the development `api`
+service, but also the frontend. For example:
 
+```bash
+# development
+docker-compose run --rm api tools/prepare_sql_tiles.py
+# production
+docker-compose run --rm portal tools/prepare_sql_tiles.py
+```
 
 ### Import OpenStreetMap data
 
