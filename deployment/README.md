@@ -114,6 +114,8 @@ Then edit `config/config.py` to your heart's content (and matching the
 configuration of the keycloak). Do not forget to generate a secure secret
 string.
 
+Ensure to set `HOST = "0.0.0.0"`, thus the webserver can be accessed by docker.
+
 Also set `PROXIES_COUNT = 1` in your config, even if that option is not
 included in the example file. Read the 
 [Sanic docs](https://sanicframework.org/en/guide/advanced/proxy-headers.html) 
