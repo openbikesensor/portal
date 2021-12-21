@@ -132,6 +132,13 @@ docker-compose build portal
 
 This container is used for the next three steps.
 
+
+#### Start postgres
+
+```bash
+docker-compose up -d postgres
+```
+
 ### Prepare database
 
 Follow the procedure outlined in [README.md](../README.md#prepare-database)
