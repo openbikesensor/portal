@@ -81,9 +81,11 @@ Then clone the repository as described above.
 ### Configure Keycloak
 
 
-Login will not be possible until you configure the keycloak realm correctly. Boot your keycloak instance:
+Login will not be possible until you configure the keycloak realm correctly. Boot your postgres and
+keycloak instances:
 
 ```bash
+docker-compose up -d postgres
 docker-compose up -d keycloak
 ```
 
