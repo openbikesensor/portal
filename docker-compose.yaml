@@ -7,15 +7,6 @@
 version: '3'
 
 services:
-  mongo:
-    image: mongo
-    tty: true
-    volumes:
-      - ./local/mongo:/data/db
-    ports:
-      - '27017:27017'
-    restart: on-failure
-
   postgres:
     image: "openmaptiles/postgis:6.0"
     environment:
