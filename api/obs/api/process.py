@@ -163,8 +163,11 @@ async def process_track(session, track, data_source):
             with open(target, "w") as fp:
                 json.dump(data, fp, indent=4)
 
-        log.info("Import events into database...")
+        log.info("Clearing old track data...")
         await clear_track_data(session, track)
+        await session.commit()
+
+        log.info("Import events into database...")
         await import_overtaking_events(session, track, overtaking_events)
 
         log.info("Write track statistics and update status...")
@@ -207,7 +210,10 @@ async def clear_track_data(session, track):
 
 
 async def import_overtaking_events(session, track, overtaking_events):
-    event_models = []
+    # We use a dictionary to prevent per-track hash collisions, ignoring all
+    # but the first event of the same hash
+    event_models = {}
+
     for m in overtaking_events:
         hex_hash = hashlib.sha256(
             struct.pack(
@@ -215,26 +221,24 @@ async def import_overtaking_events(session, track, overtaking_events):
             )
         ).hexdigest()
 
-        event_models.append(
-            OvertakingEvent(
-                track_id=track.id,
-                hex_hash=hex_hash,
-                way_id=m.get("OSM_way_id"),
-                direction_reversed=m.get("OSM_way_orientation", 0) < 0,
-                geometry=json.dumps(
-                    {
-                        "type": "Point",
-                        "coordinates": [m["longitude"], m["latitude"]],
-                    }
-                ),
-                latitude=m["latitude"],
-                longitude=m["longitude"],
-                time=m["time"].astimezone(pytz.utc).replace(tzinfo=None),
-                distance_overtaker=m["distance_overtaker"],
-                distance_stationary=m["distance_stationary"],
-                course=m["course"],
-                speed=m["speed"],
-            )
+        event_models[hex_hash] = OvertakingEvent(
+            track_id=track.id,
+            hex_hash=hex_hash,
+            way_id=m.get("OSM_way_id"),
+            direction_reversed=m.get("OSM_way_orientation", 0) < 0,
+            geometry=json.dumps(
+                {
+                    "type": "Point",
+                    "coordinates": [m["longitude"], m["latitude"]],
+                }
+            ),
+            latitude=m["latitude"],
+            longitude=m["longitude"],
+            time=m["time"].astimezone(pytz.utc).replace(tzinfo=None),
+            distance_overtaker=m["distance_overtaker"],
+            distance_stationary=m["distance_stationary"],
+            course=m["course"],
+            speed=m["speed"],
         )
 
-    session.add_all(event_models)
+    session.add_all(event_models.values())
