@@ -26,8 +26,10 @@ services:
       - ./config/config.py:/opt/obs/api/config.py
       - ./data/tiles/:/tiles
     restart: on-failure
-    links:
+    depends_on:
       - postgres
+    # if you introduce a dockerized keycloak instance within this compose also:
+    # - keycloak
     labels:
       - traefik.http.routers.portal.rule=Host(`portal.example.com`)
       - traefik.http.routers.portal.entrypoints=websecure

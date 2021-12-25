@@ -32,7 +32,7 @@ services:
       - ./tile-generator:/opt/obs/tile-generator
       - ./local/api-data:/data
       - ./tile-generator/data/:/tiles
-    links:
+    depends_on:
       - postgres
       - keycloak
     ports:
@@ -52,7 +52,7 @@ services:
       - ./api/tools:/opt/obs/api/tools
       - ./api/config.dev.py:/opt/obs/api/config.py
       - ./local/api-data:/data
-    links:
+    depends_on:
       - postgres
       - keycloak
     restart: on-failure
@@ -70,7 +70,7 @@ services:
       - ./frontend/tsconfig.json:/opt/obs/frontend/tsconfig.json
       - ./frontend/package.json:/opt/obs/frontend/package.json
       - ./frontend/webpack.config.js:/opt/obs/frontend/webpack.config.js
-    links:
+    depends_on:
       - api
     environment:
       # used for proxy only
@@ -86,7 +86,7 @@ services:
     image: jboss/keycloak
     ports:
       - 3003:8080
-    links:
+    depends_on:
       - postgres
     environment:
       KEYCLOAK_USER: admin
