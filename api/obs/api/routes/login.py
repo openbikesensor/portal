@@ -1,3 +1,4 @@
+import asyncio
 import logging
 import os
 
@@ -25,6 +26,14 @@ logging.getLogger('oic').setLevel(logging.INFO)
 async def connect_auth_client(app, loop):
     client.allow["issuer_mismatch"] = True
     client.provider_config(app.config.KEYCLOAK_URL)
+    try:
+        client.provider_config(app.config.KEYCLOAK_URL)
+    except:
+        log.exception(f"could not connect to {app.config.KEYCLOAK_URL}")
+        log.info("will retry")
+        await asyncio.sleep(2)
+        log.info("retrying")
+        await connect_auth_client(app,loop)
     client.store_registration_info(
         RegistrationResponse(
             client_id=app.config.KEYCLOAK_CLIENT_ID,
