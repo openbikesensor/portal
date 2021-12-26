@@ -1,6 +1,7 @@
 import asyncio
 import logging
-import os
+
+from requests.exceptions import RequestException
 
 from sqlalchemy import select
 
@@ -25,21 +26,20 @@ logging.getLogger('oic').setLevel(logging.INFO)
 @auth.before_server_start
 async def connect_auth_client(app, loop):
     client.allow["issuer_mismatch"] = True
-    client.provider_config(app.config.KEYCLOAK_URL)
     try:
         client.provider_config(app.config.KEYCLOAK_URL)
-    except:
+        client.store_registration_info(
+            RegistrationResponse(
+                client_id=app.config.KEYCLOAK_CLIENT_ID,
+                client_secret=app.config.KEYCLOAK_CLIENT_SECRET,
+            )
+        )
+    except RequestException:
         log.exception(f"could not connect to {app.config.KEYCLOAK_URL}")
         log.info("will retry")
         await asyncio.sleep(2)
         log.info("retrying")
-        await connect_auth_client(app,loop)
-    client.store_registration_info(
-        RegistrationResponse(
-            client_id=app.config.KEYCLOAK_CLIENT_ID,
-            client_secret=app.config.KEYCLOAK_CLIENT_SECRET,
-        )
-    )
+        await connect_auth_client(app, loop)
 
 
 @auth.route("/login")
