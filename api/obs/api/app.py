@@ -24,8 +24,11 @@ from obs.api.db import User, make_session, connect_db
 
 log = logging.getLogger(__name__)
 
-app = Sanic("OpenBikeSensor Portal API", log_config={})
-app.update_config("./config.py")
+app = Sanic("OpenBikeSensor Portal API", load_env="OBS_", log_config={})
+
+if os.path.isfile("./config.py"):
+    app.update_config("./config.py")
+
 c = app.config
 
 api = Blueprint("api", url_prefix="/api")
@@ -104,7 +107,11 @@ Session(app, interface=InMemorySessionInterface())
 
 @app.before_server_start
 async def app_connect_db(app, loop):
-    app.ctx._db_engine_ctx = connect_db(app.config.POSTGRES_URL, app.config.POSTGRES_POOL_SIZE, app.config.POSTGRES_MAX_OVERFLOW)
+    app.ctx._db_engine_ctx = connect_db(
+        app.config.POSTGRES_URL,
+        app.config.POSTGRES_POOL_SIZE,
+        app.config.POSTGRES_MAX_OVERFLOW,
+    )
     app.ctx._db_engine = await app.ctx._db_engine_ctx.__aenter__()
 
 
