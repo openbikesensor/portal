@@ -91,7 +91,8 @@ ADD api/obs /opt/obs/api/obs/
 ADD api/tools /opt/obs/api/tools/
 RUN pip install -e /opt/obs/api/
 
-ADD roads_import.lua /opt/obs/api/roads_import.lua
+ADD roads_import.lua /opt/obs/api/tools
+ADD osm2pgsql.sh /opt/obs/api/tools
 
 COPY --from=frontend-builder /opt/obs/frontend/build /opt/obs/frontend/build
 COPY --from=osm2pgsql-builder /usr/local/bin/osm2pgsql /usr/local/bin/osm2pgsql

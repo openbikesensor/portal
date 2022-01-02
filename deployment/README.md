@@ -78,22 +78,30 @@ sure to configure:
 
 ### Prepare database
 
-Follow the procedure outlined in [README.md](../README.md) under "Prepare
-database". Whenever the docker-compose service `api` is referenced, replace it
-with `portal`, which contains the same python code as the development `api`
-service, but also the frontend. For example:
+Run the following two scripts to prepare the database:
 
 ```bash
-# development
-docker-compose run --rm api tools/prepare_sql_tiles.py
-# production
+docker-compose run --rm portal tools/reset_database.py
 docker-compose run --rm portal tools/prepare_sql_tiles.py
 ```
 
+For more details, see [README.md](../README.md) under "Prepare database".
+
 ### Import OpenStreetMap data
 
-Follow the procedure outlined in [README.md](../README.md) under "Import OpenStreetMap data".
+First of all, download the area(s) you would like to import from [GeoFabrik](https://download.geofabrik.de) into `data/pbf`, for example:
 
+```bash
+wget https://download.geofabrik.de/europe/germany/schleswig-holstein-latest.osm.pbf -P data/pbf
+```
+
+Afterwards,run the following script:
+
+```
+docker-compose run --rm portal tools/osm2pgsql.sh
+```
+
+For more details. see [README.md](../README.md) under "Import OpenStreetMap data".
 
 ### Configure portal
 

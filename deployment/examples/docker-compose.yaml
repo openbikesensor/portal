@@ -23,10 +23,16 @@ services:
     image: openbikesensor-portal
     build:
       context: ./source
+    environment:
+      POSTGRES_HOST: postgres
+      POSTGRES_USER: obs
+      POSTGRES_PASSWORD: obs
+      POSTGRES_DB: obs
     volumes:
       - ./data/api-data:/data
       - ./config/config.py:/opt/obs/api/config.py
       - ./data/tiles/:/tiles
+      - ./data/pbf/:/pbf
     restart: on-failure
     depends_on:
       - postgres
