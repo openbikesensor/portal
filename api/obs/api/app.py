@@ -1,9 +1,10 @@
 import logging
 import re
+
 from json import JSONEncoder, dumps
 from functools import wraps, partial
 from urllib.parse import urlparse
-from os.path import dirname, join, normpath, abspath
+from os.path import dirname, join, normpath, abspath, isfile
 from datetime import datetime, date
 
 from sanic import Sanic, Blueprint
@@ -26,7 +27,7 @@ log = logging.getLogger(__name__)
 
 app = Sanic("OpenBikeSensor Portal API", load_env="OBS_", log_config={})
 
-if os.path.isfile("./config.py"):
+if isfile("./config.py"):
     app.update_config("./config.py")
 
 c = app.config
