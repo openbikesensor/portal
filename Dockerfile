@@ -97,6 +97,6 @@ ADD osm2pgsql.sh /opt/obs/api/tools
 COPY --from=frontend-builder /opt/obs/frontend/build /opt/obs/frontend/build
 COPY --from=osm2pgsql-builder /usr/local/bin/osm2pgsql /usr/local/bin/osm2pgsql
 
-EXPOSE 8000
+EXPOSE 3000
 
 CMD ["openbikesensor-api"]
