@@ -8,12 +8,17 @@ networks:
     internal: true
 
 services:
+
+  ############################################################
+  # Portal
+  ############################################################
+
   postgres:
     image: "openmaptiles/postgis:6.0"
     environment:
-      POSTGRES_USER: obs
-      POSTGRES_PASSWORD: obs
-      POSTGRES_DB: obs
+      - POSTGRES_DB=${OBS_POSTGRES_DB}
+      - POSTGRES_USER=${OBS_POSTGRES_USER}
+      - POSTGRES_PASSWORD=${OBS_POSTGRES_PASSWORD}
     volumes:
     - ./data/postgres/data:/var/lib/postgresql/data
     networks:
@@ -23,31 +28,49 @@ services:
     image: openbikesensor-portal
     build:
       context: ./source
-    environment:
-      POSTGRES_HOST: postgres
-      POSTGRES_USER: obs
-      POSTGRES_PASSWORD: obs
-      POSTGRES_DB: obs
+    env_file: .env
     volumes:
-      - ./data/api-data:/data
+      - ./data/api-data:${OBS_DATA_DIR}
       - ./config/config.py:/opt/obs/api/config.py
       - ./data/tiles/:/tiles
       - ./data/pbf/:/pbf
     restart: on-failure
     depends_on:
+      - traefik
       - postgres
-    # if you introduce a dockerized keycloak instance within this compose also:
+      - worker
     # - keycloak
     labels:
-      - traefik.http.routers.portal.rule=Host(`portal.example.com`)
+      - traefik.http.routers.portal.rule=Host(`${OBS_PORTAL_URI}`)
       - traefik.http.routers.portal.entrypoints=websecure
       - traefik.http.routers.portal.tls=true
       - traefik.http.routers.portal.tls.certresolver=leresolver
       - traefik.docker.network=gateway
-      - traefik.http.services.whoami.loadbalancer.server.port=80
+#      - traefik.http.services.portal.loadbalancer.server.port=3000
     networks:
       - gateway
       - backend
+
+  worker:
+    image: openbikesensor-portal
+    build:
+      context: ./source
+    env_file: .env
+    volumes:
+      - ./data/api-data:${OBS_DATA_DIR}
+      - ./config/config.py:/opt/obs/api/config.py
+    restart: on-failure
+    depends_on:
+      - postgres
+    networks:
+      - backend
+    command:
+      - python
+      - tools/process_track.py
+
+  ############################################################
+  # Traefik
+  ############################################################
 
   traefik:
     image: traefik:2.4.8
@@ -76,11 +99,52 @@ services:
       # Configure middlewares
       - "traefik.http.middlewares.redirect-http-to-https.redirectscheme.scheme=https"
 
-      # Show Traefik Dashboard. Enable the dashboard in traefik.toml if you use these.
-      # - "traefik.http.routers.traefik.rule=Host(`traefik.example.com`)"
-      # - "traefik.http.routers.traefik.service=api@internal"
-      # - "traefik.http.routers.traefik.tls=true"
-      # - "traefik.http.routers.traefik.entrypoints=websecure"
-      # - "traefik.http.routers.traefik.tls.certresolver=leresolver"
-      # - "traefik.http.routers.traefik.middlewares=basic-auth"
-      # - "traefik.http.middlewares.basic-auth.basicauth.usersfile=/usersfile"
+  ############################################################
+  # Keycloak
+  ############################################################
+
+  keycloak:
+    image: jboss/keycloak:15.1.0
+    restart: always
+    networks:
+      - gateway
+      - backend
+    env_file: .env
+    environment:
+      # database
+      - DB_VENDOR=postgres
+      - DB_ADDR=${OBS_KEYCLOAK_POSTGRES_HOST}
+      - DB_DATABASE=${OBS_KEYCLOAK_POSTGRES_DB}
+      - DB_USER=${OBS_KEYCLOAK_POSTGRES_USER}
+      - DB_PASSWORD=${OBS_KEYCLOAK_POSTGRES_PASSWORD}
+      # admin user
+      - KEYCLOAK_USER=${OBS_KEYCLOAK_ADMIN_USER}
+      - KEYCLOAK_PASSWORD=${OBS_KEYCLOAK_ADMIN_PASSWORD}
+      - PROXY_ADDRESS_FORWARDING=true
+      - OBS_KEYCLOAK_PORTAL_REDIRECT_URI=${OBS_KEYCLOAK_PORTAL_REDIRECT_URI}
+    depends_on:
+      - traefik
+      - postgres-keycloak
+    labels:
+      - "traefik.http.routers.login.rule=Host(`${OBS_KEYCLOAK_URI}`)"
+      - "traefik.http.routers.login.entrypoints=websecure"
+      - "traefik.http.routers.login.tls=true"
+      - "traefik.http.routers.login.tls.certresolver=leresolver"
+      # This container runs on two ports (8080/tcp, 8443/tcp). Tell traefik, which one to use.
+      - "traefik.http.services.login.loadbalancer.server.port=8080"
+      # This container runs on more than one network. Tell traefik, which one to use.
+      - "traefik.docker.network=gateway"
+
+  postgres-keycloak:
+    image: postgres:13.3
+    restart: always
+    networks:
+      - backend
+    volumes:
+    - ./data/postgres-keycloak:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=${OBS_KEYCLOAK_POSTGRES_DB}
+      - POSTGRES_USER=${OBS_KEYCLOAK_POSTGRES_USER}
+      - POSTGRES_PASSWORD=${OBS_KEYCLOAK_POSTGRES_PASSWORD}
+    labels:
+      - traefik.enable=false
