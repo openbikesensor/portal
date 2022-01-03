@@ -8,77 +8,209 @@ proxy](https://doc.traefik.io/traefik/) as a reverse proxy, which listens
 on port 80 and 443.  Based on some labels, traefik routes the domains to the
 corresponding docker containers.
 
+## Requirements
+
+This guide requires a Linux-system, where `docker` and `docker-compose` are installed.
+Ensure, that your system is up to date.
+
 ## Before Getting Started
 
-The guide and example configuration assumes one domain, which points to the
-server's IP address. This documentation uses `portal.example.com` as an
-example. The API is hosted at `https://portal.example.com/api`, while the main
-frontend is reachable at the domain root.
+The example configurations assume two domains, which points to the
+server's IP address. This documentation uses `portal.example.com` and
+`login.example.com`. The API is hosted at `https://portal.example.com/api`, 
+while the main frontend is reachable at the domain root.
 
 ## Setup instructions
 
+First of all, login into your system via SSH.
+
+### Create working directory
+
+Create a folder somewhere in your system, in this guide we use 
+`/opt/openbikesensor`.
+
 ### Clone the repository
 
-First create a folder somewhere in your system, in the example we use 
-`/opt/openbikesensor` and export it as `$ROOT` to more easily refer to it.
-
-Clone the repository to `$ROOT/source`.
+Clone the repository to `/opt/openbikesensor/`:
 
 ```bash
-export ROOT=/opt/openbikesensor
-mkdir -p $ROOT
-cd $ROOT
+cd /opt/openbikesensor/
 git clone --recursive https://github.com/openbikesensor/portal source/
 # If you accidentally cloned without --recursive, fix it by running:
 # git submodule update --init --recursive
 ```
 
-Unless otherwise mentioned, commands below assume your current working
-directory to be `$ROOT`.
-
-
-### Configure `traefik.toml`
+### Copy predefined configuration files
 
 ```bash
-mkdir -p config/
+mkdir -p /opt/openbikesensor/config
+cd /opt/openbikesensor/
+
+cp source/deployment/examples/docker-compose.yaml docker-compose.yaml
+cp source/deployment/examples/.env .env
+
 cp source/deployment/examples/traefik.toml config/traefik.toml
-vim config/traefik.toml
+cp source/deployment/examples/config.py config/config.py
+```
+
+### Create a Docker network
+
+```bash
+docker network create gateway
+```
+
+### Traefik
+
+#### Configure `traefik.toml`
+
+```bash
+cd /opt/openbikesensor/
+nano config/traefik.toml
 ```
 
 Configure your email in the `config/traefik.toml`. This email is used by
 *Let's Encrypt* to send you some emails regarding your certificates.
 
-
-### Configure `docker-compose.yaml`
+#### Start Traefik
 
 ```bash
-cp source/deployment/examples/docker-compose.yaml docker-compose.yaml
-vim docker-compose.yaml
+docker-compose up -d traefik
+docker-compose logs -f traefik
 ```
 
-* Change the domain where it occurs, such as in `Host()` rules. 
-* Generate a secure password for the PostgreSQL database user. You will need to
-  configure this in the application later.
+### Generate passwords
 
+Generate three passords, for example with `pwgen`:
 
-### Create a keycloak instance
+```bash
+pwgen -2 -n 20
+```
 
-Follow the [official guides](https://www.keycloak.org/documentation) to create
-your own keycloak server. You can run the keycloak in docker and include it in
-your `docker-compose.yaml`, if you like.
+They will be uses in the next steps.
 
-Documenting the details of this is out of scope for our project. Please make
-sure to configure:
+### KeyCloak
 
-* An admin account for yourself
-* A realm for the portal
-* A client in that realm with "Access Type" set to "confidential" and a
-  redirect URL of this pattern: `https://portal.example.com/login/redirect`
+#### Configure `.env`
 
+```bash
+cd /opt/openbikesensor/
+nano .env
+```
 
-### Prepare database
+Configure:
+* `OBS_KEYCLOAK_URI`:
+    * The subdomain of your keycloak
+* `OBS_KEYCLOAK_POSTGRES_PASSWORD` and `OBS_KEYCLOAK_ADMIN_PASSWORD`:
+    * One of the generated passwords for the KeyCloak-postgres
+* `OBS_KEYCLOAK_PORTAL_REDIRECT_URI`:
+    * The Redirect URI, e.g. the subdomain of your portal (ensure, it ends with `/*`)
 
-Run the following two scripts to prepare the database:
+Wait until postgres and keycloak are started:
+
+* https://login.dennisboldt.de/
+
+#### Configure Realm and Client
+
+Login into your KeyCloak:
+
+```bash
+docker-compose exec keycloak /bin/bash
+```
+
+Since we configured the `.env`-file we can run the following commands
+to create a realm and a client now:
+
+```bash
+# Login
+/opt/jboss/keycloak/bin/kcadm.sh config credentials --server http://localhost:8080/auth --realm master --user $KEYCLOAK_USER --password $KEYCLOAK_PASSWORD
+
+# Create Realm
+/opt/jboss/keycloak/bin/kcadm.sh create realms -s realm=$OBS_KEYCLOAK_REALM -s enabled=true -o
+
+# Create a client and remember the unique id of the client
+CID=$(/opt/jboss/keycloak/bin/kcadm.sh create clients -r $OBS_KEYCLOAK_REALM -s clientId=portal -s "redirectUris=[\"$OBS_KEYCLOAK_PORTAL_REDIRECT_URI\"]" -i)
+
+# Create a secret for the client
+/opt/jboss/keycloak/bin/kcadm.sh create clients/$CID/client-secret -r $OBS_KEYCLOAK_REALM
+
+# Get the secret of the client
+/opt/jboss/keycloak/bin/kcadm.sh get clients/$CID/client-secret -r $OBS_KEYCLOAK_REALM
+
+exit
+```
+
+Now, configure the client secret:
+
+```bash
+cd /opt/openbikesensor/
+nano .env
+```
+
+Configure:
+* `OBS_KEYCLOAK_CLIENT_SECRET`:
+    *  Use the obtained client secret
+
+#### Create a user
+
+* Login into your Keycloak with the admin user and select the realm obs
+* Create a user with username and email (*Hint*: email is required by the portal)
+* Configure a password as well
+
+### Portal
+
+#### Configure Postgres
+
+```bash
+cd /opt/openbikesensor/
+nano .env
+```
+
+Configure:
+
+* `OBS_POSTGRES_HOST`:
+    * The should be the postgres-container, e.g. `postgres`
+* `OBS_POSTGRES_USER`:
+    * The default postgres-user is `obs`
+* `OBS_POSTGRES_PASSWORD`:
+    * Use one of the generated passwords for the postgres
+* `OBS_POSTGRES_DB`:
+    * The default postgres-database is `obs`
+* `OBS_POSTGRES_URL`:
+    * Use the same informations as aboe to configure the `POSTGRES_URL`, 
+      this one is used by the portal.
+
+#### Start Postgres for the portal
+
+```
+cd /opt/openbikesensor/
+docker-compose up -d postgres
+docker-compose logs -f
+```
+
+#### Build the portal image
+
+```bash
+cd /opt/openbikesensor/
+docker-compose build portal
+```
+
+*Hint*: This may take up to 10 minutes. In the future, we will provide a prebuild image.
+
+#### Download OpenStreetMap maps
+
+Download the area(s) you would like to import from 
+[GeoFabrik](https://download.geofabrik.de) into `data/pbf`, for example:
+
+```bash
+cd /opt/openbikesensor/
+wget https://download.geofabrik.de/europe/germany/schleswig-holstein-latest.osm.pbf -P data/pbf
+```
+
+*Hint*: Start with a small region/city, since the import can take some hours for huge areas.
+
+#### Prepare database
+
+Run the following scripts to prepare the database:
 
 ```bash
 docker-compose run --rm portal tools/reset_database.py
@@ -87,15 +219,9 @@ docker-compose run --rm portal tools/prepare_sql_tiles.py
 
 For more details, see [README.md](../README.md) under "Prepare database".
 
-### Import OpenStreetMap data
+#### Import OpenStreetMap data
 
-First of all, download the area(s) you would like to import from [GeoFabrik](https://download.geofabrik.de) into `data/pbf`, for example:
-
-```bash
-wget https://download.geofabrik.de/europe/germany/schleswig-holstein-latest.osm.pbf -P data/pbf
-```
-
-Afterwards,run the following script:
+Run the following script, to import the OSM data:
 
 ```
 docker-compose run --rm portal tools/osm2pgsql.sh
@@ -103,62 +229,94 @@ docker-compose run --rm portal tools/osm2pgsql.sh
 
 For more details. see [README.md](../README.md) under "Import OpenStreetMap data".
 
-### Configure portal
+
+#### Configure portal
+
+The portal can be configured via env-vars or via the `config.py`. 
+It's important to know, that the `config.py` overrides the env-vars.
+All env-vars start with `OBS_` and will be handled by the application without the prefix.
+For example, the env-var `OBS_SECRET` will be same as `SECRET` within the `config.py` and will be `SECRET` within the application.
 
 ```bash
-cp source/api/config.py.example config/config.py
+cd /opt/openbikesensor/
+nano .env
 ```
 
-Then edit `config/config.py` to your heart's content (and matching the
-configuration of the keycloak). Do not forget to generate a secure secret
-string.
+Configure:
 
-Also set `PROXIES_COUNT = 1` in your config, even if that option is not
-included in the example file. Read the 
-[Sanic docs](https://sanicframework.org/en/guide/advanced/proxy-headers.html) 
-for why this needs to be done. If your reverse proxy supports it, you can also
-use a forwarded secret to secure your proxy target from spoofing. This is not
-required if your application server does not listen on a public interface, but
-it is recommended anyway, if possible.
+* `OBS_PORTAL_URI`:
+    * The subdomain of your portal
+* `OBS_SECRET`:
+    * Generate a UUID with `uuidgen` and use it as the secret
+* `OBS_POSTGRES_URL`:
+    * Should be configured already
+* `OBS_KEYCLOAK_URL`:
+    * You can find it as the `issuer`, when you click on *OpenID Endpoint Configuration* in the realm obs
+* `OBS_KEYCLOAK_CLIENT_SECRET`:
+    * Should be configured already
+* `OBS: DEDICATED_WORKER`
+    * Should be set to `"True"`, since it the workder will be started with the portal
+* `OBS_DATA_DIR`
+    * The data dir must be the same for the portal and the worer. 
+      The default is `/data` within the containers
+* `OBS_PROXIES_COUNT`:
+    * This sets `PROXIES_COUNT = 1` in your config
+    * Read the [Sanic docs](https://sanicframework.org/en/guide/advanced/proxy-headers.html) 
+      for why this needs to be done. If your reverse proxy supports it, you can also
+      use a forwarded secret to secure your proxy target from spoofing. This is not
+      required if your application server does not listen on a public interface, but
+      it is recommended anyway, if possible.
 
-### Build container and run them
+Have a look into the `config.py`, which other variables may affect you.
+
+#### Start the portal
 
 ```bash
-docker-compose build portal
+cd /opt/openbikesensor/
 docker-compose up -d portal
 ```
 
-## Running a dedicated worker
+This also starts a dedicated worker container to handle the tracks.
 
-Extend your `docker-compose.yaml` with the following service:
+#### Test the portal
 
-```yaml
-  worker:
-    image: openbikesensor-portal
-    build:
-      context: ./source
-    volumes:
-      - ./data/api-data:/data
-      - ./config/config.py:/opt/obs/api/config.py
-    restart: on-failure
-    links:
-      - postgres
-    networks:
-      - backend
-    command:
-      - python
-      - tools/process_track.py
+* Open: https://obs.example.com/
+* Login with the user
+* Upload a track
+
+You should see smth. like:
+
+> worker_1    | INFO: Track 10b9ulou imported.
+
+#### Configre the map position
+
+Open the tab *Map** an zoom to the desired position. The URL contains the corresponding GPS position,
+for example:
+
+> 14/53.86449349032097/10.696108517499198
+
+Configure the map position in the `config.py` and restart the portal:
+
+```
+cd /opt/openbikesensor/
+nano config/config.py 
+
+docker-compose restart portal
 ```
 
-Change the `DEDICATED_WORKER` option in your config to `True` to stop
-processing tracks in the portal container. Then restart the `portal` service
-and start the `worker` service.
+The tab *Map* should be the selected map section now.
+
+**Hint**: Probably it's required to disable the browser cache to see the change.
+
+#### Verify osm2pgsql
+
+If you zoom in the tab *Map* at the imported region/city, you should see dark grey lines on the streets.
 
 ## Miscellaneous
 
 ### Logs
 
-To read logs, run
+To read the logs, run
 
 ```bash
 docker-compose logs -f
@@ -167,7 +325,6 @@ docker-compose logs -f
 If something went wrong, you can reconfigure your config files and rerun:
 
 ```bash
-docker-compose build
 docker-compose up -d
 ```
 
