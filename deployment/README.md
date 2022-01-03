@@ -13,6 +13,12 @@ corresponding docker containers.
 This guide requires a Linux-system, where `docker` and `docker-compose` are installed.
 Ensure, that your system is up to date.
 
+> TODO
+
+```bash
+apt install docker.io docker-compose pwgen
+```
+
 ## Before Getting Started
 
 The example configurations assume two domains, which points to the
@@ -27,7 +33,11 @@ First of all, login into your system via SSH.
 ### Create working directory
 
 Create a folder somewhere in your system, in this guide we use 
-`/opt/openbikesensor`.
+`/opt/openbikesensor`:
+
+```bash
+mkdir /opt/openbikesensor
+```
 
 ### Clone the repository
 
@@ -74,16 +84,19 @@ Configure your email in the `config/traefik.toml`. This email is used by
 #### Start Traefik
 
 ```bash
+cd /opt/openbikesensor/
 docker-compose up -d traefik
 docker-compose logs -f traefik
 ```
+
+> traefik_1            | time="2022-01-03T13:02:36Z" level=info msg="Configuration loaded from file: /traefik.toml"
 
 ### Generate passwords
 
 Generate three passords, for example with `pwgen`:
 
 ```bash
-pwgen -2 -n 20
+pwgen -n 20
 ```
 
 They will be uses in the next steps.
@@ -100,18 +113,32 @@ nano .env
 Configure:
 * `OBS_KEYCLOAK_URI`:
     * The subdomain of your keycloak
-* `OBS_KEYCLOAK_POSTGRES_PASSWORD` and `OBS_KEYCLOAK_ADMIN_PASSWORD`:
+* `OBS_KEYCLOAK_POSTGRES_PASSWORD`
     * One of the generated passwords for the KeyCloak-postgres
+* `OBS_KEYCLOAK_ADMIN_PASSWORD`:
+    * One of the generated passwords for the KeyCloak-admin
 * `OBS_KEYCLOAK_PORTAL_REDIRECT_URI`:
     * The Redirect URI, e.g. the subdomain of your portal (ensure, it ends with `/*`)
 
+#### Start KeyCloak
+
+```bash
+docker-compose up -d keycloak
+docker-compose logs -f keycloak
+```
+
 Wait until postgres and keycloak are started:
 
-* https://login.dennisboldt.de/
+> keycloak_1           | 13:08:55,558 INFO  [org.jboss.as] (Controller Boot Thread) WFLYSRV0051: Admin console listening on http://127.0.0.1:9990
+
+Open:
+
+* https://login.example.com/
+* Test login to the admin console with your admin account
 
 #### Configure Realm and Client
 
-Login into your KeyCloak:
+Jump into the KeyCloak container:
 
 ```bash
 docker-compose exec keycloak /bin/bash
@@ -135,11 +162,9 @@ CID=$(/opt/jboss/keycloak/bin/kcadm.sh create clients -r $OBS_KEYCLOAK_REALM -s 
 
 # Get the secret of the client
 /opt/jboss/keycloak/bin/kcadm.sh get clients/$CID/client-secret -r $OBS_KEYCLOAK_REALM
-
-exit
 ```
 
-Now, configure the client secret:
+Exit the container with `exit`. Configure the client secret:
 
 ```bash
 cd /opt/openbikesensor/
@@ -153,8 +178,8 @@ Configure:
 #### Create a user
 
 * Login into your Keycloak with the admin user and select the realm obs
-* Create a user with username and email (*Hint*: email is required by the portal)
-* Configure a password as well
+* Create a user with username and email for the realm `obs` (*Hint*: email is required by the portal)
+* Configure a password in the tab `Credentials` as well
 
 ### Portal
 
@@ -166,7 +191,6 @@ nano .env
 ```
 
 Configure:
-
 * `OBS_POSTGRES_HOST`:
     * The should be the postgres-container, e.g. `postgres`
 * `OBS_POSTGRES_USER`:
@@ -184,8 +208,12 @@ Configure:
 ```
 cd /opt/openbikesensor/
 docker-compose up -d postgres
-docker-compose logs -f
+docker-compose logs -f postgres
 ```
+Wait until started:
+
+> postgres_1           | PostgreSQL init process complete; ready for start up.
+
 
 #### Build the portal image
 
@@ -274,7 +302,10 @@ Have a look into the `config.py`, which other variables may affect you.
 ```bash
 cd /opt/openbikesensor/
 docker-compose up -d portal
+docker-compose logs -f portal worker
 ```
+
+> portal_1             | [2022-01-03 13:37:48 +0000] [1] [INFO] Goin' Fast @ http://0.0.0.0:3000
 
 This also starts a dedicated worker container to handle the tracks.
 
@@ -282,11 +313,13 @@ This also starts a dedicated worker container to handle the tracks.
 
 * Open: https://obs.example.com/
 * Login with the user
-* Upload a track
+* Upload a track via My Tracks
 
 You should see smth. like:
 
-> worker_1    | INFO: Track 10b9ulou imported.
+> worker_1             | INFO: Track uuqvcvlm imported.
+
+When you click on *My Tracks*, you should see it on a map.
 
 #### Configre the map position
 
@@ -295,7 +328,7 @@ for example:
 
 > 14/53.86449349032097/10.696108517499198
 
-Configure the map position in the `config.py` and restart the portal:
+Configure the map position in the `config.py` and restart the portal, by setting `mapHome` in the variable `FRONTEND_CONFIG`:
 
 ```
 cd /opt/openbikesensor/
@@ -304,9 +337,10 @@ nano config/config.py
 docker-compose restart portal
 ```
 
-The tab *Map* should be the selected map section now.
+**Hint**: Maybe it's required to disable the browser cache to see the change.
 
-**Hint**: Probably it's required to disable the browser cache to see the change.
+The tab *Map* should be the selected map section now.
+When you uploaded some tracks, you map should show a colors overlay on the streets.
 
 #### Verify osm2pgsql
 
