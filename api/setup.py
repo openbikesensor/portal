@@ -18,9 +18,12 @@ setup(
         "sanic-cors~=2.0.1",
         "python-slugify~=5.0.2",
         "motor~=2.5.1",
+        "pyyaml<6",
         "sqlparse~=0.4.2",
         "openmaptiles-tools",  # install from git
         "pyshp~=2.2.0",
+        "sqlalchemy[asyncio]~=1.4.25",
+        "asyncpg~=0.24.0",
     ],
     entry_points={
         "console_scripts": [
