@@ -10,7 +10,7 @@ setup(
     packages=find_packages(),
     package_data={},
     install_requires=[
-        "sanic~=21.9.1",
+        "sanic>=21.9.1,<21.13.0",
         "oic>=1.3.0, <2",
         "sanic-session~=0.8.0",
         "sanicargs~=2.1.0",
