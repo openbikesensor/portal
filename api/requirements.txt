@@ -10,3 +10,4 @@ pyyaml<6
 sqlparse~=0.4.2
 sqlalchemy[asyncio]~=1.4.25
 asyncpg~=0.24.0
+pyshp~=2.1.3

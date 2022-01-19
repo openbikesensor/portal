@@ -254,6 +254,7 @@ from .routes import (
     tracks,
     users,
     mapdetails,
+    exports,
 )
 
 from .routes import frontend

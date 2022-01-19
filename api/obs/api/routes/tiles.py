@@ -66,3 +66,4 @@ async def tiles(req, zoom: int, x: int, y: str):
         tile = decompress(tile)
 
     return raw(tile, content_type="application/x-protobuf", headers=headers)
+
