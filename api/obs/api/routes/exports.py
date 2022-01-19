@@ -1,14 +1,15 @@
 import json
-from gzip import decompress
 from enum import Enum
 from contextlib import contextmanager
+import zipfile
+import io
 from sqlite3 import connect
+
+import shapefile
 from obs.api.db import OvertakingEvent
+from sqlalchemy import select, func
 from sanic.response import raw
 from sanic.exceptions import InvalidUsage
-
-from sqlalchemy import select, text, func
-from sqlalchemy.sql.expression import table, column
 
 from obs.api.app import app, json as json_response
 
@@ -20,8 +21,8 @@ class ExportFormat(str, Enum):
     GEOJSON = "geojson"
 
 
-def parse_bounding_box(s):
-    left, bottom, right, top = map(float, s.split(","))
+def parse_bounding_box(input_string):
+    left, bottom, right, top = map(float, input_string.split(","))
     return func.ST_SetSRID(
         func.ST_MakeBox2D(
             func.ST_Point(left, bottom),
@@ -31,10 +32,15 @@ def parse_bounding_box(s):
     )
 
 
+PROJECTION_4326 = (
+    'GEOGCS["WGS 84",DATUM["WGS_1984",SPHEROID["WGS 84",6378137,298.257223563,AUTHORITY["EPSG","7030"]],'
+    'AUTHORITY["EPSG","6326"]],PRIMEM["Greenwich",0,AUTHORITY["EPSG","8901"]],'
+    'UNIT["degree",0.0174532925199433,AUTHORITY["EPSG","9122"]],AUTHORITY["EPSG","4326"]]'
+)
+
+
 @contextmanager
 def shapefile_zip():
-    import io, shapefile
-
     zip_buffer = io.BytesIO()
     shp, shx, dbf = (io.BytesIO() for _ in range(3))
     writer = shapefile.Writer(
@@ -46,20 +52,12 @@ def shapefile_zip():
     writer.balance()
     writer.close()
 
-    PRJ = (
-        'GEOGCS["WGS 84",DATUM["WGS_1984",SPHEROID["WGS 84",6378137,298.257223563,AUTHORITY["EPSG","7030"]],'
-        'AUTHORITY["EPSG","6326"]],PRIMEM["Greenwich",0,AUTHORITY["EPSG","8901"]],'
-        'UNIT["degree",0.0174532925199433,AUTHORITY["EPSG","9122"]],AUTHORITY["EPSG","4326"]]'
-    )
-
-    import zipfile
-
-    zf = zipfile.ZipFile(zip_buffer, "a", zipfile.ZIP_DEFLATED, False)
-    zf.writestr("events.shp", shp.getbuffer())
-    zf.writestr("events.shx", shx.getbuffer())
-    zf.writestr("events.dbf", dbf.getbuffer())
-    zf.writestr("events.prj", PRJ)
-    zf.close()
+    zip_file = zipfile.ZipFile(zip_buffer, "a", zipfile.ZIP_DEFLATED, False)
+    zip_file.writestr("events.shp", shp.getbuffer())
+    zip_file.writestr("events.shx", shx.getbuffer())
+    zip_file.writestr("events.dbf", dbf.getbuffer())
+    zip_file.writestr("events.prj", PROJECTION_4326)
+    zip_file.close()
 
 
 @app.get(r"/export/events")
@@ -96,7 +94,7 @@ async def export_events(req):
 
         return raw(zip_buffer.getbuffer())
 
-    elif fmt == ExportFormat.GEOJSON:
+    if fmt == ExportFormat.GEOJSON:
         features = []
         async for event in events:
             features.append(
@@ -118,5 +116,4 @@ async def export_events(req):
         geojson = {"type": "FeatureCollection", "features": features}
         return json_response(geojson)
 
-    else:
-        raise InvalidUsage("unknown export format")
+    raise InvalidUsage("unknown export format")
