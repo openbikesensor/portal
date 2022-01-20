@@ -21,7 +21,7 @@ RUN npm run build
 # Build the API and add the built frontend to it
 #############################################
 
-FROM python:3.9.7-bullseye
+FROM python:3.10.2-bullseye
 
 WORKDIR /opt/obs/api
 
