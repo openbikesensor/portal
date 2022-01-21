@@ -8,6 +8,6 @@ motor~=2.5.1
 pyyaml<6
 -e git+https://github.com/openmaptiles/openmaptiles-tools#egg=openmaptiles-tools
 sqlparse~=0.4.2
-sqlalchemy[asyncio]~=1.4.25
+sqlalchemy[asyncio]~=1.4.31
 asyncpg~=0.24.0
 pyshp~=2.1.3
