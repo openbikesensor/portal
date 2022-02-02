@@ -19,7 +19,7 @@ setup(
         "motor~=2.5.1",
         "sqlparse~=0.4.2",
         "openmaptiles-tools",  # install from git
-        "pyshp~=2.1.3",
+        "pyshp>=2.1.3,<2.3.0",
     ],
     entry_points={
         "console_scripts": [
