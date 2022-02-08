@@ -121,7 +121,7 @@ async def generate_sql(build_dir):
 
 async def import_sql(sql_snippets):
     statements = sum(map(sqlparse.split, sql_snippets), [])
-    async with connect_db(app.config.POSTGRES_URL):
+    async with connect_db(app.config.POSTGRES_URL, app.config.POSTGRES_POOL_SIZE, app.config.POSTGRES_MAX_OVERFLOW):
         for i, statement in enumerate(statements):
             clean_statement = sqlparse.format(
                 statement,

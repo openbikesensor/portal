@@ -65,10 +65,10 @@ def random_string(length):
 
 
 @asynccontextmanager
-async def connect_db(url):
+async def connect_db(url, pool_size=10, max_overflow=20):
     global engine, sessionmaker
 
-    engine = create_async_engine(url, echo=False)
+    engine = create_async_engine(url, echo=False, pool_size=pool_size, max_overflow=max_overflow)
     sessionmaker = SessionMaker(engine, class_=AsyncSession, expire_on_commit=False)
 
     yield engine
