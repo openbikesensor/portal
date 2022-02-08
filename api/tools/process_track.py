@@ -35,7 +35,7 @@ async def main():
 
     args = parser.parse_args()
 
-    async with connect_db(app.config.POSTGRES_URL):
+    async with connect_db(app.config.POSTGRES_URL, app.config.POSTGRES_POOL_SIZE, app.config.POSTGRES_MAX_OVERFLOW):
         if args.tracks:
             await process_tracks(args.tracks)
         else:

@@ -12,6 +12,8 @@ SECRET = "!!!<<<CHANGEME>>>!!!"
 
 # Connection to the database
 POSTGRES_URL = "postgresql+asyncpg://user:pass@host/dbname"
+POSTGRES_POOL_SIZE = 20
+POSTGRES_MAX_OVERFLOW = 2 * POSTGRES_POOL_SIZE
 
 # URL to the keycloak realm, as reachable by the API service. This is not
 # necessarily its publicly reachable URL, keycloak advertises that iself.
