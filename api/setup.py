@@ -10,16 +10,16 @@ setup(
     packages=find_packages(),
     package_data={},
     install_requires=[
-        "sanic~=21.9.1",
+        "sanic~=21.9.3",
         "oic>=1.3.0, <2",
         "sanic-session~=0.8.0",
         "sanicargs~=2.1.0",
-        "sanic-cors~=1.0.1",
+        "sanic-cors~=2.0.1",
         "python-slugify~=5.0.2",
         "motor~=2.5.1",
         "sqlparse~=0.4.2",
         "openmaptiles-tools",  # install from git
-        "pyshp~=2.1.3",
+        "pyshp~=2.2.0",
     ],
     entry_points={
         "console_scripts": [
