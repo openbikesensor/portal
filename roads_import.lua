@@ -6,7 +6,7 @@
 -- 2. Convert and filter to your needs
 -- 3. Run the import like this:
 --
---    osm2pgsql --create --hstore --style api/roads_import.lua -O flex \
+--    osm2pgsql --create --hstore --style roads_import.lua -O flex \
 --      --proj 32629 -H localhost -d obs -U obs -W \
 --      YOUR_FILE.o5m
 

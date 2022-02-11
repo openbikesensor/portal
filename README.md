@@ -177,7 +177,7 @@ to import the whole region you are serving.
 * Import each file like this:
 
     ```bash
-    osm2pgsql --create --hstore --style api/roads_import.lua -O flex \
+    osm2pgsql --create --hstore --style roads_import.lua -O flex \
       -H localhost -d obs -U obs \
       path/to/downloaded/myarea-latest.osm.pbf 
     ```
@@ -200,7 +200,7 @@ bit different each time, including when first importing, and the disk space
 required is much higher. 
 
 Refer to the documentation of `osm2pgsql` for assistance. We are using "flex
-mode", the provided script `api/roads_import.lua` describes the transformations
+mode", the provided script `roads_import.lua` describes the transformations
 and extractions to perform on the original data.
 
 ## Troubleshooting
