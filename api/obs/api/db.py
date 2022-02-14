@@ -41,12 +41,12 @@ Base = declarative_base()
 
 
 engine = None
-sessionmaker = None
+sessionmaker: SessionMaker
 
 
 @asynccontextmanager
 async def make_session():
-    async with sessionmaker() as session:
+    async with sessionmaker(autoflush=True) as session:
         yield session
 
 
