@@ -97,8 +97,15 @@ Now navigate to http://localhost:3003/ and follow these steps:
 - In the Tab *Settings*, edit the new client's *Access Type* to *confidential*
   and enter as *Valid Redirect URIs*: `http://localhost:3000/login/redirect`,
   then *Save*
-- Under *Credentials*, copy the *Secret* and paste it into `api/config.dev.py`
-  as `KEYCLOAK_CLIENT_SECRET`. Please do not commit this change to git.
+- Under *Credentials*, copy the *Secret*. Create a file at `api/config.overrides.py` with the secret in it:
+  
+  ```python
+  KEYCLOAK_CLIENT_SECRET="your secret here"
+  ```
+  
+  You can use this file in development mode to change settings without editing
+  the git-controlled default file at `api/config.dev.py`. Options in this file
+  take precendence.
 - In the sidebar, navigate to *Manage* &rarr; *Users*, and click *Add user* on the top right.
 - Give the user a name (e.g. `test`), leave the rest as-is.
 - Under the tab *Credentials*, choose a new password, and make it
