@@ -59,6 +59,8 @@ const App = connect((state) => ({login: state.login}))(function App({login}) {
   const config = useConfig()
   const apiVersion = useObservable(() => from(api.get('/info')).pipe(pluck('version')))
 
+  const hasMap = Boolean(config?.obsMapSource)
+
   React.useEffect(() => {
     api.loadUser()
   }, [])
@@ -72,7 +74,7 @@ const App = connect((state) => ({login: state.login}))(function App({login}) {
             OpenBikeSensor
           </Link>
 
-          {config?.obsMapSource && (
+          {hasMap && (
             <Link component={MenuItemForLink} to="/map" as="a">
               Map
             </Link>
@@ -110,9 +112,9 @@ const App = connect((state) => ({login: state.login}))(function App({login}) {
         <Route path="/" exact>
           <HomePage />
         </Route>
-        <Route path="/map" exact>
+        {hasMap && <Route path="/map" exact>
           <MapPage />
-        </Route>
+        </Route>}
         <Route path="/tracks" exact>
           <TracksPage />
         </Route>

@@ -25,12 +25,26 @@ from obs.face.filter import (
     RequiredFieldsFilter,
 )
 
-from obs.face.osm import DataSource, DatabaseTileSource
+from obs.face.osm import DataSource, DatabaseTileSource, OverpassTileSource
 
 from obs.api.db import OvertakingEvent, Track, make_session
 from obs.api.app import app
 
 log = logging.getLogger(__name__)
+
+
+def get_data_source():
+    """
+    Creates a data source based on the configuration of the portal. In *lean*
+    mode, the OverpassTileSource is used to fetch data on demand. In normal
+    mode, the roads database is used.
+    """
+    if app.config.LEAN_MODE:
+        tile_source = OverpassTileSource(cache_dir=app.config.OBS_FACE_CACHE_DIR)
+    else:
+        tile_source = DatabaseTileSource()
+
+    return DataSource(tile_source)
 
 
 async def process_tracks_loop(delay):
@@ -50,9 +64,7 @@ async def process_tracks_loop(delay):
                     await asyncio.sleep(delay)
                     continue
 
-                tile_source = DatabaseTileSource()
-                data_source = DataSource(tile_source)
-
+                data_source = get_data_source()
                 await process_track(session, track, data_source)
         except BaseException:
             log.exception("Failed to process track. Will continue.")
@@ -66,8 +78,7 @@ async def process_tracks(tracks):
 
     :param tracks: A list of strings which
     """
-    tile_source = DatabaseTileSource()
-    data_source = DataSource(tile_source)
+    data_source = get_data_source()
 
     async with make_session() as session:
         for track_id_or_slug in tracks:
