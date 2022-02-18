@@ -10,7 +10,7 @@ from sanic.exceptions import InvalidUsage
 
 from obs.api.app import api
 from obs.api.db import Road, OvertakingEvent, Track
-from obs.api.utils import round_to, get_single_arg
+from obs.api.utils import round_to
 
 round_distance = partial(round_to, multiples=0.001)
 round_speed = partial(round_to, multiples=0.1)
@@ -28,9 +28,9 @@ def get_bearing(a, b):
 
 @api.route("/mapdetails/road", methods=["GET"])
 async def mapdetails_road(req):
-    longitude = get_single_arg(req, "longitude", convert=float)
-    latitude = get_single_arg(req, "latitude", convert=float)
-    radius = get_single_arg(req, "radius", default=100, convert=float)
+    longitude = req.ctx.get_single_arg("longitude", convert=float)
+    latitude = req.ctx.get_single_arg("latitude", convert=float)
+    radius = req.ctx.get_single_arg("radius", default=100, convert=float)
 
     if not (1 <= radius <= 1000):
         raise InvalidUsage("`radius` parameter must be between 1 and 1000")
