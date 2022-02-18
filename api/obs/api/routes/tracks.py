@@ -264,8 +264,7 @@ async def put_track(req, slug: str):
 
 
 @api.get("/tracks/<slug:str>/comments")
-async def get_track_comments(req):
-    slug = req.ctx.get_single_arg("slug")
+async def get_track_comments(req, slug: str):
     limit = req.ctx.get_single_arg("limit", default=20, convert=int)
     offset = req.ctx.get_single_arg("offset", default=0, convert=int)
 
