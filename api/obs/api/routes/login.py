@@ -18,6 +18,8 @@ log = logging.getLogger(__name__)
 
 client = Client(client_authn_method=CLIENT_AUTHN_METHOD)
 
+# Do not show verbose library output, even when the appliaction is in debug mode
+logging.getLogger('oic').setLevel(logging.INFO)
 
 @auth.before_server_start
 async def connect_auth_client(app, loop):
