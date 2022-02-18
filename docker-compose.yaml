@@ -28,6 +28,7 @@ services:
       - ./api/scripts/obs:/opt/obs/scripts/obs
       - ./api/tools:/opt/obs/api/tools
       - ./api/config.dev.py:/opt/obs/api/config.py
+      - ./api/config.overrides.py:/opt/obs/api/config.overrides.py
       - ./frontend/build:/opt/obs/frontend/build
       - ./tile-generator:/opt/obs/tile-generator
       - ./local/api-data:/data
@@ -51,6 +52,7 @@ services:
       - ./api/scripts/obs:/opt/obs/scripts/obs
       - ./api/tools:/opt/obs/api/tools
       - ./api/config.dev.py:/opt/obs/api/config.py
+      - ./api/config.overrides.py:/opt/obs/api/config.overrides.py
       - ./local/api-data:/data
     depends_on:
       - postgres

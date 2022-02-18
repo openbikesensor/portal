@@ -43,3 +43,5 @@ local/
 # both, because then developers will only update one of them and they'll
 # contradict. For now, npm shall be the canonical default (compare README.md).
 yarn.lock
+
+config.overrides.py

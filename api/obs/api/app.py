@@ -31,6 +31,10 @@ app = Sanic("OpenBikeSensor Portal API", load_env="OBS_", log_config={})
 if isfile("./config.py"):
     app.update_config("./config.py")
 
+# For developers to override the config without committing it
+if isfile("./config.overrides.py"):
+    app.update_config("./config.overrides.py")
+
 c = app.config
 
 api = Blueprint("api", url_prefix="/api")
