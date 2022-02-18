@@ -11,7 +11,6 @@ from obs.api.app import api, require_auth, read_api_key, json
 
 from sanic.response import file_stream, empty
 from sanic.exceptions import InvalidUsage, NotFound, Forbidden
-from sanicargs import parse_parameters
 
 log = logging.getLogger(__name__)
 
@@ -61,8 +60,11 @@ async def _return_tracks(req, extend_query, limit, offset):
 
 
 @api.get("/tracks")
-@parse_parameters
-async def get_tracks(req, limit: int = 20, offset: int = 0, author: str = None):
+async def get_tracks(req):
+    limit = req.ctx.get_single_arg("limit", default=20, convert=int)
+    offset = req.ctx.get_single_arg("offset", default=0, convert=int)
+    author = req.ctx.get_single_arg("author", default=None, convert=str)
+
     def extend_query(q):
         q = q.where(Track.public)
 
@@ -76,8 +78,10 @@ async def get_tracks(req, limit: int = 20, offset: int = 0, author: str = None):
 
 @api.get("/tracks/feed")
 @require_auth
-@parse_parameters
-async def get_feed(req, limit: int = 20, offset: int = 0):
+async def get_feed(req):
+    limit = req.ctx.get_single_arg("limit", default=20, convert=int)
+    offset = req.ctx.get_single_arg("offset", default=0, convert=int)
+
     def extend_query(q):
         return q.where(Track.author_id == req.ctx.user.id)
 
@@ -260,8 +264,11 @@ async def put_track(req, slug: str):
 
 
 @api.get("/tracks/<slug:str>/comments")
-@parse_parameters
-async def get_track_comments(req, slug: str, limit: int = 20, offset: int = 0):
+async def get_track_comments(req):
+    slug = req.ctx.get_single_arg("slug")
+    limit = req.ctx.get_single_arg("limit", default=20, convert=int)
+    offset = req.ctx.get_single_arg("offset", default=0, convert=int)
+
     track = await _load_track(req, slug)
 
     comment_count = await req.ctx.db.scalar(

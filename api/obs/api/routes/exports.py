@@ -12,7 +12,6 @@ from sanic.response import raw
 from sanic.exceptions import InvalidUsage
 
 from obs.api.app import app, json as json_response
-from obs.api.utils import get_single_arg
 
 
 class ExportFormat(str, Enum):
@@ -61,10 +60,10 @@ def shapefile_zip():
 
 @app.get(r"/export/events")
 async def export_events(req):
-    bbox = get_single_arg(
-        req, "bbox", default="-180,-90,180,90", convert=parse_bounding_box
+    bbox = req.ctx.get_single_arg(
+        "bbox", default="-180,-90,180,90", convert=parse_bounding_box
     )
-    fmt = get_single_arg(req, "fmt", convert=ExportFormat)
+    fmt = req.ctx.get_single_arg("fmt", convert=ExportFormat)
 
     events = await req.ctx.db.stream_scalars(
         select(OvertakingEvent).where(OvertakingEvent.geometry.bool_op("&&")(bbox))

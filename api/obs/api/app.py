@@ -22,6 +22,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import sessionmaker
 
 from obs.api.db import User, make_session, connect_db
+from obs.api.utils import get_single_arg
 
 log = logging.getLogger(__name__)
 
@@ -126,6 +127,11 @@ def remove_right(l, r):
     if l.endswith(r):
         return l[: -len(r)]
     return l
+
+
+@app.middleware("request")
+async def inject_arg_getter(req):
+    req.ctx.get_single_arg = partial(get_single_arg, req)
 
 
 @app.middleware("request")

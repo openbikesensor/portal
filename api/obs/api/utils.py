@@ -1,3 +1,5 @@
+from datetime import datetime
+import dateutil.parser
 from sanic.exceptions import InvalidUsage
 
 RAISE = object()
@@ -12,7 +14,10 @@ def get_single_arg(req, name, default=RAISE, convert=None):
 
         value = default
 
-    if convert is not None:
+    if convert is not None and value is not None:
+        if convert is datetime or convert in ("date", "datetime"):
+            convert = lambda s: dateutil.parser.parse(s)
+
         try:
             value = convert(value)
         except (ValueError, TypeError) as e:

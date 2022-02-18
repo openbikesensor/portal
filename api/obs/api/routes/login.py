@@ -14,14 +14,14 @@ from obs.api.app import auth
 from obs.api.db import User
 
 from sanic.response import json, redirect
-from sanicargs import parse_parameters
 
 log = logging.getLogger(__name__)
 
 client = Client(client_authn_method=CLIENT_AUTHN_METHOD)
 
 # Do not show verbose library output, even when the appliaction is in debug mode
-logging.getLogger('oic').setLevel(logging.INFO)
+logging.getLogger("oic").setLevel(logging.INFO)
+
 
 @auth.before_server_start
 async def connect_auth_client(app, loop):
@@ -43,12 +43,13 @@ async def connect_auth_client(app, loop):
 
 
 @auth.route("/login")
-@parse_parameters
-async def login(req, next: str = None):
+async def login(req):
+    next_url = req.ctx.get_single_arg("next", default=None)
+
     session = req.ctx.session
     session["state"] = rndstr()
     session["nonce"] = rndstr()
-    session["next"] = next
+    session["next"] = next_url
     args = {
         "client_id": client.client_id,
         "response_type": "code",

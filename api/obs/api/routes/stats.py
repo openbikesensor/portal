@@ -7,7 +7,6 @@ from functools import reduce
 from sqlalchemy import select, func
 
 from sanic.response import json
-from sanicargs import parse_parameters
 
 from obs.api.app import api
 from obs.api.db import Track, OvertakingEvent, User
@@ -28,8 +27,11 @@ MINUMUM_RECORDING_DATE = datetime(2010, 1, 1)
 
 
 @api.route("/stats")
-@parse_parameters
-async def stats(req, user: str = None, start: datetime = None, end: datetime = None):
+async def stats(req):
+    user = req.ctx.get_single_arg("user", default=None)
+    start = req.ctx.get_single_arg("start", default=None, convert=datetime)
+    end = req.ctx.get_single_arg("end", default=None, convert=datetime)
+
     conditions = [
         Track.recorded_at != None,
         Track.recorded_at > MINUMUM_RECORDING_DATE,

@@ -14,7 +14,6 @@ setup(
         "sanic~=21.9.3",
         "oic>=1.3.0, <2",
         "sanic-session~=0.8.0",
-        "sanicargs~=2.1.0",
         "sanic-cors~=2.0.1",
         "python-slugify~=5.0.2",
         "motor~=2.5.1",
