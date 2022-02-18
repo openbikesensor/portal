@@ -10,32 +10,10 @@ from sanic.exceptions import InvalidUsage
 
 from obs.api.app import api
 from obs.api.db import Road, OvertakingEvent, Track
-
-
-from .stats import round_to
+from obs.api.utils import round_to, get_single_arg
 
 round_distance = partial(round_to, multiples=0.001)
 round_speed = partial(round_to, multiples=0.1)
-
-RAISE = object()
-
-
-def get_single_arg(req, name, default=RAISE, convert=None):
-    try:
-        value = req.args[name][0]
-    except LookupError as e:
-        if default is RAISE:
-            raise InvalidUsage(f"missing `{name}`") from e
-
-        value = default
-
-    if convert is not None:
-        try:
-            value = convert(value)
-        except (ValueError, TypeError) as e:
-            raise InvalidUsage(f"invalid `{name}`") from e
-
-    return value
 
 
 def get_bearing(a, b):

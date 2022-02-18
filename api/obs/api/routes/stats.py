@@ -11,6 +11,7 @@ from sanicargs import parse_parameters
 
 from obs.api.app import api
 from obs.api.db import Track, OvertakingEvent, User
+from obs.api.utils import round_to
 
 
 log = logging.getLogger(__name__)
@@ -24,12 +25,6 @@ TRACK_DURATION_ROUNDING = 120
 
 # Everything before this date is probably parsed incorrectly
 MINUMUM_RECORDING_DATE = datetime(2010, 1, 1)
-
-
-def round_to(value: float, multiples: float) -> float:
-    if value is None:
-        return None
-    return round(value / multiples) * multiples
 
 
 @api.route("/stats")

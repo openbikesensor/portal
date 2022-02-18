@@ -12,8 +12,7 @@ from sanic.response import raw
 from sanic.exceptions import InvalidUsage
 
 from obs.api.app import app, json as json_response
-
-from .mapdetails import get_single_arg
+from obs.api.utils import get_single_arg
 
 
 class ExportFormat(str, Enum):
