@@ -10,6 +10,7 @@ setup(
     packages=find_packages(),
     package_data={},
     install_requires=[
+        "coloredlogs~=15.0.1",
         "sanic~=21.9.3",
         "oic>=1.3.0, <2",
         "sanic-session~=0.8.0",

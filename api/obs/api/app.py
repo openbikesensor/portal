@@ -24,7 +24,7 @@ from obs.api.db import User, make_session, connect_db
 
 log = logging.getLogger(__name__)
 
-app = Sanic("OpenBikeSensor Portal API")
+app = Sanic("OpenBikeSensor Portal API", log_config={})
 app.update_config("./config.py")
 c = app.config
 
@@ -32,8 +32,8 @@ api = Blueprint("api", url_prefix="/api")
 auth = Blueprint("auth", url_prefix="")
 
 
-@api.exception(SanicException, BaseException)
-def _handle_sanic_errors(_request, exception):
+@app.exception(SanicException, BaseException)
+async def _handle_sanic_errors(_request, exception):
     log.error("Exception in handler: %s", exception, exc_info=True)
     return json_response(
         {

@@ -1,6 +1,7 @@
 HOST = "0.0.0.0"
 PORT = 3000
 DEBUG = True
+VERBOSE = False
 AUTO_RESTART = True
 SECRET = "!!!!!!!!!!!!CHANGE ME!!!!!!!!!!!!"
 POSTGRES_URL = "postgresql+asyncpg://obs:obs@postgres/obs"

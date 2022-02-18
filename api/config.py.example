@@ -4,6 +4,7 @@ PORT = 3000
 
 # Extended log output, but slower
 DEBUG = False
+VERBOSE = DEBUG
 AUTO_RESTART = DEBUG
 
 # Required to encrypt or sign sessions, cookies, tokens, etc.
