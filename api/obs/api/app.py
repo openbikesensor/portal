@@ -268,12 +268,13 @@ from .routes import (
     info,
     login,
     stats,
-    tiles,
     tracks,
     users,
-    mapdetails,
     exports,
 )
+
+if not app.config.LEAN_MODE:
+    from .routes import tiles, mapdetails
 
 from .routes import frontend
 
