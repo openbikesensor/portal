@@ -25,7 +25,7 @@ def get_single_arg(req, name, default=RAISE, convert=None):
         value = req.args[name][0]
     except LookupError as e:
         if default is RAISE:
-            raise InvalidUsage("missing `{name}`") from e
+            raise InvalidUsage(f"missing `{name}`") from e
 
         value = default
 
@@ -33,7 +33,7 @@ def get_single_arg(req, name, default=RAISE, convert=None):
         try:
             value = convert(value)
         except (ValueError, TypeError) as e:
-            raise InvalidUsage("invalid `{name}`") from e
+            raise InvalidUsage(f"invalid `{name}`") from e
 
     return value
 
