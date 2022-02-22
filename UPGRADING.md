@@ -5,6 +5,21 @@ Simple migrations, e.g. for adding schema changes, are not documented
 explicitly. Once we implement them, their usage will be described in the
 [README](./README.md).
 
+## 0.4.0
+
+* Rebuild your image, this may take longer than usual, as it will compile
+  `osm2pgsql` for you. Next time, it should be in your docker build cache and
+  be fast again.
+* Add new config flags: `VERBOSE`, `LEAN_MODE`, `POSTGRES_POOL_SIZE`,
+  `POSTGRES_MAX_OVERFLOW`. Check the example config for sane default values.
+* Re-run `tools/prepare_sql_tiles.py` again (see README)
+* It has been made easier to import OSM data, check
+  [deployment/README.md](deployment/README.md) for the sections "Download
+  OpenStreetMap maps" and "Import OpenStreetMap data". You can now download
+  multiple .pbf files and then import them at once, using the docker image
+  built with the `Dockerfile`. Alternatively, you can choose to enable [lean
+  mode](docs/lean-mode.md). You do not need to reimport data, but setting this
+  up now will make your life easier in the long run ;)
 
 ## v0.2 to v0.3 (MongoDB to PostgreSQL)
 
