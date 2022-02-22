@@ -11,6 +11,7 @@ import {useConfig} from 'config'
 import styles from './App.module.less'
 
 import {
+  ExportPage,
   HomePage,
   LoginRedirectPage,
   LogoutPage,
@@ -84,6 +85,10 @@ const App = connect((state) => ({login: state.login}))(function App({login}) {
             Tracks
           </Link>
 
+          <Link component={MenuItemForLink} to="/export" as="a">
+            Export
+          </Link>
+
           <Menu.Menu position="right">
             {login ? (
               <>
@@ -126,6 +131,9 @@ const App = connect((state) => ({login: state.login}))(function App({login}) {
         </Route>
         <Route path={`/tracks/:slug/edit`} exact>
           <TrackEditor />
+        </Route>
+        <Route path="/export" exact>
+          <ExportPage />
         </Route>
         <Route path="/redirect" exact>
           <LoginRedirectPage />

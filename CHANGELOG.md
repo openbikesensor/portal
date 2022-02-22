@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.4.1 (TBD)
+
+### Features
+
+* Add page for exporting data through web frontend
+
 ## 0.4.0
 
 ### Improvements
