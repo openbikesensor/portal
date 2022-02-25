@@ -106,6 +106,30 @@ def to_naive_utc(t):
     return t.astimezone(pytz.UTC).replace(tzinfo=None)
 
 
+async def export_gpx(track, filename, name):
+    import xml.etree.ElementTree as ET
+
+    gpx = ET.Element("gpx")
+    metadata = ET.SubElement(gpx, "metadata")
+    ET.SubElement(metadata, "name").text = name
+
+    trk = ET.SubElement(gpx, "trk")
+
+    ET.SubElement(trk, "name").text = name
+    ET.SubElement(trk, "type").text = "Cycling"
+
+    trkseg = ET.SubElement(trk, "trkseg")
+
+    for point in track:
+        trkpt = ET.SubElement(
+            trkseg, "trkpt", lat=str(point["latitude"]), lon=str(point["longitude"])
+        )
+        ET.SubElement(trkpt, "time").text = point["time"].isoformat()
+
+    et = ET.ElementTree(gpx)
+    et.write(filename, encoding="utf-8", xml_declaration=True)
+
+
 async def process_track(session, track, data_source):
     try:
         track.processing_status = "complete"
@@ -173,6 +197,8 @@ async def process_track(session, track, data_source):
             log.debug("Writing file %s", target)
             with open(target, "w") as fp:
                 json.dump(data, fp, indent=4)
+
+        await export_gpx(track_points, join(output_dir, "track.gpx"), track.slug)
 
         log.info("Clearing old track data...")
         await clear_track_data(session, track)
