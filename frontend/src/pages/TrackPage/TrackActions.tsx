@@ -2,11 +2,11 @@ import React from 'react'
 import {Link} from 'react-router-dom'
 import {Icon, Popup, Button, Dropdown} from 'semantic-ui-react'
 
-export default function TrackActions({slug, isAuthor, onDownloadOriginal}) {
+export default function TrackActions({slug, isAuthor, onDownload}) {
   return (
     <>
       {isAuthor ? (
-        <Dropdown text="Download" button>
+        <Dropdown text="Download" button upward>
           <Dropdown.Menu>
             <Popup
               content={
@@ -18,8 +18,9 @@ export default function TrackActions({slug, isAuthor, onDownloadOriginal}) {
                   </p>
                 </>
               }
-              trigger={<Dropdown.Item text="Original" onClick={onDownloadOriginal} />}
+                trigger={<Dropdown.Item text="Original" onClick={() => onDownload('original.csv')} />}
             />
+                  <Dropdown.Item text="Track (GPX)" onClick={() => onDownload('track.gpx')} />
           </Dropdown.Menu>
         </Dropdown>
       ) : (

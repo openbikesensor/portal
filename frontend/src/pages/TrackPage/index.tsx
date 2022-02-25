@@ -145,8 +145,8 @@ const TrackPage = connect((state) => ({login: state.login}))(function TrackPage(
     [slug, reloadComments]
   )
 
-  const onDownloadOriginal = React.useCallback(() => {
-    api.downloadFile(`/tracks/${slug}/download/original.csv`)
+  const onDownload= React.useCallback((filename) => {
+    api.downloadFile(`/tracks/${slug}/download/${filename}`)
   }, [slug])
 
   const isAuthor = login?.username === data?.track?.author?.username
@@ -191,7 +191,7 @@ const TrackPage = connect((state) => ({login: state.login}))(function TrackPage(
                 <>
                   <Header as="h1">{track.title || 'Unnamed track'}</Header>
                   <TrackDetails {...{track, isAuthor}} />
-                  <TrackActions {...{isAuthor, onDownloadOriginal, slug}} />
+                  <TrackActions {...{isAuthor, onDownload, slug}} />
                 </>
               )}
             </Segment>

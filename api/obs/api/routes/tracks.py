@@ -214,6 +214,24 @@ async def download_original_file(req, slug: str):
     )
 
 
+@api.get("/tracks/<slug:str>/download/track.gpx")
+async def download_track_gpx(req, slug: str):
+    track = await _load_track(req, slug)
+
+    if not track.is_visible_to(req.ctx.user):
+        raise Forbidden()
+
+    file_path = join(req.app.config.PROCESSING_OUTPUT_DIR, track.file_path, "track.gpx")
+    if not exists(file_path) or not isfile(file_path):
+        raise NotFound()
+
+    return await file_stream(
+        file_path,
+        mime_type="application/gpx+xml",
+        filename=f"{slug}.gpx",
+    )
+
+
 @api.put("/tracks/<slug:str>")
 @require_auth
 async def put_track(req, slug: str):
