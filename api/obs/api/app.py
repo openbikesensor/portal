@@ -101,6 +101,7 @@ def setup_cors(app):
         app,
         origins=origins,
         supports_credentials=True,
+        expose_headers={"Content-Disposition"},
     )
 
 

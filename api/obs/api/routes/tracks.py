@@ -207,7 +207,11 @@ async def download_original_file(req, slug: str):
     if not track.is_visible_to_private(req.ctx.user):
         raise Forbidden()
 
-    return await file_stream(track.get_original_file_path(req.app.config))
+    return await file_stream(
+        track.get_original_file_path(req.app.config),
+        mime_type="text/csv",
+        filename=f"{slug}.csv",
+    )
 
 
 @api.put("/tracks/<slug:str>")
