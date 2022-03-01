@@ -4,13 +4,21 @@
 
 # Extended log output, but slower
 DEBUG = False
+VERBOSE = DEBUG
 AUTO_RESTART = DEBUG
+
+# Turn on lean mode to simplify the setup. Lots of features will be
+# unavailable, but you will not need to manage OpenStreetMap data. Please make
+# sure to configure the OBS_FACE_CACHE_DIR correctly for lean mode.
+LEAN_MODE = False
 
 # Required to encrypt or sign sessions, cookies, tokens, etc.
 #SECRET = "!!!<<<CHANGEME>>>!!!"
 
 # Connection to the database
 #POSTGRES_URL = "postgresql+asyncpg://user:pass@host/dbname"
+#POSTGRES_POOL_SIZE = 20
+#POSTGRES_MAX_OVERFLOW = 2 * POSTGRES_POOL_SIZE
 
 # URL to the keycloak realm, as reachable by the API service. This is not
 # necessarily its publicly reachable URL, keycloak advertises that iself.
