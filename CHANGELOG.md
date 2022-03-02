@@ -5,6 +5,9 @@
 ### Features
 
 * Add page for exporting data through web frontend
+* Generate GPX track file when importing a track
+* Add GPX track export button on the track page (accessible for anybody who can
+  see the track)
 
 ## 0.4.0
 
