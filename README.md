@@ -218,6 +218,17 @@ If any step of the instructions does not work for you, please open an issue and
 describe the problem you're having, as it is important to us that onboarding is
 super easy :)
 
+### Connecting to the PostgreSQL database
+
+If you need to connect to your development PostgreSQL database, you should
+install `psql` locally. The port 5432 is already forwarded, so you can connect with:
+  
+```
+psql -h localhost -U obs -d obs
+```
+
+The password is `obs` as well.
+  
 ## License
   
     Copyright (C) 2020-2021 OpenBikeSensor Contributors

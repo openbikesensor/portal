@@ -402,3 +402,26 @@ exporting that with an exclusion pattern instead of an explicit list.
 
 And then, please test your backup and restore strategy before going live, or at
 least before you need it!
+
+
+### Connecting to the PostgreSQL database
+
+Here are the quick steps for connecting to your PostgreSQL database, should you
+need that:
+
+* Add the `gateway` network to your `postgres` service.
+* Add a port forwarding to your `postgres` service:
+  ```yaml
+     ports:
+       - 127.0.0.1:25432:5432
+  ```
+* Run `docker-compose up -d postgres` again
+* You can now connect from your server to the PostgreSQL service with:
+
+  ```
+  psql -h localhost -U obs -d obs -p 25432
+  ```
+  
+  You will need your database password for the connection.
+* If you do not want to install `psql` outside your container, you can use an
+  SSH tunnel from your local machine to your server and run `psql` locally.
