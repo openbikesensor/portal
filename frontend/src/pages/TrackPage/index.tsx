@@ -1,6 +1,6 @@
 import React from 'react'
 import {connect} from 'react-redux'
-import {List, Dropdown, Checkbox, Segment, Dimmer, Grid, Loader, Header, Message, Container} from 'semantic-ui-react'
+import {List, Dropdown, Checkbox, Segment, Dimmer, Grid, Loader, Header, Message, Confirm} from 'semantic-ui-react'
 import {useParams, useHistory} from 'react-router-dom'
 import {concat, combineLatest, of, from, Subject} from 'rxjs'
 import {pluck, distinctUntilChanged, map, switchMap, startWith, catchError} from 'rxjs/operators'
@@ -145,9 +145,24 @@ const TrackPage = connect((state) => ({login: state.login}))(function TrackPage(
     [slug, reloadComments]
   )
 
-  const onDownload= React.useCallback((filename) => {
-    api.downloadFile(`/tracks/${slug}/download/${filename}`)
-  }, [slug])
+  const [downloadError, setDownloadError] = React.useState(null)
+  const hideDownloadError = React.useCallback(() => setDownloadError(null), [setDownloadError])
+  const onDownload = React.useCallback(
+    async (filename) => {
+      try {
+        await api.downloadFile(`/tracks/${slug}/download/${filename}`)
+      } catch (err) {
+        if (/Failed to fetch/.test(String(err))) {
+          setDownloadError(
+            'The track probably has not been imported correctly or recently enough. Please ask your administrator for assistance.'
+          )
+        } else {
+          setDownloadError(String(err))
+        }
+      }
+    },
+    [slug]
+  )
 
   const isAuthor = login?.username === data?.track?.author?.username
 
@@ -199,6 +214,13 @@ const TrackPage = connect((state) => ({login: state.login}))(function TrackPage(
         </div>
       }
     >
+      <Confirm
+        open={downloadError != null}
+        cancelButton={false}
+        onConfirm={hideDownloadError}
+        header="Download failed"
+        content={String(downloadError)}
+      />
       <Grid stackable>
         <Grid.Row>
           <Grid.Column width={12}>
