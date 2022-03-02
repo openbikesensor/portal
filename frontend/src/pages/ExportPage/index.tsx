@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useMemo } from "react";
 import { Source, Layer } from "react-map-gl";
 import _ from "lodash";
-import { Button, Form, Dropdown, Header } from "semantic-ui-react";
+import { Button, Form, Dropdown, Header, Message, Icon } from "semantic-ui-react";
 
 import { useConfig } from "config";
 import { Page, Map } from "components";
@@ -120,10 +120,24 @@ export default function ExportPage() {
     <Page>
       <Header as="h2">Export</Header>
 
-      <p>
-        This page allows you to export parts of the public dataset. Please note
-        the license.
-      </p>
+        <Message icon info>
+          <Icon name="info circle" />
+          <Message.Content>
+            <p>
+              This page allows you to export parts of the public dataset under
+              the license for data announced in the privacy statement of this
+              site.
+            </p>
+
+            <p>
+              Please consider this export <b>experimental</b> and expect the data
+              shape to change in the future. Automated usage of this export
+              functionality is discouraged for now. Try not to use too much computing
+              capacity when exporting data, so select the bounding box as small as
+              possible and do not exceed unreasonable poll frequencies.
+            </p>
+          </Message.Content>
+        </Message>
 
       <Form>
         <Form.Field>
