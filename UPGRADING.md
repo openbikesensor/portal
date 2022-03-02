@@ -5,6 +5,23 @@ Simple migrations, e.g. for adding schema changes, are not documented
 explicitly. Once we implement them, their usage will be described in the
 [README](./README.md).
 
+## 0.4.1
+
+You can, but do not have to, reimport all tracks. This will generate a GPX file
+for each track and allow the users to download those. If a GPX file has not yet
+been created, the download will fail. To reimport all tracks, log in to your
+PostgreSQL database (instructions are in [README.md](./README.md) for
+development and [deployment/README.md](./deployment/README.md) for production)
+and run:
+
+```sql
+UPDATE track SET processing_status = 'queued';
+```
+
+You can do this selectively with `WHERE` statements.
+
+Make sure your worker is running to process the queue.
+
 ## 0.4.0
 
 * Rebuild your image, this may take longer than usual, as it will compile
