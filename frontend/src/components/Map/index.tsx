@@ -77,18 +77,21 @@ function Map({
 
   useEffect(() => {
     if (boundsFromJson) {
-      const [minX, minY, maxX, maxY] = turfBbox(boundsFromJson)
-      const vp = new WebMercatorViewport({width: 1000, height: 800}).fitBounds(
-        [
-          [minX, minY],
-          [maxX, maxY],
-        ],
-        {
-          padding: 20,
-          offset: [0, -100],
-        }
-      )
-      setViewport(_.pick(vp, ['zoom', 'latitude', 'longitude']))
+      const bbox = turfBbox(boundsFromJson);
+      if (bbox.every(v => Math.abs(v) !== Infinity)) {
+        const [minX, minY, maxX, maxY] = bbox;
+        const vp = new WebMercatorViewport({width: 1000, height: 800}).fitBounds(
+          [
+            [minX, minY],
+            [maxX, maxY],
+          ],
+          {
+            padding: 20,
+            offset: [0, -100],
+          }
+        )
+        setViewport(_.pick(vp, ['zoom', 'latitude', 'longitude']))
+      }
     }
   }, [boundsFromJson])
 
