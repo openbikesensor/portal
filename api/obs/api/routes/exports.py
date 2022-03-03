@@ -11,7 +11,7 @@ from sqlalchemy import select, func
 from sanic.response import raw
 from sanic.exceptions import InvalidUsage
 
-from obs.api.app import app, json as json_response
+from obs.api.app import api, json as json_response
 
 
 class ExportFormat(str, Enum):
@@ -58,7 +58,7 @@ def shapefile_zip():
     zip_file.close()
 
 
-@app.get(r"/export/events")
+@api.get(r"/export/events")
 async def export_events(req):
     bbox = req.ctx.get_single_arg(
         "bbox", default="-180,-90,180,90", convert=parse_bounding_box
