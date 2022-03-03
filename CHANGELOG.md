@@ -1,6 +1,12 @@
 # Changelog
 
-## 0.4.1 (TBD)
+## 0.4.2
+
+### Bugfixes
+
+* Fix export route, it should be a child of /api 
+
+## 0.4.1
 
 ### Features
 
