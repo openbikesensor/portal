@@ -214,7 +214,7 @@ const App = connect((state) => ({login: state.login}))(function App({login}) {
                   <List.Item>
                     <a
                       href={`https://github.com/openbikesensor/portal${
-                        apiVersion ? `/releases/tag/v${apiVersion}` : ''
+                        apiVersion ? `/releases/tag/${apiVersion}` : ''
                       }`}
                       target="_blank"
                       rel="noreferrer"
