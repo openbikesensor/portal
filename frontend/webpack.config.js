@@ -131,6 +131,7 @@ module.exports = function (webpackEnv) {
     plugins: [
       new HtmlWebpackPlugin({
         base: baseUrl,
+        title: 'OpenBikeSensor Portal',
         meta: {
           charset: 'utf-8',
           viewport: 'width=device-width, initial-scale=1',
