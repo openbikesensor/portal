@@ -135,7 +135,7 @@ export default function UploadPage() {
   }
 
   return (
-    <Page>
+    <Page title="Upload">
       {files.length ? (
         <Table>
           <Table.Header>

@@ -6,6 +6,7 @@ import {BrowserRouter as Router, Switch, Route, Link} from 'react-router-dom'
 import {useObservable} from 'rxjs-hooks'
 import {from} from 'rxjs'
 import {pluck} from 'rxjs/operators'
+import {Helmet} from "react-helmet";
 
 import {useConfig} from 'config'
 import styles from './App.module.less'
@@ -68,6 +69,10 @@ const App = connect((state) => ({login: state.login}))(function App({login}) {
 
   return config ? (
     <Router basename={config.basename}>
+      <Helmet>
+        <meta charSet="utf-8" />
+        <title>OpenBikeSensor Portal</title>
+      </Helmet>
       {config?.banner && <Banner {...config.banner} />}
       <Menu className={styles.menu}>
         <Container>

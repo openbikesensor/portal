@@ -148,7 +148,7 @@ export default function MapPage() {
   }
 
   return (
-    <Page fullScreen>
+    <Page fullScreen title="Map">
       <div className={styles.mapContainer}>
         {layerSidebar && (
           <div className={styles.mapSidebar}>

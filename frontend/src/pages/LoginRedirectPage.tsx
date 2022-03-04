@@ -35,7 +35,7 @@ const LoginRedirectPage = connect((state) => ({loggedIn: Boolean(state.login)}))
 
   if (error) {
     return (
-      <Page small>
+      <Page small title="Login error">
         <Message icon error>
           <Icon name="warning sign" />
           <Message.Content>
@@ -91,7 +91,7 @@ function ExchangeAuthCode({code}) {
     )
   }
 
-  return <Page small>{content}</Page>
+  return <Page small title="Login">{content}</Page>
 }
 
 export default LoginRedirectPage

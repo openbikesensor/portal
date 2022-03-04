@@ -136,9 +136,10 @@ function UploadButton({navigate, ...props}) {
 }
 
 const TracksPage = connect((state) => ({login: (state as any).login}))(function TracksPage({login, privateTracks}) {
+  const title = privateTracks ? 'My tracks' : 'Public tracks'
   return (
-    <Page>
-      <Header as='h2'>{privateTracks ? 'My tracks' : 'Public tracks'}</Header>
+    <Page title={title}>
+      <Header as='h2'>{title}</Header>
       {privateTracks && <Link component={UploadButton} to="/upload" />}
       <TrackList {...{privateTracks}} />
     </Page>

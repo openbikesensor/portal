@@ -117,7 +117,7 @@ export default function ExportPage() {
   const config = useConfig();
   const exportUrl = `${config?.apiUrl}/export/events?bbox=${bbox}&fmt=${fmt}`;
   return (
-    <Page>
+    <Page title="Export">
       <Header as="h2">Export</Header>
 
         <Message icon info>

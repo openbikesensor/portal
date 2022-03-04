@@ -176,8 +176,10 @@ const TrackPage = connect((state) => ({login: state.login}))(function TrackPage(
   const [pointsMode, setPointsMode] = React.useState('overtakingEvents') // none|overtakingEvents|measurements
   const [side, setSide] = React.useState('overtaker') // overtaker|stationary
 
+  const title = track ? track.title || 'Unnamed track' : null
   return (
     <Page
+      title={title}
       stage={
         <div className={styles.stage}>
           <Loader active={loading} />
@@ -204,7 +206,7 @@ const TrackPage = connect((state) => ({login: state.login}))(function TrackPage(
             <Segment>
               {track && (
                 <>
-                  <Header as="h1">{track.title || 'Unnamed track'}</Header>
+                  <Header as="h1">{title}</Header>
                   <TrackDetails {...{track, isAuthor}} />
                   <TrackActions {...{isAuthor, onDownload, slug}} />
                 </>

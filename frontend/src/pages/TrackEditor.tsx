@@ -106,12 +106,13 @@ const TrackEditor = connect((state) => ({login: state.login}))(function TrackEdi
     }
   }, [setBusy, setConfirmDelete, slug, history])
 
+  const title = `Edit ${track ? track.title || 'Unnamed track' : 'track'}`
   return (
-    <Page>
+    <Page title={title}>
       <Grid centered relaxed divided stackable>
         <Grid.Row>
           <Grid.Column width={10}>
-            <Header as="h2">Edit {track ? track.title || 'Unnamed track' : 'track'}</Header>
+            <Header as="h2">{title}</Header>
             <Form loading={loading} key={track?.slug} onSubmit={onSubmit}>
               <Ref innerRef={findInput(register)}>
                 <Form.Input label="Title" name="title" defaultValue={track?.title} style={{fontSize: '120%'}} />
