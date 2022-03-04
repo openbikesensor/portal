@@ -10,7 +10,7 @@ from oic.oic import Client
 from oic.oic.message import AuthorizationResponse, RegistrationResponse
 from oic.utils.authn.client import CLIENT_AUTHN_METHOD
 
-from obs.api.app import auth
+from obs.api.app import auth, api
 from obs.api.db import User
 
 from sanic.response import json, redirect
@@ -145,3 +145,13 @@ async def login_redirect(req):
 
     next_ = session.pop("next", "/") or "/"
     return redirect(next_)
+
+
+@api.route("/logout")
+async def login(req):
+    session = req.ctx.session
+    if "user_id" in session:
+        del session["user_id"]
+
+    next_url = req.ctx.get_single_arg("next", default=None) or "/"
+    return redirect(next_url)
