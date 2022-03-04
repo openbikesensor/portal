@@ -44,13 +44,10 @@ export default function HomePage() {
     <Page>
       <Grid stackable>
         <Grid.Row>
-          <Grid.Column width={10}>
-            <div className={styles.welcomeMap}>
-              <Map />
-            </div>
-          </Grid.Column>
-          <Grid.Column width={6}>
+          <Grid.Column width={8}>
             <Stats />
+          </Grid.Column>
+          <Grid.Column width={8}>
             <MostRecentTrack />
           </Grid.Column>
         </Grid.Row>
