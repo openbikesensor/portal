@@ -10,7 +10,7 @@ import api from 'api'
 
 import styles from './styles.module.less'
 
-const UNITS = {distanceOvertaker: 'm', distanceStationary: 'm', speed: 'm/s'}
+const UNITS = {distanceOvertaker: 'm', distanceStationary: 'm', speed: 'km/h'}
 const LABELS = {distanceOvertaker: 'Overtaker', distanceStationary: 'Stationary', speed: 'Speed'}
 const ZONE_COLORS = {urban: 'olive', rural: 'brown', motorway: 'purple'}
 const CARDINAL_DIRECTIONS = ['north', 'north-east', 'east', 'south-east', 'south', 'south-west', 'west', 'north-west']
@@ -40,7 +40,7 @@ function RoadStatsTable({data}) {
           <Table.Row key={prop}>
             <Table.Cell>{LABELS[prop]}</Table.Cell>
             {['count', 'min', 'median', 'max', 'mean'].map((stat) => (
-              <Table.Cell key={stat}>{data[prop]?.statistics?.[stat]?.toFixed(stat === 'count' ? 0 : 3)}</Table.Cell>
+              <Table.Cell key={stat}>{((data[prop]?.statistics?.[stat]) * (prop === `speed` ? 3.6 : 1)).toFixed(stat === 'count' ? 0 : 2)}</Table.Cell>
             ))}
             <Table.Cell>{UNITS[prop]}</Table.Cell>
           </Table.Row>
