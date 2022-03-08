@@ -40,7 +40,7 @@ function RoadStatsTable({data}) {
           <Table.Row key={prop}>
             <Table.Cell>{LABELS[prop]}</Table.Cell>
             {['count', 'min', 'median', 'max', 'mean'].map((stat) => (
-              <Table.Cell key={stat}>{((data[prop]?.statistics?.[stat]) * (prop === `speed` ? 3.6 : 1)).toFixed(stat === 'count' ? 0 : 2)}</Table.Cell>
+              <Table.Cell key={stat}>{((data[prop]?.statistics?.[stat]) * ((prop === `speed` && stat != 'count') ? 3.6 : 1)).toFixed(stat === 'count' ? 0 : 2)}</Table.Cell>
             ))}
             <Table.Cell>{UNITS[prop]}</Table.Cell>
           </Table.Row>
