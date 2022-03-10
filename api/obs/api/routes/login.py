@@ -148,10 +148,12 @@ async def login_redirect(req):
 
 
 @api.route("/logout")
-async def login(req):
+async def logout(req):
     session = req.ctx.session
     if "user_id" in session:
         del session["user_id"]
 
-    next_url = req.ctx.get_single_arg("next", default=None) or "/"
-    return redirect(next_url)
+    auth_req = client.construct_EndSessionRequest(state=session["state"])
+    logout_url = auth_req.request(client.end_session_endpoint)
+
+    return redirect(logout_url+f"&redirect_uri={req.ctx.api_url}/logout")
