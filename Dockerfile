@@ -36,7 +36,7 @@ RUN git clone  --branch $OSM2PGSQL_VERSION git://github.com/openstreetmap/osm2pg
     mkdir build &&\
     cd build &&\
     cmake .. &&\
-    make &&\
+    make -j4 &&\
     make install
 
 #############################################
