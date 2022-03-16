@@ -33,6 +33,8 @@ services:
       - ./tile-generator:/opt/obs/tile-generator
       - ./local/api-data:/data
       - ./tile-generator/data/:/tiles
+      - ./api/migrations:/opt/obs/api/migrations
+      - ./api/alembic.ini:/opt/obs/api/alembic.ini
     depends_on:
       - postgres
       - keycloak
