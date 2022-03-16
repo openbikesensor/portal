@@ -44,7 +44,8 @@ const getRoadsLayer = (colorAttribute, maxCount) =>
   produce(untaggedRoadsLayer, (draft) => {
     draft.id = 'obs_roads_normal'
     if (colorAttribute.endsWith('_count')) {
-      delete draft.filter
+      // delete draft.filter
+      draft.filter = ['to-boolean', ['get', colorAttribute]]
     } else {
       draft.filter = draft.filter[1] // remove '!'
     }
@@ -52,7 +53,7 @@ const getRoadsLayer = (colorAttribute, maxCount) =>
     draft.paint['line-color'] = colorAttribute.startsWith('distance_')
       ? colorByDistance(colorAttribute)
       : colorAttribute.endsWith('_count')
-      ? colorByCount(colorAttribute, maxCount, reds)
+      ? colorByCount(colorAttribute, maxCount)
       : '#DDD'
     draft.paint['line-opacity'][3] = 12
     draft.paint['line-opacity'][5] = 13

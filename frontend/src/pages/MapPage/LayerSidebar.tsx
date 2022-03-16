@@ -8,7 +8,7 @@ import {
   setMapConfigFlag as setMapConfigFlagAction,
   initialState as defaultMapConfig,
 } from 'reducers/mapConfig'
-import {colorByDistance, colorByCount, reds} from 'mapstyles'
+import {colorByDistance, colorByCount, viridisSimpleHtml} from 'mapstyles'
 import {ColorMapLegend} from 'components'
 
 const BASEMAP_STYLE_OPTIONS = [
@@ -93,7 +93,7 @@ function LayerSidebar({
                 />
               </List.Item>
               <List.Item>
-                <ColorMapLegend map={_.chunk(colorByCount('obsRoads.maxCount',mapConfig.obsRoads.maxCount, reds).slice(3), 2)} />
+                <ColorMapLegend map={_.chunk(colorByCount('obsRoads.maxCount', mapConfig.obsRoads.maxCount, viridisSimpleHtml ).slice(3), 2)} twoTicks />
               </List.Item></>
             ) :
             (

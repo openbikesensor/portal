@@ -4,12 +4,13 @@ type ColorMap = [number, string][]
 
 import styles from './ColorMapLegend.module.less'
 
-export default function ColorMapLegend({map}: {map: ColorMap}) {
+export default function ColorMapLegend({map, twoTicks = false}: {map: ColorMap, twoTicks?: boolean}) {
   const min = map[0][0]
   const max = map[map.length - 1][0]
   const normalizeValue = (v) => (v - min) / (max - min)
   const gradientId = useMemo(() => `gradient${Math.floor(Math.random() * 1000000)}`, []);
   const gradientUrl = `url(#${gradientId})`;
+  const tickValues = twoTicks ? [map[0], map[map.length-1]] : map
   return (
     <div className={styles.colorMapLegend}>
       <svg width="100%" height="20" version="1.1" xmlns="http://www.w3.org/2000/svg">
@@ -23,7 +24,7 @@ export default function ColorMapLegend({map}: {map: ColorMap}) {
 
         <rect id="rect1" x="0" y="0" width="100%" height="100%" fill={gradientUrl} />
       </svg>
-      {map.map(([value]) => (
+      {tickValues.map(([value]) => (
         <span className={styles.tick} key={value} style={{left: normalizeValue(value) * 100 + '%'}}>
           {value.toFixed(2)}
         </span>

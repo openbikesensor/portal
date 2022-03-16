@@ -22,6 +22,10 @@ function rgbArrayToColor(arr) {
   return ['rgb', ...arr.map((v) => Math.round(v * 255))]
 }
 
+function rgbArrayToHtml(arr) {
+  return "#" + arr.map((v) => Math.round(v * 255).toString(16)).map(v => (v.length == 1 ? '0' : '') + v).join('')
+}
+
 export function colormapToScale(colormap, value, min, max) {
   return [
     'interpolate-hcl',
@@ -32,6 +36,7 @@ export function colormapToScale(colormap, value, min, max) {
 }
 
 export const viridis = simplifyColormap(viridisBase.map(rgbArrayToColor), 20)
+export const viridisSimpleHtml = simplifyColormap(viridisBase.map(rgbArrayToHtml), 10)
 export const grayscale = ['#FFFFFF', '#000000']
 export const reds = [
   'rgba( 255, 0, 0, 0)',
