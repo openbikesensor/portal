@@ -22,6 +22,7 @@ const ROAD_ATTRIBUTE_OPTIONS = [
   {value: 'distance_overtaker_max', key: 'distance_overtaker_max', text: 'Overtaker distance maximum'},
   {value: 'distance_overtaker_median', key: 'distance_overtaker_median', text: 'Overtaker distance median'},
   {value: 'overtaking_event_count', key: 'overtaking_event_count', text: 'Event count'},
+  {value: 'usage_count', key: 'usage_count', text: 'Usage count'},
 ]
 
 function LayerSidebar({
