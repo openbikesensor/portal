@@ -16,6 +16,8 @@ layer:
       All overtaker distance values in meters.
     overtaking_event_count: |
       Number of overtaking events.
+    usage_count: |
+      Number of times the road was traveled on.
     direction: |
       Contains -1 for events while going along the way backwards, 1 for
       forwards. Each road is emitted twice, if it has data for both directions,
@@ -40,6 +42,7 @@ layer:
           distance_overtaker_median,
           distance_overtaker_array,
           overtaking_event_count,
+          usage_count,
           direction,
           offset_direction
         FROM layer_obs_roads(!bbox!, z(!scale_denominator!))

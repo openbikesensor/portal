@@ -8,6 +8,7 @@ RETURNS TABLE(
   distance_overtaker_median float,
   distance_overtaker_array float[],
   overtaking_event_count int,
+  usage_count bigint,
   direction int,
   offset_direction int
 ) AS $$
@@ -21,6 +22,7 @@ RETURNS TABLE(
       PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY distance_overtaker) as distance_overtaker_median,
       array_agg(distance_overtaker) as distance_overtaker_array,
       count(overtaking_event.id)::int as distance_overtaker_count,
+      (select count(id) from road_usage where road_usage.way_id = road.way_id) as usage_count,
       r.dir as direction,
       case when road.directionality = 0 then r.dir else 0 end as offset_direction
     FROM road
