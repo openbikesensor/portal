@@ -68,7 +68,9 @@ def random_string(length):
 async def connect_db(url, pool_size=10, max_overflow=20):
     global engine, sessionmaker
 
-    engine = create_async_engine(url, echo=False, pool_size=pool_size, max_overflow=max_overflow)
+    engine = create_async_engine(
+        url, echo=False, pool_size=pool_size, max_overflow=max_overflow
+    )
     sessionmaker = SessionMaker(engine, class_=AsyncSession, expire_on_commit=False)
 
     yield engine
@@ -143,10 +145,27 @@ class Road(Base):
         }
 
 
+class RoadUsage(Base):
+    __tablename__ = "road_usage"
+    __table_args__ = (Index("road_segment", "way_id", "direction_reversed"),)
+
+    id = Column(Integer, autoincrement=True, primary_key=True, index=True)
+    track_id = Column(Integer, ForeignKey("track.id", ondelete="CASCADE"))
+    hex_hash = Column(String, unique=True, index=True)
+    way_id = Column(BIGINT, index=True)
+    time = Column(DateTime)
+    direction_reversed = Column(Boolean)
+
+    def __repr__(self):
+        return f"<RoadUsage {self.id}>"
+
+
 NOW = text("NOW()")
+
 
 class DuplicateTrackFileError(ValueError):
     pass
+
 
 class Track(Base):
     __tablename__ = "track"
