@@ -181,6 +181,7 @@ async def get_track_data(req, slug: str):
         "measurements": "measurements.json",
         "overtakingEvents": "overtakingEvents.json",
         "track": "track.json",
+        "trackRaw": "trackRaw.json",
     }
 
     result = {}

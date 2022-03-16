@@ -1,4 +1,5 @@
 import _ from 'lodash'
+import produce from 'immer'
 
 import bright from './bright.json'
 import positron from './positron.json'
@@ -69,5 +70,11 @@ export const trackLayer = {
     'line-color': '#F06292',
   },
 }
+
+export const trackLayerRaw = produce(trackLayer, draft => {
+  draft.paint['line-color'] = '#81D4FA'
+  draft.paint['line-width'][4] = 1
+  draft.paint['line-width'][6] = 3
+})
 
 export const basemap = positron

@@ -151,7 +151,9 @@ async def process_track(session, track, data_source):
         )
 
         annotator = AnnotateMeasurements(
-            data_source, cache_dir=app.config.OBS_FACE_CACHE_DIR
+            data_source,
+            cache_dir=app.config.OBS_FACE_CACHE_DIR,
+            fully_annotate_unconfirmed=True,
         )
         input_data = await annotator.annotate(imported_data)
 
@@ -188,10 +190,19 @@ async def process_track(session, track, data_source):
             },
         }
 
+        track_raw_json = {
+            "type": "Feature",
+            "geometry": {
+                "type": "LineString",
+                "coordinates": [[m["longitude_GPS"], m["latitude_GPS"]] for m in track_points],
+            },
+        }
+
         for output_filename, data in [
             ("measurements.json", measurements_json),
             ("overtakingEvents.json", overtaking_events_json),
             ("track.json", track_json),
+            ("trackRaw.json", track_raw_json),
         ]:
             target = join(output_dir, output_filename)
             log.debug("Writing file %s", target)

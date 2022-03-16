@@ -4,7 +4,7 @@ import {Source, Layer} from 'react-map-gl'
 import type {TrackData} from 'types'
 import {Map} from 'components'
 
-import {colorByDistance, trackLayer} from '../../mapstyles'
+import {colorByDistance, trackLayer, trackLayerRaw} from '../../mapstyles'
 
 export default function TrackMap({
   trackData,
@@ -25,14 +25,20 @@ export default function TrackMap({
   return (
     <div style={props.style}>
       <Map boundsFromJson={trackData.track}>
+        {showTrack && trackData.trackRaw != null && (
+          <Source key="trackRaw" id="trackRaw" type="geojson" data={trackData.trackRaw}>
+            <Layer id="trackRaw" {...trackLayerRaw} />
+          </Source>
+        )}
+
         {showTrack && (
-          <Source id="route" type="geojson" data={trackData.track}>
-            <Layer id="route" {...trackLayer} />
+          <Source key="track" id="track" type="geojson" data={trackData.track}>
+            <Layer id="track" {...trackLayer} />
           </Source>
         )}
 
         {pointsMode !== 'none' && (
-          <Source id="overtakingEvents" type="geojson" data={trackData[pointsMode]}>
+          <Source key="overtakingEvents" id="overtakingEvents" type="geojson" data={trackData[pointsMode]}>
             <Layer
               id="overtakingEvents"
               type="circle"

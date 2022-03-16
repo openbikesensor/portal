@@ -10,6 +10,7 @@ import Markdown from 'react-markdown'
 import api from 'api'
 import {Page} from 'components'
 import type {Track, TrackData, TrackComment} from 'types'
+import {trackLayer, trackLayerRaw} from '../../mapstyles'
 
 import TrackActions from './TrackActions'
 import TrackComments from './TrackComments'
@@ -31,6 +32,14 @@ function TrackMapSettings({showTrack, setShowTrack, pointsMode, setPointsMode, s
       <List>
         <List.Item>
           <Checkbox checked={showTrack} onChange={(e, d) => setShowTrack(d.checked)} /> Show track
+          <div style={{marginTop: 8}}>
+            <span style={{background: trackLayerRaw.paint['line-color'], height: 6, width: 24, display: 'inline-block', verticalAlign: 'middle', marginRight: 4}} />
+            GPS track
+          </div>
+          <div>
+            <span style={{background: trackLayer.paint['line-color'], height: 6, width: 24, display: 'inline-block', verticalAlign: 'middle', marginRight: 4}} />
+            Snapped to road
+          </div>
         </List.Item>
         <List.Item>
           <List.Header>Points</List.Header>
