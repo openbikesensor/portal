@@ -27,7 +27,7 @@ from obs.face.filter import (
 
 from obs.face.osm import DataSource, DatabaseTileSource, OverpassTileSource
 
-from obs.api.db import OvertakingEvent, Track, make_session
+from obs.api.db import OvertakingEvent, RoadUsage, Track, make_session
 from obs.api.app import app
 
 log = logging.getLogger(__name__)
@@ -194,7 +194,9 @@ async def process_track(session, track, data_source):
             "type": "Feature",
             "geometry": {
                 "type": "LineString",
-                "coordinates": [[m["longitude_GPS"], m["latitude_GPS"]] for m in track_points],
+                "coordinates": [
+                    [m["longitude_GPS"], m["latitude_GPS"]] for m in track_points
+                ],
             },
         }
 
@@ -217,6 +219,9 @@ async def process_track(session, track, data_source):
 
         log.info("Import events into database...")
         await import_overtaking_events(session, track, overtaking_events)
+
+        log.info("import road usages...")
+        await import_road_usages(session, track, track_points)
 
         log.info("Write track statistics and update status...")
         track.recorded_at = to_naive_utc(statistics["t_min"])
@@ -255,6 +260,7 @@ async def clear_track_data(session, track):
     await session.execute(
         delete(OvertakingEvent).where(OvertakingEvent.track_id == track.id)
     )
+    await session.execute(delete(RoadUsage).where(RoadUsage.track_id == track.id))
 
 
 async def import_overtaking_events(session, track, overtaking_events):
@@ -290,3 +296,51 @@ async def import_overtaking_events(session, track, overtaking_events):
         )
 
     session.add_all(event_models.values())
+
+
+def get_road_usages(track_points):
+    last_key = None
+    last = None
+
+    for p in track_points:
+        way_id = p.get("OSM_way_id")
+        direction_reversed = p.get("OSM_way_orientation", 0) < 0
+
+        key = (way_id, direction_reversed)
+
+        if last_key is None or last_key[0] is None:
+            last = p
+            last_key = key
+            continue
+
+        if last_key != key:
+            if last_key[0] is not None:
+                yield last
+            last_key = key
+            last = p
+
+    if last is not None and last_key[0] is not None:
+        yield last
+
+
+async def import_road_usages(session, track, track_points):
+    usages = set()
+    for p in get_road_usages(track_points):
+        direction_reversed = p.get("OSM_way_orientation", 0) < 0
+        way_id = p.get("OSM_way_id")
+        time = p["time"]
+
+        hex_hash = hashlib.sha256(
+            struct.pack("dQ", way_id, int(time.timestamp()))
+        ).hexdigest()
+
+        usages.add(
+            RoadUsage(
+                track_id=track.id,
+                hex_hash=hex_hash,
+                way_id=way_id,
+                time=time.astimezone(pytz.utc).replace(tzinfo=None),
+                direction_reversed=direction_reversed,
+            )
+        )
+    session.add_all(usages)
