@@ -87,6 +87,8 @@ ADD api/scripts /opt/obs/scripts
 RUN pip install -e /opt/obs/scripts
 
 ADD api/setup.py  /opt/obs/api/
+ADD api/alembic.ini /opt/obs/api/
+ADD api/migrations /opt/obs/api/migrations/
 ADD api/obs /opt/obs/api/obs/
 ADD api/tools /opt/obs/api/tools/
 RUN pip install -e /opt/obs/api/
