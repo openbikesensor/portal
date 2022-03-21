@@ -1,6 +1,27 @@
 # Changelog
 
+## 0.5.0
+
+### Features
+
+* Use discrete colors for distances, with greens only above 1.5m
+* Use viridis colormap for roads' count layers
+* Generate usage count information (how often has a road been traveled)
+* Project the whole track to the map, and show both versions
+* Log out of OpenID server when logging out of application
+* Convert speed units to km/h in frontend
+* Pages now have titles (#148)
+* Remove map from home page, it was empty anyway (#120)
+
+### Internal
+
+* Add alembic setup for migrating
+* Build osm2pgsql with -j4
+* Update sqlalchemy[asyncio] requirement from ~=1.4.31 to ~=1.4.32 in /api
+
 ## 0.4.2
+
+### Features
 
 ### Bugfixes
 
