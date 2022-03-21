@@ -393,6 +393,7 @@ want to generate smaller, nonredundant backups, or backups during live
 operation of the database, use a tool like `pg_dump` and extract only the
 required tables:
 
+* `road_usage`
 * `overtaking_event`
 * `track`
 * `user` (make sure to reference `public.user`, not the postgres user table)
