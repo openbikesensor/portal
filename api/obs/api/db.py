@@ -147,7 +147,7 @@ class Road(Base):
 
 class RoadUsage(Base):
     __tablename__ = "road_usage"
-    __table_args__ = (Index("road_segment", "way_id", "direction_reversed"),)
+    __table_args__ = (Index("road_usage_segment", "way_id", "direction_reversed"),)
 
     id = Column(Integer, autoincrement=True, primary_key=True, index=True)
     track_id = Column(Integer, ForeignKey("track.id", ondelete="CASCADE"))
