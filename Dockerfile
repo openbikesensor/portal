@@ -31,7 +31,7 @@ RUN apt-get update &&\
     rm -rf /var/lib/apt/lists/*
 
 # Clone & Build
-RUN git clone  --branch $OSM2PGSQL_VERSION git://github.com/openstreetmap/osm2pgsql.git &&\
+RUN git clone  --branch $OSM2PGSQL_VERSION https://github.com/openstreetmap/osm2pgsql.git &&\
     cd osm2pgsql/ &&\
     mkdir build &&\
     cd build &&\
