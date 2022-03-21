@@ -9,7 +9,7 @@ import {
   initialState as defaultMapConfig,
 } from 'reducers/mapConfig'
 import {colorByDistance, colorByCount, viridisSimpleHtml} from 'mapstyles'
-import {ColorMapLegend} from 'components'
+import {ColorMapLegend, DiscreteColorMapLegend} from 'components'
 
 const BASEMAP_STYLE_OPTIONS = [
   {value: 'positron', key: 'positron', text: 'Positron'},
@@ -98,7 +98,7 @@ function LayerSidebar({
             ) :
             (
               <List.Item>
-                <ColorMapLegend map={_.chunk(colorByDistance('distance_overtaker')[3].slice(3), 2)} />
+                <DiscreteColorMapLegend map={colorByDistance('distance_overtaker')[3].slice(2)} />
               </List.Item>
             )}
           </>
@@ -120,7 +120,7 @@ function LayerSidebar({
         {showEvents && (
           <>
             <List.Item>
-              <ColorMapLegend map={_.chunk(colorByDistance('distance_overtaker')[3].slice(3), 2)} />
+              <DiscreteColorMapLegend map={colorByDistance('distance_overtaker')[3].slice(2)} />
             </List.Item>
           </>
         )}
