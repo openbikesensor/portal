@@ -2,8 +2,16 @@
 
 This document describes the general steps to upgrade between major changes.
 Simple migrations, e.g. for adding schema changes, are not documented
-explicitly. Once we implement them, their usage will be described in the
-[README](./README.md).
+explicitly. Their general usage is described in the [README](./README.md) (for
+development) and [deployment/README.md](deployment/README.md) (for production).
+
+## 0.5.0
+
+* **Prepare SQL Tiles**: required
+* **OSM Import**: no
+* **Migration**: required
+* **Reimport tracks**: required
+* **Config changes**: none
 
 ## 0.4.1
 

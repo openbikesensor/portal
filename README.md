@@ -52,10 +52,18 @@ Please note that you will always need to install your own reverse proxy that
 terminates TLS for you and handles certificates. We do not support TLS directly
 in the application, instead, please use this prefered method. 
 
+Upgrading and migrating is descrube
+
 ### Migrating (Production)
 
-Migrations are not implemented yet. Once we need them, we'll add them and
-document the usage here.
+Migrations are done with
+[Alembic](https://alembic.sqlalchemy.org/en/latest/index.html), please refer to
+its documentation for help. Most of the time, running this command will do all
+the migrations you need:
+
+```bash
+docker-compose run --rm api alembic upgrade head
+```
 
 ### Upgrading from v0.2 to v0.3
 
@@ -165,8 +173,14 @@ testing.
 
 ### Migrating (Development)
 
-Migrations are not implemented yet. Once we need them, we'll add them and
-document the usage here.
+Migrations are done with
+[Alembic](https://alembic.sqlalchemy.org/en/latest/index.html), please refer to
+its documentation for help. Most of the time, running this command will do all
+the migrations you need:
+
+```bash
+docker-compose run --rm api alembic upgrade head
+```
 
 
 ## Import OpenStreetMap data

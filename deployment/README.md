@@ -367,6 +367,20 @@ docker-compose up -d
 Before updating make sure that you have properly backed-up your instance so you 
 can always roll back to a pre-update state.
 
+#### Migrating
+
+Migrations are done with
+[Alembic](https://alembic.sqlalchemy.org/en/latest/index.html), please refer to
+its documentation for help. Most of the time, running this command will do all
+the migrations you need:
+
+```bash
+docker-compose run --rm portal alembic upgrade head
+```
+
+You are advised to create a backup (see below) before running a migration, and
+to shut down the services before the migration and start them afterwards.
+
 ### Backups
 
 To backup your instances private data you only need to backup the ``$ROOT`` folder.
