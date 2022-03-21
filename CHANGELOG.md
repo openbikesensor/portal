@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.5.1
+
+Maintenance release, only includes build, deployment and documentation changes.
+
 ## 0.5.0
 
 ### Features
