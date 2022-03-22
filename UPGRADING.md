@@ -7,11 +7,16 @@ development) and [deployment/README.md](deployment/README.md) (for production).
 
 ## 0.5.0
 
-* **Prepare SQL Tiles**: required
-* **OSM Import**: no
-* **Migration**: required
-* **Reimport tracks**: required
-* **Config changes**: none
+The upgrade requires the following steps in the given order
+
+- Rebuild images
+- Stop your portal and worker services.
+- **Migration with alembic**: required 
+- **Prepare SQL Tiles**: required 
+- Start your portal and worker services.
+- **Reimport tracks**: required 
+- **OSM Import**: no action required
+- **Config changes**: none
 
 ## 0.4.1
 
