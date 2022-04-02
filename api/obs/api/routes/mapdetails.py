@@ -35,7 +35,7 @@ async def mapdetails_road(req):
     if not (1 <= radius <= 1000):
         raise InvalidUsage("`radius` parameter must be between 1 and 1000")
 
-    road_geometry = func.ST_Transform(Road.geometry, 3857)
+    road_geometry = Road.geometry
     point = func.ST_Transform(
         func.ST_GeomFromGeoJSON(
             json.dumps(
