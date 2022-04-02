@@ -50,9 +50,13 @@ async def make_session():
         yield session
 
 
-async def init_models():
+async def drop_all():
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.drop_all)
+
+
+async def init_models():
+    async with engine.begin() as conn:
         await conn.execute(text('CREATE EXTENSION IF NOT EXISTS "hstore";'))
         await conn.execute(text('CREATE EXTENSION IF NOT EXISTS "postgis";'))
         await conn.execute(text('CREATE EXTENSION IF NOT EXISTS "uuid-ossp";'))

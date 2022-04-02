@@ -62,8 +62,21 @@ its documentation for help. Most of the time, running this command will do all
 the migrations you need:
 
 ```bash
-docker-compose run --rm api alembic upgrade head
+docker-compose run --rm api tools/upgrade.py
 ```
+
+This command is equivalent to running migrations through *alembic*, then
+regenerating the SQL functions that compute vector tiles directly in the
+database:
+
+```bash
+# equivalent to the above command, you don't usually run these
+docker-compose run --rm api alembic upgrade head
+docker-compose run --rm api tools/prepare_sql_tiles
+```
+
+
+docker-compose run --rm api alembic upgrade head
 
 ### Upgrading from v0.2 to v0.3
 
@@ -141,21 +154,15 @@ If you don't wait long enough, the following commands might fail. In this case,
 you can always stop the container, remove the data directory (`local/postgres`)
 and restart the process.
 
-Next, initialize an empty database, which applies the database schema for the
-application:
+Next, run the upgrade command to generate the database schema:
 
 ```bash
-docker-compose run --rm api tools/reset_database.py
+docker-compose run --rm api tools/upgrade.py
 ```
 
-To be able serve dynamic vector tiles from the API, run the following command once:
-
-```bash
-docker-compose run --rm api tools/prepare_sql_tiles.py
-```
-
-You might need to re-run this command after updates, to (re-)create the
-functions in the SQL database that are used when generating vector tiles.
+You will need to re-run this command after updates, to migrate the database and
+(re-)create the functions in the SQL database that are used when generating
+vector tiles.
 
 You should also import OpenStreetMap data now, see below for instructions.
 
