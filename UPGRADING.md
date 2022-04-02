@@ -5,6 +5,22 @@ Simple migrations, e.g. for adding schema changes, are not documented
 explicitly. Their general usage is described in the [README](./README.md) (for
 development) and [deployment/README.md](deployment/README.md) (for production).
 
+## 0.5.2
+
+**Make sure to upgrade to `0.5.1` first, by checking out that version tag and
+running migrations, then coming back to this version.** This is required
+because the migrations have been edited to create the initial database schema,
+but if you run the 0.5.1 migrations first, your database will remember that it
+already has all the tables created. This is not required if you set up a new
+installation.
+
+For this update, run these steps:
+
+- Build new images
+- Stop portal and worker services
+- Migrate with alembic (see note above, this should be a no-op if done right)
+- Start portal and worker services
+
 ## 0.5.0
 
 The upgrade requires the following steps in the given order
