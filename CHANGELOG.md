@@ -1,5 +1,21 @@
 # Changelog
 
+## 0.5.2
+
+Starting in this version, the database schema is created through migrations
+instead of using the `reset_database.py` script. This means that for both the
+initial setup, as well as for upgrades, only the migrations have to be run.
+
+After updating and migrating, it is good practice to regenerate the SQL tile
+functions (`api/tools/prepare_sql_tiles.py`) as well. It doesn't matter if you
+do this when it is not required, so we've written a simple all-in-one update
+script that you can run to do all upgrade tasks. This is now in
+`api/tools/upgrade.py`.
+
+Please check [`UPGRADING.md`](./UPGRADING.md) for more details if you're
+upgrading an existing installation. It contains an important note for this
+upgrade in particular.
+
 ## 0.5.1
 
 Maintenance release, only includes build, deployment and documentation changes.

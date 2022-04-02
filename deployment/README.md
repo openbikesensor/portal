@@ -241,8 +241,7 @@ wget https://download.geofabrik.de/europe/germany/schleswig-holstein-latest.osm.
 Run the following scripts to prepare the database:
 
 ```bash
-docker-compose run --rm portal tools/reset_database.py
-docker-compose run --rm portal tools/prepare_sql_tiles.py
+docker-compose run --rm portal tools/upgrade.py
 ```
 
 For more details, see [README.md](../README.md) under "Prepare database".

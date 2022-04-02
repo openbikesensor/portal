@@ -18,7 +18,10 @@ For this update, run these steps:
 
 - Build new images
 - Stop portal and worker services
-- Migrate with alembic (see note above, this should be a no-op if done right)
+- Run the new upgrade tool:
+  ```bash
+  docker-compose run --rm portal tools/upgrade.py
+  ```
 - Start portal and worker services
 
 ## 0.5.0
