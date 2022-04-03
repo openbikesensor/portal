@@ -56,6 +56,12 @@ local ADMIN_LEVEL_MAX = 8
 local ONEWAY_YES = {"yes", "true", "1"}
 local ONEWAY_REVERSE = {"reverse", "-1"}
 
+-- https://wiki.openstreetmap.org/wiki/Tag:highway=service
+local IGNORED_SERVICE_TYPES = {"parking_aisle", "driveway", "emergency_access", "drive-through"}
+
+-- https://taginfo.openstreetmap.org/keys/access#values
+local IGNORED_ACCESS_TYPES = {"no", "private", "permit", "official", "service", "emergency"}
+
 local roads = osm2pgsql.define_way_table('road', {
   { column = 'zone', type = 'text', sql_type="zone_type" },
   { column = 'directionality', type = 'int' },
@@ -73,55 +79,67 @@ local regions = osm2pgsql.define_relation_table('region', {
 
 
 function osm2pgsql.process_way(object)
-  if object.tags.highway and contains(HIGHWAY_TYPES, object.tags.highway) then
-    local tags = object.tags
-    local zone = nil
+  local tags = object.tags
 
-    if tags["zone:traffic"] then
-      zone = tags["zone:traffic"]
+  -- only import certain highway ways, i.e. roads and pathways
+  if not tags.highway then return end
+  if not contains(HIGHWAY_TYPES, tags.highway) then return end
 
-      if zone == "DE:urban" then
-        zone = "urban"
-      elseif zone == "DE:rural" then
-        zone = "rural"
-      elseif zone == "DE:motorway" then
-        zone = "motorway"
-      elseif string.match(zone, "rural") then
-        zone = "rural"
-      elseif string.match(zone, "urban") then
-        zone = "urban"
-      elseif string.match(zone, "motorway") then
-        zone = "motorway"
-      elseif contains(URBAN_TYPES, tags.highway) then
-        zone = "urban"
-      elseif contains(MOTORWAY_TYPES, tags.highway) then
-        zone = "motorway"
-      else
-        -- we can't figure it out
-        zone = nil
-      end
+  -- do not import areas (plazas etc.)
+  if tags.area == "yes" then return end
+
+  -- ignore certain service roads
+  if contains(IGNORED_SERVICE_TYPES, tags.service) then return end
+
+  -- ignore disallowed roads (often tram tracks and similar)
+  if contains(IGNORED_ACCESS_TYPES, tags.access) then return end
+
+  local zone = nil
+
+  if tags["zone:traffic"] then
+    zone = tags["zone:traffic"]
+
+    if zone == "DE:urban" then
+      zone = "urban"
+    elseif zone == "DE:rural" then
+      zone = "rural"
+    elseif zone == "DE:motorway" then
+      zone = "motorway"
+    elseif string.match(zone, "rural") then
+      zone = "rural"
+    elseif string.match(zone, "urban") then
+      zone = "urban"
+    elseif string.match(zone, "motorway") then
+      zone = "motorway"
+    elseif contains(URBAN_TYPES, tags.highway) then
+      zone = "urban"
+    elseif contains(MOTORWAY_TYPES, tags.highway) then
+      zone = "motorway"
+    else
+      -- we can't figure it out
+      zone = nil
     end
-
-    local directionality = 0
-    local oneway = tags.oneway
-
-    -- See https://wiki.openstreetmap.org/wiki/Key:oneway section "Implied oneway restriction"
-    if contains(ONEWAY_YES, tags.oneway) or tags.junction == "roundabout" or zone == "motorway" then
-      directionality = 1
-      oneway = true
-    elseif contains(ONEWAY_REVERSE, tags.oneway) then
-      directionality = -1
-      oneway = true
-    end
-
-    roads:add_row({
-      geom = { create = 'linear' },
-      name = tags.name,
-      zone = zone,
-      directionality = directionality,
-      oneway = oneway,
-    })
   end
+
+  local directionality = 0
+  local oneway = tags.oneway
+
+  -- See https://wiki.openstreetmap.org/wiki/Key:oneway section "Implied oneway restriction"
+  if contains(ONEWAY_YES, tags.oneway) or tags.junction == "roundabout" or zone == "motorway" then
+    directionality = 1
+    oneway = true
+  elseif contains(ONEWAY_REVERSE, tags.oneway) then
+    directionality = -1
+    oneway = true
+  end
+
+  roads:add_row({
+    geom = { create = 'linear' },
+    name = tags.name,
+    zone = zone,
+    directionality = directionality,
+    oneway = oneway,
+  })
 end
 
 function osm2pgsql.process_relation(object)
