@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.6.1
+
+### Improvements
+
+* Make road details request (clicking on a road segment in the map) way faster
+  by using PostGIS geometry index correctly (#226).
+
 ## 0.6.0
 
 Starting in this version, the database schema is created through migrations
