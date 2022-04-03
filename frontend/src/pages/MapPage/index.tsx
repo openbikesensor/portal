@@ -6,7 +6,7 @@ import produce from 'immer'
 
 import {Page, Map} from 'components'
 import {useConfig} from 'config'
-import {colorByDistance, colorByCount, reds} from 'mapstyles'
+import {colorByDistance, colorByCount, getRegionLayers} from 'mapstyles'
 import {useMapConfig} from 'reducers/mapConfig'
 
 import RoadInfo from './RoadInfo'
@@ -18,6 +18,7 @@ const untaggedRoadsLayer = {
   type: 'line',
   source: 'obs',
   'source-layer': 'obs_roads',
+  minzoom: 12,
   filter: ['!', ['to-boolean', ['get', 'distance_overtaker_mean']]],
   layout: {
     'line-cap': 'round',
@@ -26,7 +27,7 @@ const untaggedRoadsLayer = {
   paint: {
     'line-width': ['interpolate', ['exponential', 1.5], ['zoom'], 12, 2, 17, 2],
     'line-color': '#ABC',
-    'line-opacity': ['interpolate', ['linear'], ['zoom'], 14, 0, 15, 1],
+    // 'line-opacity': ['interpolate', ['linear'], ['zoom'], 14, 0, 15, 1],
     'line-offset': [
       'interpolate',
       ['exponential', 1.5],
@@ -49,14 +50,15 @@ const getRoadsLayer = (colorAttribute, maxCount) =>
     } else {
       draft.filter = draft.filter[1] // remove '!'
     }
+    draft.minzoom = 10
     draft.paint['line-width'][6] = 6 // scale bigger on zoom
     draft.paint['line-color'] = colorAttribute.startsWith('distance_')
       ? colorByDistance(colorAttribute)
       : colorAttribute.endsWith('_count')
       ? colorByCount(colorAttribute, maxCount)
       : '#DDD'
-    draft.paint['line-opacity'][3] = 12
-    draft.paint['line-opacity'][5] = 13
+    // draft.paint['line-opacity'][3] = 12
+    // draft.paint['line-opacity'][5] = 13
   })
 
 const getEventsLayer = () => ({
@@ -136,6 +138,9 @@ export default function MapPage() {
   if (mapConfig.obsRoads.show) {
     layers.push(roadsLayer)
   }
+
+  const regionLayers = useMemo(() => getRegionLayers(), [])
+  layers.push(...regionLayers)
 
   const eventsLayer = useMemo(() => getEventsLayer(), [])
   const eventsTextLayer = useMemo(() => getEventsTextLayer(), [])

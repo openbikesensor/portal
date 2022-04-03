@@ -32,7 +32,9 @@ RETURNS TABLE(
     LEFT JOIN (VALUES (-1, TRUE), (1, FALSE), (0, FALSE)) AS r(dir, rev) ON (abs(r.dir) != road.directionality)
     FULL OUTER JOIN overtaking_event ON (road.way_id = overtaking_event.way_id and (road.directionality != 0 or overtaking_event.direction_reversed = r.rev))
     -- WHERE road.name = 'Merzhauser Straße'
-    WHERE road.geometry && bbox
+    WHERE
+      zoom_level >= 10 AND
+      road.geometry && bbox
     GROUP BY road.name, road.way_id, road.geometry, road.directionality, r.dir, r.rev;
 
 $$ LANGUAGE SQL IMMUTABLE;

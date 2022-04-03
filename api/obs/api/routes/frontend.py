@@ -26,7 +26,7 @@ if app.config.FRONTEND_CONFIG:
                         .replace("111", "{x}")
                         .replace("222", "{y}")
                     ],
-                    "minzoom": 12,
+                    "minzoom": 0,
                     "maxzoom": 14,
                 }
             ),

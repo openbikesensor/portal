@@ -11,6 +11,8 @@ RETURNS TABLE(event_id bigint, geometry geometry, distance_overtaker float, dist
       speed,
       way_id::bigint as way_id
     FROM overtaking_event
-    WHERE ST_Transform(overtaking_event.geometry, 3857) && bbox;
+    WHERE
+      zoom_level >= 10 AND
+      ST_Transform(overtaking_event.geometry, 3857) && bbox;
 
 $$ LANGUAGE SQL IMMUTABLE;
