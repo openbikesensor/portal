@@ -5,7 +5,7 @@ Simple migrations, e.g. for adding schema changes, are not documented
 explicitly. Their general usage is described in the [README](./README.md) (for
 development) and [deployment/README.md](deployment/README.md) (for production).
 
-## 0.5.2
+## 0.6.0
 
 **Make sure to upgrade to `0.5.1` first, by checking out that version tag and
 running migrations, then coming back to this version.** This is required

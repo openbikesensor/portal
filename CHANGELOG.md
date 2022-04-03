@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.5.2
+## 0.6.0
 
 Starting in this version, the database schema is created through migrations
 instead of using the `reset_database.py` script. This means that for both the
