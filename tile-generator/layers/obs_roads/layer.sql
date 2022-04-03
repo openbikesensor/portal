@@ -66,7 +66,9 @@ RETURNS TABLE(
         GROUP BY overtaking_event.way_id, overtaking_event.direction_reversed
     ) e on (e.way_id = road.way_id and (road.directionality != 0 or e.direction_reversed = r.rev))
 
-    WHERE road.geometry && bbox
+    WHERE
+      zoom_level >= 10 AND
+      road.geometry && bbox
     GROUP BY
       road.name,
       road.way_id,

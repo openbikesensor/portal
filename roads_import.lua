@@ -50,6 +50,9 @@ local MOTORWAY_TYPES = {
   "motorway_link",
 }
 
+local ADMIN_LEVEL_MIN = 2
+local ADMIN_LEVEL_MAX = 8
+
 local ONEWAY_YES = {"yes", "true", "1"}
 local ONEWAY_REVERSE = {"reverse", "-1"}
 
@@ -59,6 +62,13 @@ local roads = osm2pgsql.define_way_table('road', {
   { column = 'name', type = 'text' },
   { column = 'geometry', type = 'linestring' },
   { column = 'oneway', type = 'bool' },
+})
+
+local regions = osm2pgsql.define_relation_table('region', {
+  { column = 'name', type = 'text' },
+  { column = 'geometry', type = 'geometry' },
+  { column = 'admin_level', type = 'int' },
+  { column = 'tags', type = 'hstore' },
 })
 
 local minspeed_rural = 60
@@ -130,4 +140,22 @@ function osm2pgsql.process_way(object)
       oneway = oneway,
     })
   end
+end
+
+function osm2pgsql.process_relation(object)
+  local admin_level = tonumber(object.tags.admin_level)
+  if object.tags.boundary == "administrative" and admin_level and admin_level >= ADMIN_LEVEL_MIN and admin_level <= ADMIN_LEVEL_MAX then
+    regions:add_row({
+      geometry = { create = 'area' },
+      name = object.tags.name,
+      admin_level = admin_level,
+      tags = object.tags,
+    })
+  end
+end
+
+function osm2pgsql.select_relation_members(relation)
+    if relation.tags.type == 'route' then
+        return { ways = osm2pgsql.way_member_ids(relation) }
+    end
 end

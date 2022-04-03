@@ -6,17 +6,10 @@ import { Layer, Source } from "react-map-gl";
 import produce from "immer";
 import classNames from "classnames";
 
-import type { Location } from "types";
-import { Page, Map } from "components";
-import { useConfig } from "config";
-import {
-  colorByDistance,
-  colorByCount,
-  borderByZone,
-  reds,
-  isValidAttribute,
-} from "mapstyles";
-import { useMapConfig } from "reducers/mapConfig";
+import {Page, Map} from 'components'
+import {useConfig} from 'config'
+import {colorByDistance, borderByZone, colorByCount, reds, isValidAttribute} from 'mapstyles'
+import {useMapConfig} from 'reducers/mapConfig'
 
 import RoadInfo from "./RoadInfo";
 import LayerSidebar from "./LayerSidebar";
@@ -27,19 +20,20 @@ const untaggedRoadsLayer = {
   type: "line",
   source: "obs",
   "source-layer": "obs_roads",
+  minzoom: 12,
   filter: ["!", ["to-boolean", ["get", "distance_overtaker_mean"]]],
   layout: {
     "line-cap": "round",
     "line-join": "round",
   },
   paint: {
-    "line-width": ["interpolate", ["exponential", 1.5], ["zoom"], 12, 2, 17, 2],
-    "line-color": "#ABC",
-    "line-opacity": ["interpolate", ["linear"], ["zoom"], 14, 0, 15, 1],
-    "line-offset": [
-      "interpolate",
-      ["exponential", 1.5],
-      ["zoom"],
+    'line-width': ['interpolate', ['exponential', 1.5], ['zoom'], 12, 2, 17, 2],
+    'line-color': '#ABC',
+    'line-opacity': ['interpolate', ['linear'], ['zoom'], 14, 0, 15, 1],
+    'line-offset': [
+      'interpolate',
+      ['exponential', 1.5],
+      ['zoom'],
       12,
       ["get", "offset_direction"],
       19,
@@ -58,6 +52,7 @@ const getRoadsLayer = (colorAttribute, maxCount) =>
   produce(untaggedRoadsLayer, (draft) => {
     draft.id = "obs_roads_normal";
     draft.filter = isValidAttribute(colorAttribute);
+    draft.minzoom = 10
     draft.paint["line-width"][6] = 6; // scale bigger on zoom
     draft.paint["line-color"] = colorAttribute.startsWith("distance_")
       ? colorByDistance(colorAttribute)
@@ -66,8 +61,8 @@ const getRoadsLayer = (colorAttribute, maxCount) =>
       : colorAttribute.endsWith("zone")
       ? borderByZone()
       : "#DDD";
-    draft.paint["line-opacity"][3] = 12;
-    draft.paint["line-opacity"][5] = 13;
+    // draft.paint["line-opacity"][3] = 12;
+    // draft.paint["line-opacity"][5] = 13;
   });
 
 const getEventsLayer = () => ({
@@ -161,6 +156,9 @@ function MapPage({ login }) {
   if (mapConfig.obsRoads.show) {
     layers.push(roadsLayer);
   }
+
+  const regionLayers = useMemo(() => getRegionLayers(), [])
+  layers.push(...regionLayers)
 
   const eventsLayer = useMemo(() => getEventsLayer(), []);
   const eventsTextLayer = useMemo(() => getEventsTextLayer(), []);

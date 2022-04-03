@@ -50,6 +50,7 @@ function LayerSidebar({
     baseMap: { style },
     obsRoads: { show: showRoads, showUntagged, attribute, maxCount },
     obsEvents: { show: showEvents },
+    obsRegions: {show: showRegions},
     filters: {
       currentUser: filtersCurrentUser,
       dateMode,
@@ -57,7 +58,7 @@ function LayerSidebar({
       endDate,
       thresholdAfter,
     },
-  } = mapConfig;
+  } = mapConfig
 
   return (
     <div>
@@ -76,6 +77,28 @@ function LayerSidebar({
             }
           />
         </List.Item>
+        <Divider />
+        <List.Item>
+          <Checkbox
+            toggle
+            size="small"
+            id="obsRegions.show"
+            style={{float: 'right'}}
+            checked={showRegions}
+            onChange={() => setMapConfigFlag('obsRegions.show', !showRegions)}
+          />
+          <label htmlFor="obsRegions.show">
+            <Header as="h4">Regions</Header>
+          </label>
+        </List.Item>
+        {showRegions && (
+          <>
+            <List.Item>Color regions based on event count</List.Item>
+            <List.Item>
+              <ColorMapLegend twoTicks map={[[0, "#00897B00"], [5000, "#00897BFF"]]} digits={0} />
+            </List.Item>
+          </>
+        )}
         <Divider />
         <List.Item>
           <Checkbox

@@ -124,6 +124,58 @@ export const trackLayer = {
   },
 }
 
+export const getRegionLayers = (adminLevel = 6, baseColor = "#00897B", maxValue = 5000) => [{
+  id: 'region',
+  "type": "fill",
+  "source": "obs",
+  "source-layer": "obs_regions",
+  "minzoom": 0,
+  "maxzoom": 10,
+  "filter": [
+    "all",
+    ["==", "admin_level", adminLevel]
+  ],
+  "paint": {
+    "fill-color": baseColor,
+    "fill-antialias": true,
+    "fill-opacity": [
+      "interpolate",
+      ["linear"],
+      [
+        "log10",
+        [
+          "get",
+          "overtaking_event_count"
+        ]
+      ],
+      0,
+      0,
+      Math.log10(maxValue),
+      0.9
+    ]
+  },
+},
+{
+  id: 'region-border',
+  "type": "line",
+  "source": "obs",
+  "source-layer": "obs_regions",
+  "minzoom": 0,
+  "maxzoom": 10,
+  "filter": [
+    "all",
+    ["==", "admin_level", adminLevel]
+  ],
+  "paint": {
+    "line-width": 1,
+    "line-color": baseColor,
+  },
+  "layout": {
+    "line-join": "round",
+    "line-cap": "round"
+  }
+}]
+
 export const trackLayerRaw = produce(trackLayer, draft => {
   // draft.paint['line-color'] = '#81D4FA'
   draft.paint['line-width'][4] = 1
