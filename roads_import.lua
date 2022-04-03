@@ -26,10 +26,10 @@ local HIGHWAY_TYPES = {
   "tertiary",
   "unclassified",
   "residential",
-  "trunk_link",
-  "primary_link",
-  "secondary_link",
-  "tertiary_link",
+  -- "trunk_link",
+  -- "primary_link",
+  -- "secondary_link",
+  -- "tertiary_link",
   "living_street",
   "service",
   "track",
@@ -47,7 +47,7 @@ local URBAN_TYPES = {
 }
 local MOTORWAY_TYPES = {
   "motorway",
-  "motorway_link",
+  -- "motorway_link",
 }
 
 local ADMIN_LEVEL_MIN = 2
