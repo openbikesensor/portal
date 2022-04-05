@@ -35,6 +35,11 @@ local HIGHWAY_TYPES = {
   "track",
   "road",
 }
+local UNMOTORIZED_TRAFFIC_HIGHWAY_TYPES = {
+  "cycleway",
+  "footway",
+  "path",
+}
 local ZONE_TYPES = {
   "urban",
   "rural",
@@ -68,6 +73,7 @@ local roads = osm2pgsql.define_way_table('road', {
   { column = 'name', type = 'text' },
   { column = 'geometry', type = 'linestring' },
   { column = 'oneway', type = 'bool' },
+  { column = 'has_cars', type = 'bool' },
 })
 
 local regions = osm2pgsql.define_relation_table('region', {
@@ -83,7 +89,9 @@ function osm2pgsql.process_way(object)
 
   -- only import certain highway ways, i.e. roads and pathways
   if not tags.highway then return end
-  if not contains(HIGHWAY_TYPES, tags.highway) then return end
+
+  local unmotorized_traffic = contains(UNMOTORIZED_TRAFFIC_HIGHWAY_TYPES, tags.highway)
+  if not contains(HIGHWAY_TYPES, tags.highway) and not unmotorized_traffic then return end
 
   -- do not import areas (plazas etc.)
   if tags.area == "yes" then return end
@@ -139,6 +147,7 @@ function osm2pgsql.process_way(object)
     zone = zone,
     directionality = directionality,
     oneway = oneway,
+    has_cars = not unmotorized_traffic
   })
 end
 
