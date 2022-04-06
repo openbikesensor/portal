@@ -7,3 +7,18 @@ export function findInput(register) {
     register(found)
   }
 }
+
+// Generates pairs from the input iterable
+export function* pairwise(it) {
+  let lastValue
+  let firstRound = true
+
+  for (const i of it) {
+    if (firstRound) {
+      firstRound = false
+    } else {
+      yield [lastValue, i]
+    }
+    lastValue = i
+  }
+}
