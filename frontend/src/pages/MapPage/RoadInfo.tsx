@@ -5,10 +5,23 @@ import {Layer, Source} from 'react-map-gl'
 import {of, from, concat} from 'rxjs'
 import {useObservable} from 'rxjs-hooks'
 import {switchMap, distinctUntilChanged} from 'rxjs/operators'
+import {Chart} from 'components'
+import {pairwise} from 'utils'
 
 import api from 'api'
+import {colorByDistance} from 'mapstyles'
 
 import styles from './styles.module.less'
+
+function selectFromColorMap(colormap, value) {
+  let last = null
+  for (let i = 0; i < colormap.length; i += 2) {
+    if (colormap[i + 1] > value) {
+      return colormap[i]
+    }
+  }
+  return colormap[colormap.length - 1]
+}
 
 const UNITS = {distanceOvertaker: 'm', distanceStationary: 'm', speed: 'km/h'}
 const LABELS = {
@@ -59,6 +72,41 @@ function RoadStatsTable({data}) {
         ))}
       </Table.Body>
     </Table>
+  )
+}
+
+function HistogramChart({bins, counts}) {
+  const diff = bins[1] - bins[0]
+  const data = _.zip(
+    bins.slice(0, bins.length - 1).map((v) => v + diff / 2),
+    counts
+  ).map((value) => ({
+    value,
+    itemStyle: {color: selectFromColorMap(colorByDistance()[3].slice(2), value[0])},
+  }))
+
+  return (
+    <Chart
+      style={{height: 240}}
+      option={{
+        grid: {top: 30, bottom: 30, right: 30, left: 30},
+        xAxis: {
+          type: 'value',
+          axisLabel: {formatter: (v) => `${Math.round(v * 100)} cm`},
+          min: 0,
+          max: 2.5,
+        },
+        yAxis: {},
+        series: [
+          {
+            type: 'bar',
+            data,
+
+            barMaxWidth: 20,
+          },
+        ],
+      }}
+    />
   )
 }
 
@@ -138,6 +186,13 @@ export default function RoadInfo({clickLocation}) {
         )}
 
         {info?.[direction] && <RoadStatsTable data={info[direction]} />}
+
+        {info?.[direction]?.distanceOvertaker?.histogram && (
+          <>
+            <Header as="h5">Overtaker distance distribution</Header>
+            <HistogramChart {...info[direction]?.distanceOvertaker?.histogram} />
+          </>
+        )}
       </>
     )
 
