@@ -11,7 +11,16 @@ import api from 'api'
 import styles from './styles.module.less'
 
 const UNITS = {distanceOvertaker: 'm', distanceStationary: 'm', speed: 'km/h'}
-const LABELS = {distanceOvertaker: 'Overtaker', distanceStationary: 'Stationary', speed: 'Speed'}
+const LABELS = {
+  distanceOvertaker: 'Left',
+  distanceStationary: 'Right',
+  speed: 'Speed',
+  count: 'No. of Measurements',
+  min: 'Minimum',
+  median: 'Median',
+  max: 'Maximum',
+  mean: 'Average',
+}
 const ZONE_COLORS = {urban: 'olive', rural: 'brown', motorway: 'purple'}
 const CARDINAL_DIRECTIONS = ['north', 'north-east', 'east', 'south-east', 'south', 'south-west', 'west', 'north-west']
 const getCardinalDirection = (bearing) =>
@@ -26,23 +35,26 @@ function RoadStatsTable({data}) {
     <Table size="small" compact>
       <Table.Header>
         <Table.Row>
-          <Table.HeaderCell>Property</Table.HeaderCell>
-          <Table.HeaderCell>n</Table.HeaderCell>
-          <Table.HeaderCell>min</Table.HeaderCell>
-          <Table.HeaderCell>q50</Table.HeaderCell>
-          <Table.HeaderCell>max</Table.HeaderCell>
-          <Table.HeaderCell>mean</Table.HeaderCell>
-          <Table.HeaderCell>unit</Table.HeaderCell>
+          <Table.HeaderCell textAlign="right"></Table.HeaderCell>
+          {['distanceOvertaker', 'distanceStationary', 'speed'].map((prop) => (
+            <Table.HeaderCell key={prop} textAlign="right">
+              {LABELS[prop]}
+            </Table.HeaderCell>
+          ))}
         </Table.Row>
       </Table.Header>
       <Table.Body>
-        {['distanceOvertaker', 'distanceStationary', 'speed'].map((prop) => (
-          <Table.Row key={prop}>
-            <Table.Cell>{LABELS[prop]}</Table.Cell>
-            {['count', 'min', 'median', 'max', 'mean'].map((stat) => (
-              <Table.Cell key={stat}>{((data[prop]?.statistics?.[stat]) * ((prop === `speed` && stat != 'count') ? 3.6 : 1)).toFixed(stat === 'count' ? 0 : 2)}</Table.Cell>
+        {['count', 'min', 'median', 'max', 'mean'].map((stat) => (
+          <Table.Row key={stat}>
+            <Table.Cell>{LABELS[stat]}</Table.Cell>
+            {['distanceOvertaker', 'distanceStationary', 'speed'].map((prop) => (
+              <Table.Cell key={prop} textAlign="right">
+                {(data[prop]?.statistics?.[stat] * (prop === `speed` && stat != 'count' ? 3.6 : 1)).toFixed(
+                  stat === 'count' ? 0 : 2
+                )}
+                {stat !== 'count' && ` ${UNITS[prop]}`}
+              </Table.Cell>
             ))}
-            <Table.Cell>{UNITS[prop]}</Table.Cell>
           </Table.Row>
         ))}
       </Table.Body>
