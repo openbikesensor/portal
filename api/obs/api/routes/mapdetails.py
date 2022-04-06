@@ -1,5 +1,6 @@
 import json
 from functools import partial
+import logging
 import numpy
 import math
 
@@ -15,6 +16,7 @@ from obs.api.utils import round_to
 round_distance = partial(round_to, multiples=0.001)
 round_speed = partial(round_to, multiples=0.1)
 
+log = logging.getLogger(__name__)
 
 def get_bearing(a, b):
     # longitude, latitude
@@ -25,6 +27,8 @@ def get_bearing(a, b):
     ) * numpy.cos(dL)
     return numpy.arctan2(X, Y)
 
+# Bins for histogram on overtaker distances. 0, 0.25, ... 2.25, infinity
+DISTANCE_BINS = numpy.arange(0, 2.5, 0.25).tolist() + [float('inf')]
 
 @api.route("/mapdetails/road", methods=["GET"])
 async def mapdetails_road(req):
@@ -88,15 +92,14 @@ async def mapdetails_road(req):
         return arr[:, cond], arr[:, ~cond]
 
     forwards, backwards = partition(data, ~mask)
-    print("for", forwards.dtype, "back", backwards.dtype)
 
-    def array_stats(arr, rounder):
+    def array_stats(arr, rounder, bins=30):
         if len(arr):
-            print("ARR DTYPE", arr.dtype)
-            print("ARR", arr)
             arr = arr[~numpy.isnan(arr)]
 
         n = len(arr)
+
+        hist, bins = numpy.histogram(arr, bins=bins)
 
         return {
             "statistics": {
@@ -105,6 +108,10 @@ async def mapdetails_road(req):
                 "min": rounder(numpy.min(arr)) if n else None,
                 "max": rounder(numpy.max(arr)) if n else None,
                 "median": rounder(numpy.median(arr)) if n else None,
+            },
+            "histogram": {
+                "bins": [None if math.isinf(b) else b for b in bins.tolist()],
+                "counts": hist.tolist(),
             },
             "values": list(map(rounder, arr.tolist())),
         }
@@ -118,15 +125,13 @@ async def mapdetails_road(req):
         # convert to degrees, as this is more natural to understand for consumers
         bearing = round_to((bearing / math.pi * 180 + 360) % 360, 1)
 
-    print(road.geometry)
-
     def get_direction_stats(direction_arrays, backwards=False):
         return {
             "bearing": ((bearing + 180) % 360 if backwards else bearing)
             if bearing is not None
             else None,
-            "distanceOvertaker": array_stats(direction_arrays[0], round_distance),
-            "distanceStationary": array_stats(direction_arrays[1], round_distance),
+            "distanceOvertaker": array_stats(direction_arrays[0], round_distance, bins=DISTANCE_BINS),
+            "distanceStationary": array_stats(direction_arrays[1], round_distance, bins=DISTANCE_BINS),
             "speed": array_stats(direction_arrays[2], round_speed),
         }
 
