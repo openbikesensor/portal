@@ -12,6 +12,8 @@
     "classnames": "^2.3.1",
     "colormap": "^2.3.2",
     "downloadjs": "^1.4.7",
+    "echarts": "^5.3.2",
+    "echarts-for-react": "^3.0.2",
     "fomantic-ui-less": "^2.8.8",
     "immer": "^9.0.7",
     "luxon": "^1.28.0",
