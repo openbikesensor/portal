@@ -1,4 +1,4 @@
-from os.path import join, exists, isfile
+from os.path import join, exists, isfile, abspath
 
 import sanic.response as response
 from sanic.exceptions import NotFound
@@ -50,6 +50,9 @@ if INDEX_HTML and exists(INDEX_HTML):
             raise NotFound()
 
         file = join(app.config.FRONTEND_DIR, path)
+        if not abspath(file).startswith(abspath(app.config.FRONTEND_DIR)):
+            raise NotFound()
+
         if not exists(file) or not path or not isfile(file):
             return response.html(
                 index_file_contents.replace("__BASE_HREF__", req.ctx.frontend_url + "/")
