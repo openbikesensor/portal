@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.6.2
+
+### Improvements
+
+* Prevent directory traversals inside container on python-served frontend.
+
 ## 0.6.1
 
 ### Improvements
