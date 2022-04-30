@@ -12,11 +12,11 @@ RETURNS TABLE(event_id bigint, geometry geometry, distance_overtaker float, dist
       CASE WHEN road.zone IS NULL THEN 'urban' else road.zone END as zone,
       overtaking_event.way_id::bigint as way_id
     FROM overtaking_event
-    FULL OUTER JOIN road ON road.way_id = overtaking_event.way_id
+    FULL OUTER JOIN road ON (road.way_id = overtaking_event.way_id)
     JOIN track on track.id = overtaking_event.track_id
     WHERE
       zoom_level >= 10 AND
-      ST_Transform(overtaking_event.geometry, 3857) && bbox
+      ST_Transform(overtaking_event.geometry, 3857) && bbox;
       AND (user_id is NULL OR user_id = track.author_id)
       AND time BETWEEN COALESCE(min_time, '1900-01-01'::timestamp) AND COALESCE(max_time, '2100-01-01'::timestamp);
 

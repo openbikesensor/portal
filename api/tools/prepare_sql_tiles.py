@@ -48,6 +48,32 @@ DROP FUNCTION IF EXISTS {fname}(integer, integer, integer{extra_args_types});
 CREATE FUNCTION {fname}(zoom integer, x integer, y integer{extra_args_definitions})
 RETURNS {'TABLE(mvt bytea, key text)' if self.key_column else 'bytea'} AS $$
 {self.generate_sql()};
+$$ LANGUAGE SQL STABLE RETURNS NULL ON NULL INPUT;"""
+
+EXTRA_ARGS = [
+    # name, type, default
+    ("user_id", "integer", "NULL"),
+    ("min_time", "timestamp", "NULL"),
+    ("max_time", "timestamp", "NULL"),
+]
+
+
+class CustomMvtGenerator(MvtGenerator):
+    def generate_sqltomvt_func(self, fname, extra_args: List[Tuple[str, str]]) -> str:
+        """
+        Creates a SQL function that returns a single bytea value or null. This
+        method is overridden to allow for custom arguments in the created function
+        """
+        extra_args_types = "".join([f", {a[1]}" for a in extra_args])
+        extra_args_definitions = "".join(
+            [f", {a[0]} {a[1]} DEFAULT {a[2]}" for a in extra_args]
+        )
+
+        return f"""\
+DROP FUNCTION IF EXISTS {fname}(integer, integer, integer{extra_args_types});
+CREATE FUNCTION {fname}(zoom integer, x integer, y integer{extra_args_definitions})
+RETURNS {'TABLE(mvt bytea, key text)' if self.key_column else 'bytea'} AS $$
+{self.generate_sql()};
 $$ LANGUAGE SQL STABLE CALLED ON NULL INPUT;"""
 
 
