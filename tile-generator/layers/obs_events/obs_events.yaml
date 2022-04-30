@@ -25,7 +25,13 @@ layer:
     geometry_field: geometry
     key_field: event_id
     key_field_as_attribute: no
-    query: (SELECT event_id, geometry, distance_overtaker, distance_stationary, direction, course, speed, zone, way_id FROM layer_obs_events(!bbox!, z(!scale_denominator!))) AS t
+    query: >
+      (
+        SELECT
+          event_id, geometry, distance_overtaker, distance_stationary, direction, course, speed, zone, way_id
+        FROM
+          layer_obs_events(!bbox!, z(!scale_denominator!), user_id, min_time, max_time)
+      ) AS t
 
 schema:
   - ./layer.sql

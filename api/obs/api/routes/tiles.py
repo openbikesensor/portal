@@ -1,5 +1,6 @@
 from gzip import decompress
 from sqlite3 import connect
+from sanic.exceptions import Forbidden
 from sanic.response import raw
 
 from sqlalchemy import select, text
@@ -23,7 +24,7 @@ def get_tile(filename, zoom, x, y):
 
     content = db.execute(
         "SELECT tile_data FROM tiles WHERE zoom_level=? AND tile_column=? AND tile_row=?",
-        (zoom, x, (2 ** zoom - 1) - y),
+        (zoom, x, (2**zoom - 1) - y),
     ).fetchone()
     return content and content[0] or None
 
@@ -38,11 +39,21 @@ async def tiles(req, zoom: int, x: int, y: str):
         tile = get_tile(req.app.config.TILES_FILE, int(zoom), int(x), int(y))
 
     else:
+        user_id = req.ctx.get_single_arg("user_id", convert=int, default=None)
+        if user_id is not None:
+            if req.ctx.user is None or req.ctx.user.id != user_id:
+                raise Forbidden()
+
         tile = await req.ctx.db.scalar(
-            text(f"select data from getmvt(:zoom, :x, :y) as b(data, key);").bindparams(
+            text(
+                f"select data from getmvt(:zoom, :x, :y, :user_id, :min_time, :max_time) as b(data, key);"
+            ).bindparams(
                 zoom=int(zoom),
                 x=int(x),
                 y=int(y),
+                user_id=user_id,
+                min_time=None,
+                max_time=None,
             )
         )
 
@@ -66,4 +77,3 @@ async def tiles(req, zoom: int, x: int, y: str):
         tile = decompress(tile)
 
     return raw(tile, content_type="application/x-protobuf", headers=headers)
-
