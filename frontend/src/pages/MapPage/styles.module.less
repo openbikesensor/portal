@@ -36,4 +36,36 @@
   position: absolute;
   left: 16px;
   top: 16px;
+  border-left: 1px solid @borderColor;
+  background: white;
+  padding: 16px;
+}
+
+.closeHeader {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+
+@media @mobile {
+  .mapContainer {
+    height: auto;
+    min-height: calc(100vh - @menuHeight);
+    flex-direction: column;
+  }
+
+  .map {
+    height: 60vh;
+  }
+
+  .mapSidebar {
+    width: auto;
+    height: auto;
+  }
+
+  .mapInfoBox {
+    width: auto;
+    height: auto;
+  }
 }

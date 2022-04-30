@@ -78,20 +78,24 @@ function Map({
   boundsFromJson,
   baseMapStyle,
   hasToolbar,
+  onViewportChange,
   ...props
 }: {
-  viewportFromUrl?: boolean;
-  children: React.ReactNode;
-  boundsFromJson: GeoJSON.Geometry;
-  baseMapStyle: string;
+  viewportFromUrl?: boolean
+  children: React.ReactNode
+  boundsFromJson: GeoJSON.Geometry
+  baseMapStyle: string
   hasToolbar?: boolean;
+  onViewportChange: (viewport: Viewport) => void,
 }) {
   const [viewportState, setViewportState] = useState(EMPTY_VIEWPORT);
   const [viewportUrl, setViewportUrl] = useViewportFromUrl();
 
-  const [viewport, setViewport] = viewportFromUrl
-    ? [viewportUrl, setViewportUrl]
-    : [viewportState, setViewportState];
+  const [viewport, setViewport_] = viewportFromUrl ? [viewportUrl, setViewportUrl] : [viewportState, setViewportState]
+  const setViewport = useCallback((viewport: Viewport) => {
+    setViewport_(viewport);
+    onViewportChange?.(viewport);
+  }, [setViewport_, onViewportChange])
 
   const config = useConfig();
   useEffect(() => {

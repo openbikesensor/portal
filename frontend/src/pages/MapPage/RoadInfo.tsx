@@ -1,22 +1,12 @@
-import React, { useState, useCallback } from "react";
-import _ from "lodash";
-import {
-  Segment,
-  Menu,
-  Header,
-  Label,
-  Icon,
-  Table,
-  Message,
-  Button,
-} from "semantic-ui-react";
-import { Layer, Source } from "react-map-gl";
-import { of, from, concat } from "rxjs";
-import { useObservable } from "rxjs-hooks";
-import { switchMap, distinctUntilChanged } from "rxjs/operators";
-import { Chart } from "components";
-import { pairwise } from "utils";
-import { useTranslation } from "react-i18next";
+import React, {useState, useCallback} from 'react'
+import _ from 'lodash'
+import {Segment, Menu, Header, Label, Icon, Table, Message, Button} from 'semantic-ui-react'
+import {Layer, Source} from 'react-map-gl'
+import {of, from, concat} from 'rxjs'
+import {useObservable} from 'rxjs-hooks'
+import {switchMap, distinctUntilChanged} from 'rxjs/operators'
+import {Chart} from 'components'
+import {pairwise} from 'utils'
 
 import type { Location } from "types";
 import api from "api";
@@ -224,42 +214,42 @@ export default function RoadInfo({
           </Message>
         )}
 
-        {info?.road.zone && (
-          <Label size="small" color={ZONE_COLORS[info?.road.zone]}>
+        {info.road.zone && (
+          <Label size="small" color={ZONE_COLORS[info.road.zone]}>
             {t(`general.zone.${info.road.zone}`)}
           </Label>
         )}
 
-        {info?.road.oneway && (
+        {info.road.oneway && (
           <Label size="small" color="blue">
             <Icon name="long arrow alternate right" fitted />{" "}
             {t("MapPage.roadInfo.oneway")}
           </Label>
         )}
 
-        {info?.road.oneway ? null : (
-          <Menu size="tiny" fluid secondary>
+        {info.road.oneway ? null : (
+          <Menu size="tiny" pointing>
             <Menu.Item header>{t("MapPage.roadInfo.direction")}</Menu.Item>
             <Menu.Item
               name="forwards"
               active={direction === "forwards"}
               onClick={onClickDirection}
             >
-              {getCardinalDirection(t, info?.forwards?.bearing)}
+              {getCardinalDirection(t, info.forwards?.bearing)}
             </Menu.Item>
             <Menu.Item
               name="backwards"
               active={direction === "backwards"}
               onClick={onClickDirection}
             >
-              {getCardinalDirection(t, info?.backwards?.bearing)}
+              {getCardinalDirection(t, info.backwards?.bearing)}
             </Menu.Item>
           </Menu>
         )}
 
-        {info?.[direction] && <RoadStatsTable data={info[direction]} />}
+        {info[direction] && <RoadStatsTable data={info[direction]} />}
 
-        {info?.[direction]?.distanceOvertaker?.histogram && (
+        {info[direction]?.distanceOvertaker?.histogram && (
           <>
             <Header as="h5">
               {t("MapPage.roadInfo.overtakerDistanceDistribution")}
@@ -274,7 +264,7 @@ export default function RoadInfo({
 
   return (
     <>
-      {info?.road && (
+      {info.road && (
         <Source id="highlight" type="geojson" data={info.road.geometry}>
           <Layer
             id="route"
@@ -307,10 +297,11 @@ export default function RoadInfo({
         </Source>
       )}
 
-      {content && (
+      {content && mapInfoPortal && (
+        createPortal(
         <div className={styles.mapInfoBox}>
-          <Segment loading={loading}>{content}</Segment>
-        </div>
+          {content}
+        </div>, mapInfoPortal))}
       )}
     </>
   );
