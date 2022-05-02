@@ -39,10 +39,12 @@ async def tiles(req, zoom: int, x: int, y: str):
         tile = get_tile(req.app.config.TILES_FILE, int(zoom), int(x), int(y))
 
     else:
-        user_id = req.ctx.get_single_arg("user_id", convert=int, default=None)
-        if user_id is not None:
-            if req.ctx.user is None or req.ctx.user.id != user_id:
+        user_id = None
+        username = req.ctx.get_single_arg("user", default=None)
+        if username is not None:
+            if req.ctx.user is None or req.ctx.user.username != username:
                 raise Forbidden()
+            user_id = req.ctx.user.id
 
         tile = await req.ctx.db.scalar(
             text(

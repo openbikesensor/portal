@@ -48,7 +48,7 @@ layer:
           direction,
           zone,
           offset_direction
-        FROM layer_obs_roads(!bbox!, z(!scale_denominator!))
+        FROM layer_obs_roads(!bbox!, z(!scale_denominator!), user_id, min_time, max_time)
       ) AS t
 
 schema:
