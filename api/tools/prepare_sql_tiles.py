@@ -48,7 +48,7 @@ DROP FUNCTION IF EXISTS {fname}(integer, integer, integer{extra_args_types});
 CREATE FUNCTION {fname}(zoom integer, x integer, y integer{extra_args_definitions})
 RETURNS {'TABLE(mvt bytea, key text)' if self.key_column else 'bytea'} AS $$
 {self.generate_sql()};
-$$ LANGUAGE SQL STABLE RETURNS NULL ON NULL INPUT;"""
+$$ LANGUAGE SQL STABLE CALLED ON NULL INPUT;"""
 
 
 def parse_pg_url(url=app.config.POSTGRES_URL):
