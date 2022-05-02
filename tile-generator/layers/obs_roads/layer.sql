@@ -12,6 +12,7 @@ RETURNS TABLE(
   overtaking_event_count int,
   usage_count bigint,
   direction int,
+  zone zone_type,
   offset_direction int
 ) AS $$
 
@@ -27,12 +28,13 @@ RETURNS TABLE(
       (select count(id) from road_usage where road_usage.way_id = road.way_id and
           (road.directionality != 0 or road_usage.direction_reversed = r.rev)) as usage_count,
       r.dir as direction,
+      road.zone::zone_type as zone,
       case when road.directionality = 0 then r.dir else 0 end as offset_direction
     FROM road
     LEFT JOIN (VALUES (-1, TRUE), (1, FALSE), (0, FALSE)) AS r(dir, rev) ON (abs(r.dir) != road.directionality)
     FULL OUTER JOIN overtaking_event ON (road.way_id = overtaking_event.way_id and (road.directionality != 0 or overtaking_event.direction_reversed = r.rev))
     -- WHERE road.name = 'Merzhauser Straße'
     WHERE road.geometry && bbox
-    GROUP BY road.name, road.way_id, road.geometry, road.directionality, r.dir, r.rev;
+    GROUP BY road.name, road.way_id, road.geometry, road.directionality, r.dir, r.rev, road.zone;
 
 $$ LANGUAGE SQL IMMUTABLE;

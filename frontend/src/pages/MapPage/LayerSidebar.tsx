@@ -98,7 +98,10 @@ function LayerSidebar({
             ) :
             (
               <List.Item>
-                <DiscreteColorMapLegend map={colorByDistance('distance_overtaker')[3].slice(2)} />
+                <span style={{color: "olive"}}>Urban</span>
+                <DiscreteColorMapLegend map={colorByDistance('distance_overtaker')[3][5].slice(2)} />
+                <span style={{color: "brown"}}>Rural</span>
+                <DiscreteColorMapLegend map={colorByDistance('distance_overtaker')[3][3].slice(2)} />
               </List.Item>
             )}
           </>
@@ -120,7 +123,10 @@ function LayerSidebar({
         {showEvents && (
           <>
             <List.Item>
-              <DiscreteColorMapLegend map={colorByDistance('distance_overtaker')[3].slice(2)} />
+                <span style={{color: "olive"}}>Urban</span>
+                <DiscreteColorMapLegend map={colorByDistance('distance_overtaker')[3][5].slice(2)} />
+                <span style={{color: "brown"}}>Rural</span>
+                <DiscreteColorMapLegend map={colorByDistance('distance_overtaker')[3][3].slice(2)} />
             </List.Item>
           </>
         )}

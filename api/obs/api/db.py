@@ -124,6 +124,7 @@ class OvertakingEvent(Base):
     distance_stationary = Column(Float)
     course = Column(Float)
     speed = Column(Float)
+    zone = Column(ZoneType)
 
     def __repr__(self):
         return f"<OvertakingEvent {self.id}>"

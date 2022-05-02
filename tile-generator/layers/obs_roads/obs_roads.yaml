@@ -22,6 +22,8 @@ layer:
       Contains -1 for events while going along the way backwards, 1 for
       forwards. Each road is emitted twice, if it has data for both directions,
       even if it is oneway.
+    zone: |
+      ural or urban
     offset_direction: |
       Factor for offset to shift the line to the driving side. One of -1, 0, 1.
   defaults:
@@ -44,6 +46,7 @@ layer:
           overtaking_event_count,
           usage_count,
           direction,
+          zone,
           offset_direction
         FROM layer_obs_roads(!bbox!, z(!scale_denominator!))
       ) AS t

@@ -47,24 +47,64 @@ export function colorByCount(attribute = 'event_count', maxCount, colormap = vir
   return colormapToScale(colormap, ['case', ['to-boolean', ['get', attribute]], ['get', attribute], 0], 0, maxCount)
 }
 
-export function colorByDistance(attribute = 'distance_overtaker_mean', fallback = '#ABC') {
+var steps = {'rural': [1.6,1.8,2.0,2.2],
+             'urban': [1.1,1.3,1.5,1.7]}
+
+export function borderByZone() {
+  return ["match", ['get', 'zone'],
+  "rural", "brown",
+  "urban", "olive",
+  "purple"
+  ]
+}
+
+export function colorByDistance(attribute = 'distance_overtaker_mean', fallback = '#ABC', zone='urban') {
+
   return [
     'case',
     ['!', ['to-boolean', ['get', attribute]]],
     fallback,
+    ["match", ['get', 'zone'], "rural",
     [
       'step',
       ['get', attribute],
       'rgba(150, 0, 0, 1)',
-      1.1,
+      steps['rural'][0],
       'rgba(255, 0, 0, 1)',
-      1.3,
+      steps['rural'][1],
       'rgba(255, 220, 0, 1)',
-      1.5,
+      steps['rural'][2],
       'rgba(67, 200, 0, 1)',
-      1.7,
+      steps['rural'][3],
+      'rgba(67, 150, 0, 1)',
+    ], "urban",
+    [
+      'step',
+      ['get', attribute],
+      'rgba(150, 0, 0, 1)',
+      steps['urban'][0],
+      'rgba(255, 0, 0, 1)',
+      steps['urban'][1],
+      'rgba(255, 220, 0, 1)',
+      steps['urban'][2],
+      'rgba(67, 200, 0, 1)',
+      steps['urban'][3],
       'rgba(67, 150, 0, 1)',
     ],
+    [
+      'step',
+      ['get', attribute],
+      'rgba(150, 0, 0, 1)',
+      steps['urban'][0],
+      'rgba(255, 0, 0, 1)',
+      steps['urban'][1],
+      'rgba(255, 220, 0, 1)',
+      steps['urban'][2],
+      'rgba(67, 200, 0, 1)',
+      steps['urban'][3],
+      'rgba(67, 150, 0, 1)',
+    ]
+    ]
   ]
 }
 

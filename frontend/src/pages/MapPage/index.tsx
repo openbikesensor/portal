@@ -6,7 +6,7 @@ import produce from 'immer'
 
 import {Page, Map} from 'components'
 import {useConfig} from 'config'
-import {colorByDistance, colorByCount, reds} from 'mapstyles'
+import {colorByDistance, colorByCount, borderByZone, reds} from 'mapstyles'
 import {useMapConfig} from 'reducers/mapConfig'
 
 import RoadInfo from './RoadInfo'
@@ -67,6 +67,8 @@ const getEventsLayer = () => ({
   paint: {
     'circle-radius': ['interpolate', ['linear'], ['zoom'], 14, 3, 17, 8],
     'circle-color': colorByDistance('distance_overtaker'),
+    'circle-stroke-color': borderByZone(),
+    'circle-stroke-width':['interpolate', ['linear'], ['zoom'], 14, 1, 17, 4],
   },
   minzoom: 11,
 })

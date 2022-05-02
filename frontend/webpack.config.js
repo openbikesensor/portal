@@ -163,6 +163,7 @@ module.exports = function (webpackEnv) {
         '/config.json': apiUrl,
         '/api': apiUrl,
         '/login': apiUrl,
+        '/tiles': apiUrl
       },
     },
     module: {
