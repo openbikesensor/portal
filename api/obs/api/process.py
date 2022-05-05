@@ -27,7 +27,7 @@ from obs.face.filter import (
 
 from obs.face.osm import DataSource, DatabaseTileSource, OverpassTileSource
 
-from obs.api.db import OvertakingEvent, RoadUsage, Track, make_session, ZoneType
+from obs.api.db import OvertakingEvent, RoadUsage, Track, make_session
 from obs.api.app import app
 
 log = logging.getLogger(__name__)
@@ -293,7 +293,6 @@ async def import_overtaking_events(session, track, overtaking_events):
             distance_stationary=m["distance_stationary"],
             course=m["course"],
             speed=m["speed"],
-            zone=m["OSM_zone"] if ('OSM_zone' in m and m['OSM_zone'] is not None) else "urban"
         )
 
     session.add_all(event_models.values())

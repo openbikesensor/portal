@@ -77,7 +77,6 @@ async def export_events(req):
             writer.field("direction", "N", decimal=0)
             writer.field("course", "N", decimal=4)
             writer.field("speed", "N", decimal=4)
-            writer.field("zone", "N", decimal=4)
 
             async for event in events:
                 writer.point(event.longitude, event.latitude)
@@ -88,7 +87,6 @@ async def export_events(req):
                     way_id=event.way_id,
                     course=event.course,
                     speed=event.speed,
-                    zone=event.zone
                     # "time"=event.time,
                 )
 
@@ -109,7 +107,6 @@ async def export_events(req):
                         "course": event.course,
                         "speed": event.speed,
                         "time": event.time,
-                        "zone": event.zone
                     },
                 }
             )
