@@ -403,22 +403,22 @@ class Comment(Base):
 
 Comment.author = relationship("User", back_populates="authored_comments")
 User.authored_comments = relationship(
-    "Comment", order_by=Comment.created_at, back_populates="author"
+    "Comment", order_by=Comment.created_at, back_populates="author", passive_deletes=True
 )
 
 Track.author = relationship("User", back_populates="authored_tracks")
 User.authored_tracks = relationship(
-    "Track", order_by=Track.created_at, back_populates="author"
+    "Track", order_by=Track.created_at, back_populates="author", passive_deletes=True
 )
 
 Comment.track = relationship("Track", back_populates="comments")
 Track.comments = relationship(
-    "Comment", order_by=Comment.created_at, back_populates="track"
+    "Comment", order_by=Comment.created_at, back_populates="track", passive_deletes=True
 )
 
 OvertakingEvent.track = relationship("Track", back_populates="overtaking_events")
 Track.overtaking_events = relationship(
-    "OvertakingEvent", order_by=OvertakingEvent.time, back_populates="track"
+    "OvertakingEvent", order_by=OvertakingEvent.time, back_populates="track", passive_deletes=True
 )
 
 

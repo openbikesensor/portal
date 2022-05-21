@@ -208,7 +208,7 @@ to import the whole region you are serving.
 
     ```bash
     osm2pgsql --create --hstore --style roads_import.lua -O flex \
-      -H localhost -d obs -U obs \
+      -H localhost -d obs -U obs -W \
       path/to/downloaded/myarea-latest.osm.pbf 
     ```
 
