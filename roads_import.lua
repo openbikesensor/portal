@@ -81,13 +81,26 @@ function osm2pgsql.process_way(object)
         zone = "urban"
       elseif string.match(zone, "motorway") then
         zone = "motorway"
-      elseif contains(URBAN_TYPES, tags.highway) then
+      elseif string.match(zone, "30") then
+        zone = "urban"
+      else
+        zone = "urban"
+      end
+    end
+    if not tags["zone:traffic"] then
+      if contains(URBAN_TYPES, tags.highway) then
         zone = "urban"
       elseif contains(MOTORWAY_TYPES, tags.highway) then
         zone = "motorway"
+      elseif (tags.maxspeed) and (tonumber(string.match(tags.maxspeed, '[%d]*'))) and tonumber(string.match(tags.maxspeed, '[%d]*')) > 60 then
+        zone = "rural"
+      elseif tags['source:maxspeed'] and string.match(tags['source:maxspeed'], "rural") then
+        zone = "rural"
+      elseif tags['source:maxspeed'] and string.match(tags['source:maxspeed'], "urban") then
+        zone = "urban"
       else
         -- we can't figure it out
-        zone = nil
+        zone = "urban"
       end
     end
 
