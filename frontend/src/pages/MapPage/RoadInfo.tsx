@@ -34,7 +34,7 @@ const LABELS = {
   max: 'Maximum',
   mean: 'Average',
 }
-const ZONE_COLORS = {urban: 'olive', rural: 'brown', motorway: 'purple'}
+const ZONE_COLORS = {urban: 'blue', rural: 'cyan', motorway: 'purple'}
 const CARDINAL_DIRECTIONS = ['north', 'north-east', 'east', 'south-east', 'south', 'south-west', 'west', 'north-west']
 const getCardinalDirection = (bearing) =>
   bearing == null

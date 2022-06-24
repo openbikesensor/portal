@@ -54,6 +54,8 @@ const getRoadsLayer = (colorAttribute, maxCount) =>
       ? colorByDistance(colorAttribute)
       : colorAttribute.endsWith('_count')
       ? colorByCount(colorAttribute, maxCount)
+      : colorAttribute.endsWith('zone')
+      ? borderByZone()
       : '#DDD'
     draft.paint['line-opacity'][3] = 12
     draft.paint['line-opacity'][5] = 13
@@ -67,8 +69,6 @@ const getEventsLayer = () => ({
   paint: {
     'circle-radius': ['interpolate', ['linear'], ['zoom'], 14, 3, 17, 8],
     'circle-color': colorByDistance('distance_overtaker'),
-    'circle-stroke-color': borderByZone(),
-    'circle-stroke-width':['interpolate', ['linear'], ['zoom'], 14, 1, 17, 4],
   },
   minzoom: 11,
 })
