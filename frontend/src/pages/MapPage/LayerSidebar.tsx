@@ -1,12 +1,7 @@
 import React from "react";
 import _ from "lodash";
 import { connect } from "react-redux";
-import {
-  List,
-  Select,
-  Input,
-  Divider,
-  Label,
+import {List, Select, Input, Divider, Label,
   Checkbox,
   Header,
 } from "semantic-ui-react";
@@ -23,18 +18,13 @@ import { ColorMapLegend, DiscreteColorMapLegend } from "components";
 const BASEMAP_STYLE_OPTIONS = ["positron", "bright"];
 
 const ROAD_ATTRIBUTE_OPTIONS = [
-  "distance_overtaker_mean",
-  "distance_overtaker_min",
-  "distance_overtaker_max",
-  "distance_overtaker_median",
-  "overtaking_event_count",
-  "usage_count",
-  "zone",
-];
-
-const DATE_FILTER_MODES = ["none", "range", "threshold"];
-
-type User = Object;
+  {value: 'distance_overtaker_mean', key: 'distance_overtaker_mean', text: 'Overtaker distance mean'},
+  {value: 'distance_overtaker_min', key: 'distance_overtaker_min', text: 'Overtaker distance minimum'},
+  {value: 'distance_overtaker_max', key: 'distance_overtaker_max', text: 'Overtaker distance maximum'},
+  {value: 'distance_overtaker_median', key: 'distance_overtaker_median', text: 'Overtaker distance median'},
+  {value: 'overtaking_event_count', key: 'overtaking_event_count', text: 'Event count'},
+  {value: 'usage_count', key: 'usage_count', text: 'Usage count'},
+]
 
 function LayerSidebar({
   mapConfig,
