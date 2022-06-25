@@ -126,7 +126,7 @@ const TrackEditor = connect((state) => ({login: state.login}))(function TrackEdi
               </Form.Field>
 
               <Form.Field>
-                <label>Visibility</label>
+                <label>Track visibility</label>
                 <Controller
                   name="public"
                   control={control}
@@ -134,7 +134,7 @@ const TrackEditor = connect((state) => ({login: state.login}))(function TrackEdi
                   render={(props) => (
                     <Checkbox
                       name="public"
-                      label="Make track public (in track list and details page)"
+                      label="Make track public (in track list and details page, events always visible anonymously)"
                       checked={props.value}
                       onChange={(_, {checked}) => props.onChange(checked)}
                     />
@@ -145,6 +145,11 @@ const TrackEditor = connect((state) => ({login: state.login}))(function TrackEdi
                   wide="very"
                   content={
                     <>
+                      <p>
+                        The overtaking events from all tracks are always public in an anonymized form.
+                        This option is about publishing the FULL TRACK (where you were cycling) for
+                        everyone to see together with your username.
+                      </p>                      
                       <p>
                         Checking this box allows all users to see your full track. For your own privacy and security,
                         make sure to only publish tracks in this way that do not let others deduce where you live, work,
