@@ -30,6 +30,7 @@ const BoundingBoxSelector = React.forwardRef(
     }, [point0, point1]);
 
     React.useEffect(() => {
+      if(!value) return
       const [p00, p01, p10, p11] = value
         .split(",")
         .map((v) => Number.parseFloat(v));
@@ -41,7 +42,7 @@ const BoundingBoxSelector = React.forwardRef(
 
     return (
       <div>
-        <Form.Input label="Bounding box" {...{ name, value, onChange }} />
+        <Form.Input label="Bounding box" {...{ name, value}} onChange={(e) => onChange(e.target.value)}/>
 
         <div style={{ height: 400, position: "relative", marginBottom: 16 }}>
           <Map onClick={onClick}>
