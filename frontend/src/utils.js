@@ -1,3 +1,5 @@
+import {useRef, useCallback} from 'react'
+
 // Wraps the register callback from useForm into a new ref function, such that
 // any child of the provided element that is an input component will be
 // registered.
@@ -21,4 +23,10 @@ export function* pairwise(it) {
     }
     lastValue = i
   }
+}
+
+export function useCallbackRef(fn) {
+  const fnRef = useRef()
+  fnRef.current = fn
+  return useCallback(((...args) => fnRef.current(...args)), [])
 }

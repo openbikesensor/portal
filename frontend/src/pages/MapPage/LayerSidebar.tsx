@@ -32,10 +32,14 @@ const ROAD_ATTRIBUTE_OPTIONS = [
   "zone",
 ];
 
+type User = Object;
+
 function LayerSidebar({
   mapConfig,
+  login,
   setMapConfigFlag,
 }: {
+  login: User | null;
   mapConfig: MapConfig;
   setMapConfigFlag: (flag: string, value: unknown) => void;
 }) {
@@ -44,6 +48,7 @@ function LayerSidebar({
     baseMap: { style },
     obsRoads: { show: showRoads, showUntagged, attribute, maxCount },
     obsEvents: { show: showEvents },
+    filters: { currentUser: filtersCurrentUser },
   } = mapConfig;
 
   return (
@@ -134,22 +139,40 @@ function LayerSidebar({
                   />
                 </List.Item>
               </>
-            ) : attribute.endsWith('zone') ? (
-             <>
-              <List.Item>
-                <Label size="small" style={{background: "blue",color:"white"}}>{t("general.zone.urban")} (1.5&nbsp;m)</Label>
-                <Label size="small" style={{background: "cyan", color:"black"}}>{t("general.zone.rural")}(2&nbsp;m)</Label>
-              </List.Item></>
-            ) :
-            (
+            ) : attribute.endsWith("zone") ? (
               <>
                 <List.Item>
-                  <List.Header>{_.upperFirst(t("general.zone.urban"))}</List.Header>
-                  <DiscreteColorMapLegend map={colorByDistance('distance_overtaker')[3][5].slice(2)} />
+                  <Label
+                    size="small"
+                    style={{ background: "blue", color: "white" }}
+                  >
+                    {t("general.zone.urban")} (1.5&nbsp;m)
+                  </Label>
+                  <Label
+                    size="small"
+                    style={{ background: "cyan", color: "black" }}
+                  >
+                    {t("general.zone.rural")}(2&nbsp;m)
+                  </Label>
+                </List.Item>
+              </>
+            ) : (
+              <>
+                <List.Item>
+                  <List.Header>
+                    {_.upperFirst(t("general.zone.urban"))}
+                  </List.Header>
+                  <DiscreteColorMapLegend
+                    map={colorByDistance("distance_overtaker")[3][5].slice(2)}
+                  />
                 </List.Item>
                 <List.Item>
-                  <List.Header>{_.upperFirst(t("general.zone.rural"))}</List.Header>
-                  <DiscreteColorMapLegend map={colorByDistance('distance_overtaker')[3][3].slice(2)} />
+                  <List.Header>
+                    {_.upperFirst(t("general.zone.rural"))}
+                  </List.Header>
+                  <DiscreteColorMapLegend
+                    map={colorByDistance("distance_overtaker")[3][3].slice(2)}
+                  />
                 </List.Item>
               </>
             )}
@@ -172,15 +195,38 @@ function LayerSidebar({
         {showEvents && (
           <>
             <List.Item>
-              <List.Header>{_.upperFirst(t('general.zone.urban'))}</List.Header>
-              <DiscreteColorMapLegend map={colorByDistance('distance_overtaker')[3][5].slice(2)} />
+              <List.Header>{_.upperFirst(t("general.zone.urban"))}</List.Header>
+              <DiscreteColorMapLegend
+                map={colorByDistance("distance_overtaker")[3][5].slice(2)}
+              />
             </List.Item>
             <List.Item>
-              <List.Header>{_.upperFirst(t('general.zone.rural'))}</List.Header>
-              <DiscreteColorMapLegend map={colorByDistance('distance_overtaker')[3][3].slice(2)} />
+              <List.Header>{_.upperFirst(t("general.zone.rural"))}</List.Header>
+              <DiscreteColorMapLegend
+                map={colorByDistance("distance_overtaker")[3][3].slice(2)}
+              />
             </List.Item>
           </>
         )}
+        <Divider />
+        <List.Item>
+          <Header as="h4" style={{ marginBottom: 8 }}>
+            Filter
+          </Header>
+          {login && (
+            <Checkbox
+              toggle
+              size="small"
+              id="filters.currentUser"
+              checked={filtersCurrentUser}
+              onChange={() =>
+                setMapConfigFlag("filters.currentUser", !filtersCurrentUser)
+              }
+              label="Show only my own data"
+            />
+          )}
+          {!login && <div>No filters available without login.</div>}
+        </List.Item>
       </List>
     </div>
   );
@@ -194,6 +240,7 @@ export default connect(
       (state as any).mapConfig as MapConfig
       //
     ),
+    login: state.login,
   }),
   { setMapConfigFlag: setMapConfigFlagAction }
   //
