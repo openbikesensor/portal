@@ -39,9 +39,26 @@ c = app.config
 api = Blueprint("api", url_prefix="/api")
 auth = Blueprint("auth", url_prefix="")
 
+import re
+
+TILE_REQUEST_CANCELLED = re.compile(
+    r"Connection lost before response written.*GET /tiles"
+)
+
+
+class NoConnectionLostFilter(logging.Filter):
+    def filter(record):
+        return not TILE_REQUEST_CANCELLED.match(record.getMessage())
+
+
+logging.getLogger("sanic.error").addFilter(NoConnectionLostFilter)
+
 
 @app.exception(SanicException, BaseException)
 async def _handle_sanic_errors(_request, exception):
+    if exception is asyncio.CancelledError:
+        return None
+
     log.error("Exception in handler: %s", exception, exc_info=True)
     return json_response(
         {
