@@ -27,6 +27,9 @@ export type MapConfig = {
   obsEvents: {
     show: boolean;
   };
+  filters: {
+    currentUser: boolean;
+  };
 };
 
 export const initialState: MapConfig = {
@@ -41,6 +44,9 @@ export const initialState: MapConfig = {
   },
   obsEvents: {
     show: false,
+  },
+  filters: {
+    currentUser: false,
   },
 };
 

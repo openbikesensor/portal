@@ -1,54 +1,61 @@
-import React, {useState, useCallback, useMemo, useEffect} from 'react'
-import classnames from 'classnames'
-import {connect} from 'react-redux'
-import _ from 'lodash'
-import ReactMapGl, {WebMercatorViewport, ScaleControl, NavigationControl} from 'react-map-gl'
-import turfBbox from '@turf/bbox'
-import {useHistory, useLocation} from 'react-router-dom'
+import React, { useState, useCallback, useMemo, useEffect } from "react";
+import classnames from "classnames";
+import { connect } from "react-redux";
+import _ from "lodash";
+import ReactMapGl, {
+  WebMercatorViewport,
+  ScaleControl,
+  NavigationControl,
+} from "react-map-gl";
+import turfBbox from "@turf/bbox";
+import { useHistory, useLocation } from "react-router-dom";
 
-import {useConfig} from 'config'
+import { useConfig } from "config";
 
-import {baseMapStyles} from '../../mapstyles'
+import { useCallbackRef } from "../../utils";
+import { baseMapStyles } from "../../mapstyles";
 
-import styles from './styles.module.less'
+import styles from "./styles.module.less";
 
 interface Viewport {
-  longitude: number
-  latitude: number
-  zoom: number
+  longitude: number;
+  latitude: number;
+  zoom: number;
 }
-const EMPTY_VIEWPORT: Viewport = {longitude: 0, latitude: 0, zoom: 0}
+const EMPTY_VIEWPORT: Viewport = { longitude: 0, latitude: 0, zoom: 0 };
 
-export const withBaseMapStyle = connect((state) => ({baseMapStyle: state.mapConfig?.baseMap?.style ?? 'positron'}))
+export const withBaseMapStyle = connect((state) => ({
+  baseMapStyle: state.mapConfig?.baseMap?.style ?? "positron",
+}));
 
 function parseHash(v: string): Viewport | null {
-  if (!v) return null
-  const m = v.match(/^#([0-9\.]+)\/([0-9\.]+)\/([0-9\.]+)$/)
-  if (!m) return null
+  if (!v) return null;
+  const m = v.match(/^#([0-9\.]+)\/([0-9\.]+)\/([0-9\.]+)$/);
+  if (!m) return null;
   return {
     zoom: Number.parseFloat(m[1]),
     latitude: Number.parseFloat(m[2]),
     longitude: Number.parseFloat(m[3]),
-  }
+  };
 }
 
 function buildHash(v: Viewport): string {
-  return `${v.zoom.toFixed(2)}/${v.latitude}/${v.longitude}`
+  return `${v.zoom.toFixed(2)}/${v.latitude}/${v.longitude}`;
 }
 
 function useViewportFromUrl(): [Viewport | null, (v: Viewport) => void] {
-  const history = useHistory()
-  const location = useLocation()
-  const value = useMemo(() => parseHash(location.hash), [location.hash])
+  const history = useHistory();
+  const location = useLocation();
+  const value = useMemo(() => parseHash(location.hash), [location.hash]);
   const setter = useCallback(
     (v) => {
       history.replace({
         hash: buildHash(v),
-      })
+      });
     },
     [history]
-  )
-  return [value || EMPTY_VIEWPORT, setter]
+  );
+  return [value || EMPTY_VIEWPORT, setter];
 }
 
 function Map({
@@ -58,29 +65,58 @@ function Map({
   baseMapStyle,
   ...props
 }: {
-  viewportFromUrl?: boolean
-  children: React.ReactNode
-  boundsFromJson: GeoJSON.Geometry
-  baseMapStyle: string
+  viewportFromUrl?: boolean;
+  children: React.ReactNode;
+  boundsFromJson: GeoJSON.Geometry;
+  baseMapStyle: string;
 }) {
-  const [viewportState, setViewportState] = useState(EMPTY_VIEWPORT)
-  const [viewportUrl, setViewportUrl] = useViewportFromUrl()
+  const [viewportState, setViewportState] = useState(EMPTY_VIEWPORT);
+  const [viewportUrl, setViewportUrl] = useViewportFromUrl();
 
-  const [viewport, setViewport] = viewportFromUrl ? [viewportUrl, setViewportUrl] : [viewportState, setViewportState]
+  const [viewport, setViewport] = viewportFromUrl
+    ? [viewportUrl, setViewportUrl]
+    : [viewportState, setViewportState];
 
-  const config = useConfig()
+  const config = useConfig();
   useEffect(() => {
-    if (config?.mapHome && viewport?.latitude === 0 && viewport?.longitude === 0 && !boundsFromJson) {
-      setViewport(config.mapHome)
+    if (
+      config?.mapHome &&
+      viewport?.latitude === 0 &&
+      viewport?.longitude === 0 &&
+      !boundsFromJson
+    ) {
+      setViewport(config.mapHome);
     }
-  }, [config, boundsFromJson])
+  }, [config, boundsFromJson]);
+
+  const mapSourceHosts = useMemo(
+    () =>
+      _.uniq(
+        config?.obsMapSource?.tiles?.map(
+          (tileUrl: string) => new URL(tileUrl).host
+        ) ?? []
+      ),
+    [config?.obsMapSource]
+  );
+
+  const transformRequest = useCallbackRef((url, resourceType) => {
+    if (resourceType === "Tile" && mapSourceHosts.includes(new URL(url).host)) {
+      return {
+        url,
+        credentials: "include",
+      };
+    }
+  });
 
   useEffect(() => {
     if (boundsFromJson) {
       const bbox = turfBbox(boundsFromJson);
-      if (bbox.every(v => Math.abs(v) !== Infinity)) {
+      if (bbox.every((v) => Math.abs(v) !== Infinity)) {
         const [minX, minY, maxX, maxY] = bbox;
-        const vp = new WebMercatorViewport({width: 1000, height: 800}).fitBounds(
+        const vp = new WebMercatorViewport({
+          width: 1000,
+          height: 800,
+        }).fitBounds(
           [
             [minX, minY],
             [maxX, maxY],
@@ -89,11 +125,11 @@ function Map({
             padding: 20,
             offset: [0, -100],
           }
-        )
-        setViewport(_.pick(vp, ['zoom', 'latitude', 'longitude']))
+        );
+        setViewport(_.pick(vp, ["zoom", "latitude", "longitude"]));
       }
     }
-  }, [boundsFromJson])
+  }, [boundsFromJson]);
 
   return (
     <ReactMapGl
@@ -101,16 +137,21 @@ function Map({
       width="100%"
       height="100%"
       onViewportChange={setViewport}
+      {...{ transformRequest }}
       {...viewport}
       {...props}
       className={classnames(styles.map, props.className)}
     >
-      <NavigationControl style={{left: 10, top: 10}} />
-      <ScaleControl maxWidth={200} unit="metric" style={{left: 10, bottom: 10}} />
+      <NavigationControl style={{ left: 10, top: 10 }} />
+      <ScaleControl
+        maxWidth={200}
+        unit="metric"
+        style={{ left: 10, bottom: 10 }}
+      />
 
       {children}
     </ReactMapGl>
-  )
+  );
 }
 
-export default withBaseMapStyle(Map)
+export default withBaseMapStyle(Map);
