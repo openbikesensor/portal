@@ -1,7 +1,16 @@
-import React from 'react'
-import _ from 'lodash'
-import {connect} from 'react-redux'
-import {List, Select, Input, Divider, Label, Checkbox, Header} from 'semantic-ui-react'
+import React from "react";
+import _ from "lodash";
+import { connect } from "react-redux";
+import {
+  List,
+  Select,
+  Input,
+  Divider,
+  Label,
+  Checkbox,
+  Header,
+} from "semantic-ui-react";
+import { useTranslation } from "react-i18next";
 import { useTranslation } from "react-i18next";
 
 
@@ -36,11 +45,11 @@ function LayerSidebar({
 }) {
   const { t } = useTranslation();
   const {
-    baseMap: { style },
-    obsRoads: { show: showRoads, showUntagged, attribute, maxCount },
-    obsEvents: { show: showEvents },
+    baseMap: {style},
+    obsRoads: {show: showRoads, showUntagged, attribute, maxCount},
+    obsEvents: {show: showEvents},
     obsRegions: {show: showRegions},
-    filters: {
+        filters: {
       currentUser: filtersCurrentUser,
       dateMode,
       startDate,

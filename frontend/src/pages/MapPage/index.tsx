@@ -1,14 +1,15 @@
 import React, { useState, useCallback, useMemo, useRef } from "react";
 import _ from "lodash";
-import { Button } from "semantic-ui-react";
+import { connect } from "react-redux";
+import {Button } from "semantic-ui-react";
 import { Layer, Source } from "react-map-gl";
 import produce from "immer";
 
 import api from "api";
-import { Page, Map } from "components";
-import { useConfig } from "config";
-import { colorByDistance, borderByZone, colorByCount, reds, isValidAttribute, getRegionLayers, isValidAttribute } from "mapstyles";
-import { useMapConfig } from "reducers/mapConfig";
+import {Page, Map} from 'components'
+import {useConfig} from 'config'
+import {colorByDistance, colorByCount, borderByZone, reds, isValidAttribute, getRegionLayers} from 'mapstyles'
+import {useMapConfig} from 'reducers/mapConfig'
 
 import RoadInfo from './RoadInfo'
 import RegionInfo from "./RegionInfo";
@@ -73,8 +74,6 @@ const getEventsLayer = () => ({
   paint: {
     'circle-radius': ['interpolate', ['linear'], ['zoom'], 14, 3, 17, 8],
     'circle-color': colorByDistance('distance_overtaker'),
-    'circle-stroke-color': borderByZone(),
-    'circle-stroke-width':['interpolate', ['linear'], ['zoom'], 14, 1, 17, 4],
   },
   minzoom: 11,
 })
