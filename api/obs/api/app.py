@@ -19,7 +19,6 @@ from sanic_session import Session, InMemorySessionInterface
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import sessionmaker
 
 from obs.api.db import User, make_session, connect_db
 from obs.api.utils import get_single_arg
@@ -182,7 +181,6 @@ async def inject_urls(req):
 async def inject_session(req):
     req.ctx._session_ctx = make_session()
     req.ctx.db = await req.ctx._session_ctx.__aenter__()
-    sessionmaker(req.app.ctx._db_engine, class_=AsyncSession, expire_on_commit=False)()
 
 
 @app.middleware("response")
