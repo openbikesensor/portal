@@ -33,11 +33,11 @@ function TrackMapSettings({showTrack, setShowTrack, pointsMode, setPointsMode, s
         <List.Item>
           <Checkbox checked={showTrack} onChange={(e, d) => setShowTrack(d.checked)} /> Show track
           <div style={{marginTop: 8}}>
-            <span style={{background: trackLayerRaw.paint['line-color'], height: 6, width: 24, display: 'inline-block', verticalAlign: 'middle', marginRight: 4}} />
+            <span style={{borderTop: '3px dashed ' + trackLayerRaw.paint['line-color'], height: 0, width: 24, display: 'inline-block', verticalAlign: 'middle', marginRight: 4}} />
             GPS track
           </div>
           <div>
-            <span style={{background: trackLayer.paint['line-color'], height: 6, width: 24, display: 'inline-block', verticalAlign: 'middle', marginRight: 4}} />
+            <span style={{borderTop: '6px solid ' + trackLayerRaw.paint['line-color'], height: 6, width: 24, display: 'inline-block', verticalAlign: 'middle', marginRight: 4}} />
             Snapped to road
           </div>
         </List.Item>

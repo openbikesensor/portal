@@ -73,13 +73,16 @@ export const trackLayer = {
   paint: {
     'line-width': ['interpolate', ['linear'], ['zoom'], 14, 2, 17, 5],
     'line-color': '#F06292',
+    'line-opacity': 0.6,
   },
 }
 
 export const trackLayerRaw = produce(trackLayer, draft => {
-  draft.paint['line-color'] = '#81D4FA'
+  // draft.paint['line-color'] = '#81D4FA'
   draft.paint['line-width'][4] = 1
-  draft.paint['line-width'][6] = 3
+  draft.paint['line-width'][6] = 2
+  draft.paint['line-dasharray'] = [3, 3]
+  delete draft.paint['line-opacity']
 })
 
 export const basemap = positron
