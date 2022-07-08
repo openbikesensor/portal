@@ -310,7 +310,7 @@ This also starts a dedicated worker container to handle the tracks.
 
 #### Test the portal
 
-* Open: https://obs.example.com/
+* Open: https://portal.example.com/ (URL depends on your setup)
 * Login with the user
 * Upload a track via My Tracks
 
