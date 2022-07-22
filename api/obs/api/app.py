@@ -22,6 +22,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from obs.api.db import User, make_session, connect_db
 from obs.api.utils import get_single_arg
+from sqlalchemy.util import asyncio
 
 log = logging.getLogger(__name__)
 
@@ -56,7 +57,7 @@ logging.getLogger("sanic.error").addFilter(NoConnectionLostFilter)
 
 @app.exception(SanicException, BaseException)
 async def _handle_sanic_errors(_request, exception):
-    if exception is asyncio.CancelledError:
+    if isinstance(exception, asyncio.CancelledError):
         return None
 
     log.error("Exception in handler: %s", exception, exc_info=True)
