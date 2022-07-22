@@ -32,6 +32,12 @@ const ROAD_ATTRIBUTE_OPTIONS = [
   "zone",
 ];
 
+const DATE_FILTER_MODES = [
+  { value: "none", key: "none", text: "All time" },
+  { value: "range", key: "range", text: "Start and end range" },
+  { value: "threshold", key: "threshold", text: "Before/after comparison" },
+];
+
 type User = Object;
 
 function LayerSidebar({
@@ -48,7 +54,13 @@ function LayerSidebar({
     baseMap: { style },
     obsRoads: { show: showRoads, showUntagged, attribute, maxCount },
     obsEvents: { show: showEvents },
-    filters: { currentUser: filtersCurrentUser },
+    filters: {
+      currentUser: filtersCurrentUser,
+      dateMode,
+      startDate,
+      endDate,
+      thresholdAfter,
+    },
   } = mapConfig;
 
   return (
@@ -209,24 +221,113 @@ function LayerSidebar({
           </>
         )}
         <Divider />
+
         <List.Item>
-          <Header as="h4" style={{ marginBottom: 8 }}>
-            Filter
-          </Header>
-          {login && (
-            <Checkbox
-              toggle
-              size="small"
-              id="filters.currentUser"
-              checked={filtersCurrentUser}
-              onChange={() =>
-                setMapConfigFlag("filters.currentUser", !filtersCurrentUser)
-              }
-              label="Show only my own data"
-            />
-          )}
-          {!login && <div>No filters available without login.</div>}
+          <Header as="h4">Filters</Header>
         </List.Item>
+
+        {login && (
+          <>
+            <List.Item>
+              <Header as="h5">User data</Header>
+            </List.Item>
+
+            <List.Item>
+              <Checkbox
+                toggle
+                size="small"
+                id="filters.currentUser"
+                checked={filtersCurrentUser}
+                onChange={() =>
+                  setMapConfigFlag("filters.currentUser", !filtersCurrentUser)
+                }
+                label="Show only my own data"
+              />
+            </List.Item>
+
+            <List.Item>
+              <Header as="h5">Date range</Header>
+            </List.Item>
+
+            <List.Item>
+              <Select
+                id="filters.dateMode"
+                options={DATE_FILTER_MODES}
+                value={dateMode ?? "none"}
+                onChange={(_e, { value }) =>
+                  setMapConfigFlag("filters.dateMode", value)
+                }
+              />
+            </List.Item>
+
+            {dateMode == "range" && (
+              <List.Item>
+                <Input
+                  type="date"
+                  size="small"
+                  id="filters.startDate"
+                  onChange={(_e, { value }) =>
+                    setMapConfigFlag("filters.startDate", value)
+                  }
+                  value={startDate ?? null}
+                  label="Start"
+                />
+              </List.Item>
+            )}
+
+            {dateMode == "range" && (
+              <List.Item>
+                <Input
+                  type="date"
+                  size="small"
+                  id="filters.endDate"
+                  onChange={(_e, { value }) =>
+                    setMapConfigFlag("filters.endDate", value)
+                  }
+                  value={endDate ?? null}
+                  label="End"
+                />
+              </List.Item>
+            )}
+
+            {dateMode == "threshold" && (
+              <List.Item>
+                <Input
+                  type="date"
+                  size="small"
+                  id="filters.startDate"
+                  value={startDate ?? null}
+                  onChange={(_e, { value }) =>
+                    setMapConfigFlag("filters.startDate", value)
+                  }
+                  label="Threshold"
+                />
+              </List.Item>
+            )}
+
+            {dateMode == "threshold" && (
+              <List.Item>
+                <span>
+                  Before{" "}
+                  <Checkbox
+                    toggle
+                    size="small"
+                    checked={thresholdAfter ?? false}
+                    onChange={() =>
+                      setMapConfigFlag(
+                        "filters.thresholdAfter",
+                        !thresholdAfter
+                      )
+                    }
+                    id="filters.thresholdAfter"
+                  />{" "}
+                  After
+                </span>
+              </List.Item>
+            )}
+          </>
+        )}
+        {!login && <List.Item>No filters available without login.</List.Item>}
       </List>
     </div>
   );

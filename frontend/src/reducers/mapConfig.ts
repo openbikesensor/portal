@@ -29,6 +29,10 @@ export type MapConfig = {
   };
   filters: {
     currentUser: boolean;
+    dateMode: "none" | "range" | "threshold";
+    startDate?: null | string;
+    endDate?: null | string;
+    thresholdAfter?: null | boolean;
   };
 };
 
@@ -47,6 +51,10 @@ export const initialState: MapConfig = {
   },
   filters: {
     currentUser: false,
+    dateMode: "none",
+    startDate: null,
+    endDate: null,
+    thresholdAfter: true,
   },
 };
 
