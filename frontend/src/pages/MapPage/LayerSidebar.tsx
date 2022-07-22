@@ -11,7 +11,6 @@ import {
   Header,
 } from "semantic-ui-react";
 import { useTranslation } from "react-i18next";
-import { useTranslation } from "react-i18next";
 
 
 import {
@@ -33,6 +32,22 @@ const ROAD_ATTRIBUTE_OPTIONS = [
   {value: 'usage_count', key: 'usage_count', text: 'Usage count'},
   {value: 'zone', key: 'zone', text: 'Overtaking distance zone'}
 ]
+  "distance_overtaker_mean",
+  "distance_overtaker_min",
+  "distance_overtaker_max",
+  "distance_overtaker_median",
+  "overtaking_event_count",
+  "usage_count",
+  "zone",
+];
+
+const DATE_FILTER_MODES = [
+  { value: "none", key: "none", text: "All time" },
+  { value: "range", key: "range", text: "Start and end range" },
+  { value: "threshold", key: "threshold", text: "Before/after comparison" },
+];
+
+type User = Object;
 
 function LayerSidebar({
   mapConfig,
@@ -45,11 +60,11 @@ function LayerSidebar({
 }) {
   const { t } = useTranslation();
   const {
-    baseMap: {style},
-    obsRoads: {show: showRoads, showUntagged, attribute, maxCount},
-    obsEvents: {show: showEvents},
+    baseMap: { style },
+    obsRoads: { show: showRoads, showUntagged, attribute, maxCount },
+    obsEvents: { show: showEvents },
     obsRegions: {show: showRegions},
-        filters: {
+    filters: {
       currentUser: filtersCurrentUser,
       dateMode,
       startDate,
