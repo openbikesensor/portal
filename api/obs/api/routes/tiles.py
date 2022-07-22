@@ -1,5 +1,7 @@
 from gzip import decompress
 from sqlite3 import connect
+
+import dateutil.parser
 from sanic.exceptions import Forbidden
 from sanic.response import raw
 
@@ -46,6 +48,10 @@ async def tiles(req, zoom: int, x: int, y: str):
                 raise Forbidden()
             user_id = req.ctx.user.id
 
+        parse_date = lambda s: dateutil.parser.parse(s)
+        start = req.ctx.get_single_arg("start", default=None, convert=parse_date)
+        end = req.ctx.get_single_arg("end", default=None, convert=parse_date)
+
         tile = await req.ctx.db.scalar(
             text(
                 f"select data from getmvt(:zoom, :x, :y, :user_id, :min_time, :max_time) as b(data, key);"
@@ -54,8 +60,8 @@ async def tiles(req, zoom: int, x: int, y: str):
                 x=int(x),
                 y=int(y),
                 user_id=user_id,
-                min_time=None,
-                max_time=None,
+                min_time=start,
+                max_time=end,
             )
         )
 

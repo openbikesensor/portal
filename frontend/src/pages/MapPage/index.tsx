@@ -160,9 +160,29 @@ function MapPage({ login }) {
   }
 
   const tiles = obsMapSource?.tiles?.map(
-    (tileUrl: string) =>
-      tileUrl +
-      (login && mapConfig.filters.currentUser ? `?user=${login.username}` : "")
+    (tileUrl: string) => {
+      const query = new URLSearchParams()
+      if (login) {
+        if (mapConfig.filters.currentUser) {
+          query.append('user', login.username)
+        }
+
+        if (mapConfig.filters.dateMode === "range") {
+          if (mapConfig.filters.startDate) {
+            query.append('start', mapConfig.filters.startDate)
+          }
+          if (mapConfig.filters.endDate) {
+            query.append('end', mapConfig.filters.endDate)
+          }
+        } else if (mapConfig.filters.dateMode === "threshold") {
+          if (mapConfig.filters.startDate) {
+            query.append(mapConfig.filters.thresholdAfter ? 'start' : 'end', mapConfig.filters.startDate)
+          }
+        }
+      }
+      const queryString = String(query)
+      return tileUrl + (queryString  ? '?' : '') + queryString
+    }
   );
 
   return (
