@@ -1,0 +1,10 @@
+HomePage:
+  mostRecentTrack: Most recent track
+
+locales:
+  en: English
+  de: Deutsch
+
+App:
+  footer:
+    changeLanguage: Change language

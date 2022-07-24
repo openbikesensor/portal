@@ -4,6 +4,7 @@ import {Message, Grid, Loader, Header, Item} from 'semantic-ui-react'
 import {useObservable} from 'rxjs-hooks'
 import {of, from} from 'rxjs'
 import {map, switchMap} from 'rxjs/operators'
+import {useTranslation} from 'react-i18next'
 
 import api from 'api'
 import {Stats, Page, Map} from 'components'
@@ -22,9 +23,10 @@ function MostRecentTrack() {
     []
   )
 
+  const {t} = useTranslation()
   return (
     <>
-      <Header as="h2">Most recent track</Header>
+      <Header as="h2">{t('HomePage.mostRecentTrack')}</Header>
       <Loader active={track === null} />
       {track === undefined ? (
         <Message>

@@ -208,6 +208,14 @@ module.exports = function (webpackEnv) {
           },
         },
         {
+          test: /\.ya?ml$/,
+          type: 'json',
+          use: [{
+            loader: 'yaml-loader',
+            options: {asJSON: true},
+          }],
+        },
+        {
           test: /\.css$/i,
           use: getStyleLoaders(false),
           sideEffects: true,
