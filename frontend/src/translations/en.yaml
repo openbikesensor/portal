@@ -7,6 +7,8 @@ general:
   unnamedTrack: Unnamed track
   public: Public
   private: Private
+  show: Show
+  edit: Edit
 
 App:
   footer:
@@ -92,3 +94,19 @@ ExportPage:
     shapefile: Shapefile (ZIP)
   boundingBox:
     label: Bounding Box
+
+UploadPage:
+  uploadProgress: Uploading {progress}%
+  processing: Processing...
+
+  table:
+    filename: Filename
+    size: Size
+    statusTitle: Status / Title
+
+
+FileUploadField:
+  dropOrClick: Drop file here or click to select one for upload
+  dropOrClickMultiple: Drop files here or click to select them for upload
+  uploadFile: Upload file
+  uploadFiles: Upload files
