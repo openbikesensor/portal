@@ -355,6 +355,7 @@ const TrackPage = connect((state) => ({ login: state.login }))(
           onConfirm={hideDownloadError}
           header={t("TrackPage.downloadFailed")}
           content={String(downloadError)}
+          confirmButton={t('general.ok')}
         />
       </Page>
     );
