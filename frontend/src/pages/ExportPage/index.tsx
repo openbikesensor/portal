@@ -1,13 +1,23 @@
 import React, { useState, useCallback, useMemo } from "react";
 import { Source, Layer } from "react-map-gl";
 import _ from "lodash";
-import { Button, Form, Dropdown, Header, Message, Icon } from "semantic-ui-react";
+import {
+  Button,
+  Form,
+  Dropdown,
+  Header,
+  Message,
+  Icon,
+} from "semantic-ui-react";
+import { useTranslation, Trans as Translate } from "react-i18next";
+import Markdown from "react-markdown";
 
 import { useConfig } from "config";
 import { Page, Map } from "components";
 
 const BoundingBoxSelector = React.forwardRef(
   ({ value, name, onChange }, ref) => {
+    const { t } = useTranslation();
     const [pointNum, setPointNum] = useState(0);
     const [point0, setPoint0] = useState(null);
     const [point1, setPoint1] = useState(null);
@@ -30,7 +40,7 @@ const BoundingBoxSelector = React.forwardRef(
     }, [point0, point1]);
 
     React.useEffect(() => {
-      if(!value) return
+      if (!value) return;
       const [p00, p01, p10, p11] = value
         .split(",")
         .map((v) => Number.parseFloat(v));
@@ -42,7 +52,11 @@ const BoundingBoxSelector = React.forwardRef(
 
     return (
       <div>
-        <Form.Input label="Bounding box" {...{ name, value}} onChange={(e) => onChange(e.target.value)}/>
+        <Form.Input
+          label={t('ExportPage.boundingBox.label')}
+          {...{ name, value }}
+          onChange={(e) => onChange(e.target.value)}
+        />
 
         <div style={{ height: 400, position: "relative", marginBottom: 16 }}>
           <Map onClick={onClick}>
@@ -90,26 +104,8 @@ const BoundingBoxSelector = React.forwardRef(
   }
 );
 
-const MODES = [
-  {
-    key: "events",
-    text: "Events",
-    value: "events",
-  },
-];
-
-const FORMATS = [
-  {
-    key: "geojson",
-    text: "GeoJSON",
-    value: "geojson",
-  },
-  {
-    key: "shapefile",
-    text: "Shapefile (ZIP)",
-    value: "shapefile",
-  },
-];
+const MODES = ["events"];
+const FORMATS = ["geojson", "shapefile"];
 
 export default function ExportPage() {
   const [mode, setMode] = useState("events");
@@ -117,49 +113,46 @@ export default function ExportPage() {
   const [fmt, setFmt] = useState("geojson");
   const config = useConfig();
   const exportUrl = `${config?.apiUrl}/export/events?bbox=${bbox}&fmt=${fmt}`;
+  const { t } = useTranslation();
   return (
     <Page title="Export">
-      <Header as="h2">Export</Header>
+      <Header as="h2">{t("ExportPage.title")}</Header>
 
-        <Message icon info>
-          <Icon name="info circle" />
-          <Message.Content>
-            <p>
-              This page allows you to export parts of the public dataset under
-              the license for data announced in the privacy statement of this
-              site.
-            </p>
-
-            <p>
-              Please consider this export <b>experimental</b> and expect the data
-              shape to change in the future. Automated usage of this export
-              functionality is discouraged for now. Try not to use too much computing
-              capacity when exporting data, so select the bounding box as small as
-              possible and do not exceed unreasonable poll frequencies.
-            </p>
-          </Message.Content>
-        </Message>
+      <Message icon info>
+        <Icon name="info circle" />
+        <Message.Content>
+          <Markdown>{t("ExportPage.information")}</Markdown>
+        </Message.Content>
+      </Message>
 
       <Form>
         <Form.Field>
-          <label>Mode</label>
+          <label>{t("ExportPage.mode.label")}</label>
           <Dropdown
-            placeholder="Select mode"
+            placeholder={t("ExportPage.mode.placeholder")}
             fluid
             selection
-            options={MODES}
+            options={MODES.map((value) => ({
+              key: value,
+              text: t(`ExportPage.mode.${value}`),
+              value,
+            }))}
             value={mode}
             onChange={(_e, { value }) => setMode(value)}
           />
         </Form.Field>
 
         <Form.Field>
-          <label>Format</label>
+          <label>{t("ExportPage.format.label")}</label>
           <Dropdown
-            placeholder="Select format"
+            placeholder={t("ExportPage.format.placeholder")}
             fluid
             selection
-            options={FORMATS}
+            options={FORMATS.map((value) => ({
+              key: value,
+              text: t(`ExportPage.format.${value}`),
+              value,
+            }))}
             value={fmt}
             onChange={(_e, { value }) => setFmt(value)}
           />
@@ -174,7 +167,7 @@ export default function ExportPage() {
           target="_blank"
           rel="noreferrer noopener"
         >
-          Export
+          {t('ExportPage.export')}
         </Button>
       </Form>
     </Page>

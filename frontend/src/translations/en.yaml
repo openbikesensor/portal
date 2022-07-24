@@ -66,3 +66,29 @@ TracksPage:
     processing: Processing...
     complete: Processed
     error: Error while processing
+
+ExportPage:
+  title: Export
+  information: |
+    This page allows you to export parts of the public dataset under
+    the license for data announced in the privacy statement of this
+    site.
+
+    Please consider this export **experimental** and expect the data
+    shape to change in the future. Automated usage of this export
+    functionality is discouraged for now. Try not to use too much computing
+    capacity when exporting data, so select the bounding box as small as
+    possible and do not exceed unreasonable poll frequencies.
+
+  export: Export
+  mode:
+    label: Mode
+    placeholder: Select mode
+    events: Events
+  format:
+    label: Format
+    placeholder: Select format
+    geojson: GeoJSON
+    shapefile: Shapefile (ZIP)
+  boundingBox:
+    label: Bounding Box
