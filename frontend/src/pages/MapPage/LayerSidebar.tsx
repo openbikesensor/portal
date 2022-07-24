@@ -1,11 +1,9 @@
-import React from "react";
-import _ from "lodash";
-import { connect } from "react-redux";
-import {List, Select, Input, Divider, Label,
-  Checkbox,
-  Header,
-} from "semantic-ui-react";
+import React from 'react'
+import _ from 'lodash'
+import {connect} from 'react-redux'
+import {List, Select, Input, Divider, Label, Checkbox, Header} from 'semantic-ui-react'
 import { useTranslation } from "react-i18next";
+
 
 import {
   MapConfig,
@@ -24,6 +22,7 @@ const ROAD_ATTRIBUTE_OPTIONS = [
   {value: 'distance_overtaker_median', key: 'distance_overtaker_median', text: 'Overtaker distance median'},
   {value: 'overtaking_event_count', key: 'overtaking_event_count', text: 'Event count'},
   {value: 'usage_count', key: 'usage_count', text: 'Usage count'},
+  {value: 'zone', key: 'zone', text: 'Overtaking distance zone'}
 ]
 
 function LayerSidebar({
@@ -146,6 +145,21 @@ function LayerSidebar({
                     }
                   />
                 </List.Item>
+                <List.Item>
+                  <ColorMapLegend
+                    map={_.chunk(
+                      colorByCount(
+                        "obsRoads.maxCount",
+                        mapConfig.obsRoads.maxCount,
+                        viridisSimpleHtml
+                      ).slice(3),
+                      2
+                    )}
+                    twoTicks
+                  />
+                </List.Item>
+              </>
+            ) : (
                 <List.Item>
                   <ColorMapLegend
                     map={_.chunk(
@@ -287,7 +301,7 @@ function LayerSidebar({
                   value={startDate ?? null}
                   label={t("MapPage.sidebar.filters.start")}
                 />
-              </List.Item>
+            </List.Item>
             )}
 
             {dateMode == "range" && (
