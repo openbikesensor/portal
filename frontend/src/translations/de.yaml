@@ -179,3 +179,45 @@ MapPage:
       southWest: südwestwärts
       west: westwärts
       northWest: nordwestwärts
+
+SettingsPage:
+  title: Einstellungen
+
+  profile:
+    title: Mein Profil
+    publicNotice: All diese Informationen sind öffentlich.
+    username:
+      label: Kontoname
+    bio:
+      label: Bio
+    avatarUrl:
+      label: Avatar URL
+
+  apiKey:
+    title: Mein API-Schlüssel
+    description: |
+      Hier findest du deinen API-Schlüssel für die Nutzung mit dem
+      OpenBikeSensor. Du kannst ihn dir herauskopieren und in der Seite für die
+      Einstellungen deines Geräts einfügen, um dann direkt vom Gerät aus
+      Fahrten hochladen zu können.
+
+      Bitte schütze deinen API-Schlüssel vor ungewolltem Zugriff, denn er
+      erlaubt Zugang zu deinem Konto auf dieser Seite.
+    urlDescription: |
+      Die API-URL sollte wie folgt gesetzt werden:
+
+    generateDescription: |
+      Hier kannst du einen neuen API-Schlüssel für dein Konto erstellen. Der
+      alte wird damit ungültig, und alle Geräte, die damit konfiguriert wurden,
+      können nicht mehr auf dein Konto zugreifen.
+
+    key:
+      label: Persönlicher API-Schlüssel
+      empty: Du hast keinen API-Schlüssel, kannst dir aber unten einen erstellen.
+      show: API-Schlüssel zeigen
+
+    url:
+      label: API URL
+
+    generate: Neuen API-Schlüssel erstellen
+
