@@ -1,6 +1,3 @@
-HomePage:
-  mostRecentTrack: Neueste Aufzeichnung
-
 App:
   footer:
     aboutTheProject: Über das Projekt
@@ -29,3 +26,20 @@ App:
 
 LoginButton:
   login: Anmelden
+
+HomePage:
+  mostRecentTrack: Neueste Fahrt
+  noPublicTracks: Es gibt noch keine öffentlichen Fahrten. <1>Lade die erste hoch!</1>
+
+Stats:
+  title: Statistik
+  titleUser: Meine Statistik
+  placeholder: "..."
+  totalTrackLength: Gesamtfahrstrecke
+  timeRecorded: Aufzeichnungszeit
+  eventsConfirmed: Bestätigte Vorgänge
+  tracksRecorded: Aufgezeichnete Fahrten
+  membersJoined: Neue Mitglieder
+  thisMonth: Dieser Monat
+  thisYear: Dieses Jahr
+  allTime: Immer
