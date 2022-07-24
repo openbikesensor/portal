@@ -3,6 +3,8 @@ general:
   unnamedTrack: Unbenannte Fahrt
   public: Öffentlich
   private: Privat
+  show: Anzeigen
+  edit: Bearbeiten
 
 App:
   footer:
@@ -87,3 +89,19 @@ ExportPage:
     shapefile: Shapefile (ZIP)
   boundingBox:
     label: Geografischer Bereich
+
+UploadPage:
+  uploadProgress: Lade hoch {progress}%
+  processing: Verarbeiten...
+
+  table:
+    filename: Dateiname
+    size: Größe
+    statusTitle: Status / Titel
+
+
+FileUploadField:
+  dropOrClick: Datei hierher ziehen oder klicken, um eine zum Hochladen auszuwählen
+  dropOrClickMultiple: Dateien hierher ziehen oder klicken, um Dateien zum Hochladen auszuwählen
+  uploadFile: Datei hochladen
+  uploadFiles: Dateien hochladen
