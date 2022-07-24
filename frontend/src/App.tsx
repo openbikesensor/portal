@@ -227,7 +227,7 @@ const App = connect((state) => ({login: state.login}))(function App({login}) {
                       target="_blank"
                       rel="noreferrer"
                     >
-                      {apiVersion ? t('App.footer.version', {apiVersion}) : t('App.footer.versionLoading')}
+                      Version {apiVersion ? t('App.footer.version', {apiVersion}) : t('App.footer.versionLoading')}
                     </a>
                   </List.Item>
                 </List>
