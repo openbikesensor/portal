@@ -5,6 +5,8 @@ locales:
 general:
   loading: Loading
   unnamedTrack: Unnamed track
+  urban: urban
+  rural: rural
   public: Public
   private: Private
   show: Show
@@ -121,3 +123,63 @@ NotFoundPage:
   title: Page not found
   description: You know what that means...
   goBack: Go back
+
+
+MapPage:
+  sidebar:
+    baseMap:
+      style:
+        label: Basemap Style
+        positron: Positron
+        bright: OSM Bright
+
+    obsRoads:
+      title: Road segments
+      showUntagged:
+        label: Include roads without data
+      attribute:
+        label: Color based on...
+        distance_overtaker_mean: Overtaker distance mean
+        distance_overtaker_min: Overtaker distance minimum
+        distance_overtaker_max: Overtaker distance maximum
+        distance_overtaker_median: Overtaker distance median
+        overtaking_event_count: Event count
+        usage_count: Usage count
+        zone: Overtaking distance zone
+      maxCount:
+        label: Maximum value for color scale
+
+    obsEvents:
+      title: Event points
+
+  roadInfo:
+    unnamedWay: Unnamed way
+    oneway: oneway
+    direction: Direction
+
+    zone:
+      rural: Rural
+      urban: Urban
+      motorway: Motorway
+
+    distanceOvertaker: Left
+    distanceStationary: Right
+    speed: Speed
+    count: No. of Measurements
+    min: Minimum
+    median: Median
+    max: Maximum
+    mean: Average
+
+    overtakerDistanceDistribution: Overtaker distance distribution
+
+    cardinalDirections:
+      unknown: unknown
+      north: north bound
+      northEast: north-east bound
+      east: east bound
+      southEast: south-east bound
+      south: south bound
+      southWest: south-west bound
+      west: west bound
+      northWest: north-west bound

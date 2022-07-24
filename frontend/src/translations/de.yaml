@@ -1,6 +1,8 @@
 general:
   loading: Lädt
   unnamedTrack: Unbenannte Fahrt
+  urban: innerorts
+  rural: außerorts
   public: Öffentlich
   private: Privat
   show: Anzeigen
@@ -116,3 +118,64 @@ NotFoundPage:
   title: Seite nicht gefunden
   description: Den Fehler kennst du sicher...
   goBack: Zurückgehen
+
+
+MapPage:
+  sidebar:
+    baseMap:
+      style:
+        label: Stil der Basiskarte
+        positron: Positron
+        bright: OSM Bright
+
+    obsRoads:
+      title: Straßenabschnitte
+      showUntagged:
+        label: Abschnitte ohne Daten anzeigen
+      attribute:
+        label: Einfärben nach...
+        distance_overtaker_mean: Durchschnitt Überholabstand
+        distance_overtaker_min: Minimum Überholabstand
+        distance_overtaker_max: Maximum Überholabstand
+        distance_overtaker_median: Median Überholabstand
+        overtaking_event_count: Anzahl Überholvorgänge
+        usage_count: Anzahl Befahrungen
+        zone: Überholabstands-Zone
+      maxCount:
+        label: Maximalwert für Farbskala
+
+    obsEvents:
+      title: Überholvorgänge
+
+
+  roadInfo:
+    unnamedWay: Unbenannter Weg
+    oneway: Einbahnstraße
+    direction: Richtung
+
+    zone:
+      rural: außerorts
+      urban: innerorts
+      motorway: Autobahn
+
+    distanceOvertaker: Links
+    distanceStationary: Rechts
+    speed: Geschwindigkeit
+    count: Anzahl Messungen
+    min: Minimum
+    median: Median
+    max: Maximum
+    mean: Durchschnitt
+
+    overtakerDistanceDistribution: Verteilung der Überholabstände
+
+    cardinalDirections:
+      unknown: unbekannt
+      north: nordwärts
+      northEast: nordostwärts
+      east: ostwärts
+      southEast: südostwärts
+      south: südwärts
+      southWest: südwestwärts
+      west: westwärts
+      northWest: nordwestwärts
