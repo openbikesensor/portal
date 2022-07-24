@@ -1,3 +1,9 @@
+general:
+  loading: Lädt
+  unnamedTrack: Unbenannte Fahrt
+  public: Öffentlich
+  private: Privat
+
 App:
   footer:
     aboutTheProject: Über das Projekt
@@ -29,7 +35,6 @@ LoginButton:
 
 HomePage:
   mostRecentTrack: Neueste Fahrt
-  noPublicTracks: Es gibt noch keine öffentlichen Fahrten. <1>Lade die erste hoch!</1>
 
 Stats:
   title: Statistik
@@ -43,3 +48,17 @@ Stats:
   thisMonth: Dieser Monat
   thisYear: Dieses Jahr
   allTime: Immer
+
+TracksPage:
+  titlePublic: Öffentliche Fahrten
+  titleUser: Meine Fahrten
+  noPublicTracks: Es gibt noch keine öffentlichen Fahrten. <1>Lade die erste hoch!</1>
+  createdBy:  Erstellt von <1>{{author}}</1> am <1>{{date}}</1>
+  upload: Hochladen
+
+  processing:
+    created: Nicht verarbeitet
+    queued: Verarbeitung in Warteschlage
+    processing: Verarbeite...
+    complete: Verarbeitet
+    error: Fehler bei Verarbeitung

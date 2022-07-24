@@ -6,6 +6,7 @@ import {Link} from 'react-router-dom'
 import {of, from, concat} from 'rxjs'
 import {map, switchMap, distinctUntilChanged} from 'rxjs/operators'
 import _ from 'lodash'
+import {useTranslation, Trans as Translate} from 'react-i18next'
 
 import type {Track} from 'types'
 import {Avatar, Page, StripMarkdown} from 'components'
@@ -38,10 +39,11 @@ function TrackList({privateTracks}: {privateTracks: boolean}) {
   const {tracks, trackCount} = data || {tracks: [], trackCount: 0}
   const loading = !data
   const totalPages = Math.ceil(trackCount / pageSize)
+  const {t} = useTranslation()
 
   return (
     <div>
-      <Loader content="Loading" active={loading} />
+      <Loader content={t('general.loading')} active={loading} />
       {!loading && totalPages > 1 && (
         <Pagination
           activePage={page}
@@ -57,15 +59,23 @@ function TrackList({privateTracks}: {privateTracks: boolean}) {
           ))}
         </Item.Group>
       ) : (
-        <Message>
-          No public tracks yet. <Link to="/upload">Upload the first!</Link>
-        </Message>
+        <NoPublicTracksMessage />
       )}
     </div>
   )
 }
 
-function maxLength(t, max) {
+export function NoPublicTracksMessage() {
+  return (
+    <Message>
+      <Translate i18nKey="TracksPage.noPublicTracks">
+        No public tracks yet. <Link to="/upload">Upload the first!</Link>
+      </Translate>
+    </Message>
+  )
+}
+
+function maxLength(t: string|null, max: number): string|null {
   if (t && t.length > max) {
     return t.substring(0, max) + ' ...'
   } else {
@@ -82,6 +92,8 @@ const COLOR_BY_STATUS = {
 }
 
 export function TrackListItem({track, privateTracks = false}) {
+  const {t} = useTranslation()
+
   return (
     <Item key={track.slug}>
       <Item.Image size="tiny">
@@ -89,10 +101,12 @@ export function TrackListItem({track, privateTracks = false}) {
       </Item.Image>
       <Item.Content>
         <Item.Header as={Link} to={`/tracks/${track.slug}`}>
-          {track.title || 'Unnamed track'}
+          {track.title || t('general.unnamedTrack')}
         </Item.Header>
         <Item.Meta>
-          Created by {track.author.username} on {track.createdAt}
+          <Translate i18nKey="TracksPage.createdBy">
+            Created by <span style={{margin: 0}}>{{author: track.author.username}}</span> on <span style={{margin: 0}}>{{date: track.createdAt}}</span>
+          </Translate>
         </Item.Meta>
         <Item.Description>
           <StripMarkdown>{maxLength(track.description, 200)}</StripMarkdown>
@@ -101,17 +115,18 @@ export function TrackListItem({track, privateTracks = false}) {
           <Item.Extra>
             {track.public ? (
               <>
-                <Icon color="blue" name="eye" fitted /> Public
+                <Icon color="blue" name="eye" fitted /> {t('general.public')}
               </>
             ) : (
               <>
-                <Icon name="eye slash" fitted /> Private
+                <Icon name="eye slash" fitted /> {t('general.private')}
               </>
             )}
 
             <span style={{marginLeft: '1em'}}>
-              <Icon color={COLOR_BY_STATUS[track.processingStatus]} name="bolt" fitted /> Processing{' '}
-              {track.processingStatus}
+              <Icon color={COLOR_BY_STATUS[track.processingStatus]} name="bolt" fitted />
+              {' '}
+              {t(`TracksPage.processing.${track.processingStatus}`)}
             </span>
           </Item.Extra>
         )}
@@ -121,6 +136,7 @@ export function TrackListItem({track, privateTracks = false}) {
 }
 
 function UploadButton({navigate, ...props}) {
+  const {t} = useTranslation()
   const onClick = useCallback(
     (e) => {
       e.preventDefault()
@@ -130,13 +146,15 @@ function UploadButton({navigate, ...props}) {
   )
   return (
     <Button onClick={onClick} {...props} color="green" style={{float: 'right'}}>
-      Upload
+      {t('TracksPage.upload')}
     </Button>
   )
 }
 
 const TracksPage = connect((state) => ({login: (state as any).login}))(function TracksPage({login, privateTracks}) {
-  const title = privateTracks ? 'My tracks' : 'Public tracks'
+  const {t} = useTranslation()
+  const title = privateTracks ? t('TracksPage.titleUser') : t('TracksPage.titlePublic')
+
   return (
     <Page title={title}>
       <Header as='h2'>{title}</Header>
