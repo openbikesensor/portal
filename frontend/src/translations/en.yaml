@@ -7,4 +7,29 @@ locales:
 
 App:
   footer:
+    aboutTheProject: About the project
+
+    getInvolved: Get involved
+    getHelpInForum: Get help in forum
+    reportAnIssue: Report an issue
+    development: Development
+
+    thisInstallation: This installation
+    privacyPolicy: Privacy policy
+    imprint: Imprint
+    version: Version v{apiVersion}
+    versionLoading: Fetching version...
+
     changeLanguage: Change language
+
+  menu:
+    map: Map
+    tracks: Tracks
+    export: Export
+    myTracks: My tracks
+    uploadTracks: Upload tracks
+    settings: Settings
+    logout: Logout
+
+LoginButton:
+  login: Login
