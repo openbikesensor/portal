@@ -213,7 +213,6 @@ const App = connect((state) => ({login: state.login}))(function App({login}) {
                   <List.Item>
                     <a href={config?.privacyPolicyUrl} target="_blank" rel="noreferrer">
                       {t('App.footer.privacyPolicy')}
-                      Privacy policy
                     </a>
                   </List.Item>
                   <List.Item>

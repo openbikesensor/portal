@@ -24,7 +24,7 @@ App:
     thisInstallation: This installation
     privacyPolicy: Privacy policy
     imprint: Imprint
-    version: Version v{apiVersion}
+    version: Version v{{apiVersion}}
     versionLoading: Fetching version...
 
     changeLanguage: Change language
@@ -61,7 +61,7 @@ TracksPage:
   titlePublic: Public tracks
   titleUser: My tracks
   noPublicTracks: No public tracks yet. <1>Upload the first!</1>
-  createdBy:  Created by <1>{author}</1> on <1>{date}</1>
+  createdBy: Created by {{author}}
   upload: Upload
 
   processing:
@@ -98,7 +98,7 @@ ExportPage:
     label: Bounding Box
 
 UploadPage:
-  uploadProgress: Uploading {progress}%
+  uploadProgress: Uploading {{progress}}%
   processing: Processing...
 
   table:
@@ -114,7 +114,7 @@ FileUploadField:
 
 LoginRedirectPage:
   loginError: Loginfehler
-  loginErrorText: "Der Login-Server meldet: {error}"
+  loginErrorText: "Der Login-Server meldet: {{error}}"
 
   loggingIn: Du wirst eingeloggt
   hangTight: Bitte warten...
