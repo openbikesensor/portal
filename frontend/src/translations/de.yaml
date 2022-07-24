@@ -9,6 +9,11 @@ general:
   edit: Bearbeiten
   save: Speichern
   delete: Löschen
+  ok: Okay
+  cancel: Abbrechen
+  confirm: Bist du sicher?
+  copied: Kopiert
+  copyError: Kopieren fehlgeschlagen
 
 App:
   footer:
@@ -269,3 +274,50 @@ TrackPage:
     title: Kommentare
     post: Kommentar abschicken
     empty: Bisher hat niemand diese Fahrt kommentiert.
+
+TrackEditor:
+  title: "{{trackTitle}} bearbeiten"
+  replaceTrackData: Fahrtdaten ersetzen
+  uploadComplete: Upload vollständig. <1>Fahrt anzeigen</1>
+
+  dangerZone:
+    title: Gefahrenbereich
+    description: |
+      Du kannst diese Fahrt aus deinem Konto und damit von diesem Portal
+      entfernen. Wir können jedoch nicht garantieren, dass die daraus
+      extrahierten, anonymisierten und u. U. weiter veröffentlichten Daten
+      ebenfalls entfernt werden, weder in dieser Plattform, noch in Kopien
+      anderer Parteien.
+    confirmDelete: Bist du sicher, dass du diese Fahrt löschen möchtest?
+
+  description:
+    label: Beschreibung
+  visibility:
+    label: Sichtbarkeit der Fahrt
+    checkboxLabel: Fahrt öffentlich machen (in der Fahrtenliste und Detailseite, anonyme Überholungen sind immer sichtbar)
+    description: |
+      Die extrahierten Überholungen aller Fahrten sind immer öffentlich in
+      anonymisierter Form. Diese Option betrifft die Veröffentlichung der
+      *gesamten* Fahrtdaten, also wann und wo du gefahren bist, zusammen mit
+      deinem erkennbaren Kontonamen.
+
+      Wenn du diese Box aktivierst können alle deine ganze Fahrt ansehen. Um
+      deine eigene Sicherheit und Privatsphäre zu schützen stelle nur solche
+      Fahrten öffentlich, anhand derer niemand deinen Wohnort, Arbeitsplatz,
+      oder regelmäßige Aufenthaltsorte erkennen kann. Dein Aufnahmegerät stellt
+      eventuell nützliche Einstellungen zur Verfügung, um die GPS-Daten in der
+      Nähe solcher Orte überhaupt nicht aufzuzeichnen.
+
+      In der Zukunft wird diese Seite auch Werkzeuge zur Redaktion deiner
+      sensiblen Daten, sowohl manuell als auch automatisch, bereitstellen. Bis
+      dahin musst du die Möglichkeiten in deinem Aufnahmegerät nutzen, oder von
+      Hand vor dem Hochladen der Originaldateien Anpassungen vornehmen.
+
+      Deine Daten werden mit Aktivieren dieser Funktion veröffentlicht. Wir
+      weisen dich darauf hin, dass die Betreiber:innen dieser Plattform dann
+      keine Kontrolle über mögliche Kopien dieser Daten haben, die andere davon
+      anfertigen. Selbst wenn du später deine Daten auf dieser Plattform
+      löschst oder anonymisierst können Kopien des Originals bei Dritten
+      vorhanden bleiben.
+
+      **Nutze diese Funktion mit Bedacht und auf dein eigenes Risiko.**

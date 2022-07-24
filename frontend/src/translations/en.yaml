@@ -13,7 +13,9 @@ general:
   edit: Edit
   save: Save
   delete: Delete
-
+  ok: OK
+  cancel: Cancel
+  confirm: Are you sure?
   copied: Copied.
   copyError: Failed to copy.
 
@@ -275,3 +277,45 @@ TrackPage:
     title: Comments
     post: Post comment
     empty: Nobody commented... yet
+
+TrackEditor:
+  title: Edit {{trackTitle}}
+  replaceTrackData: Replace track data
+  uploadComplete: Upload complete. <1>Show track</1>
+
+  dangerZone:
+    title: Danger zone
+    description: |
+      You can remove this track from your account and the portal if
+      you like. However, if at any point you have published this
+      track, we cannot guarantee that there are no versions of it in
+      the public data repository, or any copy thereof.
+    confirmDelete: Are you sure you want to delete this track?
+
+  description:
+    label: Description
+  visibility:
+    label: Track visibility
+    checkboxLabel: Make track public (in track list and details page, events always visible anonymously)
+    description: |
+      The overtaking events from all tracks are always public in an anonymized
+      form. This option is about publishing the *full* track (where you were
+      cycling) for everyone to see together with your username.
+
+      Checking this box allows all users to see your full track. For your own
+      privacy and security, make sure to only publish tracks in this way that
+      do not let others deduce where you live, work, or frequently stay. Your
+      recording device might have useful privacy settings to not record
+      geolocation data near those places.
+
+      In the future, this site will allow you to redact privacy sensitive data
+      in tracks, both manually and automatically. Until then, you will have to
+      rely on the features of your recording device, or manually redact your
+      files before upload.
+
+      After checking this box, your data essentially becomes public. You
+      understand that we cannot control who potentially downloads this data and
+      and keeps a copy, even if you delete it from your account or anonymize it
+      later.
+
+      **Use at your own risk.**

@@ -9,7 +9,7 @@ import _ from 'lodash'
 import {useTranslation, Trans as Translate} from 'react-i18next'
 
 import type {Track} from 'types'
-import {Avatar, Page, StripMarkdown, FormattedDate} from 'components'
+import {Avatar, Page, StripMarkdown, FormattedDate, Visibility} from 'components'
 import api from 'api'
 import {useQueryParam} from 'query'
 
