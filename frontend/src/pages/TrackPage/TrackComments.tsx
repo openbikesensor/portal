@@ -1,31 +1,57 @@
-import React from 'react'
-import {Message, Segment, Form, Button, Loader, Header, Comment} from 'semantic-ui-react'
-import Markdown from 'react-markdown'
+import React from "react";
+import {
+  Message,
+  Segment,
+  Form,
+  Button,
+  Loader,
+  Header,
+  Comment,
+} from "semantic-ui-react";
+import Markdown from "react-markdown";
+import { useTranslation } from "react-i18next";
 
-import {Avatar, FormattedDate} from 'components'
+import { Avatar, FormattedDate } from "components";
 
-function CommentForm({onSubmit}) {
-  const [body, setBody] = React.useState('')
+function CommentForm({ onSubmit }) {
+  const { t } = useTranslation();
+  const [body, setBody] = React.useState("");
 
   const onSubmitComment = React.useCallback(() => {
-    onSubmit({body})
-    setBody('')
-  }, [onSubmit, body])
+    onSubmit({ body });
+    setBody("");
+  }, [onSubmit, body]);
 
   return (
     <Form reply onSubmit={onSubmitComment}>
-      <Form.TextArea rows={4} value={body} onChange={(e) => setBody(e.target.value)} />
-      <Button content="Post comment" labelPosition="left" icon="edit" primary />
+      <Form.TextArea
+        rows={4}
+        value={body}
+        onChange={(e) => setBody(e.target.value)}
+      />
+      <Button
+        content={t("TrackPage.comments.post")}
+        labelPosition="left"
+        icon="edit"
+        primary
+      />
     </Form>
-  )
+  );
 }
 
-export default function TrackComments({comments, onSubmit, onDelete, login, hideLoader}) {
+export default function TrackComments({
+  comments,
+  onSubmit,
+  onDelete,
+  login,
+  hideLoader,
+}) {
+  const { t } = useTranslation();
   return (
     <>
       <Comment.Group>
         <Header as="h2" dividing>
-          Comments
+          {t("TrackPage.comments.title")}
         </Header>
 
         <Loader active={!hideLoader && comments == null} inline />
@@ -47,11 +73,11 @@ export default function TrackComments({comments, onSubmit, onDelete, login, hide
                 <Comment.Actions>
                   <Comment.Action
                     onClick={(e) => {
-                      onDelete(comment.id)
-                      e.preventDefault()
+                      onDelete(comment.id);
+                      e.preventDefault();
                     }}
                   >
-                    Delete
+                  {t('general.delete')}
                   </Comment.Action>
                 </Comment.Actions>
               )}
@@ -59,10 +85,12 @@ export default function TrackComments({comments, onSubmit, onDelete, login, hide
           </Comment>
         ))}
 
-        {comments != null && !comments.length && <Message>Nobody commented... yet</Message>}
+        {comments != null && !comments.length && (
+          <Message>{t("TrackPage.comments.empty")}</Message>
+        )}
 
         {login && comments != null && <CommentForm onSubmit={onSubmit} />}
       </Comment.Group>
     </>
-  )
+  );
 }

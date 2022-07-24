@@ -12,6 +12,7 @@ general:
   show: Show
   edit: Edit
   save: Save
+  delete: Delete
 
   copied: Copied.
   copyError: Failed to copy.
@@ -226,3 +227,51 @@ SettingsPage:
 
     generate: Generate new API key
 
+
+TrackPage:
+  downloadFailed: Download failed
+  downloadError: The track probably has not been imported correctly or recently enough. Please ask your administrator for assistance.
+  processing: Track data is still being processed, please reload page in a while.
+  processingError: The processing of this track failed, please ask your site administrator for help in debugging the issue.
+  description: Description
+
+
+  mapSettings:
+    title: Map settings
+    showTrack: Show track
+    gpsTrack: GPS track
+    snappedTrack: Snapped to road
+
+    points: Points
+    confirmedPoints: Confirmed
+    allPoints: All measurements
+
+    side: Side (for color)
+    overtakerSide: Overtaker (Left)
+    stationarySide: Stationary (Right)
+
+  details:
+    visibility: Visibility
+    originalFileName: Original Filename
+    uploadedWith: Uploaded with
+    duration: Duration
+    uploadedDate: Uploaded on
+    recordedDate: Recorded on
+    numEvents: Confirmed events
+    length: Length
+    processingStatus: Processing
+
+  actions:
+    edit: Edit track
+
+    download: Download
+    original: Original
+    gpx: Track (GPX)
+    hintAuthorOnly: Only you, the author of this track, can download the original file.
+    hintOriginal: This is the file as it was uploaded to the server, without modifications, and it can be used with other tools.
+    hintAuthorOnlyOthers: Only the author of this track can download the original file.
+
+  comments:
+    title: Comments
+    post: Post comment
+    empty: Nobody commented... yet

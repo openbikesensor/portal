@@ -25,6 +25,7 @@ import {
 } from "rxjs/operators";
 import { useObservable } from "rxjs-hooks";
 import Markdown from "react-markdown";
+import { useTranslation } from "react-i18next";
 
 import api from "api";
 import { Page } from "components";
@@ -52,16 +53,17 @@ function TrackMapSettings({
   side,
   setSide,
 }) {
+  const { t } = useTranslation();
   return (
     <>
-      <Header as="h4">Map settings</Header>
+      <Header as="h4">{t("TrackPage.mapSettings.title")}</Header>
       <List>
         <List.Item>
           <Checkbox
             checked={showTrack}
             onChange={(e, d) => setShowTrack(d.checked)}
           />{" "}
-          Show track
+          {t("TrackPage.mapSettings.showTrack")}
           <div style={{ marginTop: 8 }}>
             <span
               style={{
@@ -73,7 +75,7 @@ function TrackMapSettings({
                 marginRight: 4,
               }}
             />
-            GPS track
+            {t("TrackPage.mapSettings.gpsTrack")}
           </div>
           <div>
             <span
@@ -86,11 +88,11 @@ function TrackMapSettings({
                 marginRight: 4,
               }}
             />
-            Snapped to road
+            {t("TrackPage.mapSettings.snappedTrack")}
           </div>
         </List.Item>
         <List.Item>
-          <List.Header>Points</List.Header>
+          <List.Header> {t("TrackPage.mapSettings.points")} </List.Header>
           <Dropdown
             selection
             value={pointsMode}
@@ -100,18 +102,18 @@ function TrackMapSettings({
               {
                 key: "overtakingEvents",
                 value: "overtakingEvents",
-                text: "Confirmed",
+                text: t("TrackPage.mapSettings.confirmedPoints"),
               },
               {
                 key: "measurements",
                 value: "measurements",
-                text: "All measurements",
+                text: t("TrackPage.mapSettings.allPoints"),
               },
             ]}
           />
         </List.Item>
         <List.Item>
-          <List.Header>Side (for color)</List.Header>
+          <List.Header>{t("TrackPage.mapSettings.side")}</List.Header>
           <Dropdown
             selection
             value={side}
@@ -120,12 +122,12 @@ function TrackMapSettings({
               {
                 key: "overtaker",
                 value: "overtaker",
-                text: "Overtaker (Left)",
+                text: t("TrackPage.mapSettings.overtakerSide"),
               },
               {
                 key: "stationary",
                 value: "stationary",
-                text: "Stationary (Right)",
+                text: t("TrackPage.mapSettings.stationarySide"),
               },
             ]}
           />
@@ -138,6 +140,7 @@ function TrackMapSettings({
 const TrackPage = connect((state) => ({ login: state.login }))(
   function TrackPage({ login }) {
     const { slug } = useParams();
+    const { t } = useTranslation();
 
     const [reloadComments, reloadComments$] = useTriggerSubject();
     const history = useHistory();
@@ -234,9 +237,7 @@ const TrackPage = connect((state) => ({ login: state.login }))(
           await api.downloadFile(`/tracks/${slug}/download/${filename}`);
         } catch (err) {
           if (/Failed to fetch/.test(String(err))) {
-            setDownloadError(
-              "The track probably has not been imported correctly or recently enough. Please ask your administrator for assistance."
-            );
+            setDownloadError(t("TrackPage.downloadError"));
           } else {
             setDownloadError(String(err));
           }
@@ -259,7 +260,7 @@ const TrackPage = connect((state) => ({ login: state.login }))(
     const [pointsMode, setPointsMode] = React.useState("overtakingEvents"); // none|overtakingEvents|measurements
     const [side, setSide] = React.useState("overtaker"); // overtaker|stationary
 
-    const title = track ? track.title || "Unnamed track" : null;
+    const title = track ? track.title || t("general.unnamedTrack") : null;
     return (
       <Page
         title={title}
@@ -268,16 +269,23 @@ const TrackPage = connect((state) => ({ login: state.login }))(
             <Container>
               {track && (
                 <Segment basic>
-                    <div style={{display: 'flex', alignItems: 'baseline', marginBlockStart: 32, marginBlockEnd: 16}}>
-                      <Header as="h1">{title}</Header>
-                      <div style={{marginLeft: 'auto'}}>
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "baseline",
+                      marginBlockStart: 32,
+                      marginBlockEnd: 16,
+                    }}
+                  >
+                    <Header as="h1">{title}</Header>
+                    <div style={{ marginLeft: "auto" }}>
                       <TrackActions {...{ isAuthor, onDownload, slug }} />
                     </div>
-                    </div>
+                  </div>
 
-                    <div style={{marginBlockEnd: 16}}>
-                      <TrackDetails {...{ track, isAuthor }} />
-                    </div>
+                  <div style={{ marginBlockEnd: 16 }}>
+                    <TrackDetails {...{ track, isAuthor }} />
+                  </div>
                 </Segment>
               )}
             </Container>
@@ -307,8 +315,7 @@ const TrackPage = connect((state) => ({ login: state.login }))(
                 {processing && (
                   <Message warning>
                     <Message.Content>
-                      Track data is still being processed, please reload page in
-                      a while.
+                      {t("TrackPage.processing")}
                     </Message.Content>
                   </Message>
                 )}
@@ -316,8 +323,7 @@ const TrackPage = connect((state) => ({ login: state.login }))(
                 {error && (
                   <Message error>
                     <Message.Content>
-                      The processing of this track failed, please ask your site
-                      administrator for help in debugging the issue.
+                      {t("TrackPage.processingError")}
                     </Message.Content>
                   </Message>
                 )}
@@ -328,7 +334,7 @@ const TrackPage = connect((state) => ({ login: state.login }))(
               {track?.description && (
                 <>
                   <Header as="h2" dividing>
-                    Description
+                    {t("TrackPage.description")}
                   </Header>
                   <Markdown>{track.description}</Markdown>
                 </>
@@ -347,7 +353,7 @@ const TrackPage = connect((state) => ({ login: state.login }))(
           open={downloadError != null}
           cancelButton={false}
           onConfirm={hideDownloadError}
-          header="Download failed"
+          header={t("TrackPage.downloadFailed")}
           content={String(downloadError)}
         />
       </Page>
