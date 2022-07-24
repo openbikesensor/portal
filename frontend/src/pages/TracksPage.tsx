@@ -9,7 +9,7 @@ import _ from 'lodash'
 import {useTranslation, Trans as Translate} from 'react-i18next'
 
 import type {Track} from 'types'
-import {Avatar, Page, StripMarkdown} from 'components'
+import {Avatar, Page, StripMarkdown, FormattedDate} from 'components'
 import api from 'api'
 import {useQueryParam} from 'query'
 
@@ -104,9 +104,10 @@ export function TrackListItem({track, privateTracks = false}) {
           {track.title || t('general.unnamedTrack')}
         </Item.Header>
         <Item.Meta>
-          <Translate i18nKey="TracksPage.createdBy">
-            Created by <span style={{margin: 0}}>{{author: track.author.username}}</span> on <span style={{margin: 0}}>{{date: track.createdAt}}</span>
-          </Translate>
+          {privateTracks ? null : <span>{t('TracksPage.createdBy', {author: track.author.username})}</span>}
+          <span>
+            <FormattedDate date={track.createdAt} />
+          </span>
         </Item.Meta>
         <Item.Description>
           <StripMarkdown>{maxLength(track.description, 200)}</StripMarkdown>

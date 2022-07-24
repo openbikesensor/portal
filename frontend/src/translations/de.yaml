@@ -20,7 +20,7 @@ App:
     thisInstallation: Diese Installation
     privacyPolicy: Datenschutz
     imprint: Impressum
-    version: Version v{apiVersion}
+    version: Version v{{apiVersion}}
     versionLoading: Version lädt...
 
     changeLanguage: Sprache wechseln
@@ -57,7 +57,7 @@ TracksPage:
   titlePublic: Öffentliche Fahrten
   titleUser: Meine Fahrten
   noPublicTracks: Es gibt noch keine öffentlichen Fahrten. <1>Lade die erste hoch!</1>
-  createdBy:  Erstellt von <1>{{author}}</1> am <1>{{date}}</1>
+  createdBy: Erstellt von {{author}}
   upload: Hochladen
 
   processing:
@@ -93,7 +93,7 @@ ExportPage:
     label: Geografischer Bereich
 
 UploadPage:
-  uploadProgress: Lade hoch {progress}%
+  uploadProgress: Lade hoch {{progress}}%
   processing: Verarbeiten...
 
   table:
@@ -109,7 +109,7 @@ FileUploadField:
 
 LoginRedirectPage:
   loginError: Login error
-  loginErrorText: "The login server reported: {error}"
+  loginErrorText: "The login server reported: {{error}}"
 
   loggingIn: Logging you in
   hangTight: Hang tight...

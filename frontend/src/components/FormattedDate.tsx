@@ -1,4 +1,5 @@
 import {DateTime} from 'luxon'
+import {useTranslation} from 'react-i18next'
 
 export default function FormattedDate({date, relative = false}) {
   if (date == null) {
@@ -10,11 +11,15 @@ export default function FormattedDate({date, relative = false}) {
 
   let str
 
+  const {i18n} = useTranslation()
+  const locale = i18n.language
+
   if (relative) {
-    str = dateTime.toRelative()
+    str = dateTime.setLocale(locale).toRelative()
   } else {
-    str = dateTime.toLocaleString(DateTime.DATETIME_MED)
+    str = dateTime.setLocale(locale).toLocaleString(DateTime.DATETIME_MED)
   }
 
-  return <span title={dateTime.toISO()}>{str}</span>
+  const iso = dateTime.toISO()
+  return <time dateTime={iso} title={iso}>{str}</time>
 }
