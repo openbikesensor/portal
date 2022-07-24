@@ -2,6 +2,12 @@ locales:
   en: English
   de: Deutsch
 
+general:
+  loading: Loading
+  unnamedTrack: Unnamed track
+  public: Public
+  private: Private
+
 App:
   footer:
     aboutTheProject: About the project
@@ -33,7 +39,6 @@ LoginButton:
 
 HomePage:
   mostRecentTrack: Most recent track
-  noPublicTracks: No public tracks yet. <1>Upload the first!</1>
 
 Stats:
   title: Statistics
@@ -47,3 +52,17 @@ Stats:
   thisMonth: This month
   thisYear: This year
   allTime: All time
+
+TracksPage:
+  titlePublic: Public tracks
+  titleUser: My tracks
+  noPublicTracks: No public tracks yet. <1>Upload the first!</1>
+  createdBy:  Created by <1>{author}</1> on <1>{date}</1>
+  upload: Upload
+
+  processing:
+    created: Not processed
+    queued: Processing queued
+    processing: Processing...
+    complete: Processed
+    error: Error while processing
