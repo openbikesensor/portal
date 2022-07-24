@@ -62,3 +62,28 @@ TracksPage:
     processing: Verarbeite...
     complete: Verarbeitet
     error: Fehler bei Verarbeitung
+
+ExportPage:
+  title: Export
+  information: |
+    Auf dieser Seite kann der öffentliche Datensatz unter der in der
+    Datenschutzerklärung angegebenen Lizenz exportiert und heruntergeladen
+    werden.
+
+    Bitte beachte, dass dieser Export **experimentell** ist, und dass sich das
+    Datenformat in der Zukunft ändern wird. Eine automatische Nutzung dieser
+    Exportfunktion ist nicht empfohlen. Bitte bedenke auch, dass ein Datenexport
+    rechenaufwändig ist, nutze ihn daher nur so häufig wie nötig und nur in
+    begrenzten geografischen Bereichen, je nach Bedarf.
+  export: Exportieren
+  mode:
+    label: Modus
+    placeholder: Modus wählen
+    events: Überholvorgänge
+  format:
+    label: Format
+    placeholder: Format wählen
+    geojson: GeoJSON
+    shapefile: Shapefile (ZIP)
+  boundingBox:
+    label: Geografischer Bereich
