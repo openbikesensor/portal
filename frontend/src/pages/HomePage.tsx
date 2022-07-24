@@ -4,7 +4,7 @@ import {Message, Grid, Loader, Header, Item} from 'semantic-ui-react'
 import {useObservable} from 'rxjs-hooks'
 import {of, from} from 'rxjs'
 import {map, switchMap} from 'rxjs/operators'
-import {useTranslation} from 'react-i18next'
+import {useTranslation, Trans as Translate} from 'react-i18next'
 
 import api from 'api'
 import {Stats, Page, Map} from 'components'
@@ -13,6 +13,8 @@ import {TrackListItem} from './TracksPage'
 import styles from './HomePage.module.less'
 
 function MostRecentTrack() {
+  const {t} = useTranslation()
+
   const track: Track | null = useObservable(
     () =>
       of(null).pipe(
@@ -23,14 +25,15 @@ function MostRecentTrack() {
     []
   )
 
-  const {t} = useTranslation()
   return (
     <>
       <Header as="h2">{t('HomePage.mostRecentTrack')}</Header>
       <Loader active={track === null} />
       {track === undefined ? (
         <Message>
-          No public tracks yet. <Link to="/upload">Upload the first!</Link>
+          <Translate i18nKey="HomePage.noPublicTracks">
+            No public tracks yet. <Link to="/upload">Upload the first!</Link>
+          </Translate>
         </Message>
       ) : track ? (
         <Item.Group>

@@ -5,6 +5,7 @@ import {useObservable} from 'rxjs-hooks'
 import {of, from, concat, combineLatest} from 'rxjs'
 import {map, switchMap, distinctUntilChanged} from 'rxjs/operators'
 import {Duration, DateTime} from 'luxon'
+import {useTranslation} from 'react-i18next'
 
 import api from 'api'
 
@@ -17,6 +18,7 @@ function formatDuration(seconds) {
 }
 
 export default function Stats({user = null}: {user?: null | string}) {
+  const {t} = useTranslation()
   const [timeframe, setTimeframe] = useState('all_time')
   const onClick = useCallback((_e, {name}) => setTimeframe(name), [setTimeframe])
 
@@ -63,35 +65,37 @@ export default function Stats({user = null}: {user?: null | string}) {
     [timeframe, user]
   )
 
+  const placeholder = t('Stats.placeholder')
+
   return (
     <>
-      <Header as="h2">{user && 'My '}Statistics</Header>
+      <Header as="h2">{user ? t('Stats.titleUser') : t('Stats.title')}</Header>
 
       <div>
         <Segment attached="top">
           <Loader active={stats == null} />
           <Statistic.Group widths={2} size="tiny">
             <Statistic>
-              <Statistic.Value>{stats ? `${Number(stats?.trackLength / 1000).toFixed(1)} km` : '...'}</Statistic.Value>
-              <Statistic.Label>Total track length</Statistic.Label>
+              <Statistic.Value>{stats ? `${Number(stats?.trackLength / 1000).toFixed(1)} km` : placeholder}</Statistic.Value>
+              <Statistic.Label>{t('Stats.totalTrackLength')}</Statistic.Label>
             </Statistic>
             <Statistic>
-              <Statistic.Value>{stats ? formatDuration(stats?.trackDuration) : '...'}</Statistic.Value>
-              <Statistic.Label>Time recorded</Statistic.Label>
+              <Statistic.Value>{stats ? formatDuration(stats?.trackDuration) : placeholder}</Statistic.Value>
+              <Statistic.Label>{t('Stats.timeRecorded')}</Statistic.Label>
             </Statistic>
             <Statistic>
-              <Statistic.Value>{stats?.numEvents ?? '...'}</Statistic.Value>
-              <Statistic.Label>Events confirmed</Statistic.Label>
+              <Statistic.Value>{stats?.numEvents ?? placeholder}</Statistic.Value>
+              <Statistic.Label>{t('Stats.eventsConfirmed')}</Statistic.Label>
             </Statistic>
             {user ? (
               <Statistic>
-                <Statistic.Value>{stats?.trackCount ?? '...'}</Statistic.Value>
-                <Statistic.Label>Tracks recorded</Statistic.Label>
+                <Statistic.Value>{stats?.trackCount ?? placeholder}</Statistic.Value>
+                <Statistic.Label>{t('Stats.tracksRecorded')}</Statistic.Label>
               </Statistic>
             ) : (
               <Statistic>
-                <Statistic.Value>{stats?.userCount ?? '...'}</Statistic.Value>
-                <Statistic.Label>Members joined</Statistic.Label>
+                <Statistic.Value>{stats?.userCount ?? placeholder}</Statistic.Value>
+                <Statistic.Label>{t('Stats.membersJoined')}</Statistic.Label>
               </Statistic>
             )}
           </Statistic.Group>
@@ -99,13 +103,13 @@ export default function Stats({user = null}: {user?: null | string}) {
 
         <Menu widths={3} attached="bottom" size="small">
           <Menu.Item name="this_month" active={timeframe === 'this_month'} onClick={onClick}>
-            This month
+            {t('Stats.thisMonth')}
           </Menu.Item>
           <Menu.Item name="this_year" active={timeframe === 'this_year'} onClick={onClick}>
-            This year
+            {t('Stats.thisYear')}
           </Menu.Item>
           <Menu.Item name="all_time" active={timeframe === 'all_time'} onClick={onClick}>
-            All time
+            {t('Stats.allTime')}
           </Menu.Item>
         </Menu>
       </div>

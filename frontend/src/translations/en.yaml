@@ -1,6 +1,3 @@
-HomePage:
-  mostRecentTrack: Most recent track
-
 locales:
   en: English
   de: Deutsch
@@ -33,3 +30,20 @@ App:
 
 LoginButton:
   login: Login
+
+HomePage:
+  mostRecentTrack: Most recent track
+  noPublicTracks: No public tracks yet. <1>Upload the first!</1>
+
+Stats:
+  title: Statistics
+  titleUser: My Statistic
+  placeholder: "..."
+  totalTrackLength: Total track length
+  timeRecorded: Time recorded
+  eventsConfirmed: Events confirmed
+  tracksRecorded: Tracks recorded
+  membersJoined: Members joined
+  thisMonth: This month
+  thisYear: This year
+  allTime: All time
