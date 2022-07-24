@@ -84,31 +84,31 @@ const App = connect((state) => ({login: state.login}))(function App({login}) {
           </Link>
 
           {hasMap && (
-            <Link component={MenuItemForLink} to="/map" as="a">
-              Map
-            </Link>
+          <Link component={MenuItemForLink} to="/map" as="a">
+            {t('App.menu.map')}
+          </Link>
           )}
 
           <Link component={MenuItemForLink} to="/tracks" as="a">
-            Tracks
+            {t('App.menu.tracks')}
           </Link>
 
           <Link component={MenuItemForLink} to="/export" as="a">
-            Export
+            {t('App.menu.export')}
           </Link>
 
           <Menu.Menu position="right">
             {login ? (
               <>
                 <Link component={MenuItemForLink} to="/my/tracks" as="a">
-                  My Tracks
+                  {t('App.menu.myTracks')}
                 </Link>
                 <Dropdown item trigger={<Avatar user={login} className={styles.avatar} />}>
                   <Dropdown.Menu>
-                    <Link to="/upload" component={DropdownItemForLink} icon="cloud upload" text="Upload tracks" />
-                    <Link to="/settings" component={DropdownItemForLink} icon="cog" text="Settings" />
+                    <Link to="/upload" component={DropdownItemForLink} icon="cloud upload" text={t('App.menu.uploadTracks')} />
+                    <Link to="/settings" component={DropdownItemForLink} icon="cog" text={t('App.menu.settings')}/>
                     <Dropdown.Divider />
-                    <Link to="/logout" component={DropdownItemForLink} icon="sign-out" text="Logout" />
+                    <Link to="/logout" component={DropdownItemForLink} icon="sign-out" text={t('App.menu.logout')} />
                   </Dropdown.Menu>
                 </Dropdown>
               </>
@@ -169,7 +169,9 @@ const App = connect((state) => ({login: state.login}))(function App({login}) {
           <Grid columns={4} stackable>
             <Grid.Row>
               <Grid.Column>
-                <Header as="h5">About the project</Header>
+                <Header as="h5">
+                  {t('App.footer.aboutTheProject')}
+                </Header>
                 <List>
                   <List.Item>
                     <a href="https://openbikesensor.org/" target="_blank" rel="noreferrer">
@@ -180,36 +182,43 @@ const App = connect((state) => ({login: state.login}))(function App({login}) {
               </Grid.Column>
 
               <Grid.Column>
-                <Header as="h5">Get involved</Header>
+                <Header as="h5">
+                  {t('App.footer.getInvolved')}
+                </Header>
                 <List>
                   <List.Item>
                     <a href="https://forum.openbikesensor.org/" target="_blank" rel="noreferrer">
-                      Get help in forum
+                      {t('App.footer.getHelpInForum')}
                     </a>
                   </List.Item>
                   <List.Item>
                     <a href="https://github.com/openbikesensor/portal/issues/new" target="_blank" rel="noreferrer">
-                      Report an issue
+                      {t('App.footer.reportAnIssue')}
                     </a>
                   </List.Item>
                   <List.Item>
                     <a href="https://github.com/openbikesensor/portal" target="_blank" rel="noreferrer">
-                      Development
+                      {t('App.footer.development')}
                     </a>
                   </List.Item>
                 </List>
               </Grid.Column>
 
               <Grid.Column>
-                <Header as="h5">This installation</Header>
+                <Header as="h5">
+                  {t('App.footer.thisInstallation')}
+                  This installation
+                </Header>
                 <List>
                   <List.Item>
                     <a href={config?.privacyPolicyUrl} target="_blank" rel="noreferrer">
+                      {t('App.footer.privacyPolicy')}
                       Privacy policy
                     </a>
                   </List.Item>
                   <List.Item>
                     <a href={config?.imprintUrl} target="_blank" rel="noreferrer">
+                      {t('App.footer.imprint')}
                       Imprint
                     </a>
                   </List.Item>
@@ -221,7 +230,7 @@ const App = connect((state) => ({login: state.login}))(function App({login}) {
                       target="_blank"
                       rel="noreferrer"
                     >
-                      Version {apiVersion ? `v${apiVersion}` : 'Fetching version...'}
+                      {apiVersion ? t('App.footer.version', {apiVersion}) : t('App.footer.versionLoading')}
                     </a>
                   </List.Item>
                 </List>

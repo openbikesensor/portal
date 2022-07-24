@@ -1,9 +1,11 @@
 import React from 'react'
 import {Button} from 'semantic-ui-react'
+import {useTranslation} from 'react-i18next'
 
 import api from 'api'
 
 export default function LoginButton(props) {
+  const {t} = useTranslation()
   const [busy, setBusy] = React.useState(false)
 
   const onClick = React.useCallback(
@@ -19,7 +21,7 @@ export default function LoginButton(props) {
 
   return (
     <Button onClick={busy ? null : onClick} loading={busy} {...props}>
-      Login
+      {t('LoginButton.login')}
     </Button>
   )
 }

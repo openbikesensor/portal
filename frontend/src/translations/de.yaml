@@ -3,4 +3,29 @@ HomePage:
 
 App:
   footer:
+    aboutTheProject: Über das Projekt
+
+    getInvolved: Mitmachen
+    getHelpInForum: Hilfe im Forum finden
+    reportAnIssue: Ein Problem melden
+    development: Entwicklung
+
+    thisInstallation: Diese Installation
+    privacyPolicy: Datenschutz
+    imprint: Impressum
+    version: Version v{apiVersion}
+    versionLoading: Version lädt...
+
     changeLanguage: Sprache wechseln
+
+  menu:
+    map: Karte
+    tracks: Fahrten
+    export: Export
+    myTracks: Meine Fahrten
+    uploadTracks: Fahrten hochladen
+    settings: Einstellungen
+    logout: Abmelden
+
+LoginButton:
+  login: Anmelden
