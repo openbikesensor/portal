@@ -99,9 +99,20 @@ UploadPage:
     size: Größe
     statusTitle: Status / Titel
 
-
 FileUploadField:
   dropOrClick: Datei hierher ziehen oder klicken, um eine zum Hochladen auszuwählen
   dropOrClickMultiple: Dateien hierher ziehen oder klicken, um Dateien zum Hochladen auszuwählen
   uploadFile: Datei hochladen
   uploadFiles: Dateien hochladen
+
+LoginRedirectPage:
+  loginError: Login error
+  loginErrorText: "The login server reported: {error}"
+
+  loggingIn: Logging you in
+  hangTight: Hang tight...
+
+NotFoundPage:
+  title: Seite nicht gefunden
+  description: Den Fehler kennst du sicher...
+  goBack: Zurückgehen

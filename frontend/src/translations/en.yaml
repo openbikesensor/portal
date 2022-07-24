@@ -104,9 +104,20 @@ UploadPage:
     size: Size
     statusTitle: Status / Title
 
-
 FileUploadField:
   dropOrClick: Drop file here or click to select one for upload
   dropOrClickMultiple: Drop files here or click to select them for upload
   uploadFile: Upload file
   uploadFiles: Upload files
+
+LoginRedirectPage:
+  loginError: Loginfehler
+  loginErrorText: "Der Login-Server meldet: {error}"
+
+  loggingIn: Du wirst eingeloggt
+  hangTight: Bitte warten...
+
+NotFoundPage:
+  title: Page not found
+  description: You know what that means...
+  goBack: Go back

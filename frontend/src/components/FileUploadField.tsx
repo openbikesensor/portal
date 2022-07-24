@@ -82,6 +82,6 @@ export default function FileUploadField({ onSelect: onSelect_, multiple }) {
           </FileDrop>
         )}
       </label>
-  </>
+    </>
   );
 }
