@@ -8,6 +8,7 @@ import {useTranslation, Trans as Translate} from 'react-i18next'
 
 import api from 'api'
 import {Stats, Page} from 'components'
+import type {Track} from 'types'
 
 import {TrackListItem} from './TracksPage'
 
