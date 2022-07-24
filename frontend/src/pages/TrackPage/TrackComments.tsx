@@ -22,7 +22,7 @@ function CommentForm({onSubmit}) {
 
 export default function TrackComments({comments, onSubmit, onDelete, login, hideLoader}) {
   return (
-    <Segment basic>
+    <>
       <Comment.Group>
         <Header as="h2" dividing>
           Comments
@@ -63,6 +63,6 @@ export default function TrackComments({comments, onSubmit, onDelete, login, hide
 
         {login && comments != null && <CommentForm onSubmit={onSubmit} />}
       </Comment.Group>
-    </Segment>
+    </>
   )
 }
