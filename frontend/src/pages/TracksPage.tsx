@@ -114,15 +114,7 @@ export function TrackListItem({track, privateTracks = false}) {
         </Item.Description>
         {privateTracks && (
           <Item.Extra>
-            {track.public ? (
-              <>
-                <Icon color="blue" name="eye" fitted /> {t('general.public')}
-              </>
-            ) : (
-              <>
-                <Icon name="eye slash" fitted /> {t('general.private')}
-              </>
-            )}
+            <Visibility public={track.public} />
 
             <span style={{marginLeft: '1em'}}>
               <Icon color={COLOR_BY_STATUS[track.processingStatus]} name="bolt" fitted />

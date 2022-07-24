@@ -7,6 +7,8 @@ general:
   private: Privat
   show: Anzeigen
   edit: Bearbeiten
+  save: Speichern
+  delete: Löschen
 
 App:
   footer:
@@ -221,3 +223,49 @@ SettingsPage:
 
     generate: Neuen API-Schlüssel erstellen
 
+TrackPage:
+  downloadFailed: Download fehlgeschlagen
+  downloadError: Diese Fahrt wurde vermutlich nicht korrekt importiert, oder in letzter Zeit nicht aktualisiert. Bitte frage den Administrator um Hilfe mit diesem Problem.
+  processing: Diese Fahrt wird gerade importiert, bitte lade die Seite später neu.
+  processingError: Beim Import dieser Fahrt ist ein Fehler aufgetreten, bitte frage den Administrator um Hilfe mit diesem Problem.
+  description: Beschreibung
+
+  mapSettings:
+    title: Karteneinstellungen
+    showTrack: Route anzeigen
+    gpsTrack: GPS-Route
+    snappedTrack: Erkannte Straßenroute
+
+    points: Punkte
+    confirmedPoints: Bestätigte Überholungen
+    allPoints: Alle Messungen
+
+    side: Seite für Einfärbung
+    overtakerSide: Überholung (links)
+    stationarySide: Ruhender Verkehr (rechts)
+
+  details:
+    visibility: Sichtbarkeit
+    originalFileName: Original Dateiname
+    uploadedWith: Hochgeladen mit
+    duration: Dauer
+    uploadedDate: Hochgeladen am
+    recordedDate: Aufgezeichnet am
+    numEvents: Bestätigte Überholungen
+    length: Länge
+    processingStatus: Verarbeitung
+
+  actions:
+    edit: Fahrt bearbeiten
+
+    download: Herunterladen
+    original: Original
+    gpx: GPX-Track
+    hintAuthorOnly: Nur du, als Autor:in dieser Fahrt, kannst die Originaldatei herunterladen.
+    hintOriginal: Dies ist die Originaldatei, wie sie auf den Server hochgeladen wurde, und kann mit anderen Werkzeugen verwendet werden.
+    hintAuthorOnlyOthers: Nur der:die Autor:in dieser Fahrt kann die Originaldatei herunterladen.
+
+  comments:
+    title: Kommentare
+    post: Kommentar abschicken
+    empty: Bisher hat niemand diese Fahrt kommentiert.

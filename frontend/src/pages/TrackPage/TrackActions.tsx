@@ -1,40 +1,40 @@
 import React from 'react'
 import {Link} from 'react-router-dom'
 import {Icon, Popup, Button, Dropdown} from 'semantic-ui-react'
+import { useTranslation } from "react-i18next";
 
 export default function TrackActions({slug, isAuthor, onDownload}) {
+  const { t } = useTranslation();
+
   return (
     <>
-      {isAuthor && (
-        <Link to={`/tracks/${slug}/edit`}>
-          <Button primary>Edit track</Button>
-        </Link>
-      )}
-
-      <Dropdown text="Download" button upward>
-        <Dropdown.Menu>
-          <Dropdown.Item text="Original" onClick={() => onDownload('original.csv')} disabled={!isAuthor} />
-          <Dropdown.Item text="Track (GPX)" onClick={() => onDownload('track.gpx')} />
-        </Dropdown.Menu>
-      </Dropdown>
-
       <Popup
         trigger={<Icon name="info circle" />}
         offset={[12, 0]}
         content={
           isAuthor ? (
             <>
-              <p>Only you, the author of this track, can download the original file.</p>
-              <p>
-                This is the file as it was uploaded to the server, without modifications, and it can be used with other
-                tools.
-              </p>
+              <p>{t('TrackPage.actions.hintAuthorOnly')}</p>
+              <p>{t('TrackPage.actions.hintOriginal')}</p>
             </>
           ) : (
-            <p>Only the author of this track can download the original file.</p>
+            <p>{t('TrackPage.actions.hintAuthorOnlyOthers')}</p>
           )
         }
       />
+
+      <Dropdown text={t('TrackPage.actions.download')} button>
+        <Dropdown.Menu>
+          <Dropdown.Item text={t('TrackPage.actions.original')}onClick={() => onDownload('original.csv')} disabled={!isAuthor} />
+          <Dropdown.Item text={t('TrackPage.actions.gpx')} onClick={() => onDownload('track.gpx')} />
+        </Dropdown.Menu>
+      </Dropdown>
+
+      {isAuthor && (
+        <Link to={`/tracks/${slug}/edit`}>
+          <Button primary>{t('TrackPage.actions.edit')}</Button>
+        </Link>
+      )}
     </>
   )
 }

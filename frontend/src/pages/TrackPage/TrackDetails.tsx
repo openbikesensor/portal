@@ -1,80 +1,85 @@
-import React from 'react'
-import {List} from 'semantic-ui-react'
-import {Duration} from 'luxon'
+import React from "react";
+import _ from "lodash";
+import { List, Header, Grid } from "semantic-ui-react";
+import { Duration } from "luxon";
+import { useTranslation } from "react-i18next";
 
-import {FormattedDate} from 'components'
+import { FormattedDate, Visibility } from "components";
 
 function formatDuration(seconds) {
-  return Duration.fromMillis((seconds ?? 0) * 1000).toFormat("h'h' mm'm'")
+  return Duration.fromMillis((seconds ?? 0) * 1000).toFormat("h'h' mm'm'");
 }
 
-export default function TrackDetails({track, isAuthor}) {
+export default function TrackDetails({ track, isAuthor }) {
+  const { t } = useTranslation();
+
+  const items = [
+    track.public != null &&
+      isAuthor && [
+        t("TrackPage.details.visibility"),
+        <Visibility public={track.public} />,
+      ],
+
+    track.uploadedByUserAgent != null && [
+      t("TrackPage.details.uploadedWith"),
+      track.uploadedByUserAgent,
+    ],
+
+    track.duration != null && [
+      t("TrackPage.details.duration"),
+      formatDuration(track.duration),
+    ],
+
+    track.createdAt != null && [
+      t("TrackPage.details.uploadedDate"),
+      <FormattedDate date={track.createdAt} />,
+    ],
+
+    track?.recordedAt != null && [
+      t("TrackPage.details.recordedDate"),
+      <FormattedDate date={track?.recordedAt} />,
+    ],
+
+    track?.numEvents != null && [
+      t("TrackPage.details.numEvents"),
+      track?.numEvents,
+    ],
+
+    track?.length != null && [
+      t("TrackPage.details.length"),
+      `${(track?.length / 1000).toFixed(2)} km`,
+    ],
+
+    track?.processingStatus != null &&
+      track?.processingStatus != "error" && [
+        t("TrackPage.details.processingStatus"),
+        track.processingStatus,
+      ],
+
+    track.originalFileName != null && [
+      t("TrackPage.details.originalFileName"),
+      <code>{track.originalFileName}</code>,
+    ],
+  ].filter(Boolean);
+
+  const COLUMNS = 4;
+  const chunkSize = Math.ceil(items.length / COLUMNS)
   return (
-    <List horizontal relaxed>
-      {track.public != null && isAuthor && (
-        <List.Item>
-          <List.Header>Visibility</List.Header>
-          {track.public ? 'Public' : 'Private'}
-        </List.Item>
-      )}
+    <Grid>
+      <Grid.Row columns={COLUMNS}>
+      {_.chunk(items, chunkSize).map((chunkItems, idx) => (
+            <Grid.Column key={idx}>
 
-      {track.originalFileName != null && (
-        <List.Item>
-          {isAuthor && <div style={{float: 'right'}}></div>}
-
-          <List.Header>Original Filename</List.Header>
-          <code>{track.originalFileName}</code>
-        </List.Item>
-      )}
-
-      {track.uploadedByUserAgent != null && (
-        <List.Item>
-          <List.Header>Uploaded with</List.Header>
-          {track.uploadedByUserAgent}
-        </List.Item>
-      )}
-
-      {track.duration != null && (
-        <List.Item>
-          <List.Header>Duration</List.Header>
-          {formatDuration(track.duration)}
-        </List.Item>
-      )}
-
-      {track.createdAt != null && (
-        <List.Item>
-          <List.Header>Uploaded on</List.Header>
-          <FormattedDate date={track.createdAt} />
-        </List.Item>
-      )}
-
-      {track?.recordedAt != null && (
-        <List.Item>
-          <List.Header>Recorded on</List.Header>
-          <FormattedDate date={track?.recordedAt} />
-        </List.Item>
-      )}
-
-      {track?.numEvents != null && (
-        <List.Item>
-          <List.Header>Confirmed events</List.Header>
-          {track?.numEvents}
-        </List.Item>
-      )}
-
-      {track?.length != null && (
-        <List.Item>
-          <List.Header>Length</List.Header>
-          {(track?.length / 1000).toFixed(2)} km
-        </List.Item>
-      )}
-
-      {track?.processingStatus != null && track?.processingStatus != 'error' && (
-        <List.Item>
-          <List.Header>Processing</List.Header>
-          {track.processingStatus}
-        </List.Item>
-      )}
+  <List>
+    {chunkItems.map(([title, value]) => (
+      <List.Item key={title}>
+      <List.Header>{title}</List.Header>
+      <List.Description>{value}</List.Description>
+      </List.Item>))}
     </List>
-  )
+            </Grid.Column>
+          ))}
+        </Grid.Row>
+    </Grid>
+  );
 }
