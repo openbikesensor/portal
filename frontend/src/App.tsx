@@ -7,9 +7,11 @@ import {useObservable} from 'rxjs-hooks'
 import {from} from 'rxjs'
 import {pluck} from 'rxjs/operators'
 import {Helmet} from "react-helmet";
+import {useTranslation} from 'react-i18next'
 
 import {useConfig} from 'config'
 import styles from './App.module.less'
+import {AVAILABLE_LOCALES, setLocale} from 'i18n'
 
 import {
   ExportPage,
@@ -58,6 +60,7 @@ function Banner({text, style = 'warning'}: {text: string; style: 'warning' | 'in
 }
 
 const App = connect((state) => ({login: state.login}))(function App({login}) {
+  const {t} = useTranslation()
   const config = useConfig()
   const apiVersion = useObservable(() => from(api.get('/info')).pipe(pluck('version')))
 
@@ -210,12 +213,6 @@ const App = connect((state) => ({login: state.login}))(function App({login}) {
                       Imprint
                     </a>
                   </List.Item>
-                </List>
-              </Grid.Column>
-
-              <Grid.Column>
-                <Header as="h5">Info</Header>
-                <List>
                   <List.Item>
                     <a
                       href={`https://github.com/openbikesensor/portal${
@@ -224,9 +221,16 @@ const App = connect((state) => ({login: state.login}))(function App({login}) {
                       target="_blank"
                       rel="noreferrer"
                     >
-                      {apiVersion ? `v${apiVersion}` : 'Fetching version...'}
+                      Version {apiVersion ? `v${apiVersion}` : 'Fetching version...'}
                     </a>
                   </List.Item>
+                </List>
+              </Grid.Column>
+
+              <Grid.Column>
+                <Header as="h5">{t('App.footer.changeLanguage')}</Header>
+                <List>
+                    {AVAILABLE_LOCALES.map(locale => <List.Item key={locale}><a onClick={() => setLocale(locale)}>{t(`locales.${locale}`)}</a></List.Item>)}
                 </List>
               </Grid.Column>
             </Grid.Row>
