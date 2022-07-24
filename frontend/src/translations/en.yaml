@@ -53,6 +53,7 @@ LoginButton:
 
 HomePage:
   mostRecentTrack: Most recent track
+  noPublicTracks: No public tracks yet. <1>Upload the first!</1>
 
 Stats:
   title: Statistics

@@ -1,20 +1,11 @@
-import React, { useCallback } from "react";
-import { connect } from "react-redux";
-import {
-  Button,
-  Message,
-  Item,
-  Header,
-  Loader,
-  Pagination,
-  Icon,
-} from "semantic-ui-react";
-import { useObservable } from "rxjs-hooks";
-import { Link } from "react-router-dom";
-import { of, from, concat } from "rxjs";
-import { map, switchMap, distinctUntilChanged } from "rxjs/operators";
-import _ from "lodash";
-import { useTranslation, Trans as Translate } from "react-i18next";
+import React, {useCallback} from 'react'
+import {connect} from 'react-redux'
+import {Button, Message, Item, Header, Loader, Pagination, Icon} from 'semantic-ui-react'
+import {useObservable} from 'rxjs-hooks'
+import {Link} from 'react-router-dom'
+import {of, from, concat} from 'rxjs'
+import {map, switchMap, distinctUntilChanged} from 'rxjs/operators'
+import _ from 'lodash'
 
 import type { Track } from "types";
 import {
@@ -91,7 +82,7 @@ export function NoPublicTracksMessage() {
   );
 }
 
-function maxLength(t: string | null, max: number): string | null {
+function maxLength(t: string|null, max: number): string|null {
   if (t && t.length > max) {
     return t.substring(0, max) + " ...";
   } else {
