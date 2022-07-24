@@ -7,10 +7,9 @@ import {map, switchMap} from 'rxjs/operators'
 import {useTranslation} from 'react-i18next'
 
 import api from 'api'
-import {Stats, Page, Map} from 'components'
+import {Stats, Page} from 'components'
 
 import {TrackListItem} from './TracksPage'
-import styles from './HomePage.module.less'
 
 function MostRecentTrack() {
   const {t} = useTranslation()
