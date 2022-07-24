@@ -11,6 +11,10 @@ general:
   private: Private
   show: Show
   edit: Edit
+  save: Save
+
+  copied: Copied.
+  copyError: Failed to copy.
 
 App:
   footer:
@@ -183,3 +187,42 @@ MapPage:
       southWest: south-west bound
       west: west bound
       northWest: north-west bound
+
+SettingsPage:
+  title: Settings
+
+  profile:
+    title: My profile
+    publicNotice: All of this information is public.
+    username:
+      label: Username
+    bio:
+      label: Bio
+    avatarUrl:
+      label: Avatar URL
+
+  apiKey:
+    title: My API Key
+    description: |
+      Here you find your API Key, for use in the OpenBikeSensor. You can to
+      copy and paste it into your sensor's configuration interface to allow
+      direct upload from the device.
+
+      Please protect your API Key carefully as it allows full control over
+      your account.
+    urlDescription: |
+      The API URL should be set to:
+    generateDescription: |
+      You can generate a new API Key here, which will invalidate the old one,
+      disconnecting all devices you used it on from your account.
+
+    key:
+      label: Personal API Key
+      empty: You have no API Key, please generate one below.
+      show: Show API Key
+
+    url:
+      label: API URL
+
+    generate: Generate new API key
+
