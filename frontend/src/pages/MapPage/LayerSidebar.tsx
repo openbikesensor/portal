@@ -105,12 +105,16 @@ function LayerSidebar({
               </List.Item></>
             ) :
             (
-              <List.Item>
-                <span style={{color: "olive"}}>Urban</span>
-                <DiscreteColorMapLegend map={colorByDistance('distance_overtaker')[3][5].slice(2)} />
-                <span style={{color: "brown"}}>Rural</span>
-                <DiscreteColorMapLegend map={colorByDistance('distance_overtaker')[3][3].slice(2)} />
-              </List.Item>
+              <>
+                <List.Item>
+                  <List.Header>Urban</List.Header>
+                  <DiscreteColorMapLegend map={colorByDistance('distance_overtaker')[3][5].slice(2)} />
+                </List.Item>
+                <List.Item>
+                  <List.Header>Rural</List.Header>
+                  <DiscreteColorMapLegend map={colorByDistance('distance_overtaker')[3][3].slice(2)} />
+                </List.Item>
+              </>
             )}
           </>
         )}
@@ -131,9 +135,11 @@ function LayerSidebar({
         {showEvents && (
           <>
             <List.Item>
-                <span style={{color: "blue"}}>Urban</span>
+              <List.Header>Urban</List.Header>
                 <DiscreteColorMapLegend map={colorByDistance('distance_overtaker')[3][5].slice(2)} />
-                <span style={{color: "cyan"}}>Rural</span>
+              </List.Item>
+            <List.Item>
+              <List.Header>Rural</List.Header>
                 <DiscreteColorMapLegend map={colorByDistance('distance_overtaker')[3][3].slice(2)} />
             </List.Item>
           </>
