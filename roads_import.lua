@@ -61,6 +61,8 @@ local roads = osm2pgsql.define_way_table('road', {
   { column = 'oneway', type = 'bool' },
 })
 
+local minspeed_rural = 60
+
 function osm2pgsql.process_way(object)
   if object.tags.highway and contains(HIGHWAY_TYPES, object.tags.highway) then
     local tags = object.tags
@@ -92,7 +94,11 @@ function osm2pgsql.process_way(object)
         zone = "urban"
       elseif contains(MOTORWAY_TYPES, tags.highway) then
         zone = "motorway"
-      elseif (tags.maxspeed) and (tonumber(string.match(tags.maxspeed, '[%d]*'))) and tonumber(string.match(tags.maxspeed, '[%d]*')) > 60 then
+      elseif (tags.maxspeed) and (tonumber(string.match(tags.maxspeed, '[%d]*'))) and tonumber(string.match(tags.maxspeed, '[%d]*')) > minspeed_rural then
+        zone = "rural"
+      elseif (tags["maxspeed:forward"]) and (tonumber(string.match(tags["maxspeed:forward"], '[%d]*'))) and tonumber(string.match(tags["maxspeed:forward"], '[%d]*')) > minspeed_rural then
+        zone = "rural"
+      elseif (tags["maxspeed:backward"]) and (tonumber(string.match(tags["maxspeed:backward"], '[%d]*'))) and tonumber(string.match(tags["maxspeed:backward"], '[%d]*')) > minspeed_rural then
         zone = "rural"
       elseif tags['source:maxspeed'] and string.match(tags['source:maxspeed'], "rural") then
         zone = "rural"
