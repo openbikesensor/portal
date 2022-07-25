@@ -1,28 +1,28 @@
 import React from 'react'
-import {Grid, Loader, Header, Item} from 'semantic-ui-react'
+import {Link} from 'react-router-dom'
+import {Message, Grid, Loader, Header, Item} from 'semantic-ui-react'
 import {useObservable} from 'rxjs-hooks'
 import {of, from} from 'rxjs'
 import {map, switchMap} from 'rxjs/operators'
-import {useTranslation} from 'react-i18next'
 
 import api from 'api'
-import {Stats, Page} from 'components'
-import type {Track} from 'types'
+import {Stats, Page, Map} from 'components'
 
-import {TrackListItem, NoPublicTracksMessage} from './TracksPage'
+import {TrackListItem} from './TracksPage'
+import styles from './HomePage.module.less'
 
 function MostRecentTrack() {
   const {t} = useTranslation()
 
-  const track: Track | null = useObservable(
+  const tracks: Track[] | null = useObservable(
     () =>
       of(null).pipe(
-        switchMap(() => from(api.fetch('/tracks?limit=1'))),
-        map((response) => response?.tracks?.[0])
+        switchMap(() => from(api.fetch("/tracks?limit=3"))),
+        map((response) => response?.tracks)
       ),
     null,
     []
-  )
+  );
 
   return (
     <>
@@ -32,11 +32,13 @@ function MostRecentTrack() {
         <NoPublicTracksMessage />
       ) : track ? (
         <Item.Group>
-          <TrackListItem track={track} />
+          {tracks.map((track) => (
+            <TrackListItem key={track.id} track={track} />
+          ))}
         </Item.Group>
       ) : null}
     </>
-  )
+  );
 }
 
 export default function HomePage() {
@@ -46,12 +48,13 @@ export default function HomePage() {
         <Grid.Row>
           <Grid.Column width={8}>
             <Stats />
+            <MostRecentTrack />
           </Grid.Column>
           <Grid.Column width={8}>
-            <MostRecentTrack />
+            <RegionStats />
           </Grid.Column>
         </Grid.Row>
       </Grid>
     </Page>
-  )
+  );
 }
