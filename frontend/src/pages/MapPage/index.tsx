@@ -231,7 +231,9 @@ function MapPage({ login }) {
   }
 
   const regionLayers = useMemo(() => getRegionLayers(), []);
-  layers.push(...regionLayers);
+  if (mapConfig.obsRegions.show) {
+    layers.push(...regionLayers);
+  }
 
   const eventsLayer = useMemo(() => getEventsLayer(), []);
   const eventsTextLayer = useMemo(() => getEventsTextLayer(), []);
