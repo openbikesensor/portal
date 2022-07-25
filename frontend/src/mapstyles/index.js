@@ -52,8 +52,8 @@ var steps = {'rural': [1.6,1.8,2.0,2.2],
 
 export function borderByZone() {
   return ["match", ['get', 'zone'],
-  "rural", "brown",
-  "urban", "olive",
+  "rural", "cyan",
+  "urban", "blue",
   "purple"
   ]
 }
