@@ -22,13 +22,12 @@ def upgrade():
     op.create_table(
         "region",
         sa.Column(
-            "way_id", sa.BIGINT, autoincrement=True, primary_key=True, index=True
+            "relation_id", sa.BIGINT, autoincrement=True, primary_key=True, index=True
         ),
-        sa.Column("zone", dbtype("zone_type")),
         sa.Column("name", sa.String),
         sa.Column("geometry", dbtype("GEOMETRY"), index=True),
-        sa.Column("directionality", sa.Integer),
-        sa.Column("oenway", sa.Boolean),
+        sa.Column("admin_level", sa.Integer, index=True),
+        sa.Column("tags", dbtype("HSTORE")),
     )
 
 
