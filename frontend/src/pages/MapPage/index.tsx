@@ -7,7 +7,7 @@ import produce from "immer";
 import api from "api";
 import { Page, Map } from "components";
 import { useConfig } from "config";
-import { colorByDistance, borderByZone, colorByCount, reds, getRegionLayers, isValidAttribute } from "mapstyles";
+import { colorByDistance, borderByZone, colorByCount, reds, isValidAttribute, getRegionLayers, isValidAttribute } from "mapstyles";
 import { useMapConfig } from "reducers/mapConfig";
 
 import RoadInfo from './RoadInfo'
