@@ -133,7 +133,8 @@ export const getRegionLayers = (adminLevel = 6, baseColor = "#00897B", maxValue 
   "maxzoom": 10,
   "filter": [
     "all",
-    ["==", "admin_level", adminLevel]
+    ["==", "admin_level", adminLevel],
+    [">", "overtaking_event_count", 0],
   ],
   "paint": {
     "fill-color": baseColor,
@@ -164,7 +165,8 @@ export const getRegionLayers = (adminLevel = 6, baseColor = "#00897B", maxValue 
   "maxzoom": 10,
   "filter": [
     "all",
-    ["==", "admin_level", adminLevel]
+    ["==", "admin_level", adminLevel],
+    [">", "overtaking_event_count", 0],
   ],
   "paint": {
     "line-width": 1,
