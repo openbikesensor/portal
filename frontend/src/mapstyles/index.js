@@ -44,11 +44,18 @@ export const reds = [
 ]
 
 export function colorByCount(attribute = 'event_count', maxCount, colormap = viridis) {
-  return colormapToScale(colormap, ['case', ['to-boolean', ['get', attribute]], ['get', attribute], 0], 0, maxCount)
+  return colormapToScale(colormap, ['case', isValidAttribute(attribute), ['get', attribute], 0], 0, maxCount)
 }
 
 var steps = {'rural': [1.6,1.8,2.0,2.2],
              'urban': [1.1,1.3,1.5,1.7]}
+
+export function isValidAttribute(attribute) {
+  if (attribute.endsWith('zone')) {
+    return ['in', ['get', attribute], ['literal', ['rural', 'urban']]]
+  }
+  return ['to-boolean', ['get', attribute]]
+}
 
 export function borderByZone() {
   return ["match", ['get', 'zone'],
@@ -62,7 +69,7 @@ export function colorByDistance(attribute = 'distance_overtaker_mean', fallback 
 
   return [
     'case',
-    ['!', ['to-boolean', ['get', attribute]]],
+    ['!', isValidAttribute(attribute)],
     fallback,
     ["match", ['get', 'zone'], "rural",
     [
