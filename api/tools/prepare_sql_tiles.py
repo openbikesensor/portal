@@ -154,7 +154,6 @@ async def generate_sql(build_dir):
         key_column=True,
     )
     getmvt_sql = mvt.generate_sqltomvt_func("getmvt", EXTRA_ARGS)
-    print(getmvt_sql)
 
     # drop old versions of the function
     sql_snippets.append("DROP FUNCTION IF EXISTS getmvt(integer, integer, integer);")
