@@ -1,7 +1,7 @@
 import React from 'react'
 import _ from 'lodash'
 import {connect} from 'react-redux'
-import {List, Select, Input, Divider, Checkbox, Header} from 'semantic-ui-react'
+import {List, Select, Input, Divider, Label, Checkbox, Header} from 'semantic-ui-react'
 
 import {
   MapConfig,
@@ -23,6 +23,7 @@ const ROAD_ATTRIBUTE_OPTIONS = [
   {value: 'distance_overtaker_median', key: 'distance_overtaker_median', text: 'Overtaker distance median'},
   {value: 'overtaking_event_count', key: 'overtaking_event_count', text: 'Event count'},
   {value: 'usage_count', key: 'usage_count', text: 'Usage count'},
+  {value: 'zone', key: 'zone', text: 'Overtaking distance zone'}
 ]
 
 function LayerSidebar({
@@ -96,10 +97,24 @@ function LayerSidebar({
                 <ColorMapLegend map={_.chunk(colorByCount('obsRoads.maxCount', mapConfig.obsRoads.maxCount, viridisSimpleHtml ).slice(3), 2)} twoTicks />
               </List.Item></>
             ) :
-            (
+            attribute.endsWith('zone') ? (
+             <>
               <List.Item>
-                <DiscreteColorMapLegend map={colorByDistance('distance_overtaker')[3].slice(2)} />
-              </List.Item>
+                <Label size="small" style={{background: "blue",color:"white"}}>urban (1.5&nbsp;m)</Label>
+                <Label size="small" style={{background: "cyan", color:"black"}}>rural (2&nbsp;m)</Label>
+              </List.Item></>
+            ) :
+            (
+              <>
+                <List.Item>
+                  <List.Header>Urban</List.Header>
+                  <DiscreteColorMapLegend map={colorByDistance('distance_overtaker')[3][5].slice(2)} />
+                </List.Item>
+                <List.Item>
+                  <List.Header>Rural</List.Header>
+                  <DiscreteColorMapLegend map={colorByDistance('distance_overtaker')[3][3].slice(2)} />
+                </List.Item>
+              </>
             )}
           </>
         )}
@@ -120,7 +135,12 @@ function LayerSidebar({
         {showEvents && (
           <>
             <List.Item>
-              <DiscreteColorMapLegend map={colorByDistance('distance_overtaker')[3].slice(2)} />
+              <List.Header>Urban</List.Header>
+                <DiscreteColorMapLegend map={colorByDistance('distance_overtaker')[3][5].slice(2)} />
+              </List.Item>
+            <List.Item>
+              <List.Header>Rural</List.Header>
+                <DiscreteColorMapLegend map={colorByDistance('distance_overtaker')[3][3].slice(2)} />
             </List.Item>
           </>
         )}

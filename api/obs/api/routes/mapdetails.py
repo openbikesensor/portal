@@ -112,6 +112,7 @@ async def mapdetails_road(req):
             "histogram": {
                 "bins": [None if math.isinf(b) else b for b in bins.tolist()],
                 "counts": hist.tolist(),
+                "zone": road.zone
             },
             "values": list(map(rounder, arr.tolist())),
         }

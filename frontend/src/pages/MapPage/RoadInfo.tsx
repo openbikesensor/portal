@@ -9,7 +9,7 @@ import {Chart} from 'components'
 import {pairwise} from 'utils'
 
 import api from 'api'
-import {colorByDistance} from 'mapstyles'
+import {colorByDistance, borderByZone} from 'mapstyles'
 
 import styles from './styles.module.less'
 
@@ -34,7 +34,7 @@ const LABELS = {
   max: 'Maximum',
   mean: 'Average',
 }
-const ZONE_COLORS = {urban: 'olive', rural: 'brown', motorway: 'purple'}
+const ZONE_COLORS = {urban: 'blue', rural: 'cyan', motorway: 'purple'}
 const CARDINAL_DIRECTIONS = ['north', 'north-east', 'east', 'south-east', 'south', 'south-west', 'west', 'north-west']
 const getCardinalDirection = (bearing) =>
   bearing == null
@@ -75,14 +75,15 @@ function RoadStatsTable({data}) {
   )
 }
 
-function HistogramChart({bins, counts}) {
+function HistogramChart({bins, counts, zone}) {
   const diff = bins[1] - bins[0]
+  const colortype = zone=="rural" ? 3:5;
   const data = _.zip(
     bins.slice(0, bins.length - 1).map((v) => v + diff / 2),
     counts
   ).map((value) => ({
     value,
-    itemStyle: {color: selectFromColorMap(colorByDistance()[3].slice(2), value[0])},
+    itemStyle: {color: selectFromColorMap(colorByDistance()[3][colortype].slice(2), value[0]),},
   }))
 
   return (

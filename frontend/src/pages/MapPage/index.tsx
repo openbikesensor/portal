@@ -6,7 +6,7 @@ import produce from 'immer'
 
 import {Page, Map} from 'components'
 import {useConfig} from 'config'
-import {colorByDistance, colorByCount, reds} from 'mapstyles'
+import {colorByDistance, colorByCount, borderByZone, reds, isValidAttribute} from 'mapstyles'
 import {useMapConfig} from 'reducers/mapConfig'
 
 import RoadInfo from './RoadInfo'
@@ -40,20 +40,23 @@ const untaggedRoadsLayer = {
   minzoom: 12,
 }
 
+const getUntaggedRoadsLayer = (colorAttribute, maxCount) =>
+  produce(untaggedRoadsLayer, (draft) => {
+    draft.filter = ['!', isValidAttribute(colorAttribute)]
+  })
+
+
 const getRoadsLayer = (colorAttribute, maxCount) =>
   produce(untaggedRoadsLayer, (draft) => {
     draft.id = 'obs_roads_normal'
-    if (colorAttribute.endsWith('_count')) {
-      // delete draft.filter
-      draft.filter = ['to-boolean', ['get', colorAttribute]]
-    } else {
-      draft.filter = draft.filter[1] // remove '!'
-    }
+    draft.filter = isValidAttribute(colorAttribute)
     draft.paint['line-width'][6] = 6 // scale bigger on zoom
     draft.paint['line-color'] = colorAttribute.startsWith('distance_')
       ? colorByDistance(colorAttribute)
       : colorAttribute.endsWith('_count')
       ? colorByCount(colorAttribute, maxCount)
+      : colorAttribute.endsWith('zone')
+      ? borderByZone()
       : '#DDD'
     draft.paint['line-opacity'][3] = 12
     draft.paint['line-opacity'][5] = 13
@@ -128,8 +131,9 @@ export default function MapPage() {
 
   const layers = []
 
+  const untaggedRoadsLayerCustom = useMemo(() => getUntaggedRoadsLayer(attribute), [attribute])
   if (mapConfig.obsRoads.show && mapConfig.obsRoads.showUntagged) {
-    layers.push(untaggedRoadsLayer)
+    layers.push(untaggedRoadsLayerCustom)
   }
 
   const roadsLayer = useMemo(() => getRoadsLayer(attribute, maxCount), [attribute, maxCount])

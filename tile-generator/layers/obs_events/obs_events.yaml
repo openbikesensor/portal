@@ -16,6 +16,8 @@ layer:
       Direction of travel, as reported by GPS, in degree from North.
     speed: |
       Speed of travel, as reported by GPS, in meters per second (?).
+    zone: |
+      rural or urban
   defaults:
     srs: EPSG:3785
   datasource:
@@ -23,7 +25,7 @@ layer:
     geometry_field: geometry
     key_field: event_id
     key_field_as_attribute: no
-    query: (SELECT event_id, geometry, distance_overtaker, distance_stationary, direction, course, speed, way_id FROM layer_obs_events(!bbox!, z(!scale_denominator!))) AS t
+    query: (SELECT event_id, geometry, distance_overtaker, distance_stationary, direction, course, speed, zone, way_id FROM layer_obs_events(!bbox!, z(!scale_denominator!))) AS t
 
 schema:
   - ./layer.sql
