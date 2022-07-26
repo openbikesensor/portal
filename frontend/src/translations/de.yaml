@@ -1,8 +1,6 @@
 general:
   loading: Lädt
   unnamedTrack: Unbenannte Fahrt
-  urban: innerorts
-  rural: außerorts
   public: Öffentlich
   private: Privat
   show: Anzeigen
@@ -14,6 +12,11 @@ general:
   confirm: Bist du sicher?
   copied: Kopiert
   copyError: Kopieren fehlgeschlagen
+
+  zone:
+    rural: außerorts
+    urban: innerorts
+    motorway: Autobahn
 
 App:
   footer:
@@ -159,12 +162,6 @@ MapPage:
     unnamedWay: Unbenannter Weg
     oneway: Einbahnstraße
     direction: Richtung
-
-    zone:
-      rural: außerorts
-      urban: innerorts
-      motorway: Autobahn
-
     distanceOvertaker: Links
     distanceStationary: Rechts
     speed: Geschwindigkeit

@@ -185,7 +185,7 @@ export default function RoadInfo({ clickLocation }) {
 
         {info?.road.zone && (
           <Label size="small" color={ZONE_COLORS[info?.road.zone]}>
-            {t(`MapPage.roadInfo.zone.${info.road.zone}`)}
+            {t(`general.zone.${info.road.zone}`)}
           </Label>
         )}
 

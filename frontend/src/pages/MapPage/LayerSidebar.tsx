@@ -137,18 +137,18 @@ function LayerSidebar({
             ) : attribute.endsWith('zone') ? (
              <>
               <List.Item>
-                <Label size="small" style={{background: "blue",color:"white"}}>{t("general.urban")} (1.5&nbsp;m)</Label>
-                <Label size="small" style={{background: "cyan", color:"black"}}>{t("general.rural")}(2&nbsp;m)</Label>
+                <Label size="small" style={{background: "blue",color:"white"}}>{t("general.zone.urban")} (1.5&nbsp;m)</Label>
+                <Label size="small" style={{background: "cyan", color:"black"}}>{t("general.zone.rural")}(2&nbsp;m)</Label>
               </List.Item></>
             ) :
             (
               <>
                 <List.Item>
-                  <List.Header>{_.upperFirst(t("general.urban"))}</List.Header>
+                  <List.Header>{_.upperFirst(t("general.zone.urban"))}</List.Header>
                   <DiscreteColorMapLegend map={colorByDistance('distance_overtaker')[3][5].slice(2)} />
                 </List.Item>
                 <List.Item>
-                  <List.Header>{_.upperFirst(t("general.rural"))}</List.Header>
+                  <List.Header>{_.upperFirst(t("general.zone.rural"))}</List.Header>
                   <DiscreteColorMapLegend map={colorByDistance('distance_overtaker')[3][3].slice(2)} />
                 </List.Item>
               </>
@@ -172,11 +172,11 @@ function LayerSidebar({
         {showEvents && (
           <>
             <List.Item>
-              <List.Header>{_.upperFirst(t('general.urban'))}</List.Header>
+              <List.Header>{_.upperFirst(t('general.zone.urban'))}</List.Header>
               <DiscreteColorMapLegend map={colorByDistance('distance_overtaker')[3][5].slice(2)} />
             </List.Item>
             <List.Item>
-              <List.Header>{_.upperFirst(t('general.rural'))}</List.Header>
+              <List.Header>{_.upperFirst(t('general.zone.rural'))}</List.Header>
               <DiscreteColorMapLegend map={colorByDistance('distance_overtaker')[3][3].slice(2)} />
             </List.Item>
           </>
