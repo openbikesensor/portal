@@ -74,10 +74,6 @@ async def tiles(req, zoom: int, x: int, y: str):
         start = round_date(start, to="weeks", up=False) if start else None
         end = round_date(end, to="weeks", up=True) if end else None
 
-        import logging
-
-        logging.info("start end %s %s", start, end)
-
         if start is not None and end is not None and start >= end:
             raise InvalidUsage(
                 "end date must be later than start date (note: dates are rounded to weeks)"
