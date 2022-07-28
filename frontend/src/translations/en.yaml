@@ -192,6 +192,7 @@ MapPage:
     mean: Average
 
     overtakerDistanceDistribution: Overtaker distance distribution
+    hintFiltersNotApplied: Filters from the sidebar are not (yet) applied on this data.
 
     cardinalDirections:
       unknown: unknown

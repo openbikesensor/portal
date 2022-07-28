@@ -188,6 +188,7 @@ MapPage:
     mean: Durchschnitt
 
     overtakerDistanceDistribution: Verteilung der Überholabstände
+    hintFiltersNotApplied: Filter aus der Seiteleiste werden (noch) nicht auf diese Daten angewandt.
 
     cardinalDirections:
       unknown: unbekannt
