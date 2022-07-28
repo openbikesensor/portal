@@ -32,11 +32,7 @@ const ROAD_ATTRIBUTE_OPTIONS = [
   "zone",
 ];
 
-const DATE_FILTER_MODES = [
-  { value: "none", key: "none", text: "All time" },
-  { value: "range", key: "range", text: "Start and end range" },
-  { value: "threshold", key: "threshold", text: "Before/after comparison" },
-];
+const DATE_FILTER_MODES = ["none", "range", "threshold"];
 
 type User = Object;
 
@@ -223,13 +219,13 @@ function LayerSidebar({
         <Divider />
 
         <List.Item>
-          <Header as="h4">Filters</Header>
+          <Header as="h4">{t("MapPage.sidebar.filters.title")}</Header>
         </List.Item>
 
         {login && (
           <>
             <List.Item>
-              <Header as="h5">User data</Header>
+              <Header as="h5">{t("MapPage.sidebar.filters.userData")}</Header>
             </List.Item>
 
             <List.Item>
@@ -241,18 +237,22 @@ function LayerSidebar({
                 onChange={() =>
                   setMapConfigFlag("filters.currentUser", !filtersCurrentUser)
                 }
-                label="Show only my own data"
+                label={t("MapPage.sidebar.filters.currentUser")}
               />
             </List.Item>
 
             <List.Item>
-              <Header as="h5">Date range</Header>
+              <Header as="h5">{t("MapPage.sidebar.filters.dateRange")}</Header>
             </List.Item>
 
             <List.Item>
               <Select
                 id="filters.dateMode"
-                options={DATE_FILTER_MODES}
+                options={DATE_FILTER_MODES.map((value) => ({
+                  value,
+                  key: value,
+                  text: t(`MapPage.sidebar.filters.dateMode.${value}`),
+                }))}
                 value={dateMode ?? "none"}
                 onChange={(_e, { value }) =>
                   setMapConfigFlag("filters.dateMode", value)
@@ -272,7 +272,7 @@ function LayerSidebar({
                     setMapConfigFlag("filters.startDate", value)
                   }
                   value={startDate ?? null}
-                  label="Start"
+                  label={t("MapPage.sidebar.filters.start")}
                 />
               </List.Item>
             )}
@@ -289,7 +289,7 @@ function LayerSidebar({
                     setMapConfigFlag("filters.endDate", value)
                   }
                   value={endDate ?? null}
-                  label="End"
+                  label={t("MapPage.sidebar.filters.end")}
                 />
               </List.Item>
             )}
@@ -306,7 +306,7 @@ function LayerSidebar({
                   onChange={(_e, { value }) =>
                     setMapConfigFlag("filters.startDate", value)
                   }
-                  label="Threshold"
+                  label={t("MapPage.sidebar.filters.threshold")}
                 />
               </List.Item>
             )}
@@ -314,7 +314,7 @@ function LayerSidebar({
             {dateMode == "threshold" && (
               <List.Item>
                 <span>
-                  Before{" "}
+                  {t("MapPage.sidebar.filters.before")}{" "}
                   <Checkbox
                     toggle
                     size="small"
@@ -327,13 +327,15 @@ function LayerSidebar({
                     }
                     id="filters.thresholdAfter"
                   />{" "}
-                  After
+                  {t("MapPage.sidebar.filters.after")}
                 </span>
               </List.Item>
             )}
           </>
         )}
-        {!login && <List.Item>No filters available without login.</List.Item>}
+        {!login && (
+          <List.Item>{t("MapPage.sidebar.filters.needsLogin")}</List.Item>
+        )}
       </List>
     </div>
   );

@@ -157,6 +157,22 @@ MapPage:
     obsEvents:
       title: Überholvorgänge
 
+    filters:
+      title: Filter
+      needsLogin: Filter sind ohne Login nicht verfügbar.
+      userData: Nach Benutzer:in
+      currentUser: Nur meine eigenen Daten anzeigen
+      dateRange: Datumsbereich
+      dateMode:
+        none: Alle Daten anzeigen
+        range: Start und Ende angeben
+        threshold: Vorher-Nachher-Vergleich
+      start: Start
+      end: Ende
+      threshold: Grenzdatum
+      before: Vorher
+      after: Nachher
+
 
   roadInfo:
     unnamedWay: Unbenannter Weg
