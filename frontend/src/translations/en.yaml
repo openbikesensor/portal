@@ -162,6 +162,22 @@ MapPage:
     obsEvents:
       title: Event points
 
+    filters:
+      title: Filters
+      needsLogin: No filters available without login.
+      userData: User data
+      currentUser: Show only my own data
+      dateRange: Date range
+      dateMode:
+        none: All time
+        range: Start and end range
+        threshold: Before/after comparison
+      start: Start
+      end: End
+      threshold: Threshold
+      before: Before
+      after: After
+
   roadInfo:
     unnamedWay: Unnamed way
     oneway: oneway
