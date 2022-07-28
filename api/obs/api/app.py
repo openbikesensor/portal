@@ -26,7 +26,11 @@ from sqlalchemy.util import asyncio
 
 log = logging.getLogger(__name__)
 
-app = Sanic("OpenBikeSensor Portal API", load_env="OBS_", log_config={})
+app = Sanic(
+    "openbikesensor-api",
+    env_prefix="OBS_",
+    log_config={},
+)
 
 if isfile("./config.py"):
     app.update_config("./config.py")
