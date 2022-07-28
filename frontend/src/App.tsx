@@ -207,7 +207,6 @@ const App = connect((state) => ({login: state.login}))(function App({login}) {
               <Grid.Column>
                 <Header as="h5">
                   {t('App.footer.thisInstallation')}
-                  This installation
                 </Header>
                 <List>
                   <List.Item>
@@ -218,7 +217,6 @@ const App = connect((state) => ({login: state.login}))(function App({login}) {
                   <List.Item>
                     <a href={config?.imprintUrl} target="_blank" rel="noreferrer">
                       {t('App.footer.imprint')}
-                      Imprint
                     </a>
                   </List.Item>
                   <List.Item>
