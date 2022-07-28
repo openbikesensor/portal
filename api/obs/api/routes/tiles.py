@@ -1,6 +1,7 @@
 from gzip import decompress
 from sqlite3 import connect
 from datetime import datetime, time, timedelta
+from typing import Optional, Tuple
 
 import dateutil.parser
 from sanic.exceptions import Forbidden, InvalidUsage
@@ -54,30 +55,46 @@ def round_date(date, to="weeks", up=False):
 TILE_CACHE_MAX_AGE = 3600 * 24
 
 
+def get_filter_options(
+    req,
+) -> Tuple[Optional[str], Optional[datetime], Optional[datetime]]:
+    """
+    Returns parsed, validated and normalized options for filtering map data, a
+    tuple of
+
+        * user_id (str|None)
+        * start (datetime|None)
+        * end (datetime|None)
+    """
+    user_id = None
+    username = req.ctx.get_single_arg("user", default=None)
+    if username is not None:
+        if req.ctx.user is None or req.ctx.user.username != username:
+            raise Forbidden()
+        user_id = req.ctx.user.id
+
+    parse_date = lambda s: dateutil.parser.parse(s)
+    start = req.ctx.get_single_arg("start", default=None, convert=parse_date)
+    end = req.ctx.get_single_arg("end", default=None, convert=parse_date)
+
+    start = round_date(start, to="weeks", up=False) if start else None
+    end = round_date(end, to="weeks", up=True) if end else None
+
+    if start is not None and end is not None and start >= end:
+        raise InvalidUsage(
+            "end date must be later than start date (note: dates are rounded to weeks)"
+        )
+
+    return user_id, start, end
+
+
 @app.route(r"/tiles/<zoom:int>/<x:int>/<y:(\d+)\.pbf>")
 async def tiles(req, zoom: int, x: int, y: str):
     if app.config.get("TILES_FILE"):
         tile = get_tile(req.app.config.TILES_FILE, int(zoom), int(x), int(y))
 
     else:
-        user_id = None
-        username = req.ctx.get_single_arg("user", default=None)
-        if username is not None:
-            if req.ctx.user is None or req.ctx.user.username != username:
-                raise Forbidden()
-            user_id = req.ctx.user.id
-
-        parse_date = lambda s: dateutil.parser.parse(s)
-        start = req.ctx.get_single_arg("start", default=None, convert=parse_date)
-        end = req.ctx.get_single_arg("end", default=None, convert=parse_date)
-
-        start = round_date(start, to="weeks", up=False) if start else None
-        end = round_date(end, to="weeks", up=True) if end else None
-
-        if start is not None and end is not None and start >= end:
-            raise InvalidUsage(
-                "end date must be later than start date (note: dates are rounded to weeks)"
-            )
+        user_id, start, end = get_filter_options(req)
 
         tile = await req.ctx.db.scalar(
             text(
