@@ -5,7 +5,6 @@ import { Button } from "semantic-ui-react";
 import { Layer, Source } from "react-map-gl";
 import produce from "immer";
 
-import api from "api";
 import {Page, Map} from 'components'
 import {useConfig} from 'config'
 import {colorByDistance, colorByCount, borderByZone, reds, isValidAttribute, getRegionLayers} from 'mapstyles'

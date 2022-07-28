@@ -1,6 +1,6 @@
 import React, {useState, useCallback} from 'react'
 import _ from 'lodash'
-import {Segment, Menu, Header, Label, Icon, Table, Message, Button} from 'semantic-ui-react'
+import {Segment, Menu, Header, Label, Icon, Table} from 'semantic-ui-react'
 import {Layer, Source} from 'react-map-gl'
 import {of, from, concat} from 'rxjs'
 import {useObservable} from 'rxjs-hooks'
@@ -8,9 +8,8 @@ import {switchMap, distinctUntilChanged} from 'rxjs/operators'
 import {Chart} from 'components'
 import {pairwise} from 'utils'
 
-import type { Location } from "types";
-import api from "api";
-import { colorByDistance, borderByZone } from "mapstyles";
+import api from 'api'
+import {colorByDistance, borderByZone} from 'mapstyles'
 
 import styles from "./styles.module.less";
 
@@ -128,15 +127,7 @@ function HistogramChart({ bins, counts, zone }) {
   );
 }
 
-export default function RoadInfo({
-  clickLocation,
-  hasFilters,
-  onClose,
-}: {
-  clickLocation: Location | null;
-  hasFilters: boolean;
-  onClose: () => void;
-}) {
+export default function RoadInfo({ clickLocation }) {
   const { t } = useTranslation();
   const [direction, setDirection] = useState("forwards");
 
@@ -205,17 +196,8 @@ export default function RoadInfo({
           />
         </Header>
 
-        {hasFilters && (
-          <Message info icon>
-            <Icon name="info circle" small />
-            <Message.Content>
-              {t("MapPage.roadInfo.hintFiltersNotApplied")}
-            </Message.Content>
-          </Message>
-        )}
-
-        {info.road.zone && (
-          <Label size="small" color={ZONE_COLORS[info.road.zone]}>
+        {info?.road.zone && (
+          <Label size="small" color={ZONE_COLORS[info?.road.zone]}>
             {t(`general.zone.${info.road.zone}`)}
           </Label>
         )}
