@@ -264,6 +264,8 @@ function LayerSidebar({
               <List.Item>
                 <Input
                   type="date"
+                  min="2000-01-03"
+                  step="7"
                   size="small"
                   id="filters.startDate"
                   onChange={(_e, { value }) =>
@@ -279,6 +281,8 @@ function LayerSidebar({
               <List.Item>
                 <Input
                   type="date"
+                  min="2000-01-03"
+                  step="7"
                   size="small"
                   id="filters.endDate"
                   onChange={(_e, { value }) =>
@@ -294,6 +298,8 @@ function LayerSidebar({
               <List.Item>
                 <Input
                   type="date"
+                  min="2000-01-03"
+                  step="7"
                   size="small"
                   id="filters.startDate"
                   value={startDate ?? null}

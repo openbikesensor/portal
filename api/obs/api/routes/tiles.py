@@ -1,8 +1,9 @@
 from gzip import decompress
 from sqlite3 import connect
+from datetime import datetime, time, timedelta
 
 import dateutil.parser
-from sanic.exceptions import Forbidden
+from sanic.exceptions import Forbidden, InvalidUsage
 from sanic.response import raw
 
 from sqlalchemy import select, text
@@ -31,6 +32,24 @@ def get_tile(filename, zoom, x, y):
     return content and content[0] or None
 
 
+def round_date(date, to="weeks", up=False):
+    if to != "weeks":
+        raise ValueError(f"cannot round to {to}")
+
+    midnight = time(0, 0, 0, 0)
+    start_of_day = date.date()  # ignore time
+    weekday = date.weekday()
+
+    is_rounded = date.time() == midnight and weekday == 0
+    if is_rounded:
+        return date
+
+    if up:
+        return datetime.combine(start_of_day + timedelta(days=7 - weekday), midnight)
+    else:
+        return datetime.combine(start_of_day - timedelta(days=weekday), midnight)
+
+
 # regenerate approx. once each day
 TILE_CACHE_MAX_AGE = 3600 * 24
 
@@ -51,6 +70,18 @@ async def tiles(req, zoom: int, x: int, y: str):
         parse_date = lambda s: dateutil.parser.parse(s)
         start = req.ctx.get_single_arg("start", default=None, convert=parse_date)
         end = req.ctx.get_single_arg("end", default=None, convert=parse_date)
+
+        start = round_date(start, to="weeks", up=False) if start else None
+        end = round_date(end, to="weeks", up=True) if end else None
+
+        import logging
+
+        logging.info("start end %s %s", start, end)
+
+        if start is not None and end is not None and start >= end:
+            raise InvalidUsage(
+                "end date must be later than start date (note: dates are rounded to weeks)"
+            )
 
         tile = await req.ctx.db.scalar(
             text(
