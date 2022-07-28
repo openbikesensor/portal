@@ -44,3 +44,8 @@ export type TrackComment = {
   createdAt: string
   author: UserProfile
 }
+
+export type Location {
+  longitude: number;
+  latitude: number;
+}

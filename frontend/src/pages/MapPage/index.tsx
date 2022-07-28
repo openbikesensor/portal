@@ -5,10 +5,17 @@ import { Button } from "semantic-ui-react";
 import { Layer, Source } from "react-map-gl";
 import produce from "immer";
 
-import {Page, Map} from 'components'
-import {useConfig} from 'config'
-import {colorByDistance, colorByCount, borderByZone, reds, isValidAttribute} from 'mapstyles'
-import {useMapConfig} from 'reducers/mapConfig'
+import type { Location } from "types";
+import { Page, Map } from "components";
+import { useConfig } from "config";
+import {
+  colorByDistance,
+  colorByCount,
+  borderByZone,
+  reds,
+  isValidAttribute,
+} from "mapstyles";
+import { useMapConfig } from "reducers/mapConfig";
 
 import RoadInfo from "./RoadInfo";
 import LayerSidebar from "./LayerSidebar";
@@ -43,20 +50,19 @@ const untaggedRoadsLayer = {
 
 const getUntaggedRoadsLayer = (colorAttribute, maxCount) =>
   produce(untaggedRoadsLayer, (draft) => {
-    draft.filter = ['!', isValidAttribute(colorAttribute)]
-  })
-
+    draft.filter = ["!", isValidAttribute(colorAttribute)];
+  });
 
 const getRoadsLayer = (colorAttribute, maxCount) =>
   produce(untaggedRoadsLayer, (draft) => {
     draft.id = "obs_roads_normal";
-    draft.filter = isValidAttribute(colorAttribute)
+    draft.filter = isValidAttribute(colorAttribute);
     draft.paint["line-width"][6] = 6; // scale bigger on zoom
     draft.paint["line-color"] = colorAttribute.startsWith("distance_")
       ? colorByDistance(colorAttribute)
       : colorAttribute.endsWith("_count")
       ? colorByCount(colorAttribute, maxCount)
-      : colorAttribute.endsWith('zone')
+      : colorAttribute.endsWith("zone")
       ? borderByZone()
       : "#DDD";
     draft.paint["line-opacity"][3] = 12;
@@ -105,10 +111,7 @@ const getEventsTextLayer = () => ({
 
 function MapPage({ login }) {
   const { obsMapSource } = useConfig() || {};
-  const [clickLocation, setClickLocation] = useState<{
-    longitude: number;
-    latitude: number;
-  } | null>(null);
+  const [clickLocation, setClickLocation] = useState<Location | null>(null);
 
   const mapConfig = useMapConfig();
 
@@ -135,9 +138,12 @@ function MapPage({ login }) {
 
   const layers = [];
 
-  const untaggedRoadsLayerCustom = useMemo(() => getUntaggedRoadsLayer(attribute), [attribute])
+  const untaggedRoadsLayerCustom = useMemo(
+    () => getUntaggedRoadsLayer(attribute),
+    [attribute]
+  );
   if (mapConfig.obsRoads.show && mapConfig.obsRoads.showUntagged) {
-    layers.push(untaggedRoadsLayerCustom)
+    layers.push(untaggedRoadsLayerCustom);
   }
 
   const roadsLayer = useMemo(
@@ -159,31 +165,36 @@ function MapPage({ login }) {
     return null;
   }
 
-  const tiles = obsMapSource?.tiles?.map(
-    (tileUrl: string) => {
-      const query = new URLSearchParams()
-      if (login) {
-        if (mapConfig.filters.currentUser) {
-          query.append('user', login.username)
-        }
+  const tiles = obsMapSource?.tiles?.map((tileUrl: string) => {
+    const query = new URLSearchParams();
+    if (login) {
+      if (mapConfig.filters.currentUser) {
+        query.append("user", login.username);
+      }
 
-        if (mapConfig.filters.dateMode === "range") {
-          if (mapConfig.filters.startDate) {
-            query.append('start', mapConfig.filters.startDate)
-          }
-          if (mapConfig.filters.endDate) {
-            query.append('end', mapConfig.filters.endDate)
-          }
-        } else if (mapConfig.filters.dateMode === "threshold") {
-          if (mapConfig.filters.startDate) {
-            query.append(mapConfig.filters.thresholdAfter ? 'start' : 'end', mapConfig.filters.startDate)
-          }
+      if (mapConfig.filters.dateMode === "range") {
+        if (mapConfig.filters.startDate) {
+          query.append("start", mapConfig.filters.startDate);
+        }
+        if (mapConfig.filters.endDate) {
+          query.append("end", mapConfig.filters.endDate);
+        }
+      } else if (mapConfig.filters.dateMode === "threshold") {
+        if (mapConfig.filters.startDate) {
+          query.append(
+            mapConfig.filters.thresholdAfter ? "start" : "end",
+            mapConfig.filters.startDate
+          );
         }
       }
-      const queryString = String(query)
-      return tileUrl + (queryString  ? '?' : '') + queryString
     }
-  );
+    const queryString = String(query);
+    return tileUrl + (queryString ? "?" : "") + queryString;
+  });
+
+  const hasFilters: boolean =
+    login &&
+    (mapConfig.filters.currentUser || mapConfig.filters.dateMode !== "none");
 
   return (
     <Page fullScreen title="Map">
@@ -212,7 +223,7 @@ function MapPage({ login }) {
               ))}
             </Source>
 
-            <RoadInfo {...{ clickLocation }} />
+            <RoadInfo {...{ clickLocation, hasFilters }} />
           </Map>
         </div>
       </div>
@@ -220,6 +231,4 @@ function MapPage({ login }) {
   );
 }
 
-export default connect(
-  (state) => ({login: state.login}),
-)(MapPage);
+export default connect((state) => ({ login: state.login }))(MapPage);
