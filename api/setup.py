@@ -22,7 +22,7 @@ setup(
         "openmaptiles-tools",  # install from git
         "pyshp>=2.2,<2.4",
         "sqlalchemy[asyncio]~=1.4.25",
-        "asyncpg~=0.24.0",
+        "asyncpg>=0.24,<0.27",
         "alembic~=1.7.7",
     ],
     entry_points={
