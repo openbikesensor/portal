@@ -3,7 +3,7 @@ tileset:
   layers:
     - layers/obs_events/obs_events.yaml
     - layers/obs_roads/obs_roads.yaml
-  version: 0.6.2
+  version: 0.7.0
   id: openbikesensor
   description: >
     A tileset for OpenBikeSensor data -- https://openbikesensor.org.
