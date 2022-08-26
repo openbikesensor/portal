@@ -1,5 +1,29 @@
 # Changelog
 
+## 0.7.0
+
+### Features
+
+* Add histogram of overtaking distances in road details panel
+* Flip table in road details panel and make it easier to read
+* Implement difference between urban and rural for events and road segments.
+* Better road zone detection in import
+* Make the frontend translatable and add German translation
+* Add time and user filters to map view (for logged-in users only)
+
+### Improvements
+
+* Make raw track not look like a river (#252)
+* Update many dependencies
+
+### Bug fixes
+
+* Overtaking events are now deleted when the parent track is deleted (#206)
+* Remove useless session creation (#192)
+* Remove some error logs for canceled requests (as the map page tends to do that quite a lot)
+* Fix ExportPage bounding box input
+
+
 ## 0.6.2
 
 ### Improvements

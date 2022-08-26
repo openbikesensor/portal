@@ -5,6 +5,20 @@ Simple migrations, e.g. for adding schema changes, are not documented
 explicitly. Their general usage is described in the [README](./README.md) (for
 development) and [deployment/README.md](deployment/README.md) (for production).
 
+## 0.7.0
+
+Upgrade to `0.6.x` first. See below for details. Then follow these steps:
+
+- Rebuild images
+- Stop your portal and worker services.
+- **Migration with alembic**: required 
+- **Prepare SQL Tiles**: required
+- Start your portal and worker services.
+- **Reimport tracks**: no action required 
+- **OSM Import**: required
+- **Config changes**: add `POSTGRES_MAX_OVERFLOW` and `POSTGRES_POOL_SIZE`
+  variables, see `api/config.py.example`  
+
 ## 0.6.0
 
 **Make sure to upgrade to `0.5.1` first, by checking out that version tag and
