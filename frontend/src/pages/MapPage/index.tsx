@@ -134,6 +134,9 @@ function MapPage({ login }) {
     },
     [setClickLocation]
   );
+  const onCloseRoadInfo = useCallback(() => {
+    setClickLocation(null);
+  }, [setClickLocation]);
 
   const [layerSidebar, setLayerSidebar] = useState(true);
 
@@ -240,7 +243,9 @@ function MapPage({ login }) {
               ))}
             </Source>
 
-            <RoadInfo {...{ clickLocation, hasFilters }} />
+            <RoadInfo
+              {...{ clickLocation, hasFilters, onClose: onCloseRoadInfo }}
+            />
           </Map>
         </div>
       </div>

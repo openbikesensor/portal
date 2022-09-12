@@ -175,6 +175,7 @@ MapPage:
 
 
   roadInfo:
+    closeTooltip: Infobox schließen
     unnamedWay: Unbenannter Weg
     oneway: Einbahnstraße
     direction: Richtung
