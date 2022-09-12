@@ -4,6 +4,7 @@ import { connect } from "react-redux";
 import { Button } from "semantic-ui-react";
 import { Layer, Source } from "react-map-gl";
 import produce from "immer";
+import classNames from "classnames";
 
 import type { Location } from "types";
 import { Page, Map } from "components";
@@ -110,7 +111,7 @@ const getEventsTextLayer = () => ({
 });
 
 function MapPage({ login }) {
-  const { obsMapSource } = useConfig() || {};
+  const { obsMapSource, banner } = useConfig() || {};
   const [clickLocation, setClickLocation] = useState<Location | null>(null);
 
   const mapConfig = useMapConfig();
@@ -198,7 +199,12 @@ function MapPage({ login }) {
 
   return (
     <Page fullScreen title="Map">
-      <div className={styles.mapContainer}>
+      <div
+        className={classNames(
+          styles.mapContainer,
+          banner ? styles.hasBanner : null
+        )}
+      >
         {layerSidebar && (
           <div className={styles.mapSidebar}>
             <LayerSidebar />

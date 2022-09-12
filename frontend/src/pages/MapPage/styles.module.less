@@ -6,6 +6,10 @@
   position: relative;
   display: flex;
   align-items: stretch;
+
+  &.hasBanner {
+    height: calc(100vh - @menuHeight - 50px);
+  }
 }
 
 .mapSidebar {
