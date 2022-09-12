@@ -6,6 +6,7 @@ import ReactMapGl, {
   WebMercatorViewport,
   ScaleControl,
   NavigationControl,
+  AttributionControl,
 } from "react-map-gl";
 import turfBbox from "@turf/bbox";
 import { useHistory, useLocation } from "react-router-dom";
@@ -63,12 +64,14 @@ function Map({
   children,
   boundsFromJson,
   baseMapStyle,
+  hasToolbar,
   ...props
 }: {
   viewportFromUrl?: boolean;
   children: React.ReactNode;
   boundsFromJson: GeoJSON.Geometry;
   baseMapStyle: string;
+  hasToolbar?: boolean;
 }) {
   const [viewportState, setViewportState] = useState(EMPTY_VIEWPORT);
   const [viewportUrl, setViewportUrl] = useViewportFromUrl();
@@ -141,12 +144,14 @@ function Map({
       {...viewport}
       {...props}
       className={classnames(styles.map, props.className)}
+      attributionControl={false}
     >
-      <NavigationControl style={{ left: 10, top: 10 }} />
+      <AttributionControl style={{ top: 0, right: 0 }} />
+      <NavigationControl style={{ left: 16, top: hasToolbar ? 64 : 16 }} />
       <ScaleControl
         maxWidth={200}
         unit="metric"
-        style={{ left: 10, bottom: 10 }}
+        style={{ left: 16, bottom: 16 }}
       />
 
       {children}
