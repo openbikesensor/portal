@@ -7,10 +7,16 @@ import produce from "immer";
 import classNames from "classnames";
 
 import type { Location } from "types";
-import {Page, Map} from 'components'
-import {useConfig} from 'config'
-import {colorByDistance, colorByCount, borderByZone, reds, isValidAttribute} from 'mapstyles'
-import {useMapConfig} from 'reducers/mapConfig'
+import { Page, Map } from "components";
+import { useConfig } from "config";
+import {
+  colorByDistance,
+  colorByCount,
+  borderByZone,
+  reds,
+  isValidAttribute,
+} from "mapstyles";
+import { useMapConfig } from "reducers/mapConfig";
 
 import RoadInfo from "./RoadInfo";
 import RegionInfo from "./RegionInfo";
@@ -47,9 +53,8 @@ const untaggedRoadsLayer = {
 
 const getUntaggedRoadsLayer = (colorAttribute, maxCount) =>
   produce(untaggedRoadsLayer, (draft) => {
-    draft.filter = ['!', isValidAttribute(colorAttribute)]
-  })
-
+    draft.filter = ["!", isValidAttribute(colorAttribute)];
+  });
 
 const getRoadsLayer = (colorAttribute, maxCount) =>
   produce(untaggedRoadsLayer, (draft) => {
@@ -61,7 +66,7 @@ const getRoadsLayer = (colorAttribute, maxCount) =>
       ? colorByDistance(colorAttribute)
       : colorAttribute.endsWith("_count")
       ? colorByCount(colorAttribute, maxCount)
-      : colorAttribute.endsWith('zone')
+      : colorAttribute.endsWith("zone")
       ? borderByZone()
       : "#DDD";
     draft.paint["line-opacity"][3] = 12;
