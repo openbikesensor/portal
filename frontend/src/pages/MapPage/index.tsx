@@ -336,8 +336,8 @@ function MapPage({ login }) {
               <Button
               style={{
                 position: "absolute",
-                left: 44,
-                top: 9,
+                left: 16,
+                top: 16,
               }}
                 primary
                 icon="bars"

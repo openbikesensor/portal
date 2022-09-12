@@ -1,15 +1,10 @@
-import React, { useState, useCallback, useMemo, useEffect } from "react";
-import classnames from "classnames";
-import { connect } from "react-redux";
-import _ from "lodash";
-import ReactMapGl, {
-  WebMercatorViewport,
-  ScaleControl,
-  NavigationControl,
-  AttributionControl,
-} from "react-map-gl";
-import turfBbox from "@turf/bbox";
-import { useHistory, useLocation } from "react-router-dom";
+import React, {useState, useCallback, useMemo, useEffect} from 'react'
+import classnames from 'classnames'
+import {connect} from 'react-redux'
+import _ from 'lodash'
+import ReactMapGl, {WebMercatorViewport, ScaleControl, NavigationControl, AttributionControl} from 'react-map-gl'
+import turfBbox from '@turf/bbox'
+import {useHistory, useLocation} from 'react-router-dom'
 
 import { useConfig } from "config";
 
