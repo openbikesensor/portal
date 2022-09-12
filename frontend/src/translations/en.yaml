@@ -179,6 +179,7 @@ MapPage:
       after: After
 
   roadInfo:
+    closeTooltip: Close overlay
     unnamedWay: Unnamed way
     oneway: oneway
     direction: Direction

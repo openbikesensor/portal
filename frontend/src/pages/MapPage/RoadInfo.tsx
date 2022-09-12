@@ -8,6 +8,7 @@ import {
   Icon,
   Table,
   Message,
+  Button,
 } from "semantic-ui-react";
 import { Layer, Source } from "react-map-gl";
 import { of, from, concat } from "rxjs";
@@ -140,9 +141,11 @@ function HistogramChart({ bins, counts, zone }) {
 export default function RoadInfo({
   clickLocation,
   hasFilters,
+  onClose,
 }: {
   clickLocation: Location | null;
   hasFilters: boolean;
+  onClose: () => void;
 }) {
   const { t } = useTranslation();
   const [direction, setDirection] = useState("forwards");
@@ -201,6 +204,15 @@ export default function RoadInfo({
           {loading
             ? "..."
             : info?.road.name || t("MapPage.roadInfo.unnamedWay")}
+
+          <Button
+            style={{ float: "right" }}
+            onClick={onClose}
+            title={t("MapPage.roadInfo.closeTooltip")}
+            size="small"
+            icon="close"
+            basic
+          />
         </Header>
 
         {hasFilters && (
