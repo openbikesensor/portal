@@ -44,19 +44,32 @@ function buildHash(v: Viewport): string {
   return `${v.zoom.toFixed(2)}/${v.latitude}/${v.longitude}`;
 }
 
+const setViewportToHash = _.debounce((history, viewport) => {
+  history.replace({
+    hash: buildHash(viewport),
+  });
+}, 200);
+
 function useViewportFromUrl(): [Viewport | null, (v: Viewport) => void] {
   const history = useHistory();
   const location = useLocation();
-  const value = useMemo(() => parseHash(location.hash), [location.hash]);
+
+  const [cachedValue, setCachedValue] = useState(parseHash(location.hash));
+
+  // when the location hash changes, set the new value to the cache
+  useEffect(() => {
+    setCachedValue(parseHash(location.hash));
+  }, [location.hash]);
+
   const setter = useCallback(
     (v) => {
-      history.replace({
-        hash: buildHash(v),
-      });
+      setCachedValue(v);
+      setViewportToHash(history, v);
     },
     [history]
   );
-  return [value || EMPTY_VIEWPORT, setter];
+
+  return [cachedValue || EMPTY_VIEWPORT, setter];
 }
 
 function Map({
