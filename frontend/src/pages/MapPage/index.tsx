@@ -1,13 +1,15 @@
-import React, { useState, useCallback, useMemo , useRef } from "react";
+import React, { useState, useCallback, useMemo } from "react";
 import _ from "lodash";
 import { connect } from "react-redux";
 import { Button } from "semantic-ui-react";
 import { Layer, Source } from "react-map-gl";
 import produce from "immer";
+import classNames from "classnames";
 
+import type { Location } from "types";
 import {Page, Map} from 'components'
 import {useConfig} from 'config'
-import {colorByDistance, colorByCount, borderByZone, reds, isValidAttribute, getRegionLayers} from 'mapstyles'
+import {colorByDistance, colorByCount, borderByZone, reds, isValidAttribute} from 'mapstyles'
 import {useMapConfig} from 'reducers/mapConfig'
 
 import RoadInfo from "./RoadInfo";
@@ -45,24 +47,25 @@ const untaggedRoadsLayer = {
 
 const getUntaggedRoadsLayer = (colorAttribute, maxCount) =>
   produce(untaggedRoadsLayer, (draft) => {
-    draft.filter = ["!", isValidAttribute(colorAttribute)];
-  });
+    draft.filter = ['!', isValidAttribute(colorAttribute)]
+  })
+
 
 const getRoadsLayer = (colorAttribute, maxCount) =>
   produce(untaggedRoadsLayer, (draft) => {
     draft.id = "obs_roads_normal";
-    draft.filter = isValidAttribute(colorAttribute);
+    draft.filter = isValidAttribute(colorAttribute)
     draft.minzoom = 10
     draft.paint["line-width"][6] = 6; // scale bigger on zoom
     draft.paint["line-color"] = colorAttribute.startsWith("distance_")
       ? colorByDistance(colorAttribute)
       : colorAttribute.endsWith("_count")
       ? colorByCount(colorAttribute, maxCount)
-      : colorAttribute.endsWith("zone")
+      : colorAttribute.endsWith('zone')
       ? borderByZone()
       : "#DDD";
-    // draft.paint["line-opacity"][3] = 12;
-    // draft.paint["line-opacity"][5] = 13;
+    draft.paint["line-opacity"][3] = 12;
+    draft.paint["line-opacity"][5] = 13;
   });
 
 const getEventsLayer = () => ({
@@ -169,6 +172,7 @@ function MapPage({ login }) {
     },
     [viewportRef]
   );
+
   const onClick = useCallback(
     async (e) => {
       // check if we clicked inside the mapInfoBox, if so, early exit
@@ -328,7 +332,7 @@ function MapPage({ login }) {
           </div>
         )}
         <div className={styles.map}>
-          <Map viewportFromUrl onClick={onClick} onViewportChange={onViewportChange}hasToolbar>
+          <Map viewportFromUrl onClick={onClick} onViewportChange={onViewportChange} hasToolbar>
               <Button
               style={{
                 position: "absolute",
