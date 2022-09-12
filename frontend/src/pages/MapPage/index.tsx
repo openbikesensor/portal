@@ -120,7 +120,11 @@ function MapPage({ login }) {
     (e) => {
       let node = e.target;
       while (node) {
-        if (node?.classList?.contains(styles.mapInfoBox)) {
+        if (
+          [styles.mapInfoBox, styles.mapToolbar].some((className) =>
+            node?.classList?.contains(className)
+          )
+        ) {
           return;
         }
         node = node.parentNode;
@@ -161,6 +165,16 @@ function MapPage({ login }) {
     layers.push(eventsLayer);
     layers.push(eventsTextLayer);
   }
+
+  const onToggleLayerSidebarButtonClick = useCallback(
+    (e) => {
+      e.stopPropagation();
+      e.preventDefault();
+      console.log("toggl;e");
+      setLayerSidebar((v) => !v);
+    },
+    [setLayerSidebar]
+  );
 
   if (!obsMapSource) {
     return null;
@@ -212,17 +226,14 @@ function MapPage({ login }) {
         )}
         <div className={styles.map}>
           <Map viewportFromUrl onClick={onClick} hasToolbar>
-            <Button
-              style={{
-                position: "absolute",
-                left: 16,
-                top: 16,
-              }}
-              primary
-              icon="bars"
-              active={layerSidebar}
-              onClick={() => setLayerSidebar(layerSidebar ? false : true)}
-            />
+            <div className={styles.mapToolbar}>
+              <Button
+                primary
+                icon="bars"
+                active={layerSidebar}
+                onClick={onToggleLayerSidebarButtonClick}
+              />
+            </div>
             <Source id="obs" {...obsMapSource} tiles={tiles}>
               {layers.map((layer) => (
                 <Layer key={layer.id} {...layer} />
