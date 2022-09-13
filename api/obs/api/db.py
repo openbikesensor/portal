@@ -408,6 +408,29 @@ class User(Base):
 
         self.username = new_name
 
+    async def rename(self, config, new_name):
+        old_name = self.username
+
+        renames = [
+            (join(basedir, old_name), join(basedir, new_name))
+            for basedir in [config.PROCESSING_OUTPUT_DIR, config.TRACKS_DIR]
+        ]
+
+        for src, dst in renames:
+            if exists(dst):
+                raise FileExistsError(
+                    f"cannot move {src!r} to {dst!r}, destination exists"
+                )
+
+        for src, dst in renames:
+            if not exists(src):
+                log.debug("Rename user %s: Not moving %s, not found", self.id, src)
+            else:
+                log.info("Rename user %s: Moving %s to %s", self.id, src, dst)
+                os.rename(src, dst)
+
+        self.username = new_name
+
 
 class Comment(Base):
     __tablename__ = "comment"
