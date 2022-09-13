@@ -1,5 +1,6 @@
 import asyncio
 import logging
+import re
 
 from requests.exceptions import RequestException
 
@@ -90,6 +91,15 @@ async def login_redirect(req):
     sub = userinfo["sub"]
     preferred_username = userinfo["preferred_username"]
     email = userinfo.get("email")
+
+    clean_username = re.sub(r"[^a-zA-Z0-9_.-]", "", preferred_username)
+    if clean_username != preferred_username:
+        log.warning(
+            "Username %r contained invalid characters and was changed to %r",
+            preferred_username,
+            clean_username,
+        )
+        preferred_username = clean_username
 
     if email is None:
         raise ValueError(
