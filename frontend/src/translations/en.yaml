@@ -210,9 +210,15 @@ SettingsPage:
 
   profile:
     title: My profile
-    publicNotice: All of this information is public.
+    publicNotice: All of the information below is public.
     username:
       label: Username
+      hint: >
+        The username can be changed at the login provider and will be applied
+        when logging in the next time.
+    displayName:
+      label: Display name
+      fallbackNotice: As long as no display name is chosen, the username is shown publicly.
     bio:
       label: Bio
     avatarUrl:

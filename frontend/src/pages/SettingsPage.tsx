@@ -68,18 +68,37 @@ const SettingsPage = connect((state) => ({ login: state.login }), { setLogin })(
             <Grid.Column width={8}>
               <Header as="h2">{t("SettingsPage.profile.title")}</Header>
 
-              <Message info>{t("SettingsPage.profile.publicNotice")}</Message>
-
               <Form onSubmit={handleSubmit(onSave)} loading={loading}>
-                <Ref innerRef={findInput(register)}>
-                  <Form.Input
-                    error={errors?.username}
-                    label={t("SettingsPage.profile.username.label")}
-                    name="username"
-                    defaultValue={login.username}
-                    disabled
-                  />
-                </Ref>
+                <Form.Field error={errors?.username}>
+                  <label>{t("SettingsPage.profile.username.label")}</label>
+                  <Ref innerRef={findInput(register)}>
+                    <Input
+                      name="username"
+                      defaultValue={login.username}
+                      disabled
+                    />
+                  </Ref>
+                  <small>{t("SettingsPage.profile.username.hint")}</small>
+                </Form.Field>
+
+                <Message info visible>
+                  {t("SettingsPage.profile.publicNotice")}
+                </Message>
+
+                <Form.Field error={errors?.displayName}>
+                  <label>{t("SettingsPage.profile.displayName.label")}</label>
+                  <Ref innerRef={findInput(register)}>
+                    <Input
+                      name="displayName"
+                      defaultValue={login.displayName}
+                      placeholder={login.username}
+                    />
+                  </Ref>
+                  <small>
+                    {t("SettingsPage.profile.displayName.fallbackNotice")}
+                  </small>
+                </Form.Field>
+
                 <Form.Field error={errors?.bio}>
                   <label>{t("SettingsPage.profile.bio.label")}</label>
                   <Ref innerRef={register}>
@@ -103,7 +122,7 @@ const SettingsPage = connect((state) => ({ login: state.login }), { setLogin })(
 
               <Divider />
 
-              <Stats user={login.username} />
+              <Stats user={login.id} />
             </Grid.Column>
           </Grid.Row>
         </Grid>
@@ -140,7 +159,7 @@ function CopyInput({ value, ...props }) {
       }
       position="top right"
       open={success != null}
-      content={success ? t('general.copied') : t('general.copyError')}
+      content={success ? t("general.copied") : t("general.copyError")}
     />
   );
 }

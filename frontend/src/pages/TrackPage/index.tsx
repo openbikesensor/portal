@@ -246,7 +246,7 @@ const TrackPage = connect((state) => ({ login: state.login }))(
       [slug]
     );
 
-    const isAuthor = login?.username === data?.track?.author?.username;
+    const isAuthor = login?.id === data?.track?.author?.id;
 
     const { track, trackData, comments } = data || {};
 
@@ -355,7 +355,7 @@ const TrackPage = connect((state) => ({ login: state.login }))(
           onConfirm={hideDownloadError}
           header={t("TrackPage.downloadFailed")}
           content={String(downloadError)}
-          confirmButton={t('general.ok')}
+          confirmButton={t("general.ok")}
         />
       </Page>
     );

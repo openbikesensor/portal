@@ -354,6 +354,7 @@ class User(Base):
     updated_at = Column(DateTime, nullable=False, server_default=NOW, onupdate=NOW)
     sub = Column(String, unique=True, nullable=False)
     username = Column(String, unique=True, nullable=False)
+    display_name = Column(String, nullable=True)
     email = Column(String, nullable=False)
     bio = Column(TEXT)
     image = Column(String)
@@ -374,11 +375,15 @@ class User(Base):
         self.api_key = secrets.token_urlsafe(24)
 
     def to_dict(self, for_user_id=None):
-        return {
-            "username": self.username,
+        result = {
+            "id": self.id,
+            "displayName": self.display_name or self.username,
             "bio": self.bio,
             "image": self.image,
         }
+        if for_user_id == self.id:
+            result["username"] = self.username
+        return result
 
     async def rename(self, config, new_name):
         old_name = self.username

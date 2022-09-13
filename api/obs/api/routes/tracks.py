@@ -63,13 +63,13 @@ async def _return_tracks(req, extend_query, limit, offset):
 async def get_tracks(req):
     limit = req.ctx.get_single_arg("limit", default=20, convert=int)
     offset = req.ctx.get_single_arg("offset", default=0, convert=int)
-    author = req.ctx.get_single_arg("author", default=None, convert=str)
+    # author = req.ctx.get_single_arg("author", default=None, convert=int)
 
     def extend_query(q):
         q = q.where(Track.public)
 
-        if author is not None:
-            q = q.where(User.username == author)
+        # if author is not None:
+        #     q = q.where(Track.author_id == author)
 
         return q
 
