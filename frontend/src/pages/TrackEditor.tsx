@@ -76,7 +76,7 @@ const TrackEditor = connect((state) => ({ login: state.login }))(
     );
 
     const loading = busy || track == null;
-    const isAuthor = login?.username === track?.author?.username;
+    const isAuthor = login?.id === track?.author?.id;
 
     // Navigate to track detials if we are not the author
     React.useEffect(() => {

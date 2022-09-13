@@ -12,7 +12,9 @@ from obs.api import __version__ as version
 
 def user_to_json(user):
     return {
+        "id": user.id,
         "username": user.username,
+        "displayName": user.display_name,
         "email": user.email,
         "bio": user.bio,
         "image": user.image,
@@ -35,6 +37,9 @@ async def put_user(req):
     for key in ["email", "bio", "image"]:
         if key in data and isinstance(data[key], (str, type(None))):
             setattr(user, key, data[key])
+
+    if "displayName" in data:
+        user.display_name = data["displayName"] or None
 
     if "areTracksVisibleForAll" in data:
         user.are_tracks_visible_for_all = bool(data["areTracksVisibleForAll"])

@@ -187,7 +187,7 @@ function MapPage({ login }) {
     const query = new URLSearchParams();
     if (login) {
       if (mapConfig.filters.currentUser) {
-        query.append("user", login.username);
+        query.append("user", login.id);
       }
 
       if (mapConfig.filters.dateMode === "range") {

@@ -60,7 +60,9 @@ export default function TrackComments({
           <Comment key={comment.id}>
             <Avatar user={comment.author} />
             <Comment.Content>
-              <Comment.Author as="a">{comment.author.username}</Comment.Author>
+              <Comment.Author as="a">
+                {comment.author.displayName}
+              </Comment.Author>
               <Comment.Metadata>
                 <div>
                   <FormattedDate date={comment.createdAt} relative />
@@ -69,7 +71,7 @@ export default function TrackComments({
               <Comment.Text>
                 <Markdown>{comment.body}</Markdown>
               </Comment.Text>
-              {login?.username === comment.author.username && (
+              {login?.id === comment.author.id && (
                 <Comment.Actions>
                   <Comment.Action
                     onClick={(e) => {
@@ -77,7 +79,7 @@ export default function TrackComments({
                       e.preventDefault();
                     }}
                   >
-                  {t('general.delete')}
+                    {t("general.delete")}
                   </Comment.Action>
                 </Comment.Actions>
               )}

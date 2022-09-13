@@ -66,12 +66,9 @@ def get_filter_options(
         * start (datetime|None)
         * end (datetime|None)
     """
-    user_id = None
-    username = req.ctx.get_single_arg("user", default=None)
-    if username is not None:
-        if req.ctx.user is None or req.ctx.user.username != username:
-            raise Forbidden()
-        user_id = req.ctx.user.id
+    user_id = req.ctx.get_single_arg("user", default=None, convert=int)
+    if user_id is not None and (req.ctx.user is None or req.ctx.user.id != user_id):
+        raise Forbidden()
 
     parse_date = lambda s: dateutil.parser.parse(s)
     start = req.ctx.get_single_arg("start", default=None, convert=parse_date)

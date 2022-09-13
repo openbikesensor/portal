@@ -207,9 +207,15 @@ SettingsPage:
 
   profile:
     title: Mein Profil
-    publicNotice: All diese Informationen sind öffentlich.
+    publicNotice: Alle Informationen ab hier sind öffentlich.
     username:
       label: Kontoname
+      hint: >
+        Der Kontoname kann beim Login-Dienst geändert werden, und wird beim
+        nächsten Login übernommen.
+    displayName:
+      label: Anzeigename
+      fallbackNotice: Sofern kein Anzeigename gewählt ist wird der Kontoname öffentlich angezeigt.
     bio:
       label: Bio
     avatarUrl:
