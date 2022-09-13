@@ -128,16 +128,20 @@ async def login_redirect(req):
         user = User(sub=sub, username=preferred_username, email=email)
         req.ctx.db.add(user)
     else:
-        log.info("Logged in known user (id: %s, sub: %s).", user.id, user.sub)
+        log.info(
+            "Logged in known user (id: %s, sub: %s, %s).",
+            user.id,
+            user.sub,
+            preferred_username,
+        )
 
         if email != user.email:
             log.debug("Updating user (id: %s) email from auth system.", user.id)
             user.email = email
 
-        # TODO: re-add username change when we can safely rename users
-        # if preferred_username != user.username:
-        #     log.debug("Updating user (id: %s) username from auth system.", user.id)
-        #     user.username = preferred_username
+        if preferred_username != user.username:
+            log.debug("Updating user (id: %s) username from auth system.", user.id)
+            await user.rename(req.app.config, preferred_username)
 
     await req.ctx.db.commit()
 
@@ -156,4 +160,4 @@ async def logout(req):
     auth_req = client.construct_EndSessionRequest(state=session["state"])
     logout_url = auth_req.request(client.end_session_endpoint)
 
-    return redirect(logout_url+f"&redirect_uri={req.ctx.api_url}/logout")
+    return redirect(logout_url + f"&redirect_uri={req.ctx.api_url}/logout")
