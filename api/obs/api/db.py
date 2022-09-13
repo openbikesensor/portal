@@ -3,7 +3,7 @@ from contextvars import ContextVar
 from contextlib import asynccontextmanager
 from datetime import datetime
 import os
-from os.path import join, dirname
+from os.path import exists, join, dirname
 from json import loads
 import re
 import math
@@ -12,6 +12,7 @@ import random
 import string
 import secrets
 from slugify import slugify
+import logging
 
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -36,6 +37,8 @@ from sqlalchemy import (
 )
 from sqlalchemy.dialects.postgresql import HSTORE, UUID
 
+
+log = logging.getLogger(__name__)
 
 Base = declarative_base()
 
@@ -377,6 +380,29 @@ class User(Base):
             "image": self.image,
         }
 
+    async def rename(self, config, new_name):
+        old_name = self.username
+
+        renames = [
+            (join(basedir, old_name), join(basedir, new_name))
+            for basedir in [config.PROCESSING_OUTPUT_DIR, config.TRACKS_DIR]
+        ]
+
+        for src, dst in renames:
+            if exists(dst):
+                raise FileExistsError(
+                    f"cannot move {src!r} to {dst!r}, destination exists"
+                )
+
+        for src, dst in renames:
+            if not exists(src):
+                log.debug("Rename user %s: Not moving %s, not found", self.id, src)
+            else:
+                log.info("Rename user %s: Moving %s to %s", self.id, src, dst)
+                os.rename(src, dst)
+
+        self.username = new_name
+
 
 class Comment(Base):
     __tablename__ = "comment"
@@ -403,7 +429,10 @@ class Comment(Base):
 
 Comment.author = relationship("User", back_populates="authored_comments")
 User.authored_comments = relationship(
-    "Comment", order_by=Comment.created_at, back_populates="author", passive_deletes=True
+    "Comment",
+    order_by=Comment.created_at,
+    back_populates="author",
+    passive_deletes=True,
 )
 
 Track.author = relationship("User", back_populates="authored_tracks")
@@ -418,7 +447,10 @@ Track.comments = relationship(
 
 OvertakingEvent.track = relationship("Track", back_populates="overtaking_events")
 Track.overtaking_events = relationship(
-    "OvertakingEvent", order_by=OvertakingEvent.time, back_populates="track", passive_deletes=True
+    "OvertakingEvent",
+    order_by=OvertakingEvent.time,
+    back_populates="track",
+    passive_deletes=True,
 )
 
 
