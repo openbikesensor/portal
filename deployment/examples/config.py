@@ -5,7 +5,7 @@
 # Extended log output, but slower
 DEBUG = False
 VERBOSE = DEBUG
-AUTO_RESTART = DEBUG
+AUTO_RELOAD = DEBUG
 
 # Turn on lean mode to simplify the setup. Lots of features will be
 # unavailable, but you will not need to manage OpenStreetMap data. Please make
