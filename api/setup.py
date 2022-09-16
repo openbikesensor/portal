@@ -11,10 +11,9 @@ setup(
     package_data={},
     install_requires=[
         "coloredlogs~=15.0.1",
-        "sanic>=21.9.3,<22.7.0",
+        "sanic==22.6.2",
         "oic>=1.3.0, <2",
         "sanic-session~=0.8.0",
-        "sanic-cors~=2.0.1",
         "python-slugify>=5.0.2,<6.2.0",
         "motor>=2.5.1,<3.1.0",
         "pyyaml<6",

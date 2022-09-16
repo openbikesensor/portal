@@ -21,6 +21,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from obs.api.db import User, make_session, connect_db
+from obs.api.cors import setup_options, add_cors_headers
 from obs.api.utils import get_single_arg
 from sqlalchemy.util import asyncio
 
@@ -84,6 +85,39 @@ class NoConnectionLostFilter(logging.Filter):
 logging.getLogger("sanic.error").addFilter(NoConnectionLostFilter)
 
 
+def setup_cors(app):
+    frontend_url = app.config.get("FRONTEND_URL")
+    additional_origins = app.config.get("ADDITIONAL_CORS_ORIGINS")
+    if not frontend_url and not additional_origins:
+        # No CORS configured
+        return
+
+    origins = []
+    if frontend_url:
+        u = urlparse(frontend_url)
+        origins.append(f"{u.scheme}://{u.netloc}")
+
+    if isinstance(additional_origins, str):
+        origins += re.split(r"\s+", additional_origins)
+    elif isinstance(additional_origins, list):
+        origins += additional_origins
+    elif additional_origins is not None:
+        raise ValueError(
+            "invalid option type for ADDITIONAL_CORS_ORIGINS, must be list or space separated str"
+        )
+
+    app.ctx.cors_origins = origins
+
+    # Add OPTIONS handlers to any route that is missing it
+    app.register_listener(setup_options, "before_server_start")
+
+    # Fill in CORS headers
+    app.register_middleware(add_cors_headers, "response")
+
+
+setup_cors(app)
+
+
 @app.exception(SanicException, BaseException)
 async def _handle_sanic_errors(_request, exception):
     if isinstance(exception, asyncio.CancelledError):
@@ -119,39 +153,6 @@ def configure_paths(c):
 
 configure_paths(app.config)
 
-
-def setup_cors(app):
-    frontend_url = app.config.get("FRONTEND_URL")
-    additional_origins = app.config.get("ADDITIONAL_CORS_ORIGINS")
-    if not frontend_url and not additional_origins:
-        # No CORS configured
-        return
-
-    origins = []
-    if frontend_url:
-        u = urlparse(frontend_url)
-        origins.append(f"{u.scheme}://{u.netloc}")
-
-    if isinstance(additional_origins, str):
-        origins += re.split(r"\s+", additional_origins)
-    elif isinstance(additional_origins, list):
-        origins += additional_origins
-    elif additional_origins is not None:
-        raise ValueError(
-            "invalid option type for ADDITIONAL_CORS_ORIGINS, must be list or space separated str"
-        )
-
-    from sanic_cors import CORS
-
-    CORS(
-        app,
-        origins=origins,
-        supports_credentials=True,
-        expose_headers={"Content-Disposition"},
-    )
-
-
-setup_cors(app)
 
 # TODO: use a different interface, maybe backed by the PostgreSQL, to allow
 # scaling the API
