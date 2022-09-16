@@ -24,7 +24,7 @@ def normalize_user_agent(user_agent):
 
 
 async def _return_tracks(req, extend_query, limit, offset):
-    if limit <= 0 or limit > 100:
+    if limit <= 0 or limit > 1000:
         raise InvalidUsage("invalid limit")
 
     if offset < 0:
