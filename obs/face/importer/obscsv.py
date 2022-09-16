@@ -69,7 +69,7 @@ class ImportMeasurementsCsv:
         if self.correct_timezone:
             self.timezone_lookup = tzwhere.tzwhere(forceTZ=False)
 
-    def read(self, filename, user_id="unknown", dataset_id="unknown", log=module_log):
+    def read(self, filename, user_id="unknown", dataset_id="unknown", log=module_log, return_metadata=False):
         log.debug("Importing: %s", filename)
 
         measurements, metadata = self.read_csv(filename, user_id, dataset_id, log)
@@ -100,6 +100,8 @@ class ImportMeasurementsCsv:
             continuous segments:    %(n_segments)s
         """).strip(), stats)
 
+        if return_metadata:
+            return measurements, stats, metadata
         return measurements, stats
 
     def read_csv(self, filename, user_id, dataset_id, log=module_log):
