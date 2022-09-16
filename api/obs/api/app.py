@@ -26,11 +26,36 @@ from sqlalchemy.util import asyncio
 
 log = logging.getLogger(__name__)
 
+
+class SanicAccessMessageFilter(logging.Filter):
+    """
+    A filter that modifies the log message of a sanic.access log entry to
+    include useful information.
+    """
+
+    def filter(self, record):
+        record.msg = f"{record.request} -> {record.status}"
+        return True
+
+
+def configure_sanic_logging():
+    for logger_name in ["sanic.root", "sanic.access", "sanic.error"]:
+        logger = logging.getLogger(logger_name)
+        for handler in logger.handlers:
+            logger.removeHandler(handler)
+
+    logger = logging.getLogger("sanic.access")
+    for filter_ in logger.filters:
+        logger.removeFilter(filter_)
+    logger.addFilter(SanicAccessMessageFilter())
+    logging.getLogger("sanic.root").setLevel(logging.WARNING)
+
+
 app = Sanic(
     "openbikesensor-api",
     env_prefix="OBS_",
-    log_config={},
 )
+configure_sanic_logging()
 
 if isfile("./config.py"):
     app.update_config("./config.py")

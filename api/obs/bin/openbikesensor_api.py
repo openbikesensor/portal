@@ -58,7 +58,7 @@ def main():
         port=app.config.PORT,
         debug=debug,
         auto_reload=app.config.get("AUTO_RELOAD", debug),
-        # access_log=False,
+        access_log=True,
     )
 
 
