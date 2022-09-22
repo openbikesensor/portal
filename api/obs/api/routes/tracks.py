@@ -3,7 +3,7 @@ import re
 from json import load as jsonload
 from os.path import join, exists, isfile
 
-from sqlalchemy import select, func
+from sqlalchemy import select, func, and_
 from sqlalchemy.orm import joinedload
 
 from obs.api.db import Track, User, Comment, DuplicateTrackFileError
@@ -126,6 +126,39 @@ async def get_feed(req):
         return q
 
     return await _return_tracks(req, extend_query, limit, offset, order_by)
+
+
+@api.post("/tracks/bulk")
+@require_auth
+async def tracks_bulk_action(req):
+    body = req.json
+    action = body["action"]
+    track_slugs = body["tracks"]
+
+    if action not in ("delete", "makePublic", "makePrivate", "reprocess"):
+        raise InvalidUsage("invalid action")
+
+    query = select(Track).where(
+        and_(Track.author_id == req.ctx.user.id, Track.slug.in_(track_slugs))
+    )
+
+    for track in (await req.ctx.db.execute(query)).scalars():
+        if action == "delete":
+            await req.ctx.db.delete(track)
+        elif action == "makePublic":
+            if not track.public:
+                track.queue_processing()
+            track.public = True
+        elif action == "makePrivate":
+            if track.public:
+                track.queue_processing()
+            track.public = False
+        elif action == "reprocess":
+            track.queue_processing()
+
+    await req.ctx.db.commit()
+
+    return empty()
 
 
 @api.post("/tracks")
