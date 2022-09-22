@@ -23,7 +23,7 @@ def normalize_user_agent(user_agent):
     return m[0] if m else None
 
 
-async def _return_tracks(req, extend_query, limit, offset):
+async def _return_tracks(req, extend_query, limit, offset, order_by=None):
     if limit <= 0 or limit > 1000:
         raise InvalidUsage("invalid limit")
 
@@ -39,7 +39,7 @@ async def _return_tracks(req, extend_query, limit, offset):
         extend_query(select(Track).options(joinedload(Track.author)))
         .limit(limit)
         .offset(offset)
-        .order_by(Track.created_at.desc())
+        .order_by(order_by if order_by is not None else Track.created_at)
     )
 
     tracks = (await req.ctx.db.execute(query)).scalars()
@@ -76,16 +76,56 @@ async def get_tracks(req):
     return await _return_tracks(req, extend_query, limit, offset)
 
 
+def parse_boolean(s):
+    if s is None:
+        return None
+
+    s = s.lower()
+    if s in ("true", "1", "yes", "y", "t"):
+        return True
+    if s in ("false", "0", "no", "n", "f"):
+        return False
+
+    raise ValueError("invalid value for boolean")
+
+
 @api.get("/tracks/feed")
 @require_auth
 async def get_feed(req):
     limit = req.ctx.get_single_arg("limit", default=20, convert=int)
     offset = req.ctx.get_single_arg("offset", default=0, convert=int)
+    user_device_id = req.ctx.get_single_arg("user_device_id", default=None, convert=int)
+
+    order_by_columns = {
+        "recordedAt": Track.recorded_at,
+        "title": Track.title,
+        "visibility": Track.public,
+        "length": Track.length,
+        "duration": Track.duration,
+        "user_device_id": Track.user_device_id,
+    }
+    order_by = req.ctx.get_single_arg(
+        "order_by", default=None, convert=order_by_columns.get
+    )
+
+    reversed_ = req.ctx.get_single_arg("reversed", convert=parse_boolean, default=False)
+    if reversed_:
+        order_by = order_by.desc()
+
+    public = req.ctx.get_single_arg("public", convert=parse_boolean, default=None)
 
     def extend_query(q):
-        return q.where(Track.author_id == req.ctx.user.id)
+        q = q.where(Track.author_id == req.ctx.user.id)
 
-    return await _return_tracks(req, extend_query, limit, offset)
+        if user_device_id is not None:
+            q = q.where(Track.user_device_id == user_device_id)
+
+        if public is not None:
+            q = q.where(Track.public == public)
+
+        return q
+
+    return await _return_tracks(req, extend_query, limit, offset, order_by)
 
 
 @api.post("/tracks")

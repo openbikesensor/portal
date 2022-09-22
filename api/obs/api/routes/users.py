@@ -1,9 +1,11 @@
 import logging
 
 from sanic.response import json
-from sanic.exceptions import InvalidUsage
+from sanic.exceptions import InvalidUsage, Forbidden
+from sqlalchemy import select
 
 from obs.api.app import api, require_auth
+from obs.api.db import UserDevice
 
 log = logging.getLogger(__name__)
 
@@ -26,6 +28,22 @@ def user_to_json(user):
 @api.get("/user")
 async def get_user(req):
     return json(user_to_json(req.ctx.user) if req.ctx.user else None)
+
+
+@api.get("/user/devices")
+async def get_user_devices(req):
+    if not req.ctx.user:
+        raise Forbidden()
+
+    query = (
+        select(UserDevice)
+        .where(UserDevice.user_id == req.ctx.user.id)
+        .order_by(UserDevice.id)
+    )
+
+    devices = (await req.ctx.db.execute(query)).scalars()
+
+    return json([device.to_dict(req.ctx.user.id) for device in devices])
 
 
 @api.put("/user")

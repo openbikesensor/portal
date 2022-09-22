@@ -259,6 +259,7 @@ class Track(Base):
         if for_user_id is not None and for_user_id == self.author_id:
             result["uploadedByUserAgent"] = self.uploaded_by_user_agent
             result["originalFileName"] = self.original_file_name
+            result["userDeviceId"] = self.user_device_id
 
         if self.author:
             result["author"] = self.author.to_dict(for_user_id=for_user_id)
