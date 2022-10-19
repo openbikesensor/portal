@@ -43,7 +43,7 @@ RUN git clone  --branch $OSM2PGSQL_VERSION https://github.com/openstreetmap/osm2
 # Build the frontend AS builder
 #############################################
 
-FROM node:18 as frontend-builder
+FROM node:19 as frontend-builder
 
 WORKDIR /opt/obs/frontend
 ADD frontend/package.json frontend/package-lock.json /opt/obs/frontend/
