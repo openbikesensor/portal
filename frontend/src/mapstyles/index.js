@@ -130,7 +130,7 @@ export const getRegionLayers = (adminLevel = 6, baseColor = "#00897B", maxValue 
   "source": "obs",
   "source-layer": "obs_regions",
   "minzoom": 0,
-  "maxzoom": 10,
+  "maxzoom": 11,
   "filter": [
     "all",
     ["==", "admin_level", adminLevel],
@@ -162,7 +162,7 @@ export const getRegionLayers = (adminLevel = 6, baseColor = "#00897B", maxValue 
   "source": "obs",
   "source-layer": "obs_regions",
   "minzoom": 0,
-  "maxzoom": 10,
+  "maxzoom": 11,
   "filter": [
     "all",
     ["==", "admin_level", adminLevel],

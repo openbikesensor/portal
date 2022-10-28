@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo } from "react";
+import React, { useState, useCallback, useMemo, useRef } from "react";
 import _ from "lodash";
 import { connect } from "react-redux";
 import { Button } from "semantic-ui-react";
@@ -6,6 +6,7 @@ import { Layer, Source } from "react-map-gl";
 import produce from "immer";
 import classNames from "classnames";
 
+import api from "api";
 import type { Location } from "types";
 import { Page, Map } from "components";
 import { useConfig } from "config";
@@ -15,6 +16,7 @@ import {
   borderByZone,
   reds,
   isValidAttribute,
+  getRegionLayers
 } from "mapstyles";
 import { useMapConfig } from "reducers/mapConfig";
 
@@ -69,8 +71,8 @@ const getRoadsLayer = (colorAttribute, maxCount) =>
       : colorAttribute.endsWith("zone")
       ? borderByZone()
       : "#DDD";
-    draft.paint["line-opacity"][3] = 12;
-    draft.paint["line-opacity"][5] = 13;
+    draft.paint["line-opacity"][3] = 10;
+    draft.paint["line-opacity"][5] = 11;
   });
 
 const getEventsLayer = () => ({
@@ -193,10 +195,9 @@ function MapPage({ login }) {
         node = node.parentNode;
       }
 
-      setClickLocation({longitude: e.lngLat[0], latitude: e.lngLat[1]})
       const { zoom } = viewportRef.current;
 
-      if (zoom < 10) {
+      if (zoom < 11) {
         const clickedRegion = e.features?.find(
           (f) => f.source === "obs" && f.sourceLayer === "obs_regions"
         );
@@ -204,12 +205,9 @@ function MapPage({ login }) {
           clickedRegion ? { type: "region", region: clickedRegion } : null
         );
       } else {
-        const road = await api.get("/mapdetails/road", {
-          query: {
-            longitude: e.lngLat[0],
-            latitude: e.lngLat[1],
-            radius: 100,
-          },
+              setClickLocation({longitude: e.lngLat[0], latitude: e.lngLat[1]})
+       }
+     },
     [setClickLocation]
   );
   const onCloseRoadInfo = useCallback(() => {
@@ -292,33 +290,6 @@ function MapPage({ login }) {
     }
   );
 
-  const tiles = obsMapSource?.tiles?.map((tileUrl: string) => {
-    const query = new URLSearchParams();
-    if (login) {
-      if (mapConfig.filters.currentUser) {
-        query.append("user", login.id);
-      }
-
-      if (mapConfig.filters.dateMode === "range") {
-        if (mapConfig.filters.startDate) {
-          query.append("start", mapConfig.filters.startDate);
-        }
-        if (mapConfig.filters.endDate) {
-          query.append("end", mapConfig.filters.endDate);
-        }
-      } else if (mapConfig.filters.dateMode === "threshold") {
-        if (mapConfig.filters.startDate) {
-          query.append(
-            mapConfig.filters.thresholdAfter ? "start" : "end",
-            mapConfig.filters.startDate
-          );
-        }
-      }
-    }
-    const queryString = String(query);
-    return tileUrl + (queryString ? "?" : "") + queryString;
-  });
-
   const hasFilters: boolean =
     login &&
     (mapConfig.filters.currentUser || mapConfig.filters.dateMode !== "none");
@@ -330,6 +301,7 @@ function MapPage({ login }) {
           styles.mapContainer,
           banner ? styles.hasBanner : null
         )}
+        ref={mapInfoPortal}
       >
         {layerSidebar && (
           <div className={styles.mapSidebar}>
@@ -338,6 +310,7 @@ function MapPage({ login }) {
         )}
         <div className={styles.map}>
           <Map viewportFromUrl onClick={onClick} onViewportChange={onViewportChange} hasToolbar>
+            <div className={styles.mapToolbar}>
               <Button
               style={{
                 position: "absolute",
@@ -355,12 +328,12 @@ function MapPage({ login }) {
                 <Layer key={layer.id} {...layer} />
               ))}
             </Source>
-                        {details?.type === "road" && details?.road?.road && (
+
 
             <RoadInfo
               {...{ clickLocation, hasFilters, onClose: onCloseRoadInfo }}
             />
-                      )}
+
 
             {details?.type === "region" && details?.region && (
               <RegionInfo
@@ -369,8 +342,6 @@ function MapPage({ login }) {
                 onClose={onCloseDetails}
               />
             )}
-
-            <RoadInfo {...{ clickLocation }} />
           </Map>
         </div>
       </div>

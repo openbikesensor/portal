@@ -14,6 +14,7 @@ import { useObservable } from "rxjs-hooks";
 import { of, from, concat, combineLatest } from "rxjs";
 import { map, switchMap, distinctUntilChanged } from "rxjs/operators";
 import { Duration, DateTime } from "luxon";
+import {useTranslation} from 'react-i18next'
 
 import api from "api";
 
@@ -26,6 +27,8 @@ function formatDuration(seconds) {
 }
 
 export default function Stats() {
+  const {t} = useTranslation()
+
   const [page, setPage] = useState(1);
   const PER_PAGE = 10;
   const stats = useObservable(
@@ -40,7 +43,7 @@ export default function Stats() {
 
   return (
     <>
-      <Header as="h2">Top Regions</Header>
+      <Header as="h2">{t(`Stats.topRegions`)}</Header>
 
       <div>
         <Loader active={stats == null} />
@@ -48,8 +51,8 @@ export default function Stats() {
         <Table celled>
           <Table.Header>
             <Table.Row>
-              <Table.HeaderCell>Region name</Table.HeaderCell>
-              <Table.HeaderCell>Event count</Table.HeaderCell>
+              <Table.HeaderCell>{t(`Stats.regionName`)}</Table.HeaderCell>
+              <Table.HeaderCell>{t(`Stats.eventCount`)}</Table.HeaderCell>
             </Table.Row>
           </Table.Header>
 

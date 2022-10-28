@@ -1,15 +1,26 @@
-import React, {useState, useCallback} from 'react'
-import _ from 'lodash'
-import {Segment, Menu, Header, Label, Icon, Table} from 'semantic-ui-react'
-import {Layer, Source} from 'react-map-gl'
-import {of, from, concat} from 'rxjs'
-import {useObservable} from 'rxjs-hooks'
-import {switchMap, distinctUntilChanged} from 'rxjs/operators'
-import {Chart} from 'components'
-import {pairwise} from 'utils'
+import React, { useState, useCallback } from "react";
+import _ from "lodash";
+import {
+  Segment,
+  Menu,
+  Header,
+  Label,
+  Icon,
+  Table,
+  Message,
+  Button,
+} from "semantic-ui-react";
+import { Layer, Source } from "react-map-gl";
+import { of, from, concat } from "rxjs";
+import { useObservable } from "rxjs-hooks";
+import { switchMap, distinctUntilChanged } from "rxjs/operators";
+import { Chart } from "components";
+import { pairwise } from "utils";
+import { useTranslation } from "react-i18next";
 
-import api from 'api'
-import {colorByDistance, borderByZone} from 'mapstyles'
+import type { Location } from "types";
+import api from "api";
+import { colorByDistance, borderByZone } from "mapstyles";
 
 import styles from "./styles.module.less";
 
@@ -127,7 +138,15 @@ function HistogramChart({ bins, counts, zone }) {
   );
 }
 
-export default function RoadInfo({ clickLocation }) {
+export default function RoadInfo({
+  clickLocation,
+  hasFilters,
+  onClose,
+}: {
+  clickLocation: Location | null;
+  hasFilters: boolean;
+  onClose: () => void;
+}) {
   const { t } = useTranslation();
   const [direction, setDirection] = useState("forwards");
 
@@ -196,42 +215,51 @@ export default function RoadInfo({ clickLocation }) {
           />
         </Header>
 
+        {hasFilters && (
+          <Message info icon>
+            <Icon name="info circle" small />
+            <Message.Content>
+              {t("MapPage.roadInfo.hintFiltersNotApplied")}
+            </Message.Content>
+          </Message>
+        )}
+
         {info?.road.zone && (
           <Label size="small" color={ZONE_COLORS[info?.road.zone]}>
             {t(`general.zone.${info.road.zone}`)}
           </Label>
         )}
 
-        {info.road.oneway && (
+        {info?.road.oneway && (
           <Label size="small" color="blue">
             <Icon name="long arrow alternate right" fitted />{" "}
             {t("MapPage.roadInfo.oneway")}
           </Label>
         )}
 
-        {info.road.oneway ? null : (
-          <Menu size="tiny" pointing>
+        {info?.road.oneway ? null : (
+          <Menu size="tiny" fluid secondary>
             <Menu.Item header>{t("MapPage.roadInfo.direction")}</Menu.Item>
             <Menu.Item
               name="forwards"
               active={direction === "forwards"}
               onClick={onClickDirection}
             >
-              {getCardinalDirection(t, info.forwards?.bearing)}
+              {getCardinalDirection(t, info?.forwards?.bearing)}
             </Menu.Item>
             <Menu.Item
               name="backwards"
               active={direction === "backwards"}
               onClick={onClickDirection}
             >
-              {getCardinalDirection(t, info.backwards?.bearing)}
+              {getCardinalDirection(t, info?.backwards?.bearing)}
             </Menu.Item>
           </Menu>
         )}
 
-        {info[direction] && <RoadStatsTable data={info[direction]} />}
+        {info?.[direction] && <RoadStatsTable data={info[direction]} />}
 
-        {info[direction]?.distanceOvertaker?.histogram && (
+        {info?.[direction]?.distanceOvertaker?.histogram && (
           <>
             <Header as="h5">
               {t("MapPage.roadInfo.overtakerDistanceDistribution")}
@@ -246,7 +274,7 @@ export default function RoadInfo({ clickLocation }) {
 
   return (
     <>
-      {info.road && (
+      {info?.road && (
         <Source id="highlight" type="geojson" data={info.road.geometry}>
           <Layer
             id="route"
@@ -279,11 +307,10 @@ export default function RoadInfo({ clickLocation }) {
         </Source>
       )}
 
-      {content && mapInfoPortal && (
-        createPortal(
+      {content && (
         <div className={styles.mapInfoBox}>
-          {content}
-        </div>, mapInfoPortal))}
+          <Segment loading={loading}>{content}</Segment>
+        </div>
       )}
     </>
   );

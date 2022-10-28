@@ -67,6 +67,9 @@ Stats:
   thisMonth: This month
   thisYear: This year
   allTime: All time
+  topRegions: Region Leaderboard
+  eventCount: Overtaking events
+  regionName: Region
 
 TracksPage:
   titlePublic: Public tracks
@@ -206,6 +209,10 @@ MapPage:
       southWest: south-west bound
       west: west bound
       northWest: north-west bound
+  regionInfo:
+    unnamedRegion: "unnamed region"
+    eventNumber: Number of Overtaking events
+
 
 SettingsPage:
   title: Settings

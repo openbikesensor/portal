@@ -1,6 +1,10 @@
 from gzip import decompress
 from sqlite3 import connect
-from sanic.exceptions import Forbidden
+from datetime import datetime, time, timedelta
+from typing import Optional, Tuple
+
+import dateutil.parser
+from sanic.exceptions import Forbidden, InvalidUsage
 from sanic.response import raw
 
 from sqlalchemy import select, text
@@ -88,10 +92,6 @@ async def tiles(req, zoom: int, x: int, y: str):
 
     else:
         user_id, start, end = get_filter_options(req)
-
-        parse_date = lambda s: dateutil.parser.parse(s)
-        start = req.ctx.get_single_arg("start", default=None, convert=parse_date)
-        end = req.ctx.get_single_arg("end", default=None, convert=parse_date)
 
         tile = await req.ctx.db.scalar(
             text(

@@ -62,6 +62,9 @@ Stats:
   thisMonth: Dieser Monat
   thisYear: Dieses Jahr
   allTime: Immer
+  topRegions: Regionen mit den meisten Messwerten
+  eventCount: Überholevents
+  regionName: Region
 
 TracksPage:
   titlePublic: Öffentliche Fahrten
@@ -201,6 +204,9 @@ MapPage:
       southWest: südwestwärts
       west: westwärts
       northWest: nordwestwärts
+  regionInfo:
+    unnamedRegion: Unbenannte Region
+    eventNumber: Anzahl Überholevents
 
 SettingsPage:
   title: Einstellungen

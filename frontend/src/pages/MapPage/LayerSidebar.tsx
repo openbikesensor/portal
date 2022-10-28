@@ -24,14 +24,6 @@ import { ColorMapLegend, DiscreteColorMapLegend } from "components";
 const BASEMAP_STYLE_OPTIONS = ["positron", "bright"];
 
 const ROAD_ATTRIBUTE_OPTIONS = [
-  {value: 'distance_overtaker_mean', key: 'distance_overtaker_mean', text: 'Overtaker distance mean'},
-  {value: 'distance_overtaker_min', key: 'distance_overtaker_min', text: 'Overtaker distance minimum'},
-  {value: 'distance_overtaker_max', key: 'distance_overtaker_max', text: 'Overtaker distance maximum'},
-  {value: 'distance_overtaker_median', key: 'distance_overtaker_median', text: 'Overtaker distance median'},
-  {value: 'overtaking_event_count', key: 'overtaking_event_count', text: 'Event count'},
-  {value: 'usage_count', key: 'usage_count', text: 'Usage count'},
-  {value: 'zone', key: 'zone', text: 'Overtaking distance zone'}
-]
   "distance_overtaker_mean",
   "distance_overtaker_min",
   "distance_overtaker_max",
@@ -41,11 +33,7 @@ const ROAD_ATTRIBUTE_OPTIONS = [
   "zone",
 ];
 
-const DATE_FILTER_MODES = [
-  { value: "none", key: "none", text: "All time" },
-  { value: "range", key: "range", text: "Start and end range" },
-  { value: "threshold", key: "threshold", text: "Before/after comparison" },
-];
+const DATE_FILTER_MODES = ["none", "range", "threshold"];
 
 type User = Object;
 
@@ -169,21 +157,6 @@ function LayerSidebar({
                     }
                   />
                 </List.Item>
-                <List.Item>
-                  <ColorMapLegend
-                    map={_.chunk(
-                      colorByCount(
-                        "obsRoads.maxCount",
-                        mapConfig.obsRoads.maxCount,
-                        viridisSimpleHtml
-                      ).slice(3),
-                      2
-                    )}
-                    twoTicks
-                  />
-                </List.Item>
-              </>
-            ) : (
                 <List.Item>
                   <ColorMapLegend
                     map={_.chunk(
