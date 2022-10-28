@@ -50,7 +50,6 @@ const untaggedRoadsLayer = {
       ["*", ["get", "offset_direction"], 8],
     ],
   },
-  minzoom: 12,
 };
 
 const getUntaggedRoadsLayer = (colorAttribute, maxCount) =>

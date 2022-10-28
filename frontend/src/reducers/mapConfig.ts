@@ -69,13 +69,6 @@ export const initialState: MapConfig = {
   obsRegions: {
     show: true,
   },
-  filters: {
-    currentUser: false,
-    dateMode: "none",
-    startDate: null,
-    endDate: null,
-    thresholdAfter: true,
-  },
 };
 
 type MapConfigAction = {
