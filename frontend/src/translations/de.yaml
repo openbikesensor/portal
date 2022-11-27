@@ -49,11 +49,10 @@ LoginButton:
   login: Anmelden
 
 HomePage:
+  stats: Statistik
   mostRecentTrack: Neueste Fahrt
 
 Stats:
-  title: Statistik
-  titleUser: Meine Statistik
   placeholder: "..."
   totalTrackLength: Gesamtfahrstrecke
   timeRecorded: Aufzeichnungszeit
@@ -104,6 +103,7 @@ ExportPage:
     label: Geografischer Bereich
 
 UploadPage:
+  title: Fahrten hochladen
   uploadProgress: Lade hoch {{progress}}%
   processing: Verarbeiten...
 
@@ -212,10 +212,10 @@ MapPage:
     eventCount: Anzahl Überholungen
 
 SettingsPage:
-  title: Einstellungen
+  title: Mein Konto
 
   profile:
-    title: Mein Profil
+    title: Profil
     publicNotice: Alle Informationen ab hier sind öffentlich.
     username:
       label: Kontoname
@@ -231,7 +231,7 @@ SettingsPage:
       label: Avatar URL
 
   apiKey:
-    title: Mein API-Schlüssel
+    title: API-Schlüssel
     description: |
       Hier findest du deinen API-Schlüssel für die Nutzung mit dem
       OpenBikeSensor. Du kannst ihn dir herauskopieren und in der Seite für die
@@ -257,6 +257,9 @@ SettingsPage:
       label: API URL
 
     generate: Neuen API-Schlüssel erstellen
+
+  stats:
+    title: Statistik
 
 TrackPage:
   downloadFailed: Download fehlgeschlagen

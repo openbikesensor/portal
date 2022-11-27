@@ -271,7 +271,7 @@ function TracksTable({ title }) {
         <Link component={UploadButton} to="/upload" />
       </div>
 
-      <Header as="h2">{title}</Header>
+      <Header as="h1">{title}</Header>
       <div style={{ clear: "both" }}>
         <Loader content={t("general.loading")} active={tracks == null} />
 

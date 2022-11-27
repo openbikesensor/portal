@@ -54,11 +54,10 @@ LoginButton:
   login: Login
 
 HomePage:
+  stats: Statistics
   mostRecentTrack: Most recent track
 
 Stats:
-  title: Statistics
-  titleUser: My Statistic
   placeholder: "..."
   totalTrackLength: Total track length
   timeRecorded: Time recorded
@@ -110,6 +109,7 @@ ExportPage:
     label: Bounding Box
 
 UploadPage:
+  title: Upload tracks
   uploadProgress: Uploading {{progress}}%
   processing: Processing...
 
@@ -217,10 +217,10 @@ MapPage:
     eventCount: Event count
 
 SettingsPage:
-  title: Settings
+  title: My Account
 
   profile:
-    title: My profile
+    title: Profile
     publicNotice: All of the information below is public.
     username:
       label: Username
@@ -236,7 +236,7 @@ SettingsPage:
       label: Avatar URL
 
   apiKey:
-    title: My API Key
+    title: API Key
     description: |
       Here you find your API Key, for use in the OpenBikeSensor. You can to
       copy and paste it into your sensor's configuration interface to allow
@@ -260,6 +260,8 @@ SettingsPage:
 
     generate: Generate new API key
 
+  stats:
+    title: Statistics
 
 TrackPage:
   downloadFailed: Download failed
