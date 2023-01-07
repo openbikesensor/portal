@@ -9,7 +9,7 @@ import HttpBackend, {
 import { initReactI18next } from "react-i18next";
 import LanguageDetector from "i18next-browser-languagedetector";
 
-export type AvailableLocales = "en" | "de";
+export type AvailableLocales = "en" | "de" | "fr";
 
 async function request(
   _options: BackendOptions,
@@ -27,7 +27,7 @@ async function request(
   }
 }
 
-export const AVAILABLE_LOCALES: AvailableLocales[] = ["en", "de"];
+export const AVAILABLE_LOCALES: AvailableLocales[] = ["en", "de", "fr"];
 
 const i18n = i18next.createInstance();
 
