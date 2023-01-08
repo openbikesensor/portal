@@ -31,7 +31,7 @@ export const withBaseMapStyle = connect((state) => ({
 
 function parseHash(v: string): Viewport | null {
   if (!v) return null;
-  const m = v.match(/^#([0-9\.]+)\/([0-9\.]+)\/([0-9\.]+)$/);
+  const m = v.match(/^#([0-9\.]+)\/([0-9\.\-]+)\/([0-9\.\-]+)$/);
   if (!m) return null;
   return {
     zoom: Number.parseFloat(m[1]),
