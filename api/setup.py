@@ -21,7 +21,7 @@ setup(
         "sqlparse~=0.4.2",
         "openmaptiles-tools",  # install from git
         "pyshp>=2.2,<2.4",
-        "sqlalchemy[asyncio]~=1.4.25",
+        "sqlalchemy[asyncio]>=1.4.25,<2.1.0",
         "asyncpg~=0.24.0",
         "alembic~=1.7.7",
     ],
