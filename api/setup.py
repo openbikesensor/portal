@@ -23,7 +23,7 @@ setup(
         "pyshp>=2.2,<2.4",
         "sqlalchemy[asyncio]~=1.4.25",
         "asyncpg~=0.24.0",
-        "alembic~=1.7.7",
+        "alembic>=1.7.7,<1.10.0",
     ],
     entry_points={
         "console_scripts": [
