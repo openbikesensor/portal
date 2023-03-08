@@ -11,4 +11,4 @@ sqlparse~=0.4.2
 sqlalchemy[asyncio]~=1.4.39
 asyncpg~=0.24.0
 pyshp~=2.3.1
-alembic~=1.7.7
+alembic~=1.10.1
