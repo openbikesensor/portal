@@ -1,0 +1,344 @@
+locales:
+  en: Anglais
+  de: Allemand
+  fr: Français
+
+general:
+  loading: Chargement
+  unnamedTrack: Trace non nommé
+  public: Publique
+  private: Privé
+  show: Montrer
+  edit: Editer
+  save: Sauvegarder
+  delete: Supprimer
+  ok: OK
+  cancel: Annuler
+  confirm: Etes-vous sûr ?
+  copied: Copié.
+  copyError: Erreur lors de la copie.
+
+  zone:
+    urban: urbain
+    rural: rural
+    motorway: Voie motorisée
+
+App:
+  footer:
+    aboutTheProject: A propos du projet
+
+    getInvolved: Participer
+    getHelpInForum: Obtenir de l'aide sur le forum
+    reportAnIssue: Signaler un problèem
+    development: Developpement
+
+    thisInstallation: Cette installation
+    privacyPolicy: Politique de confidentialité
+    imprint: Impression
+    version: Version v{{apiVersion}}
+    versionLoading: Téléchargement de la version...
+
+    changeLanguage: Changer de languer
+
+  menu:
+    map: Carte
+    tracks: Traces
+    export: Exporter
+    myTracks: Mes traces
+    uploadTracks: Télécharger des traces
+    settings: Paramètres
+    logout: Se déconnecter
+
+LoginButton:
+  login: Se connecter
+
+HomePage:
+  mostRecentTrack: Trace la plus récente
+
+Stats:
+  title: Statistiques
+  titleUser: Mes statistiques
+  placeholder: "..."
+  totalTrackLength: Longueur totale des traces
+  timeRecorded: Durées des traces
+  eventsConfirmed: Evénements confirmées
+  tracksRecorded: Traces enregistrées
+  membersJoined: Membres enregistrés
+  thisMonth: Ce mois
+  thisYear: Cette annéee
+  allTime: De tout temps
+
+TracksPage:
+  titlePublic: Traces publiques
+  titleUser: Mes traces
+  noPublicTracks: Aucune trace publique existante. <1>Télécharger la première !</1>
+  createdBy: Créé par {{author}}
+  upload: Télécharger
+
+  processing:
+    created: Non traité
+    queued: Traitement en attente
+    processing: En cours de traitement...
+    complete: Traité
+    error: Erreur durant le traitement
+
+ExportPage:
+  title: Exporter
+  information: |
+    Cette page vous permet d'exporter une partie des données publiques
+    sous la licence pour les données annoncée dans la déclaration de
+    confidentialité de ce site.
+
+    Veuillez considérer cette exportation comme **expérimentale** et
+    attendez-vous à ce que le format d'export change à l'avenir.
+    L'utilisation automatisée de cette fonctionnalité est découragée pour le moment.
+    Essayez de ne pas utiliser une trop grande capacité de calcul lors de l'exportation des données,
+    sélectionnez la zone de délimitation la plus petit possible et
+    n'effectuez pas d'export à répétition.
+  export: Exporter
+  mode:
+    label: Mode
+    placeholder: Sélectionner un mode
+    events: Evénements
+  format:
+    label: Format
+    placeholder: Sélectionner un format
+    geojson: GeoJSON
+    shapefile: Shapefile (ZIP)
+  boundingBox:
+    label: Zone de délimitation
+
+UploadPage:
+  uploadProgress: Téléchargement {{progress}}%
+  processing: En cours...
+
+  table:
+    filename: Nom de fichier
+    size: Taille
+    statusTitle: Statut / Titre
+
+FileUploadField:
+  dropOrClick: Déposez un fichier ici ou cliquez pour en sélectionner un à télécharger
+  dropOrClickMultiple: Déposez des fichier ici ou cliquez pour en sélectionner plusieurs à télécharger
+  uploadFile: Télcharger un fichier
+  uploadFiles: Télécharger des fichiers
+
+LoginRedirectPage:
+  loginError: Erreur de connexion
+  loginErrorText: "Le serveur de connexion signale : {{error}}"
+
+  loggingIn: Connecté en tant que
+  hangTight: Veuillez patienter...
+
+NotFoundPage:
+  title: La page n'exsite pas
+  description: Vous savez ce que cela veut dire...
+  goBack: Revenir en arrière
+
+
+MapPage:
+  sidebar:
+    baseMap:
+      style:
+        label: Style de fond de carte
+        positron: Positron
+        bright: OSM Bright
+
+    obsRoads:
+      title: Segments de route
+      showUntagged:
+        label: Inclure les routes sans données
+      attribute:
+        label: Couleurs basées sur...
+        distance_overtaker_mean: Distance moyenne de dépassement
+        distance_overtaker_min: Distance minimum de dépassement
+        distance_overtaker_max: Distance maximum de dépassement
+        distance_overtaker_median: Distance médiane de dépassement
+        overtaking_event_count: Nombre d'événement
+        usage_count: Nombre de passages
+        zone: Overtaking distance zone
+      maxCount:
+        label: Valeur maximale pour l'échelle de couleur
+
+    obsEvents:
+      title: Points d'événement
+
+    filters:
+      title: Filtres
+      needsLogin: Aucun filtre disponible sans être connecté.
+      userData: Données utilisateur
+      currentUser: Montrer seulement mes données
+      dateRange: Intervalle de dates
+      dateMode:
+        none: De tout temps
+        range: Intervalle début et fin
+        threshold: Comparaison Avant/Après
+      start: Début
+      end: Fin
+      threshold: Seuil
+      before: Avant
+      after: Après
+
+  roadInfo:
+    closeTooltip: Fermer l'aperçu
+    unnamedWay: Voie sans nom
+    oneway: Sens unique
+    direction: Direction
+    distanceOvertaker: Gauche
+    distanceStationary: Droite
+    speed: Vitesse
+    count: Nb. de mesures
+    min: Minimum
+    median: Médiane
+    max: Maximum
+    mean: Moyenne
+
+    overtakerDistanceDistribution: Distribution des distances de dépassement
+    hintFiltersNotApplied: Les filtres de la barre latérale ne sont pas (encore) appliqués à ces données.
+
+    cardinalDirections:
+      unknown: Inconnu
+      north: Nord
+      northEast: Nord-Est
+      east: Est
+      southEast: Sud-Est
+      south: Sud
+      southWest: Sud-Ouet
+      west: Ouest
+      northWest: Nord-Ouest
+
+SettingsPage:
+  title: Paramètres
+
+  profile:
+    title: Mon profil
+    publicNotice: Toutes les informations ci-dessous sont publiques.
+    username:
+      label: Nom d'utilisateur
+      hint: >
+        Le nom d'utilisateur peut être modifié dans KeyCloak
+        et sera appliqué lors de la prochaine connexion..
+    displayName:
+      label: Nom affiché
+      fallbackNotice: Tant qu'aucune information n'est saisi ici, le nom d'utilisateur sera utilisé publiquement.
+    bio:
+      label: Bio
+    avatarUrl:
+      label: URL d'avatar
+
+  apiKey:
+    title: MA clé d'API
+    description: |
+      Ici vous trouvez votre clé API, pour l'utilisation dans le OpenBikeSensor.
+      Vous pouvez la copier et coller dans l'interface de configuration de votre
+      capteur pour permettre le le téléchargement direct depuis le dispositif.
+      
+      Veuillez protéger votre clé API soigneusement car elle permet un contrôle
+      total sur votre compte.
+    urlDescription: |
+      L'URL de l'API doit être définie comme suit :
+    generateDescription: |
+      Vous pouvez générer une nouvelle clé API ici, qui invalidera l'ancienne,
+      déconnectant de votre compte tous les appareils sur lesquels vous l'avez utilisée..
+
+    key:
+      label: Clé API Personnel
+      empty: Vous n'avez pas de clé API, veuillez en générer un ci-dessous.
+      show: Montrer la clé d'API
+
+    url:
+      label: API URL
+
+    generate: Générer une nouvelle clé API
+
+
+TrackPage:
+  downloadFailed: Le téléchargement a échoué
+  downloadError: La piste n'a probablement pas été importée correctement ou assez récemment. Veuillez demander de l'aide à votre administrateur.
+  processing: La trace est en cours de traitement, veuillez recharger la page dans un moment.
+  processingError: Le traitement de cette trace a échoué. Veuillez demander à l'administrateur de votre site de vous aider à résoudre le problème.
+  description: Description
+
+
+  mapSettings:
+    title: Paramètres de la carte
+    showTrack: Montrer la trace
+    gpsTrack: Trace GPS
+    snappedTrack: Suivre la route
+
+    points: Points
+    confirmedPoints: Confirmé(s)
+    allPoints: Toutes les mesures
+
+    side: Côté (pour la couleur)
+    overtakerSide: Dépassement (Gauche)
+    stationarySide: Stationnemnt (Droite)
+
+  details:
+    visibility: Visibilité
+    originalFileName: Nom de fichier d'origine
+    uploadedWith: Télécharge par
+    duration: Durée
+    uploadedDate: Téléchargé le
+    recordedDate: Enregistré par
+    numEvents: Evénements confirmés
+    length: Distance
+    processingStatus: En cours de traitement
+
+  actions:
+    edit: Modifier la trace
+
+    download: Télécharger
+    original: Original
+    gpx: Trace (GPX)
+    hintAuthorOnly: Seuelement vous, l'auteur de la trace, pouvez télécharger ce fichier.
+    hintOriginal: C'est le fichier tel qu'il a été téléchargé sur le serveur, sans modification, et il peut être utilisé avec d'autres outils.
+    hintAuthorOnlyOthers: Seul l'auteur de cette trace peut télécharger le fichier original.
+
+  comments:
+    title: Commentaires
+    post: PosAjouterter un commentaire
+    empty: Aucun commentaire existant...
+
+TrackEditor:
+  title: Editer {{trackTitle}}
+  replaceTrackData: Remplacer les données de la trace
+  uploadComplete: Téléchargement complété. <1>Montrer la trace</1>
+
+  dangerZone:
+    title: Zone de danger
+    description: |
+      Vous pouvez supprimer la trace de votre compte et du portail si
+      vous le souhaitez. Cependant, si vous l'avez rendu publique à moment ou un autre,
+      nous ne pouvons garantir qu'il n'en existe pas de version publique sur
+      le dépot de données ou qu'aucune copie n'en a été fait.
+    confirmDelete: Etes-vous sûr de vouloir supprimer cette trace ?
+
+  description:
+    label: Description
+  visibility:
+    label: Visibilité de la trace
+    checkboxLabel: Rendre la trace publique (dans la liste des traces et sur la page de détail, les événements êtant toujours visibles de manière anonyme)
+    description: |
+      Les dépassements de toutes les pistes sont toujours publics sous une forme anonyme.
+      Cette option permet de publier la piste *complète* (où vous avez roulé)
+      pour que tout le monde puisse la voir, ainsi que votre nom d'utilisateur.
+
+      En cochant cette case, tous les utilisateurs peuvent voir votre parcours complet.
+      Pour votre propre vie privée et votre sécurité, veillez à ne publier de cette manière
+      que des tracés qui ne permettent pas aux autres de déduire où vous vivez,
+      travaillez ou séjournez fréquemment. Votre appareil d'enregistrement peut disposer
+      de paramètres de confidentialité utiles pour ne pas enregistrer les données de
+      géolocalisation à proximité de ces lieux.
+      
+      À l'avenir, ce site vous permettra d'expurger les données sensibles relatives
+      à la vie privée dans les enregistrements, à la fois manuellement et automatiquement.
+      D'ici là, vous devrez compter sur les fonctionnalités de votre appareil d'enregistrement,
+      ou expurger manuellement vos fichiers avant de les télécharger.
+      
+      Après avoir coché cette case, vos données deviennent essentiellement publiques.
+      Vous comprenez que nous ne pouvons pas contrôler qui télécharge potentiellement
+      ces données et et en conserve une copie, même si vous les supprimez de votre compte
+      ou les rendez anonymes plus tard.
+      
+      **Utilisation à vos risques et périls.**

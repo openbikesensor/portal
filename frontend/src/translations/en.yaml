@@ -1,6 +1,7 @@
 locales:
   en: English
   de: Deutsch
+  fr: French
 
 general:
   loading: Loading
