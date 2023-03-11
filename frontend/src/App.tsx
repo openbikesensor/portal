@@ -219,6 +219,13 @@ const App = connect((state) => ({login: state.login}))(function App({login}) {
                       {t('App.footer.imprint')}
                     </a>
                   </List.Item>
+                  { config?.termsUrl &&
+                      <List.Item>
+                          <a href={config?.termsUrl} target="_blank" rel="noreferrer">
+                               {t('App.footer.terms')}
+                           </a>
+                       </List.Item>
+                   }
                   <List.Item>
                     <a
                       href={`https://github.com/openbikesensor/portal${

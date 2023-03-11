@@ -34,6 +34,7 @@ App:
 
     thisInstallation: This installation
     privacyPolicy: Privacy policy
+    terms: Terms and Conditions
     imprint: Imprint
     version: Version v{{apiVersion}}
     versionLoading: Fetching version...

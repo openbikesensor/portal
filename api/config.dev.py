@@ -19,6 +19,7 @@ FRONTEND_DIR = None
 FRONTEND_CONFIG = {
     "imprintUrl": "https://example.com/imprint",
     "privacyPolicyUrl": "https://example.com/privacy",
+    # "termsUrl": "https://example.com/terms", # Link is only shown when set
     "mapHome": {"zoom": 6, "longitude": 10.2, "latitude": 51.3},
     # "banner": {"text": "This is a development installation.", "style": "info"},
 }

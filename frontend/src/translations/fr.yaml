@@ -34,6 +34,7 @@ App:
 
     thisInstallation: Cette installation
     privacyPolicy: Politique de confidentialité
+    terms: Modalités d'utilisation
     imprint: Impression
     version: Version v{{apiVersion}}
     versionLoading: Téléchargement de la version...
@@ -232,7 +233,7 @@ SettingsPage:
       Ici vous trouvez votre clé API, pour l'utilisation dans le OpenBikeSensor.
       Vous pouvez la copier et coller dans l'interface de configuration de votre
       capteur pour permettre le le téléchargement direct depuis le dispositif.
-      
+
       Veuillez protéger votre clé API soigneusement car elle permet un contrôle
       total sur votre compte.
     urlDescription: |
@@ -330,15 +331,15 @@ TrackEditor:
       travaillez ou séjournez fréquemment. Votre appareil d'enregistrement peut disposer
       de paramètres de confidentialité utiles pour ne pas enregistrer les données de
       géolocalisation à proximité de ces lieux.
-      
+
       À l'avenir, ce site vous permettra d'expurger les données sensibles relatives
       à la vie privée dans les enregistrements, à la fois manuellement et automatiquement.
       D'ici là, vous devrez compter sur les fonctionnalités de votre appareil d'enregistrement,
       ou expurger manuellement vos fichiers avant de les télécharger.
-      
+
       Après avoir coché cette case, vos données deviennent essentiellement publiques.
       Vous comprenez que nous ne pouvons pas contrôler qui télécharge potentiellement
       ces données et et en conserve une copie, même si vous les supprimez de votre compte
       ou les rendez anonymes plus tard.
-      
+
       **Utilisation à vos risques et périls.**

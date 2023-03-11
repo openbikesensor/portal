@@ -17,6 +17,7 @@ export interface Config {
   obsMapSource?: MapSource;
   imprintUrl?: string;
   privacyPolicyUrl?: string;
+  termsUrl?: string;
   banner?: {
     text: string;
     style?: "warning" | "info";

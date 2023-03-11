@@ -29,6 +29,7 @@ App:
 
     thisInstallation: Diese Installation
     privacyPolicy: Datenschutz
+    terms: Nutzungsbedingungen
     imprint: Impressum
     version: Version v{{apiVersion}}
     versionLoading: Version lädt...
