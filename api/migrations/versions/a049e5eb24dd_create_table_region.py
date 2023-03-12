@@ -13,7 +13,7 @@ from migrations.utils import dbtype
 
 # revision identifiers, used by Alembic.
 revision = "a049e5eb24dd"
-down_revision = "a9627f63fbed"
+down_revision = "99a3d2eb08f9"
 branch_labels = None
 depends_on = None
 
