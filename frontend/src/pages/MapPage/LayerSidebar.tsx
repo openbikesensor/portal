@@ -72,12 +72,12 @@ function LayerSidebar({
             onChange={() => setMapConfigFlag('obsRegions.show', !showRegions)}
           />
           <label htmlFor="obsRegions.show">
-            <Header as="h4">Regions</Header>
+            <Header as="h4">{t('MapPage.sidebar.obsRegions.title')}</Header>
           </label>
         </List.Item>
         {showRegions && (
           <>
-            <List.Item>Color regions based on event count</List.Item>
+            <List.Item>{t('MapPage.sidebar.obsRegions.colorByEventCount')}</List.Item>
             <List.Item>
               <ColorMapLegend
                 twoTicks

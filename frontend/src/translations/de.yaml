@@ -158,6 +158,10 @@ MapPage:
     obsEvents:
       title: Überholvorgänge
 
+    obsRegions:
+      title: Regionen
+      colorByEventCount: Regionen eingefärbt nach Anzahl Überholungen
+
     filters:
       title: Filter
       needsLogin: Filter sind ohne Login nicht verfügbar.
@@ -202,6 +206,10 @@ MapPage:
       southWest: südwestwärts
       west: westwärts
       northWest: nordwestwärts
+
+  regionInfo:
+    unnamedRegion: Unbenannte Region
+    eventCount: Anzahl Überholungen
 
 SettingsPage:
   title: Einstellungen
@@ -343,3 +351,8 @@ TrackEditor:
       vorhanden bleiben.
 
       **Nutze diese Funktion mit Bedacht und auf dein eigenes Risiko.**
+
+RegionStats:
+  title: Top-Regionen
+  regionName: Region
+  eventCount: Anzahl Überholungen

@@ -164,6 +164,10 @@ MapPage:
     obsEvents:
       title: Points d'événement
 
+    obsRegions:
+      title: Régions
+      colorByEventCount: Couleurs des régions sont basées sur le nombre d'événements
+
     filters:
       title: Filtres
       needsLogin: Aucun filtre disponible sans être connecté.
@@ -207,6 +211,10 @@ MapPage:
       southWest: Sud-Ouet
       west: Ouest
       northWest: Nord-Ouest
+
+  regionInfo:
+    unnamedRegion: Région sans nom
+    eventCount: Nombre de dépassements
 
 SettingsPage:
   title: Paramètres
@@ -343,3 +351,8 @@ TrackEditor:
       ou les rendez anonymes plus tard.
 
       **Utilisation à vos risques et périls.**
+
+RegionStats:
+  title: Top régions
+  regionName: Nom de la région
+  eventCount: Nombre de dépassements
