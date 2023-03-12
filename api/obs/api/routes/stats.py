@@ -4,12 +4,12 @@ from typing import Optional
 from operator import and_
 from functools import reduce
 
-from sqlalchemy import select, func
+from sqlalchemy import select, func, desc
 
 from sanic.response import json
 
 from obs.api.app import api
-from obs.api.db import Track, OvertakingEvent, User
+from obs.api.db import Track, OvertakingEvent, User, Region
 from obs.api.utils import round_to
 
 
@@ -167,3 +167,36 @@ async def stats(req):
 #     });
 #   }),
 # );
+
+
+@api.route("/stats/regions")
+async def stats(req):
+    query = (
+        select(
+            [
+                Region.relation_id.label("id"),
+                Region.name,
+                func.count(OvertakingEvent.id).label("overtaking_event_count"),
+            ]
+        )
+        .select_from(Region)
+        .join(
+            OvertakingEvent,
+            func.ST_Within(
+                func.ST_Transform(OvertakingEvent.geometry, 3857), Region.geometry
+            ),
+        )
+        .where(Region.admin_level == 6)
+        .group_by(
+            Region.relation_id,
+            Region.name,
+            Region.relation_id,
+            Region.admin_level,
+            Region.geometry,
+        )
+        .having(func.count(OvertakingEvent.id) > 0)
+        .order_by(desc("overtaking_event_count"))
+    )
+
+    regions = list(map(dict, (await req.ctx.db.execute(query)).all()))
+    return json(regions)

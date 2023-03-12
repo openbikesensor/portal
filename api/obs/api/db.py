@@ -432,6 +432,16 @@ class Comment(Base):
         }
 
 
+class Region(Base):
+    __tablename__ = "region"
+
+    relation_id = Column(BIGINT, primary_key=True, index=True)
+    name = Column(String)
+    geometry = Column(Geometry)
+    admin_level = Column(Integer)
+    tags = Column(HSTORE)
+
+
 Comment.author = relationship("User", back_populates="authored_comments")
 User.authored_comments = relationship(
     "Comment",
