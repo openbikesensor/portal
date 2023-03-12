@@ -23,6 +23,7 @@ setup(
         "sqlalchemy[asyncio]~=1.4.25",
         "asyncpg~=0.24.0",
         "alembic~=1.7.7",
+        "stream-zip~=0.0.50",
     ],
     entry_points={
         "console_scripts": [

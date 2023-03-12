@@ -1,11 +1,12 @@
-export {default as ExportPage} from './ExportPage'
-export {default as HomePage} from './HomePage'
-export {default as LoginRedirectPage} from './LoginRedirectPage'
-export {default as LogoutPage} from './LogoutPage'
-export {default as MapPage} from './MapPage'
-export {default as NotFoundPage} from './NotFoundPage'
-export {default as SettingsPage} from './SettingsPage'
-export {default as TrackEditor} from './TrackEditor'
-export {default as TrackPage} from './TrackPage'
-export {default as TracksPage} from './TracksPage'
-export {default as UploadPage} from './UploadPage'
+export { default as ExportPage } from "./ExportPage";
+export { default as HomePage } from "./HomePage";
+export { default as LoginRedirectPage } from "./LoginRedirectPage";
+export { default as LogoutPage } from "./LogoutPage";
+export { default as MapPage } from "./MapPage";
+export { default as NotFoundPage } from "./NotFoundPage";
+export { default as SettingsPage } from "./SettingsPage";
+export { default as TrackEditor } from "./TrackEditor";
+export { default as TrackPage } from "./TrackPage";
+export { default as TracksPage } from "./TracksPage";
+export { default as MyTracksPage } from "./MyTracksPage";
+export { default as UploadPage } from "./UploadPage";

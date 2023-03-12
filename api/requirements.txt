@@ -11,3 +11,4 @@ sqlalchemy[asyncio]~=1.4.39 <2.0
 asyncpg~=0.24.0
 pyshp~=2.3.1
 alembic~=1.7.7
+stream-zip~=0.0.50

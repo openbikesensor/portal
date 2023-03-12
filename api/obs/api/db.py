@@ -221,6 +221,12 @@ class Track(Base):
         Integer, ForeignKey("user.id", ondelete="CASCADE"), nullable=False
     )
 
+    user_device_id = Column(
+        Integer,
+        ForeignKey("user_device.id", ondelete="RESTRICT"),
+        nullable=True,
+    )
+
     # Statistics... maybe we'll drop some of this if we can easily compute them from SQL
     recorded_at = Column(DateTime)
     recorded_until = Column(DateTime)
@@ -253,6 +259,7 @@ class Track(Base):
         if for_user_id is not None and for_user_id == self.author_id:
             result["uploadedByUserAgent"] = self.uploaded_by_user_agent
             result["originalFileName"] = self.original_file_name
+            result["userDeviceId"] = self.user_device_id
 
         if self.author:
             result["author"] = self.author.to_dict(for_user_id=for_user_id)
@@ -409,6 +416,28 @@ class User(Base):
         self.username = new_name
 
 
+class UserDevice(Base):
+    __tablename__ = "user_device"
+    id = Column(Integer, autoincrement=True, primary_key=True)
+    user_id = Column(Integer, ForeignKey("user.id", ondelete="CASCADE"))
+    identifier = Column(String, nullable=False)
+    display_name = Column(String, nullable=True)
+
+    __table_args__ = (
+        Index("user_id_identifier", "user_id", "identifier", unique=True),
+    )
+
+    def to_dict(self, for_user_id=None):
+        if for_user_id != self.user_id:
+            return {}
+
+        return {
+            "id": self.id,
+            "identifier": self.identifier,
+            "displayName": self.display_name,
+        }
+
+
 class Comment(Base):
     __tablename__ = "comment"
     id = Column(Integer, autoincrement=True, primary_key=True)
@@ -466,6 +495,14 @@ Track.overtaking_events = relationship(
     order_by=OvertakingEvent.time,
     back_populates="track",
     passive_deletes=True,
+)
+
+Track.user_device = relationship("UserDevice", back_populates="tracks")
+UserDevice.tracks = relationship(
+    "Track",
+    order_by=Track.created_at,
+    back_populates="user_device",
+    passive_deletes=False,
 )
 
 

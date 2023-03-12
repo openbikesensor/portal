@@ -236,7 +236,7 @@ SettingsPage:
       label: URL d'avatar
 
   apiKey:
-    title: MA clé d'API
+    title: Ma clé d'API
     description: |
       Ici vous trouvez votre clé API, pour l'utilisation dans le OpenBikeSensor.
       Vous pouvez la copier et coller dans l'interface de configuration de votre
@@ -245,10 +245,10 @@ SettingsPage:
       Veuillez protéger votre clé API soigneusement car elle permet un contrôle
       total sur votre compte.
     urlDescription: |
-      L'URL de l'API doit être définie comme suit :
+      L'URL de l'API doit être définie comme suit:
     generateDescription: |
       Vous pouvez générer une nouvelle clé API ici, qui invalidera l'ancienne,
-      déconnectant de votre compte tous les appareils sur lesquels vous l'avez utilisée..
+      déconnectant de votre compte tous les appareils sur lesquels vous l'avez utilisée.
 
     key:
       label: Clé API Personnel
@@ -260,6 +260,10 @@ SettingsPage:
 
     generate: Générer une nouvelle clé API
 
+  devices:
+    title: Appareils
+    identifier: Identifiant
+    alias: Alias
 
 TrackPage:
   downloadFailed: Le téléchargement a échoué
