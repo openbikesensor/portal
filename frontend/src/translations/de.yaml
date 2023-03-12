@@ -261,6 +261,11 @@ SettingsPage:
   stats:
     title: Statistik
 
+  devices:
+    title: Geräte
+    identifier: Bezeichner
+    alias: Anzeigename
+
 TrackPage:
   downloadFailed: Download fehlgeschlagen
   downloadError: Diese Fahrt wurde vermutlich nicht korrekt importiert, oder in letzter Zeit nicht aktualisiert. Bitte frage den Administrator um Hilfe mit diesem Problem.

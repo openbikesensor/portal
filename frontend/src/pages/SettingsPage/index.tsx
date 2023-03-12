@@ -11,6 +11,7 @@ import api from "api";
 import ApiKeySettings from "./ApiKeySettings";
 
 import UserSettingsForm from "./UserSettingsForm";
+import DeviceList from "./DeviceList";
 
 const SettingsPage = connect((state) => ({ login: state.login }), { setLogin })(
   function SettingsPage({ login, setLogin }) {
@@ -53,6 +54,11 @@ const SettingsPage = connect((state) => ({ login: state.login }), { setLogin })(
             {
               menuItem: t("SettingsPage.stats.title"),
               render: () => <Stats user={login.id} />,
+            },
+
+            {
+              menuItem: t("SettingsPage.devices.title"),
+              render: () => <DeviceList />,
             },
           ]}
         />

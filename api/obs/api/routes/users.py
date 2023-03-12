@@ -1,8 +1,8 @@
 import logging
 
 from sanic.response import json
-from sanic.exceptions import InvalidUsage, Forbidden
-from sqlalchemy import select
+from sanic.exceptions import InvalidUsage, Forbidden, NotFound
+from sqlalchemy import and_, select
 
 from obs.api.app import api, require_auth
 from obs.api.db import UserDevice
@@ -44,6 +44,32 @@ async def get_user_devices(req):
     devices = (await req.ctx.db.execute(query)).scalars()
 
     return json([device.to_dict(req.ctx.user.id) for device in devices])
+
+
+@api.put("/user/devices/<device_id:int>")
+async def put_user_device(req, device_id):
+    if not req.ctx.user:
+        raise Forbidden()
+
+    body = req.json
+
+    query = (
+        select(UserDevice)
+        .where(and_(UserDevice.user_id == req.ctx.user.id, UserDevice.id == device_id))
+        .limit(1)
+    )
+
+    device = (await req.ctx.db.execute(query)).scalar()
+
+    if device is None:
+        raise NotFound()
+
+    new_name = body.get("displayName", "").strip()
+    if new_name and device.display_name != new_name:
+        device.display_name = new_name
+        await req.ctx.db.commit()
+
+    return json(device.to_dict())
 
 
 @api.put("/user")

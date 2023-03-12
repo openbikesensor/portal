@@ -263,6 +263,11 @@ SettingsPage:
   stats:
     title: Statistics
 
+  devices:
+    title: Devices
+    identifier: Identifier
+    alias: Alias
+
 TrackPage:
   downloadFailed: Download failed
   downloadError: The track probably has not been imported correctly or recently enough. Please ask your administrator for assistance.
