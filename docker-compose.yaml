@@ -16,7 +16,7 @@ services:
     ports:
       - '5432:5432'
     volumes:
-    - ./local/postgres/data:/var/lib/postgresql/data
+      - ./local/postgres/data:/var/lib/postgresql/data
 
   api:
     image: openbikesensor-api
@@ -87,17 +87,21 @@ services:
       - start
 
   keycloak:
-    image: jboss/keycloak
+    image: quay.io/keycloak/keycloak:20.0
     ports:
       - 3003:8080
     depends_on:
       - postgres
     environment:
-      KEYCLOAK_USER: admin
-      KEYCLOAK_PASSWORD: admin
-      KEYCLOAK_FRONTEND_URL: http://localhost:3003/auth/
-      DB_VENDOR: postgres
-      DB_ADDR: postgres
-      DB_DATABASE: obs
-      DB_USER: obs
-      DB_PASSWORD: obs
+      KC_HOSTNAME: localhost
+      KC_DB_URL: jdbc:postgresql://localhost:5432/obs
+      KC_DB: obs
+      KC_DB_USERNAME: obs
+      KC_DB_PASSWORD: obs
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+    command:
+      - --verbose
+      - start-dev
+      - --http-relative-path
+      - /auth
