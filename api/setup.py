@@ -16,7 +16,7 @@ setup(
         "sanic-session~=0.8.0",
         "sanic-cors~=2.0.1",
         "python-slugify>=5.0.2,<6.2.0",
-        "motor>=2.5.1,<3.1.0",
+        "motor>=2.5.1,<3.2.0",
         "pyyaml<6",
         "sqlparse~=0.4.2",
         "openmaptiles-tools",  # install from git
