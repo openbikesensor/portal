@@ -34,6 +34,10 @@ node_modules
 # Optional REPL history
 .node_repl_history
 
+# Python bytecode
+__pycache__/
+
+# JetBrains IDE
 .idea
 
 # Storage place for local files, such as developer database etc.
