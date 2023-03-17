@@ -102,35 +102,35 @@ Then clone the repository as described above.
 ### Configure Keycloak
 
 
-Login will not be possible until you configure the keycloak realm correctly. Boot your keycloak instance:
+Login will not be possible until you configure the keycloak realm correctly. Start your keycloak instance:
 
 ```bash
 docker-compose up -d keycloak
 ```
 
-Now navigate to http://localhost:3003/ and follow these steps:
+Now navigate to http://localhost:3003/auth and follow these steps:
 
-- Click *Administration Console* and log in with `admin` / `admin`.
-- Hover over the realm name on the top left and click *Add realm*.
+- Click *Administration Console* and log in with `admin`/`admin`.
+- Click on drop-down "master" on the top left and click *Create Realm*.
 - Name the Realm `obs-dev` (spelling matters) and create it.
-- In the sidebar, navigate to *Configure* &rarr; *Clients*, and click *Create* on the top right.
-- *Client ID* should be `portal`. Click *Save*.
-- In the Tab *Settings*, edit the new client's *Access Type* to *confidential*
-  and enter as *Valid Redirect URIs*: `http://localhost:3000/login/redirect`,
-  then *Save*
-- Under *Credentials*, copy the *Secret*. Create a file at `api/config.overrides.py` with the secret in it:
+- In the sidebar, navigate to *Manage* &rarr; *Clients*, and click *Create client*
+- "General Settings": set *Client ID* as `portal`, click on *Next*
+- "Capability config": switch *Client authentication* on, leave all other as-is, click on *Next*
+- "Login settings": *Valid Redirect URIs*: `http://localhost:3000/login/redirect`, click on *Save*
+- On tab *Credentials*, copy the *Client Secret*. Create a file `api/config.overrides.py` and store
+  the secret in it as:
   
   ```python
-  KEYCLOAK_CLIENT_SECRET="your secret here"
+  KEYCLOAK_CLIENT_SECRET="your client secret"
   ```
   
-  You can use this file in development mode to change settings without editing
-  the git-controlled default file at `api/config.dev.py`. Options in this file
-  take precendence.
-- In the sidebar, navigate to *Manage* &rarr; *Users*, and click *Add user* on the top right.
-- Give the user a name (e.g. `test`), leave the rest as-is.
-- Under the tab *Credentials*, choose a new password, and make it
-  non-temporary. Click *Set Password*.
+  > You can use file `api/config.overrides.py` in development mode to change
+  settings without editing the git-tracked default file `api/config.dev.py`.
+  Options in the file `api/config.overrides.py` take precedence.
+
+- In the sidebar, navigate to *Manage* &rarr; *Users*, and click *Create new user*
+- Give the user a name (e.g. `test`), leave the rest as-is, click *Create*
+- Under the tab *Credentials*, click *Set password*, and set *Temporary* to `off`, *Save* the changes
 
 We are going to automate this process. For now, you will have to repeat it
 every time you reset your keycloak settings, which are stored inside the
