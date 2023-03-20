@@ -1,0 +1,296 @@
+:toc:
+:!toc-title:
+:toclevels: 3
+:sectnums: 3
+:doctype: book
+
+= OpenBikeSensor Portal
+
+This repository contains the source code required to run the
+https://openbikesensor.org[OpenBikeSensor] data collection portal. It is
+separated into the components:
+
+* **api**: The backend service, written in Python 3 with https://sanicframework.org[Sanic],
+  https://www.sqlalchemy.org[SQLAlchemy], and a https://www.postgresql.org[PostgreSQL]
+  / https://postgis.net/[PostGIS] database for storage. It also highly depends on
+  https://openmaptiles.org[OpenMapTiles] to generate vector tiles of the data.
+* **frontend**: A https://react.dev[React] single-page application which allows
+  access to the data, provides summaries and visualizations, and lets users
+  adjust settings and manage and publish their tracks.
+
+In the link:docs/architecture.md[Architecture Documentation] you will find further
+details on the components that make up the entire application.
+
+This project follows https://semver.org[semantic versioning]. Refer to
+https://github.com/openbikesensor/portal/issues/44[issue #44] for a description
+of what it means for our project and what is considered the public interface.
+
+== Clone the Project
+
+First of all, you must clone this project. This project uses submodules,
+thus ensure that they are cloned as well:
+
+[source,shell]
+----
+git clone --recursive https://github.com/openbikesensor/portal
+
+# ... or if you forgot the --recursive argument, you can run this in the
+# repository's directory later:
+git submodule update --init --recursive
+----
+
+== Production setup
+
+There is a guide for a deployment, based on Docker in the
+link:deployment[deployment] directory. Lots of non-Docker deployment strategies
+are possible, but they are not officially supported, so please do not expect
+the authors of the software to assist in troubleshooting.
+
+This is a rather complex application, and it is expected that you know the
+basics of deploying a modern web application securely onto a production server.
+We are sorry that we cannot guide you through all the details of that, as we
+just don't have the capacities to do so. Please research the respective topics
+first. If you struggle with application-specific issues, please let us know, we
+might be able to assist with those.
+
+Please note that you will always need to install your own reverse proxy that
+terminates TLS for you and handles certificates. We do not support TLS directly
+in the application; instead, please use this preferred method.
+
+=== Migrating (Production)
+
+Migrations are done with
+https://alembic.sqlalchemy.org/en/latest/index.html[Alembic], please refer to
+its documentation for help. Most of the time, running this command will do all
+the migrations you need:
+
+[source,shell]
+----
+docker-compose run --rm api tools/upgrade.py
+----
+
+This command is equivalent to running migrations through *alembic*, then
+regenerating the SQL functions that compute vector tiles directly in the
+database:
+
+[source,shell]
+----
+# equivalent to the above command, you don't usually run these
+docker-compose run --rm api alembic upgrade head
+docker-compose run --rm api tools/prepare_sql_tiles
+----
+
+=== Upgrading from v0.2 to v0.3
+
+After v0.2 we switched the underlying technology of the API and the database.
+We now have no more MongoDB; everything has moved to the PostgreSQL installation.
+For development setups, it is advised to just reset the whole state (remove the
+`local` folder) and start fresh. For production upgrades, please follow the
+relevant section in link:UPGRADING.md[UPGRADING.md].
+
+
+== Development setup
+
+We've moved the whole development setup into Docker to make it easy for
+everyone to get involved.
+
+=== Install docker
+
+Please install https://docs.docker.com/engine/install[Docker Engine] as well as
+https://docs.docker.com/compose/install[Docker Compose] onto your machine.
+
+Then clone the repository as described before.
+
+=== Configure Keycloak
+
+Login will not be possible until you configure the keycloak realm correctly.
+Start your keycloak instance:
+
+[source,shell]
+----
+docker-compose up -d keycloak
+----
+
+NOTE: Depending on the Docker Engine version, you might be able to run
+`docker compose` instead of `docker-compose`.
+
+Navigate to http://localhost:3003/auth and follow these steps:
+
+- Click on *Administration Console* and sign-in with username: `admin` / password: `admin`.
+- Click on the drop-down in the upper left corner (it shows _master_), click on *Create Realm*.
+- Enter `obs-dev` (spelling matters) as *Realm name*, click on *Create*.
+- In the sidebar, navigate to *Manage* &rarr; *Clients*, click on *Create client*.
+- _(1) General Settings_: Enter `portal` as *Client ID*, click on *Next*.
+- _(2) Capability config_: Switch *Client authentication* on, leave all other
+  settings as they are, click on *Next*.
+- _(3) Login settings_: As *Valid Redirect URIs* enter
+  `\http://localhost:3000/login/redirect`, click on *Save*.
+- Click on tab *Credentials*, copy the *Client Secret* to the clipboard.
+- Create a file `api/config.overrides.py` and store the secret in it as:
+
+    KEYCLOAK_CLIENT_SECRET = "your client secret"
+
+
+NOTE: You can use the file `api/config.overrides.py` in development mode to change
+  settings without editing the git-tracked default file `api/config.dev.py`.
+  Options in the file `api/config.overrides.py` take precedence.
+
+- In the sidebar, navigate to *Manage* &rarr; *Users*, click on *Create new user*.
+- Give the user a name, e.g. `test`, set the switch *Email verified* to `yes`,
+  leave all other settings as they are, click on *Create*.
+- On tab *Credentials*, click *Set password*, enter a password and set
+  *Temporary* to `off`, click on *Save*.
+
+We are going to automate this process. For now, you will have to repeat it
+every time you reset your Keycloak settings, which are stored inside the
+PostgreSQL as well. Luckily, the script `api/tools/reset_database.py` does
+*not* affect the state of the Keycloak database, so this should be rather rare.
+
+=== Prepare database
+
+Start the PostgreSQL database:
+
+[source,shell]
+----
+docker-compose up -d postgres
+----
+
+The first time you start `postgres`, a lot of extensions will be installed. This
+might take a while, so check the logs of the docker container until you see:
+
+----
+PostgreSQL init process complete; ready for start up.
+----
+
+If you don't wait long enough, the following commands might fail. In this case,
+you can always stop the container, remove the data directory (`local/postgres/`)
+and restart the process.
+
+Next, run the upgrade command to generate the database schema:
+
+[source,shell]
+----
+docker-compose run --rm api tools/upgrade.py
+----
+
+You will need to re-run this command after updates, to migrate the database and
+(re-)create the functions in the SQL database that are used when generating
+vector tiles.
+
+You should also import OpenStreetMap data now, see below for instructions.
+
+=== Boot the application
+
+Now you can run the remaining parts of the application:
+
+[source,shell]
+----
+docker-compose up -d --build api worker frontend
+----
+
+Your frontend should be running at http://localhost:3001 and the API at
+http://localhost:3000 - but you probably only need to access the frontend for
+testing.
+
+=== Migrating (Development)
+
+Migrations are done with https://alembic.sqlalchemy.org/en/latest/index.html[Alembic],
+please refer to its documentation for help. Most of the time, running this
+command will do all the migrations you need:
+
+[source,shell]
+----
+docker-compose run --rm api alembic upgrade head
+----
+
+== Import OpenStreetMap data
+
+NOTE: This step may be skipped if you are using link:docs/lean-mode.md[Lean mode].
+
+You need to import road information from OpenStreetMap for the portal to work.
+This information is stored in your PostgreSQL database and used when processing
+tracks (instead of querying the Overpass API), as well as for vector tile
+generation. The process applies to both development and production setups. For
+development, you should choose a small area for testing, such as your local
+county or city, to keep the amount of data small. For production use you have
+to import the whole region you are serving.
+
+* Install https://osm2pgsql.org/doc/install.html[osm2pgsql].
+* Download the area(s) you would like to import from https://download.geofabrik.de[GeoFabrik].
+* Import each file like this:
+
+  osm2pgsql --create --hstore --style roads_import.lua --output=flex \
+    --host=localhost --database=obs --username=obs --password \
+    path/to/downloaded/myarea-latest.osm.pbf
+
+You might need to adjust the host, database and username to your setup, and also
+provide the correct password when queried. For the development-setup the password
+is `obs`. For production, you might need to expose the containers port and/or
+create a TCP tunnel, for example with SSH, such that you can run the import from
+your local host and write to the remote database.
+
+The import process should take a few seconds to minutes, depending on the area
+size. A whole country might even take one or more hours. You should probably
+not try to import `planet.osm.pbf`.
+
+You can run the process multiple times, with the same or different area files,
+to import or update the data. However, for this to work, the actual
+https://osm2pgsql.org/doc/manual.html#running-osm2pgsql[command
+line arguments] are a bit different each time, including when first importing,
+and the disk space required is much higher.
+
+Refer to the documentation of `osm2pgsql` for assistance. We are using the "flex
+mode", the provided script `roads_import.lua` describes the transformations
+and extractions to perform on the original data.
+
+== Troubleshooting
+
+If any step of the instructions does not work for you, please open a GitHub
+issue and describe your problem, as it is important to us that onboarding is
+super easy :)
+
+=== Connecting to the PostgreSQL database
+
+If you need to connect to your development PostgreSQL database, you should
+install `psql` locally. The port `5432` is already forwarded, so you can connect
+with:
+
+[source,shell]
+----
+psql --host=localhost --username=obs --dbname=obs
+----
+
+The password is `obs` as well.
+
+== License
+
+----
+Copyright (C) 2020-2023 OpenBikeSensor Contributors
+Contact: https://openbikesensor.org
+
+The OpenBikeSensor Portal is free software: you can redistribute it
+and/or modify it under the terms of the GNU Lesser General Public License
+as published by the Free Software Foundation, either version 3 of the
+License, or (at your option) any later version.
+
+The OpenBikeSensor Portal is distributed in the hope that it will be
+useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser
+General Public License for more details.
+
+You should have received a copy of the GNU Lesser General Public License
+along with the OpenBikeSensor Portal. If not, see https://www.gnu.org/licenses.
+----
+
+See also link:COPYING[COPYING] and link:COPYING.LESSER[COPYING.LESSER].
+
+The above does not apply to the files listed below, their respective licenses
+are included in a file next to each of them, named accordingly:
+
+* `frontend/src/mapstyles/bright.json`
+* `frontend/src/mapstyles/positron.json`
+
+There are lots of other licenses to consider when using this software,
+especially in conjunction with imported data and other tools. Check out the
+link:docs/licenses.md[Licenses Documentation] for an (unofficial) overview of the
+license landscape surrounding this project.
