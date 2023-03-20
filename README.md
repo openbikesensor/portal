@@ -129,7 +129,7 @@ Now navigate to http://localhost:3003/auth and follow these steps:
   Options in the file `api/config.overrides.py` take precedence.
 
 - In the sidebar, navigate to *Manage* &rarr; *Users*, and click *Create new user*
-- Give the user a name (e.g. `test`), leave the rest as-is, click *Create*
+- Give the user a name, e.g. `test`, set the switch *Email verified* to `yes`, leave all other settings as they are, click *Create*
 - Under the tab *Credentials*, click *Set password*, and set *Temporary* to `off`, *Save* the changes
 
 We are going to automate this process. For now, you will have to repeat it
