@@ -220,12 +220,12 @@ to import the whole region you are serving.
 * Import each file like this:
 
   osm2pgsql --create --hstore --style roads_import.lua --output=flex \
-    --host=localhost --database=obs --username=obs --password \
+    --host=localhost --database=postgres --username=keycloak --password \
     path/to/downloaded/myarea-latest.osm.pbf
 
 You might need to adjust the host, database and username to your setup, and also
 provide the correct password when queried. For the development-setup the password
-is `obs`. For production, you might need to expose the containers port and/or
+is `password`. For production, you might need to expose the containers port and/or
 create a TCP tunnel, for example with SSH, such that you can run the import from
 your local host and write to the remote database.
 
@@ -257,10 +257,10 @@ with:
 
 [source,shell]
 ----
-psql --host=localhost --username=obs --dbname=obs
+psql --host=localhost --username=keycloak --dbname=postgres
 ----
 
-The password is `obs` as well.
+The password is `password`.
 
 == License
 
