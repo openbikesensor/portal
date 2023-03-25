@@ -20,6 +20,7 @@ RETURNS TABLE(
     WHERE
       zoom_level >= 4 AND
       zoom_level <= 12 AND
+      region.admin_level = 6 AND
       ST_Transform(region.geometry, 3857) && bbox
     GROUP BY region.relation_id, region.name, region.geometry, region.admin_level
 
