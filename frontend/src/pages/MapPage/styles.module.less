@@ -12,6 +12,15 @@
   }
 }
 
+@media @mobile {
+  .mapContainer {
+    height: calc(100vh - @menuHeightMobile);
+    &.hasBanner {
+      height: calc(100vh - @menuHeightMobile - 50px);
+    }
+  }
+}
+
 .mapSidebar {
   width: 24rem;
   background: white;
@@ -32,13 +41,14 @@
   overflow: auto;
 }
 
-@media screen and (max-width: 36rem) {
+@media @mobile {
   .mapInfoBox {
-    right: 0px;
-    left: 0px;
-    top: 0px;
+    right: 5px;
+    left: 5px;
+    top: 5px;
+    bottom: 5px;
     max-width: 36rem;
-    width: 100%;
+    width: calc(100% - 5px);
     overflow: auto;
   }
 }

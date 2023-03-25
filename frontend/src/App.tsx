@@ -77,7 +77,7 @@ const App = connect((state) => ({login: state.login}))(function App({login}) {
         <title>OpenBikeSensor Portal</title>
       </Helmet>
       {config?.banner && <Banner {...config.banner} />}
-      <Menu className={styles.menu}>
+      <Menu className={styles.menu} stackable>
         <Container>
           <Link to="/" component={MenuItemForLink} header className={styles.pageTitle}>
             OpenBikeSensor
