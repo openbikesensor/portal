@@ -35,7 +35,7 @@ from sqlalchemy import (
     text,
     literal,
 )
-from sqlalchemy.dialects.postgresql import HSTORE, UUID
+from sqlalchemy.dialects.postgresql import UUID
 
 
 log = logging.getLogger(__name__)
@@ -475,7 +475,6 @@ class Region(Base):
     name = Column(String)
     geometry = Column(Geometry)
     admin_level = Column(Integer)
-    tags = Column(HSTORE)
 
 
 Comment.author = relationship("User", back_populates="authored_comments")
