@@ -21,7 +21,7 @@ RETURNS TABLE(
       zoom_level >= 4 AND
       zoom_level <= 12 AND
       region.admin_level = 6 AND
-      ST_Transform(region.geometry, 3857) && bbox
+      region.geometry && bbox
     GROUP BY region.relation_id, region.name, region.geometry, region.admin_level
 
 $$ LANGUAGE SQL IMMUTABLE;
