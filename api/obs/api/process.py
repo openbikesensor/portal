@@ -25,7 +25,7 @@ from obs.face.filter import (
     RequiredFieldsFilter,
 )
 
-from obs.face.osm import DataSource, DatabaseTileSource, OverpassTileSource
+from obs.face.osm import DataSource, DatabaseTileSource
 
 from obs.api.db import OvertakingEvent, RoadUsage, Track, UserDevice, make_session
 from obs.api.app import app
@@ -39,12 +39,7 @@ def get_data_source():
     mode, the OverpassTileSource is used to fetch data on demand. In normal
     mode, the roads database is used.
     """
-    if app.config.LEAN_MODE:
-        tile_source = OverpassTileSource(cache_dir=app.config.OBS_FACE_CACHE_DIR)
-    else:
-        tile_source = DatabaseTileSource()
-
-    return DataSource(tile_source)
+    return DataSource(DatabaseTileSource())
 
 
 async def process_tracks_loop(delay):

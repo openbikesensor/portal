@@ -4,7 +4,6 @@ DEBUG = True
 VERBOSE = False
 AUTO_RELOAD = True
 SECRET = "!!!!!!!!!!!!CHANGE ME!!!!!!!!!!!!"
-LEAN_MODE = False
 POSTGRES_URL = "postgresql+asyncpg://obs:obs@postgres/obs"
 POSTGRES_POOL_SIZE = 20
 POSTGRES_MAX_OVERFLOW = 2 * POSTGRES_POOL_SIZE
