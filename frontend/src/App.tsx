@@ -95,7 +95,7 @@ const App = connect((state) => ({ login: state.login }))(function App({
         <title>OpenBikeSensor Portal</title>
       </Helmet>
       {config?.banner && <Banner {...config.banner} />}
-      <Menu className={styles.menu}>
+      <Menu className={styles.menu} stackable>
         <Container>
           <Link
             to="/"

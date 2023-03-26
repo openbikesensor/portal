@@ -48,7 +48,10 @@
 @media @mobile {
   .mapContainer {
     height: auto;
-    min-height: calc(100vh - @menuHeight);
+    min-height: calc(100vh - @menuHeightMobile);
+    &.hasBanner {
+      height: calc(100vh - @menuHeightMobile - 50px);
+    }
     flex-direction: column;
   }
 
