@@ -3,7 +3,7 @@
 This document describes the general steps to upgrade between major changes.
 Simple migrations, e.g. for adding schema changes, are not documented
 explicitly. Their general usage is described in the [README](./README.md) (for
-development) and [deployment/README.md](deployment/README.md) (for production).
+development) and [docs/production-deployment.md](docs/production-deployment.md) (for production).
 
 ## 0.7.0
 
@@ -57,7 +57,7 @@ You can, but do not have to, reimport all tracks. This will generate a GPX file
 for each track and allow the users to download those. If a GPX file has not yet
 been created, the download will fail. To reimport all tracks, log in to your
 PostgreSQL database (instructions are in [README.md](./README.md) for
-development and [deployment/README.md](./deployment/README.md) for production)
+development and [docs/production-deployment.md](./docs/production-deployment.md) for production)
 and run:
 
 ```sql
@@ -77,7 +77,7 @@ Make sure your worker is running to process the queue.
   `POSTGRES_MAX_OVERFLOW`. Check the example config for sane default values.
 * Re-run `tools/prepare_sql_tiles.py` again (see README)
 * It has been made easier to import OSM data, check
-  [deployment/README.md](deployment/README.md) for the sections "Download
+  [docs/production-deployment.md](./docs/production-deployment.md) for the sections "Download
   OpenStreetMap maps" and "Import OpenStreetMap data". You can now download
   multiple .pbf files and then import them at once, using the docker image
   built with the `Dockerfile`. Alternatively, you can choose to enable [lean
@@ -132,5 +132,5 @@ Make sure your worker is running to process the queue.
   `export/users.json` into your realm, it will re-add all the users from the
   old installation. You should delete the file and `export/` folder afterwards.
 * Start `portal`.
-* Consider configuring a worker service. See [deployment/README.md](deployment/README.md).
+* Consider configuring a worker service. See [docs/production-deployment.md](./docs/production-deployment.md).
 
