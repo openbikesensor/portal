@@ -297,7 +297,7 @@ You should see smth. like:
 
 When you click on *My Tracks*, you should see it on a map.
 
-#### Configre the map position
+#### Configure the map position
 
 Open the tab *Map** an zoom to the desired position. The URL contains the corresponding GPS position,
 for example:
@@ -317,10 +317,6 @@ docker-compose restart portal
 
 The tab *Map* should be the selected map section now.
 When you uploaded some tracks, you map should show a colors overlay on the streets.
-
-#### Verify osm2pgsql
-
-If you zoom in the tab *Map* at the imported region/city, you should see dark grey lines on the streets.
 
 ## Miscellaneous
 
