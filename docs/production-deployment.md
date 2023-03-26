@@ -55,12 +55,7 @@ git clone --recursive https://github.com/openbikesensor/portal source/
 ```bash
 mkdir -p /opt/openbikesensor/config
 cd /opt/openbikesensor/
-
-cp source/deployment/examples/docker-compose.yaml docker-compose.yaml
-cp source/deployment/examples/.env .env
-
-cp source/deployment/examples/traefik.toml config/traefik.toml
-cp source/deployment/examples/config.py config/config.py
+cp -r source/deployment/config source/deployment/docker-compose.yaml source/deployment/.env .
 ```
 
 ### Create a Docker network
@@ -224,18 +219,6 @@ docker-compose build portal
 
 *Hint*: This may take up to 10 minutes. In the future, we will provide a prebuild image.
 
-#### Download OpenStreetMap maps
-
-Download the area(s) you would like to import from 
-[GeoFabrik](https://download.geofabrik.de) into `data/pbf`, for example:
-
-```bash
-cd /opt/openbikesensor/
-wget https://download.geofabrik.de/europe/germany/schleswig-holstein-latest.osm.pbf -P data/pbf
-```
-
-*Hint*: Start with a small region/city, since the import can take some hours for huge areas.
-
 #### Prepare database
 
 Run the following scripts to prepare the database:
@@ -248,13 +231,7 @@ For more details, see [README.md](../README.md) under "Prepare database".
 
 #### Import OpenStreetMap data
 
-Run the following script, to import the OSM data:
-
-```
-docker-compose run --rm portal tools/osm2pgsql.sh
-```
-
-For more details. see [README.md](../README.md) under "Import OpenStreetMap data".
+Follow [these instructions](./osm-import.md).
 
 
 #### Configure portal

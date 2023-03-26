@@ -36,10 +36,11 @@ git submodule update --init --recursive
 
 ## Production setup
 
-There is a guide for a deployment based on docker in the
-[deployment](deployment) folder. Lots of non-docker deployment strategy are
-possible, but they are not "officially" supported, so please do not expect the
-authors of the software to assist in troubleshooting. 
+There is a guide for a deployment based on docker at
+[docs/production-deployment.md](docs/production-deployment.md). Lots of
+non-docker deployment strategies are possible, but they are not "officially"
+supported, so please do not expect the authors of the software to assist in
+troubleshooting. 
 
 This is a rather complex application, and it is expected that you know the
 basics of deploying a modern web application securely onto a production server.
@@ -52,7 +53,8 @@ Please note that you will always need to install your own reverse proxy that
 terminates TLS for you and handles certificates. We do not support TLS directly
 in the application, instead, please use this prefered method. 
 
-Upgrading and migrating is descrube
+Upgrading and migrating is described in [UPGRADING.md](./UPGRADING.md) for each
+version.
 
 ### Migrating (Production)
 
@@ -75,18 +77,6 @@ docker-compose run --rm api alembic upgrade head
 docker-compose run --rm api tools/prepare_sql_tiles
 ```
 
-
-docker-compose run --rm api alembic upgrade head
-
-### Upgrading from v0.2 to v0.3
-
-After v0.2 we switched the underlying technology of the API and the database.
-We now have no more MongoDB, instead, everything has moved to the PostgreSQL
-installation. For development setups, it is advised to just reset the whole
-state (remove the `local` folder) and start fresh. For production upgrades,
-please follow the relevant section in [`UPGRADING.md`](./UPGRADING.md).
-
-
 ## Development setup
 
 We've moved the whole development setup into Docker to make it easy for
@@ -100,7 +90,6 @@ Please [install Docker Engine](https://docs.docker.com/engine/install/) as well 
 Then clone the repository as described above.
 
 ### Configure Keycloak
-
 
 Login will not be possible until you configure the keycloak realm correctly. Boot your keycloak instance:
 
