@@ -320,9 +320,7 @@ from .routes import (
     exports,
 )
 
-if not app.config.LEAN_MODE:
-    from .routes import tiles, mapdetails
-
+from .routes import tiles, mapdetails
 from .routes import frontend
 
 

@@ -192,8 +192,6 @@ docker-compose run --rm api alembic upgrade head
 
 ## Import OpenStreetMap data
 
-**Hint:** This step may be skipped if you are using [Lean mode](./docs/lean-mode.md).
-
 You need to import road information from OpenStreetMap for the portal to work.
 This information is stored in your PostgreSQL database and used when processing
 tracks (instead of querying the Overpass API), as well as for vector tile
