@@ -140,6 +140,7 @@ class Road(Base):
     geometry = Column(Geometry)
     directionality = Column(Integer)
     oneway = Column(Boolean)
+    import_group = Column(String)
 
     def to_dict(self):
         return {
@@ -475,6 +476,7 @@ class Region(Base):
     name = Column(String)
     geometry = Column(Geometry)
     admin_level = Column(Integer)
+    import_group = Column(String)
 
 
 Comment.author = relationship("User", back_populates="authored_comments")
