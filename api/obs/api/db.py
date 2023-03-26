@@ -166,6 +166,13 @@ class RoadUsage(Base):
     def __repr__(self):
         return f"<RoadUsage {self.id}>"
 
+    def __hash__(self):
+        return int(self.hex_hash, 16)
+
+    def __eq__(self, other):
+        return self.hex_hash == other.hex_hash
+
+
 
 NOW = text("NOW()")
 
