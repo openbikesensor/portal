@@ -28,7 +28,7 @@ def upgrade():
         sa.Column("name", sa.String),
         sa.Column("geometry", dbtype("GEOMETRY"), index=True),
         sa.Column("directionality", sa.Integer),
-        sa.Column("oenway", sa.Boolean),
+        sa.Column("oneway", sa.Boolean),
     )
 
 
