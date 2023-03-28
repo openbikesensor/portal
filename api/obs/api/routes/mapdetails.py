@@ -82,7 +82,7 @@ async def mapdetails_road(req):
     arrays = numpy.array(arrays).T
 
     if len(arrays) == 0:
-        arrays = numpy.array([[], [], [], []], dtype=numpy.float)
+        arrays = numpy.array([[], [], [], []], dtype=float)
 
     data, mask = arrays[:-1], arrays[-1]
     data = data.astype(numpy.float64)
