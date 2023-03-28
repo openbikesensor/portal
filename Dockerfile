@@ -54,8 +54,6 @@ ADD api/obs /opt/obs/api/obs/
 ADD api/tools /opt/obs/api/tools/
 RUN pip install -e /opt/obs/api/
 
-ADD roads_import.lua /opt/obs/api/tools
-
 COPY --from=frontend-builder /opt/obs/frontend/build /opt/obs/frontend/build
 
 EXPOSE 3000
