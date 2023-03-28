@@ -17,6 +17,11 @@ services:
       - '5432:5432'
     volumes:
       - ./local/postgres/data:/var/lib/postgresql/data
+    healthcheck:
+      test: /usr/bin/pg_isready --username=keycloak --dbname=postgres --quiet --timeout=0
+      interval: 5s
+      timeout: 10s
+      retries: 120
 
   api:
     image: openbikesensor-api
@@ -36,7 +41,6 @@ services:
       - ./api/migrations:/opt/obs/api/migrations
       - ./api/alembic.ini:/opt/obs/api/alembic.ini
     depends_on:
-      - postgres
       - keycloak
     ports:
       - '3000:3000'
@@ -57,7 +61,6 @@ services:
       - ./api/config.overrides.py:/opt/obs/api/config.overrides.py
       - ./local/api-data:/data
     depends_on:
-      - postgres
       - keycloak
     restart: on-failure
     entrypoint:
@@ -91,7 +94,8 @@ services:
     ports:
       - '3003:8080'
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
     environment:
       KC_HOSTNAME: localhost
       KC_DB_URL: jdbc:postgresql://postgres:5432/postgres
