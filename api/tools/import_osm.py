@@ -22,6 +22,9 @@ log = logging.getLogger(__name__)
 ROAD_BUFFER = 1000
 AREA_BUFFER = 100
 
+ROAD_TYPE = b"\x01"
+REGION_TYPE = b"\x02"
+
 
 @dataclass
 class Region:
@@ -40,12 +43,15 @@ class Road:
     oneway: int
     geometry: bytes
 
+data_types = {ROAD_TYPE: Road, REGION_TYPE: Region}
 
-def read_file(filename, type_only=False):
+
+def read_file(filename, only_type: bytes):
     """
     Reads a file iteratively, yielding Road and Region objects as they
     appear. Those may be mixed.
     """
+
     with open(filename, "rb") as f:
         unpacker = msgpack.Unpacker(f)
         try:
@@ -53,11 +59,9 @@ def read_file(filename, type_only=False):
                 type_id = unpacker.unpack()
                 data = unpacker.unpack()
 
-                if type_id == b"\x01":
-                    yield Road(*data)
+                if type_id == only_type:
+                    yield data_types[only_type](*data)
 
-                # elif type_id == b"\x02":
-                #     yield Region(*data)
         except msgpack.OutOfData:
             pass
 
@@ -68,8 +72,11 @@ async def import_osm(connection, filename, import_group=None):
 
     # Pass 1: Find IDs only
     road_ids = []
-    for item in read_file(filename):
+    region_ids = []
+    for item in read_file(filename, only_type=ROAD_TYPE):
         road_ids.append(item.way_id)
+    for item in read_file(filename, only_type=REGION_TYPE):
+        region_ids.append(item.relation_id)
 
     async with connection.cursor() as cursor:
         print(f"Pass 1: Delete previous")
@@ -78,18 +85,23 @@ async def import_osm(connection, filename, import_group=None):
         await cursor.execute(
             "DELETE FROM road WHERE import_group = %s", (import_group,)
         )
+        await cursor.execute(
+            "DELETE FROM region WHERE import_group = %s", (import_group,)
+        )
 
-        print(f"Deleting by ID")
+        print(f"Deleting roads by ID")
         for ids in chunk(road_ids, 10000):
             await cursor.execute("DELETE FROM road WHERE way_id = ANY(%s)", (ids,))
+        print(f"Deleting regions by ID")
+        for ids in chunk(region_ids, 10000):
+            await cursor.execute("DELETE FROM region WHERE relation_id = ANY(%s)", (ids,))
 
         # Pass 2: Import
-        print(f"Pass 2: Import")
-
+        print(f"Pass 2: Import Roads")
         async with cursor.copy(
             "COPY road (way_id, name, zone, directionality, oneway, geometry, import_group) FROM STDIN"
         ) as copy:
-            for item in read_file(filename):
+            for item in read_file(filename, ROAD_TYPE):
                 await copy.write_row(
                     (
                         item.way_id,
@@ -98,6 +110,21 @@ async def import_osm(connection, filename, import_group=None):
                         item.directionality,
                         item.oneway,
                         bytes.hex(item.geometry),
+                        import_group,
+                    )
+                )
+
+        print(f"Pass 2: Import Regions")
+        async with cursor.copy(
+            "COPY region (relation_id, name, geometry, admin_level, import_group) FROM STDIN"
+        ) as copy:
+            for item in read_file(filename, REGION_TYPE):
+                await copy.write_row(
+                    (
+                        item.relation_id,
+                        item.name,
+                        bytes.hex(item.geometry),
+                        item.admin_level,
                         import_group,
                     )
                 )
