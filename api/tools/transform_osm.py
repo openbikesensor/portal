@@ -186,8 +186,9 @@ class OSMHandler(osmium.SimpleHandler):
             return
 
         name = tags.get("name")
-        geometry = bytes.fromhex(wkbfab.create_multipolygon(area))
-
+        geometry = wkb.loads(wkbfab.create_multipolygon(area), hex=True)
+        geometry = transform(project, geometry)
+        geometry = wkb.dumps(geometry)
         self.packer.pack(b"\x02")
         self.packer.pack(
             [
