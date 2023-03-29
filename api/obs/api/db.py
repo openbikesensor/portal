@@ -34,6 +34,7 @@ from sqlalchemy import (
     select,
     text,
     literal,
+    Text
 )
 from sqlalchemy.dialects.postgresql import UUID
 
@@ -107,6 +108,28 @@ class Geometry(UserDefinedType):
         return func.ST_AsGeoJSON(func.ST_Transform(col, 4326), type_=self)
 
 
+class LineString(UserDefinedType):
+    def get_col_spec(self):
+        return "geometry(LineString, 3857)"
+
+    def bind_expression(self, bindvalue):
+        return func.ST_GeomFromGeoJSON(bindvalue, type_=self)
+
+    def column_expression(self, col):
+        return func.ST_AsGeoJSON(func.ST_Transform(col, 4326), type_=self)
+
+
+class GeometryGeometry(UserDefinedType):
+    def get_col_spec(self):
+        return "geometry(GEOMETRY, 3857)"
+
+    def bind_expression(self, bindvalue):
+        return func.ST_GeomFromGeoJSON(bindvalue, type_=self)
+
+    def column_expression(self, col):
+        return func.ST_AsGeoJSON(func.ST_Transform(col, 4326), type_=self)
+
+
 class OvertakingEvent(Base):
     __tablename__ = "overtaking_event"
     __table_args__ = (Index("road_segment", "way_id", "direction_reversed"),)
@@ -134,13 +157,17 @@ class OvertakingEvent(Base):
 
 class Road(Base):
     __tablename__ = "road"
-    way_id = Column(BIGINT, primary_key=True, index=True)
+    way_id = Column(BIGINT, primary_key=True, index=True, autoincrement=False)
     zone = Column(ZoneType)
-    name = Column(String)
-    geometry = Column(Geometry)
+    name = Column(Text)
+    geometry = Column(LineString)
     directionality = Column(Integer)
     oneway = Column(Boolean)
     import_group = Column(String)
+
+    __table_args__ = (
+        Index('ix_road_geometry', 'geometry', postgresql_using='gist', postgresql_with={'fillfactor':100}),
+    )
 
     def to_dict(self):
         return {
@@ -377,7 +404,7 @@ class User(Base):
     api_key = Column(String)
 
     # This user can be matched by the email address from the auth service
-    # instead of having to match by `sub`. If a matching user logs in, the
+    # instead of having to match by `sub`. If  a matching user logs in, the
     # `sub` is updated to the new sub and this flag is disabled. This is for
     # migrating *to* the external authentication scheme.
     match_by_username_email = Column(Boolean, server_default=false())
@@ -472,11 +499,15 @@ class Comment(Base):
 class Region(Base):
     __tablename__ = "region"
 
-    relation_id = Column(BIGINT, primary_key=True, index=True)
-    name = Column(String)
-    geometry = Column(Geometry)
-    admin_level = Column(Integer)
+    relation_id = Column(BIGINT, primary_key=True, index=True, autoincrement=False)
+    name = Column(Text)
+    geometry = Column(GeometryGeometry)
+    admin_level = Column(Integer, index=True)
     import_group = Column(String)
+
+    __table_args__ = (
+        Index('ix_region_geometry', 'geometry', postgresql_using='gist', postgresql_with={'fillfactor':100}),
+    )
 
 
 Comment.author = relationship("User", back_populates="authored_comments")

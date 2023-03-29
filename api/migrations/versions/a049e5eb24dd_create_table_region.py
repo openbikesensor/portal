@@ -22,13 +22,14 @@ def upgrade():
     op.create_table(
         "region",
         sa.Column(
-            "relation_id", sa.BIGINT, autoincrement=True, primary_key=True, index=True
+            "relation_id", sa.BIGINT, primary_key=True, index=True, autoincrement=False
         ),
-        sa.Column("name", sa.String),
-        sa.Column("geometry", dbtype("GEOMETRY"), index=True),
+        sa.Column("name", sa.Text),
+        sa.Column("geometry", dbtype("GEOMETRY(GEOMETRY,3857)"), index=False),
         sa.Column("admin_level", sa.Integer, index=True),
         sa.Column("tags", dbtype("HSTORE")),
     )
+    op.execute('CREATE INDEX ix_region_geometry ON region USING GIST (geometry) WITH (FILLFACTOR=100);')
 
 
 def downgrade():
