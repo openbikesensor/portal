@@ -22,14 +22,15 @@ def upgrade():
     op.create_table(
         "road",
         sa.Column(
-            "way_id", sa.BIGINT, autoincrement=True, primary_key=True, index=True
+            "way_id", sa.BIGINT, primary_key=True, index=True, autoincrement=False
         ),
         sa.Column("zone", dbtype("zone_type")),
-        sa.Column("name", sa.String),
-        sa.Column("geometry", dbtype("GEOMETRY"), index=True),
+        sa.Column("name", sa.Text),
+        sa.Column("geometry", dbtype("geometry(LINESTRING,3857)")),
         sa.Column("directionality", sa.Integer),
         sa.Column("oneway", sa.Boolean),
     )
+    op.execute('CREATE INDEX ix_road_geometry ON road USING GIST (geometry) WITH (FILLFACTOR=100);')
 
 
 def downgrade():
