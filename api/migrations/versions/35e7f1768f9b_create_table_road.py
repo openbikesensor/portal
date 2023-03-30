@@ -30,7 +30,9 @@ def upgrade():
         sa.Column("directionality", sa.Integer),
         sa.Column("oneway", sa.Boolean),
     )
-    op.execute('CREATE INDEX ix_road_geometry ON road USING GIST (geometry) WITH (FILLFACTOR=100);')
+    op.execute(
+        "CREATE INDEX road_geometry_idx ON road USING GIST (geometry) WITH (FILLFACTOR=100);"
+    )
 
 
 def downgrade():

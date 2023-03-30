@@ -34,7 +34,7 @@ from sqlalchemy import (
     select,
     text,
     literal,
-    Text
+    Text,
 )
 from sqlalchemy.dialects.postgresql import UUID
 
@@ -166,7 +166,13 @@ class Road(Base):
     import_group = Column(String)
 
     __table_args__ = (
-        Index('ix_road_geometry', 'geometry', postgresql_using='gist', postgresql_with={'fillfactor':100}),
+        # We keep the index name as osm2pgsql created it, way back when.
+        Index(
+            "road_geometry_idx",
+            "geometry",
+            postgresql_using="gist",
+            postgresql_with={"fillfactor": 100},
+        ),
     )
 
     def to_dict(self):
@@ -199,7 +205,6 @@ class RoadUsage(Base):
 
     def __eq__(self, other):
         return self.hex_hash == other.hex_hash
-
 
 
 NOW = text("NOW()")
@@ -506,7 +511,13 @@ class Region(Base):
     import_group = Column(String)
 
     __table_args__ = (
-        Index('ix_region_geometry', 'geometry', postgresql_using='gist', postgresql_with={'fillfactor':100}),
+        # We keep the index name as osm2pgsql created it, way back when.
+        Index(
+            "region_geometry_idx",
+            "geometry",
+            postgresql_using="gist",
+            postgresql_with={"fillfactor": 100},
+        ),
     )
 
 
