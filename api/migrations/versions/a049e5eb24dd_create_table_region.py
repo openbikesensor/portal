@@ -29,7 +29,9 @@ def upgrade():
         sa.Column("admin_level", sa.Integer, index=True),
         sa.Column("tags", dbtype("HSTORE")),
     )
-    op.execute('CREATE INDEX ix_region_geometry ON region USING GIST (geometry) WITH (FILLFACTOR=100);')
+    op.execute(
+        "CREATE INDEX region_geometry_idx ON region USING GIST (geometry) WITH (FILLFACTOR=100);"
+    )
 
 
 def downgrade():
