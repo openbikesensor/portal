@@ -98,20 +98,27 @@ export default function Stats({ user = null }: { user?: null | string }) {
               </Statistic.Value>
               <Statistic.Label>{t("Stats.eventsConfirmed")}</Statistic.Label>
             </Statistic>
-            {user ? (
-              <Statistic>
-                <Statistic.Value>
-                  {stats?.trackCount ?? placeholder}
-                </Statistic.Value>
-                <Statistic.Label>{t("Stats.tracksRecorded")}</Statistic.Label>
-              </Statistic>
-            ) : (
-              <Statistic>
-                <Statistic.Value>
-                  {stats?.userCount ?? placeholder}
-                </Statistic.Value>
-                <Statistic.Label>{t("Stats.membersJoined")}</Statistic.Label>
-              </Statistic>
+            <Statistic>
+              <Statistic.Value>
+                {stats?.trackCount ?? placeholder}
+              </Statistic.Value>
+              <Statistic.Label>{t("Stats.tracksRecorded")}</Statistic.Label>
+            </Statistic>
+            {!user && (
+              <>
+                <Statistic>
+                  <Statistic.Value>
+                    {stats?.userCount ?? placeholder}
+                  </Statistic.Value>
+                  <Statistic.Label>{t("Stats.membersJoined")}</Statistic.Label>
+                </Statistic>
+                <Statistic>
+                  <Statistic.Value>
+                    {stats?.deviceCount ?? placeholder}
+                  </Statistic.Value>
+                  <Statistic.Label>{t("Stats.deviceCount")}</Statistic.Label>
+                </Statistic>
+              </>
             )}
           </Statistic.Group>
         </Segment>

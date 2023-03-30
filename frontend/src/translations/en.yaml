@@ -64,6 +64,7 @@ Stats:
   eventsConfirmed: Events confirmed
   tracksRecorded: Tracks recorded
   membersJoined: Members joined
+  deviceCount: Devices used
   thisMonth: This month
   thisYear: This year
   allTime: All time
