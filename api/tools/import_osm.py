@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from dataclasses import asdict, dataclass
+from dataclasses import dataclass
 import asyncio
 from os.path import basename, splitext
 import sys
@@ -8,12 +8,8 @@ import logging
 
 import msgpack
 import psycopg
-from psycopg.types import TypeInfo
-from psycopg.types.shapely import register_shapely
-from shapely.wkb import loads
 
 from obs.api.app import app
-from obs.api.db import ZoneType, connect_db, make_session
 from obs.api.utils import chunk
 
 log = logging.getLogger(__name__)
@@ -42,6 +38,7 @@ class Road:
     directionality: int
     oneway: int
     geometry: bytes
+
 
 data_types = {ROAD_TYPE: Road, REGION_TYPE: Region}
 
@@ -79,9 +76,9 @@ async def import_osm(connection, filename, import_group=None):
         region_ids.append(item.relation_id)
 
     async with connection.cursor() as cursor:
-        print(f"Pass 1: Delete previous")
+        log.info("Pass 1: Delete previously imported data")
 
-        print(f"Deleting import group {import_group}")
+        log.debug("Delete import group %s", import_group)
         await cursor.execute(
             "DELETE FROM road WHERE import_group = %s", (import_group,)
         )
@@ -89,15 +86,17 @@ async def import_osm(connection, filename, import_group=None):
             "DELETE FROM region WHERE import_group = %s", (import_group,)
         )
 
-        print(f"Deleting roads by ID")
+        log.debug("Delete roads by way_id")
         for ids in chunk(road_ids, 10000):
             await cursor.execute("DELETE FROM road WHERE way_id = ANY(%s)", (ids,))
-        print(f"Deleting regions by ID")
+        log.debug("Delete regions by region_id")
         for ids in chunk(region_ids, 10000):
-            await cursor.execute("DELETE FROM region WHERE relation_id = ANY(%s)", (ids,))
+            await cursor.execute(
+                "DELETE FROM region WHERE relation_id = ANY(%s)", (ids,)
+            )
 
         # Pass 2: Import
-        print(f"Pass 2: Import Roads")
+        log.info("Pass 2: Import roads")
         async with cursor.copy(
             "COPY road (way_id, name, zone, directionality, oneway, geometry, import_group) FROM STDIN"
         ) as copy:
@@ -114,7 +113,7 @@ async def import_osm(connection, filename, import_group=None):
                     )
                 )
 
-        print(f"Pass 2: Import Regions")
+        log.info(f"Pass 2: Import regions")
         async with cursor.copy(
             "COPY region (relation_id, name, geometry, admin_level, import_group) FROM STDIN"
         ) as copy:
@@ -131,12 +130,14 @@ async def import_osm(connection, filename, import_group=None):
 
 
 async def main():
+    logging.basicConfig(level=logging.DEBUG, format="%(levelname)s: %(message)s")
+
     url = app.config.POSTGRES_URL
     url = url.replace("+asyncpg", "")
 
     async with await psycopg.AsyncConnection.connect(url) as connection:
         for filename in sys.argv[1:]:
-            print("Loading file", filename)
+            log.debug("Loading file: %s", filename)
             await import_osm(connection, filename)
 
 
