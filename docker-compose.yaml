@@ -105,7 +105,6 @@ services:
       KEYCLOAK_ADMIN: admin
       KEYCLOAK_ADMIN_PASSWORD: admin
     command:
-      - --verbose
       - start-dev
       - --http-relative-path
       - /auth
