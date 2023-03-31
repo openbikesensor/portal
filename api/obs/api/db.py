@@ -504,7 +504,7 @@ class Comment(Base):
 class Region(Base):
     __tablename__ = "region"
 
-    relation_id = Column(BIGINT, primary_key=True, index=True, autoincrement=False)
+    id = Column(String(24), primary_key=True, index=True)
     name = Column(Text)
     geometry = Column(GeometryGeometry)
     admin_level = Column(Integer, index=True)

@@ -1,7 +1,7 @@
 """add import groups
 
 Revision ID: b8b0fbae50a4
-Revises: 5c7755ead95d
+Revises: f7b21148126a
 Create Date: 2023-03-26 09:41:36.621203
 
 """
@@ -11,7 +11,7 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision = "b8b0fbae50a4"
-down_revision = "5c7755ead95d"
+down_revision = "f7b21148126a"
 branch_labels = None
 depends_on = None
 

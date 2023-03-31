@@ -18,9 +18,7 @@ depends_on = None
 
 def upgrade():
     op.execute("CREATE INDEX IF NOT EXISTS ix_road_way_id ON road (way_id);")
-    op.execute(
-        "CREATE INDEX IF NOT EXISTS ix_region_relation_id ON region (relation_id);"
-    )
+    op.execute("CREATE INDEX IF NOT EXISTS ix_region_id ON region (relation_id);")
 
 
 def downgrade():

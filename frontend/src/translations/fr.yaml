@@ -140,6 +140,11 @@ NotFoundPage:
 
 MapPage:
   sidebar:
+    copyright:
+      learnMore: En savoir plus
+      openStreetMap: © OpenStreetMap
+      boundaries: © EuroGeographics pour les limites administratives
+
     baseMap:
       style:
         label: Style de fond de carte
@@ -361,3 +366,40 @@ RegionStats:
   title: Top régions
   regionName: Nom de la région
   eventCount: Nombre de dépassements
+
+AcknowledgementsPage:
+  title: Remerciements
+  information: |
+    Ce logiciel ne peut fonctionner que grâce au travail d'autres personnes.
+    Sur cette page, nous aimerions reconnaître le travail dont nous dépendons et le
+    bases de données et bibliothèques que nous utilisons.
+
+    Si vous utilisez des données fournies par ce logiciel, y compris les exportations,
+    téléchargements, captures d'écran ou autres informations extraites, vous pourriez faire
+    l'utilisation de ces ensembles de données, et leur disposition sur le droit d'auteur peut s'appliquer à vous.
+    Veuillez prendre soin d'examiner cela au cas par cas et d'attribuer le
+    origines des données que vous utilisez dans votre travail dérivé, que ce soit
+    directement ou indirectement via ce logiciel.
+
+    ## Fond de carte
+
+    Les données de fond de carte sont généralement générées à partir de
+    [OpenStreetMap](openstreetmap.org/copyright) données et utilise le
+    [OpenMapTiles](https://openmaptiles.org/) schéma et styles.
+
+    ## Informations routières
+
+    Les informations routières sont utilisées pour traiter les pistes
+    téléchargées et pour afficher la route statistiques de segments. Ces
+    données sont extraites du [OpenStreetMap](openstreetmap.org/copyright).
+
+    ## Limites administratives
+
+    Les limites administratives pour l'analyse statistique et l'affichage de la
+    carte sont importées de
+    [NUTS](https://ec.europa.eu/eurostat/web/gisco/geodata/reference-data/administrative-units-statistical-units).
+    Des dispositions s'appliquent à l'utilisation des données sur les limites
+    de la région, veuillez suivre ci-dessus lien pour en savoir plus si vous
+    souhaitez utiliser ces informations dans votre travail dérivé.
+
+    © EuroGeographics pour les limites administratives

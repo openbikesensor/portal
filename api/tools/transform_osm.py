@@ -170,33 +170,8 @@ class OSMHandler(osmium.SimpleHandler):
         geometry = wkb.loads(wkbfab.create_linestring(way), hex=True)
         geometry = transform(project, geometry)
         geometry = wkb.dumps(geometry)
-        self.packer.pack(b"\x01")
-        self.packer.pack([way.id, name, zone, directionality, oneway, geometry])
-
-    def area(self, area):
-        tags = area.tags
-        if tags.get("boundary") != "administrative":
-            return
-
-        admin_level = parse_number(tags.get("admin_level"))
-        if not admin_level:
-            return
-
-        if admin_level < ADMIN_LEVEL_MIN or admin_level > ADMIN_LEVEL_MAX:
-            return
-
-        name = tags.get("name")
-        geometry = wkb.loads(wkbfab.create_multipolygon(area), hex=True)
-        geometry = transform(project, geometry)
-        geometry = wkb.dumps(geometry)
-        self.packer.pack(b"\x02")
         self.packer.pack(
-            [
-                area.id,
-                name,
-                admin_level,
-                geometry,
-            ]
+            [b"\x01", way.id, name, zone, directionality, oneway, geometry]
         )
 
 

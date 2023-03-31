@@ -183,7 +183,7 @@ async def stats(req):
     query = (
         select(
             [
-                Region.relation_id.label("id"),
+                Region.id,
                 Region.name,
                 func.count(OvertakingEvent.id).label("overtaking_event_count"),
             ]
@@ -195,12 +195,9 @@ async def stats(req):
                 func.ST_Transform(OvertakingEvent.geometry, 3857), Region.geometry
             ),
         )
-        .where(Region.admin_level == 6)
         .group_by(
-            Region.relation_id,
+            Region.id,
             Region.name,
-            Region.relation_id,
-            Region.admin_level,
             Region.geometry,
         )
         .having(func.count(OvertakingEvent.id) > 0)

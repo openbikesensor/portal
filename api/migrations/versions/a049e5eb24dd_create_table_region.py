@@ -21,13 +21,10 @@ depends_on = None
 def upgrade():
     op.create_table(
         "region",
-        sa.Column(
-            "relation_id", sa.BIGINT, primary_key=True, index=True, autoincrement=False
-        ),
+        sa.Column("id", sa.String(24), primary_key=True, index=True),
         sa.Column("name", sa.Text),
         sa.Column("geometry", dbtype("GEOMETRY(GEOMETRY,3857)"), index=False),
         sa.Column("admin_level", sa.Integer, index=True),
-        sa.Column("tags", dbtype("HSTORE")),
     )
     op.execute(
         "CREATE INDEX region_geometry_idx ON region USING GIST (geometry) WITH (FILLFACTOR=100);"

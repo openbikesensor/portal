@@ -134,6 +134,11 @@ NotFoundPage:
 
 MapPage:
   sidebar:
+    copyright:
+      learnMore: Mehr erfahren
+      openStreetMap: © OpenStreetMap
+      boundaries: © EuroGeographics bezüglich der Verwaltungsgrenzen
+
     baseMap:
       style:
         label: Stil der Basiskarte
@@ -365,3 +370,42 @@ RegionStats:
   title: Top-Regionen
   regionName: Region
   eventCount: Anzahl Überholungen
+
+AcknowledgementsPage:
+  title: Danksagungen
+  information: |
+    Diese Software kann nur funktionieren Dank der Arbeit vieler anderer
+    Menschen. Auf dieser Seite möchten wir die genutzten Datenbanken und
+    Bibliotheken hervorheben.
+
+    Wenn du die von dieser Software angezeigten Daten nutzen möchtest, zum
+    Beispiel Exporte, Downloads, Screenshots oder andere Extrakte, kann es sein
+    dass du einen oder mehrere dieser Datensätze weiterverwendest. Das
+    entsprechende Urheberrechts findet dann Anwendung, prüfe also bitte
+    sorgfältig die Lizenzbedigungen und ob sie für dich relevant sind. Denke
+    daran, die Autor:innen der Quellen angemessen zu attribuieren, auf deren
+    Arbeit dein Werk direkt oder indirekt durch Verwendung der Daten aufbaut.
+
+    ## Basiskarte
+
+    Die Basiskarte wird durch Daten aus der
+    [OpenStreetMap](openstreetmap.org/copyright) erzeugt und verwendet das
+    Schema und die Stile von [OpenMapTiles](https://openmaptiles.org/).
+
+    ## Straßenzüge
+
+    Informationen über Straßenzüge werden für die Verarbeitung hochgeladener
+    Fahrten und für die Anzeige der Straßensegmente auf der Karte verwendet.
+    Diese Informationen stammen aus der
+    [OpenStreetMap](openstreetmap.org/copyright).
+
+    ## Verwaltungsgrenzen
+
+    Verwaltungsgrenzen werden für statistische Auswertung der Regionen und
+    Anzeige auf der Karte verwendet und werden von
+    [NUTS](https://ec.europa.eu/eurostat/web/gisco/geodata/reference-data/administrative-units-statistical-units)
+    importiert. Es gelten gesonderte Bedingungen für die Nutzung dieser Daten,
+    bitte folge dem obigen Link um mehr zu erfahren, wenn du diese Daten in
+    eigenen Werken nutzen möchtest.
+
+    © EuroGeographics bezüglich der Verwaltungsgrenzen

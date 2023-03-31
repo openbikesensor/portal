@@ -21,6 +21,7 @@ import styles from "./App.module.less";
 import { AVAILABLE_LOCALES, setLocale } from "i18n";
 
 import {
+  AcknowledgementsPage,
   ExportPage,
   HomePage,
   LoginRedirectPage,
@@ -186,6 +187,9 @@ const App = connect((state) => ({ login: state.login }))(function App({
         <Route path="/export" exact>
           <ExportPage />
         </Route>
+        <Route path="/acknowledgements" exact>
+          <AcknowledgementsPage />
+        </Route>
         <Route path="/redirect" exact>
           <LoginRedirectPage />
         </Route>
@@ -280,13 +284,17 @@ const App = connect((state) => ({ login: state.login }))(function App({
                       {t("App.footer.imprint")}
                     </a>
                   </List.Item>
-                  { config?.termsUrl &&
-                      <List.Item>
-                          <a href={config?.termsUrl} target="_blank" rel="noreferrer">
-                               {t('App.footer.terms')}
-                           </a>
-                       </List.Item>
-                   }
+                  {config?.termsUrl && (
+                    <List.Item>
+                      <a
+                        href={config?.termsUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        {t("App.footer.terms")}
+                      </a>
+                    </List.Item>
+                  )}
                   <List.Item>
                     <a
                       href={`https://github.com/openbikesensor/portal${
