@@ -16,7 +16,7 @@ RETURNS TABLE(
       region.name as name,
       count(overtaking_event.id)::int as overtaking_event_count
     FROM region
-      LEFT OUTER JOIN overtaking_event on ST_Within(ST_Transform(overtaking_event.geometry, 3857), region.geometry)
+      LEFT OUTER JOIN overtaking_event on ST_Within(overtaking_event.geometry, region.geometry)
     WHERE
       zoom_level >= 3 AND
       zoom_level <= 12 AND

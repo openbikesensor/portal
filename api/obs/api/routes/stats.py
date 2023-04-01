@@ -191,9 +191,7 @@ async def stats(req):
         .select_from(Region)
         .join(
             OvertakingEvent,
-            func.ST_Within(
-                func.ST_Transform(OvertakingEvent.geometry, 3857), Region.geometry
-            ),
+            func.ST_Within(OvertakingEvent.geometry, Region.geometry),
         )
         .group_by(
             Region.id,

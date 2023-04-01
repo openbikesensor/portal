@@ -8,7 +8,7 @@ import pytz
 from os.path import join
 from datetime import datetime
 
-from sqlalchemy import delete, select, and_
+from sqlalchemy import delete, func, select, and_
 from sqlalchemy.orm import joinedload
 
 from obs.face.importer import ImportMeasurementsCsv
@@ -306,11 +306,16 @@ async def import_overtaking_events(session, track, overtaking_events):
             hex_hash=hex_hash,
             way_id=m.get("OSM_way_id"),
             direction_reversed=m.get("OSM_way_orientation", 0) < 0,
-            geometry=json.dumps(
-                {
-                    "type": "Point",
-                    "coordinates": [m["longitude"], m["latitude"]],
-                }
+            geometry=func.ST_Transform(
+                func.ST_GeomFromGeoJSON(
+                    json.dumps(
+                        {
+                            "type": "Point",
+                            "coordinates": [m["longitude"], m["latitude"]],
+                        }
+                    )
+                ),
+                3857,
             ),
             latitude=m["latitude"],
             longitude=m["longitude"],

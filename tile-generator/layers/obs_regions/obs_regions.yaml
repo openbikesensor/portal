@@ -9,7 +9,7 @@ layer:
     name: |
       Name of the region
   defaults:
-    srs: EPSG:3785
+    srs: EPSG:3857
   datasource:
     srid: 3857
     geometry_field: geometry
