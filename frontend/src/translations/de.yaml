@@ -204,14 +204,14 @@ MapPage:
 
     cardinalDirections:
       unknown: unbekannt
-      north: nordwärts
-      northEast: nordostwärts
-      east: ostwärts
-      southEast: südostwärts
-      south: südwärts
-      southWest: südwestwärts
-      west: westwärts
-      northWest: nordwestwärts
+      north: Norden
+      northEast: Nordosten
+      east: Osten
+      southEast: Südosten
+      south: Süden
+      southWest: Südwesten
+      west: Westen
+      northWest: Nordwesten
 
   regionInfo:
     unnamedRegion: Unbenannte Region
