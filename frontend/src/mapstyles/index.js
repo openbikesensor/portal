@@ -163,7 +163,7 @@ export const getRegionLayers = (
       "fill-opacity": [
         "interpolate",
         ["linear"],
-        ["log10", ["get", "overtaking_event_count"]],
+        ["log10", ["max",["get", "overtaking_event_count"],1]],
         0,
         0,
         Math.log10(maxValue),
@@ -180,7 +180,15 @@ export const getRegionLayers = (
     maxzoom: 10,
     // filter: [">", "overtaking_event_count", 0],
     paint: {
-      "line-width": 1,
+      "line-width": [
+        "interpolate",
+        ["linear"],
+        ["log10", ["max",["get", "overtaking_event_count"],1]],
+        0,
+        0.2,
+        Math.log10(maxValue),
+        1.5,
+      ],
       "line-color": baseColor,
     },
     layout: {
