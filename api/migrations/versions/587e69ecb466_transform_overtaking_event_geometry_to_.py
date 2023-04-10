@@ -25,6 +25,6 @@ def upgrade():
 
 def downgrade():
     op.execute(
-        "ALTER TABLE overtaking_event ALTER COLUMN overtaking_event.geometry TYPE geometry;"
+        "ALTER TABLE overtaking_event ALTER COLUMN geometry TYPE geometry;"
     )
     op.execute("UPDATE overtaking_event SET geometry = ST_Transform(geometry, 4326);")
