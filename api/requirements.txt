@@ -18,3 +18,5 @@ psycopg~=3.1.8
 shapely~=2.0.1
 pyproj~=3.4.1
 aiohttp~=3.8.1
+# sanic requires websocets and chockes on >=10 in 2022.6.2
+websockets<11
