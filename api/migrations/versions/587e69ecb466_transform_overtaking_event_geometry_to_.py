@@ -19,7 +19,7 @@ depends_on = None
 def upgrade():
     op.execute("UPDATE overtaking_event SET geometry = ST_Transform(geometry, 3857);")
     op.execute(
-        "ALTER TABLE overtaking_event ALTER COLUMN  eometry TYPE geometry(POINT, 3857);"
+        "ALTER TABLE overtaking_event ALTER COLUMN geometry TYPE geometry(POINT, 3857);"
     )
 
 
