@@ -86,7 +86,7 @@ async def main():
     url = url.replace("+asyncpg", "")
 
     async with await psycopg.AsyncConnection.connect(url) as connection:
-        await import_nuts(connection, sys.argv[1])
+        await import_nuts(connection, sys.argv[1] if len(sys.argv) > 1 else None)
 
 
 if __name__ == "__main__":
