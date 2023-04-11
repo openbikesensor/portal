@@ -1,16 +1,17 @@
 import logging
+import queue
 import re
+import tarfile
 from json import load as jsonload
 from os.path import join, exists, isfile
 
+from sanic.exceptions import InvalidUsage, NotFound, Forbidden
+from sanic.response import file_stream, empty
 from sqlalchemy import select, func, and_
 from sqlalchemy.orm import joinedload
 
-from obs.api.db import Track, User, Comment, DuplicateTrackFileError
 from obs.api.app import api, require_auth, read_api_key, json
-
-from sanic.response import file_stream, empty
-from sanic.exceptions import InvalidUsage, NotFound, Forbidden
+from obs.api.db import Track, Comment, DuplicateTrackFileError
 
 log = logging.getLogger(__name__)
 
@@ -58,6 +59,39 @@ async def _return_tracks(req, extend_query, limit, offset, order_by=None):
         },
     )
 
+class StreamerHelper:
+    def __init__(self, response):
+        self.response = response
+        self.towrite = queue.Queue()
+
+    def write(self, data):
+        self.towrite.put(data)
+
+    async def send_all(self):
+        while True:
+            try:
+                tosend = self.towrite.get(block=False)
+                await self.response.send(tosend)
+            except queue.Empty:
+                break
+
+
+async def tar_of_tracks(req, files):
+
+    response = await req.respond(content_type="application/x-gtar", headers={'Content-Disposition': 'attachment; filename="tracks.tar.bz2"'})
+
+    helper = StreamerHelper(response)
+
+    tar = tarfile.open(name=None, fileobj=helper, mode="w|bz2", bufsize=256 * 512)
+    for fname in files:
+        logging.info(f"sending {fname}")
+        with open(fname, "rb") as fobj:
+            tar.addfile(tar.gettarinfo(fname),fobj)
+            await helper.send_all()
+    tar.close()
+    await helper.send_all()
+
+    await response.eof()
 
 @api.get("/tracks")
 async def get_tracks(req):
@@ -135,12 +169,14 @@ async def tracks_bulk_action(req):
     action = body["action"]
     track_slugs = body["tracks"]
 
-    if action not in ("delete", "makePublic", "makePrivate", "reprocess"):
+    if action not in ("delete", "makePublic", "makePrivate", "reprocess", "download"):
         raise InvalidUsage("invalid action")
 
     query = select(Track).where(
         and_(Track.author_id == req.ctx.user.id, Track.slug.in_(track_slugs))
     )
+
+    files = set()
 
     for track in (await req.ctx.db.execute(query)).scalars():
         if action == "delete":
@@ -155,8 +191,14 @@ async def tracks_bulk_action(req):
             track.public = False
         elif action == "reprocess":
             track.queue_processing()
+        elif action == "download":
+            files.add(track.get_original_file_path(req.app.config))
 
     await req.ctx.db.commit()
+
+    if action == "download":
+        await tar_of_tracks(req, files)
+        return
 
     return empty()
 
