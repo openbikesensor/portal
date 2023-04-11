@@ -27,6 +27,8 @@ import { Page, FormattedDate, Visibility } from "components";
 import api from "api";
 import { useCallbackRef, formatDistance, formatDuration } from "utils";
 
+import download from "downloadjs";
+
 const COLOR_BY_STATUS: Record<ProcessingStatus, SemanticCOLORS> = {
   error: "red",
   complete: "green",
@@ -233,12 +235,16 @@ function TracksTable({ title }) {
   };
 
   const bulkAction = async (action: string) => {
-    await api.post("/tracks/bulk", {
+    const data = await api.post("/tracks/bulk", {
       body: {
         action,
         tracks: Object.keys(selectedTracks),
       },
+      returnResponse: true
     });
+    if (action === "download") {
+       download(await data.blob(), "tracks.tar.bz2", "application/x-gtar");
+    }
 
     setShowBulkDelete(false);
     setSelectedTracks({});
@@ -262,6 +268,9 @@ function TracksTable({ title }) {
             </Dropdown.Item>
             <Dropdown.Item onClick={() => bulkAction("reprocess")}>
               Reprocess
+            </Dropdown.Item>
+            <Dropdown.Item onClick={() => bulkAction("download")}>
+              Download
             </Dropdown.Item>
             <Dropdown.Item onClick={() => setShowBulkDelete(true)}>
               Delete
