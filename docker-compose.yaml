@@ -41,7 +41,10 @@ services:
       - ./api/migrations:/opt/obs/api/migrations
       - ./api/alembic.ini:/opt/obs/api/alembic.ini
     depends_on:
-      - keycloak
+      postgres:
+        condition: service_healthy
+      keycloak:
+        condition: service_started
     ports:
       - '3000:3000'
     restart: on-failure
@@ -61,7 +64,10 @@ services:
       - ./api/config.overrides.py:/opt/obs/api/config.overrides.py
       - ./local/api-data:/data
     depends_on:
-      - keycloak
+      postgres:
+        condition: service_healthy
+      keycloak:
+        condition: service_started
     restart: on-failure
     entrypoint:
       - python
