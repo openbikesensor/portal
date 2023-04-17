@@ -99,20 +99,62 @@ everyone to get involved.
 Please install https://docs.docker.com/engine/install[Docker Engine] as well as
 https://docs.docker.com/compose/install[Docker Compose] onto your machine.
 
-Then clone the repository as described before.
+NOTE: Depending on the Docker Engine version, you might be able to run
+  `docker compose` instead of `docker-compose`. In that case you don't need to
+  install the standalone Docker Compose. +
+  +
+  Following the
+  https://docs.docker.com/compose/install/#scenario-three-install-the-compose-standalone[Docker documentation]
+  the use of the standalone `docker-compose` is not supported any longer by the
+  latest Docker Engine. In this documentation the commands use the new form
+  `docker compose`.
+
+Clone the repository as described before.
+
+=== Prepare database
+
+Start the PostgreSQL database:
+
+[source,shell]
+----
+docker compose up --detach postgres
+----
+
+The first time you start the `postgres` container, a lot of extensions will be
+installed. This might take a while, so check the logs of the docker container
+(e.g. `docker compose logs --follow postgres`) until you see:
+
+----
+PostgreSQL init process complete; ready for start up.
+----
+
+If you don't wait long enough, the following commands might fail. In this case,
+you can always stop the container, remove the data directory (`local/postgres/`)
+and restart the process.
+
+Run the upgrade command to generate the database schema:
+
+[source,shell]
+----
+docker compose run --rm api tools/upgrade.py
+----
+
+You will need to re-run this command after updates, to migrate the database and
+(re-)create the functions in the SQL database that are used when generating
+vector tiles.
+
+You should now also import OpenStreetMap data, see
+link:#_import_openstreetmap_data[below for instructions].
 
 === Configure Keycloak
 
-Login will not be possible until you configure the keycloak realm correctly.
+The Login will not be possible until you configure the KeyCloak realm correctly.
 Start your keycloak instance:
 
 [source,shell]
 ----
-docker-compose up -d keycloak
+docker compose up --detach keycloak
 ----
-
-NOTE: Depending on the Docker Engine version, you might be able to run
-`docker compose` instead of `docker-compose`.
 
 Navigate to http://localhost:3003/auth and follow these steps:
 
@@ -125,7 +167,7 @@ Navigate to http://localhost:3003/auth and follow these steps:
   settings as they are, click on *Next*.
 - _(3) Login settings_: As *Valid Redirect URIs* enter
   `\http://localhost:3000/login/redirect`, click on *Save*.
-- Click on tab *Credentials*, copy the *Client Secret* to the clipboard.
+- Click on tab *Credentials*, copy the *Client secret* to the clipboard.
 - Create a file `api/config.overrides.py` and store the secret in it as:
 
     KEYCLOAK_CLIENT_SECRET = "your client secret"
@@ -146,51 +188,34 @@ every time you reset your Keycloak settings, which are stored inside the
 PostgreSQL as well. Luckily, the script `api/tools/reset_database.py` does
 *not* affect the state of the Keycloak database, so this should be rather rare.
 
-=== Prepare database
-
-Start the PostgreSQL database:
-
-[source,shell]
-----
-docker-compose up -d postgres
-----
-
-The first time you start `postgres`, a lot of extensions will be installed. This
-might take a while, so check the logs of the docker container until you see:
-
-----
-PostgreSQL init process complete; ready for start up.
-----
-
-If you don't wait long enough, the following commands might fail. In this case,
-you can always stop the container, remove the data directory (`local/postgres/`)
-and restart the process.
-
-Next, run the upgrade command to generate the database schema:
-
-[source,shell]
-----
-docker-compose run --rm api tools/upgrade.py
-----
-
-You will need to re-run this command after updates, to migrate the database and
-(re-)create the functions in the SQL database that are used when generating
-vector tiles.
-
-You should also import OpenStreetMap data now, see below for instructions.
-
 === Boot the application
 
 Now you can run the remaining parts of the application:
 
 [source,shell]
 ----
-docker-compose up -d --build api worker frontend
+docker compose up --detach --build api worker frontend
 ----
 
 Your frontend should be running at http://localhost:3001 and the API at
 http://localhost:3000 - but you probably only need to access the frontend for
 testing.
+
+=== Start and stop the application
+
+To graceful stop all application containers run
+
+[source,shell]
+----
+docker compose stop
+----
+
+To restart the stopped containers run
+
+[source,shell]
+----
+docker compose start
+----
 
 === Migrating (Development)
 
@@ -200,7 +225,7 @@ command will do all the migrations you need:
 
 [source,shell]
 ----
-docker-compose run --rm api alembic upgrade head
+docker compose run --rm api alembic upgrade head
 ----
 
 == Import OpenStreetMap data
