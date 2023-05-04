@@ -235,7 +235,7 @@ function TracksTable({ title }) {
   };
 
   const bulkAction = async (action: string) => {
-    const data = await api.post("/tracks/bulk", {
+    const response = await api.post("/tracks/bulk", {
       body: {
         action,
         tracks: Object.keys(selectedTracks),
@@ -243,7 +243,7 @@ function TracksTable({ title }) {
       returnResponse: true
     });
     if (action === "download") {
-       download(await data.blob(), "tracks.tar.bz2", "application/x-gtar");
+       download(await response.blob(), "tracks.tar.bz2", "application/x-gtar");
     }
 
     setShowBulkDelete(false);

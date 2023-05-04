@@ -1,6 +1,10 @@
+import queue
+import tarfile
 from datetime import datetime
 import dateutil.parser
 from sanic.exceptions import InvalidUsage
+
+from obs.api.routes.tracks import log
 
 RAISE = object()
 
@@ -75,4 +79,39 @@ class chunk:
             except StopAsyncIteration:
                 if len(current):
                     yield current
+                break
+
+
+async def tar_of_tracks(req, files):
+
+    response = await req.respond(content_type="application/x-gtar", headers={'Content-Disposition': 'attachment; filename="tracks.tar.bz2"'})
+
+    helper = StreamerHelper(response)
+
+    tar = tarfile.open(name=None, fileobj=helper, mode="w|bz2", bufsize=256 * 512)
+    for fname in files:
+        log.info("Write file to tar: %s", fname)
+        with open(fname, "rb") as fobj:
+            tar.addfile(tar.gettarinfo(fname),fobj)
+            await helper.send_all()
+    tar.close()
+    await helper.send_all()
+
+    await response.eof()
+
+
+class StreamerHelper:
+    def __init__(self, response):
+        self.response = response
+        self.towrite = queue.Queue()
+
+    def write(self, data):
+        self.towrite.put(data)
+
+    async def send_all(self):
+        while True:
+            try:
+                tosend = self.towrite.get(block=False)
+                await self.response.send(tosend)
+            except queue.Empty:
                 break

@@ -1,7 +1,5 @@
 import logging
-import queue
 import re
-import tarfile
 from json import load as jsonload
 from os.path import join, exists, isfile
 
@@ -12,6 +10,7 @@ from sqlalchemy.orm import joinedload
 
 from obs.api.app import api, require_auth, read_api_key, json
 from obs.api.db import Track, Comment, DuplicateTrackFileError
+from obs.api.utils import tar_of_tracks
 
 log = logging.getLogger(__name__)
 
@@ -59,39 +58,6 @@ async def _return_tracks(req, extend_query, limit, offset, order_by=None):
         },
     )
 
-class StreamerHelper:
-    def __init__(self, response):
-        self.response = response
-        self.towrite = queue.Queue()
-
-    def write(self, data):
-        self.towrite.put(data)
-
-    async def send_all(self):
-        while True:
-            try:
-                tosend = self.towrite.get(block=False)
-                await self.response.send(tosend)
-            except queue.Empty:
-                break
-
-
-async def tar_of_tracks(req, files):
-
-    response = await req.respond(content_type="application/x-gtar", headers={'Content-Disposition': 'attachment; filename="tracks.tar.bz2"'})
-
-    helper = StreamerHelper(response)
-
-    tar = tarfile.open(name=None, fileobj=helper, mode="w|bz2", bufsize=256 * 512)
-    for fname in files:
-        logging.info(f"sending {fname}")
-        with open(fname, "rb") as fobj:
-            tar.addfile(tar.gettarinfo(fname),fobj)
-            await helper.send_all()
-    tar.close()
-    await helper.send_all()
-
-    await response.eof()
 
 @api.get("/tracks")
 async def get_tracks(req):

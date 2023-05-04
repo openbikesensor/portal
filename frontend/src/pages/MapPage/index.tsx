@@ -80,6 +80,7 @@ const getEventsLayer = () => ({
   "source-layer": "obs_events",
   paint: {
     "circle-radius": ["interpolate", ["linear"], ["zoom"], 14, 3, 17, 8],
+    "circle-opacity": ["interpolate",["linear"],["zoom"],8,0.1,9,0.3,10,0.5,11,1],
     "circle-color": colorByDistance("distance_overtaker"),
   },
   minzoom: 8,
