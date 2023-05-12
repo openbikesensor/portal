@@ -1,5 +1,6 @@
 from datetime import datetime
 import logging
+import os
 import queue
 import tarfile
 
@@ -94,10 +95,14 @@ async def tar_of_tracks(req, files):
     helper = StreamerHelper(response)
 
     tar = tarfile.open(name=None, fileobj=helper, mode="w|bz2", bufsize=256 * 512)
+
+    root = os.path.commonpath(list(files))
     for fname in files:
         log.info("Write file to tar: %s", fname)
         with open(fname, "rb") as fobj:
-            tar.addfile(tar.gettarinfo(fname), fobj)
+            tarinfo = tar.gettarinfo(fname)
+            tarinfo.name = os.path.relpath(fname, root)
+            tar.addfile(tarinfo, fobj)
             await helper.send_all()
     tar.close()
     await helper.send_all()
