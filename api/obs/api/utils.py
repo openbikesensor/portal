@@ -1,12 +1,13 @@
+import asyncio
+from contextlib import asynccontextmanager
 from datetime import datetime
 import logging
+from os.path import commonpath, join, relpath
 import queue
 import tarfile
-from os.path import commonpath, relpath, join
 
 import dateutil.parser
-
-from sanic.exceptions import InvalidUsage
+from sanic.exceptions import InvalidUsage, ServiceUnavailable
 
 log = logging.getLogger(__name__)
 
@@ -127,3 +128,35 @@ class StreamerHelper:
                 await self.response.send(tosend)
             except queue.Empty:
                 break
+
+
+@asynccontextmanager
+async def use_request_semaphore(req, semaphore_name, timeout=10):
+    """
+    If configured, acquire a semaphore for the map tile request and release it
+    after the context has finished.
+
+    If the semaphore cannot be acquired within the timeout, issue a 503 Service
+    Unavailable error response that describes that the database is overloaded,
+    so users know what the problem is.
+
+    Operates as a noop when the tile semaphore is not enabled.
+    """
+    semaphore = getattr(req.app.ctx, semaphore_name, None)
+
+    if semaphore is None:
+        yield
+        return
+
+    try:
+        await asyncio.wait_for(semaphore.acquire(), timeout)
+
+        try:
+            yield
+        finally:
+            semaphore.release()
+
+    except asyncio.TimeoutError:
+        raise ServiceUnavailable(
+            "Too many requests, database overloaded. Please retry later."
+        )

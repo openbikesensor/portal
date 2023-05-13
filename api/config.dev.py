@@ -30,5 +30,6 @@ ADDITIONAL_CORS_ORIGINS = [
     "http://localhost:8888/",  # for maputnik on 8888
 ]
 TILE_SEMAPHORE_SIZE = 4
+EXPORT_SEMAPHORE_SIZE = 4
 
 # vim: set ft=python :

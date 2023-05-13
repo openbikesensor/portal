@@ -12,6 +12,7 @@ from sanic.response import raw
 from sanic.exceptions import InvalidUsage
 
 from obs.api.app import api, json as json_response
+from obs.api.utils import use_request_semaphore
 
 
 class ExportFormat(str, Enum):
@@ -60,60 +61,61 @@ def shapefile_zip():
 
 @api.get(r"/export/events")
 async def export_events(req):
-    bbox = req.ctx.get_single_arg(
-        "bbox", default="-180,-90,180,90", convert=parse_bounding_box
-    )
-    fmt = req.ctx.get_single_arg("fmt", convert=ExportFormat)
-
-    events = await req.ctx.db.stream_scalars(
-        select(OvertakingEvent).where(
-            OvertakingEvent.geometry.bool_op("&&")(func.ST_Transform(bbox, 3857))
+    async with use_request_semaphore(req, "export_semaphore", timeout=30):
+        bbox = req.ctx.get_single_arg(
+            "bbox", default="-180,-90,180,90", convert=parse_bounding_box
         )
-    )
+        fmt = req.ctx.get_single_arg("fmt", convert=ExportFormat)
 
-    if fmt == ExportFormat.SHAPEFILE:
-        with shapefile_zip() as (writer, zip_buffer):
-            writer.field("distance_overtaker", "N", decimal=4)
-            writer.field("distance_stationary", "N", decimal=4)
-            writer.field("way_id", "N", decimal=0)
-            writer.field("direction", "N", decimal=0)
-            writer.field("course", "N", decimal=4)
-            writer.field("speed", "N", decimal=4)
+        events = await req.ctx.db.stream_scalars(
+            select(OvertakingEvent).where(
+                OvertakingEvent.geometry.bool_op("&&")(func.ST_Transform(bbox, 3857))
+            )
+        )
 
+        if fmt == ExportFormat.SHAPEFILE:
+            with shapefile_zip() as (writer, zip_buffer):
+                writer.field("distance_overtaker", "N", decimal=4)
+                writer.field("distance_stationary", "N", decimal=4)
+                writer.field("way_id", "N", decimal=0)
+                writer.field("direction", "N", decimal=0)
+                writer.field("course", "N", decimal=4)
+                writer.field("speed", "N", decimal=4)
+
+                async for event in events:
+                    writer.point(event.longitude, event.latitude)
+                    writer.record(
+                        distance_overtaker=event.distance_overtaker,
+                        distance_stationary=event.distance_stationary,
+                        direction=-1 if event.direction_reversed else 1,
+                        way_id=event.way_id,
+                        course=event.course,
+                        speed=event.speed,
+                        # "time"=event.time,
+                    )
+
+            return raw(zip_buffer.getbuffer())
+
+        if fmt == ExportFormat.GEOJSON:
+            features = []
             async for event in events:
-                writer.point(event.longitude, event.latitude)
-                writer.record(
-                    distance_overtaker=event.distance_overtaker,
-                    distance_stationary=event.distance_stationary,
-                    direction=-1 if event.direction_reversed else 1,
-                    way_id=event.way_id,
-                    course=event.course,
-                    speed=event.speed,
-                    # "time"=event.time,
+                features.append(
+                    {
+                        "type": "Feature",
+                        "geometry": json.loads(event.geometry),
+                        "properties": {
+                            "distance_overtaker": event.distance_overtaker,
+                            "distance_stationary": event.distance_stationary,
+                            "direction": -1 if event.direction_reversed else 1,
+                            "way_id": event.way_id,
+                            "course": event.course,
+                            "speed": event.speed,
+                            "time": event.time,
+                        },
+                    }
                 )
 
-        return raw(zip_buffer.getbuffer())
+            geojson = {"type": "FeatureCollection", "features": features}
+            return json_response(geojson)
 
-    if fmt == ExportFormat.GEOJSON:
-        features = []
-        async for event in events:
-            features.append(
-                {
-                    "type": "Feature",
-                    "geometry": json.loads(event.geometry),
-                    "properties": {
-                        "distance_overtaker": event.distance_overtaker,
-                        "distance_stationary": event.distance_stationary,
-                        "direction": -1 if event.direction_reversed else 1,
-                        "way_id": event.way_id,
-                        "course": event.course,
-                        "speed": event.speed,
-                        "time": event.time,
-                    },
-                }
-            )
-
-        geojson = {"type": "FeatureCollection", "features": features}
-        return json_response(geojson)
-
-    raise InvalidUsage("unknown export format")
+        raise InvalidUsage("unknown export format")

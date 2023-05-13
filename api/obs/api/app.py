@@ -70,6 +70,7 @@ app.config.update(
         FRONTEND_HTTPS=True,
         TILES_FILE=None,
         TILE_SEMAPHORE_SIZE=4,
+        EXPORT_SEMAPHORE_SIZE=1,
     )
 )
 
@@ -187,7 +188,10 @@ async def app_connect_db(app, loop):
     app.ctx._db_engine = await app.ctx._db_engine_ctx.__aenter__()
 
     if app.config.TILE_SEMAPHORE_SIZE:
-        app.ctx._tile_semaphore = asyncio.Semaphore(app.config.TILE_SEMAPHORE_SIZE)
+        app.ctx.tile_semaphore = asyncio.Semaphore(app.config.TILE_SEMAPHORE_SIZE)
+
+    if app.config.EXPORT_SEMAPHORE_SIZE:
+        app.ctx.export_semaphore = asyncio.Semaphore(app.config.EXPORT_SEMAPHORE_SIZE)
 
 
 @app.after_server_stop

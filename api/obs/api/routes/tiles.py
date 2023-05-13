@@ -1,18 +1,16 @@
-import asyncio
-from contextlib import asynccontextmanager
 from gzip import decompress
 from sqlite3 import connect
 from datetime import datetime, time, timedelta
 from typing import Optional, Tuple
 
 import dateutil.parser
-from sanic.exceptions import Forbidden, InvalidUsage, ServiceUnavailable
+from sanic.exceptions import Forbidden, InvalidUsage
 from sanic.response import raw
 
-from sqlalchemy import select, text
-from sqlalchemy.sql.expression import table, column
+from sqlalchemy import text
 
 from obs.api.app import app
+from obs.api.utils import use_request_semaphore
 
 
 def get_tile(filename, zoom, x, y):
@@ -87,41 +85,9 @@ def get_filter_options(
     return user_id, start, end
 
 
-@asynccontextmanager
-async def use_tile_semaphore(req, timeout=10):
-    """
-    If configured, acquire a semaphore for the map tile request and release it
-    after the context has finished.
-
-    If the semaphore cannot be acquired within the timeout, issue a 503 Service
-    Unavailable error response that describes that the map tile database is
-    overloaded, so users know what the problem is.
-
-    Operates as a noop when the tile semaphore is not enabled.
-    """
-    sem = getattr(req.app.ctx, "_tile_semaphore", None)
-
-    if sem is None:
-        yield
-        return
-
-    try:
-        await asyncio.wait_for(sem.acquire(), timeout)
-
-        try:
-            yield
-        finally:
-            sem.release()
-
-    except asyncio.TimeoutError:
-        raise ServiceUnavailable(
-            "Too many map content requests, database overloaded. Please retry later."
-        )
-
-
 @app.route(r"/tiles/<zoom:int>/<x:int>/<y:(\d+)\.pbf>")
 async def tiles(req, zoom: int, x: int, y: str):
-    async with use_tile_semaphore(req):
+    async with use_request_semaphore(req, "tile_semaphore"):
         if app.config.get("TILES_FILE"):
             tile = get_tile(req.app.config.TILES_FILE, int(zoom), int(x), int(y))
 

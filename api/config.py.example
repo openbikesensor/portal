@@ -66,4 +66,8 @@ ADDITIONAL_CORS_ORIGINS = None
 # to the other features of the API ;)
 TILE_SEMAPHORE_SIZE = 4
 
+# How many asynchronous requests may generate exported data simultaneously.
+# Keep this small.
+EXPORT_SEMAPHORE_SIZE = 1
+
 # vim: set ft=python :
