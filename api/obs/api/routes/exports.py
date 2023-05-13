@@ -26,7 +26,7 @@ def parse_bounding_box(input_string):
             func.ST_Point(left, bottom),
             func.ST_Point(right, top),
         ),
-        3857,
+        4326,
     )
 
 
@@ -66,7 +66,9 @@ async def export_events(req):
     fmt = req.ctx.get_single_arg("fmt", convert=ExportFormat)
 
     events = await req.ctx.db.stream_scalars(
-        select(OvertakingEvent).where(OvertakingEvent.geometry.bool_op("&&")(bbox))
+        select(OvertakingEvent).where(
+            OvertakingEvent.geometry.bool_op("&&")(func.ST_Transform(bbox, 3857))
+        )
     )
 
     if fmt == ExportFormat.SHAPEFILE:
