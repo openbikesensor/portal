@@ -21,6 +21,7 @@ def _add_cors_headers(request, response, methods: Iterable[str]) -> None:
                 "origin, content-type, accept, "
                 "authorization, x-xsrf-token, x-request-id"
             ),
+            "Access-Control-Expose-Headers": "content-disposition",
         }
         response.headers.extend(headers)
 

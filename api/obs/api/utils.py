@@ -1,8 +1,8 @@
 from datetime import datetime
 import logging
-import os
 import queue
 import tarfile
+from os.path import commonpath, relpath, join
 
 import dateutil.parser
 
@@ -86,22 +86,24 @@ class chunk:
                 break
 
 
-async def tar_of_tracks(req, files):
+async def tar_of_tracks(req, files, file_basename="tracks"):
     response = await req.respond(
         content_type="application/x-gtar",
-        headers={"Content-Disposition": 'attachment; filename="tracks.tar.bz2"'},
+        headers={
+            "content-disposition": f'attachment; filename="{file_basename}.tar.bz2"'
+        },
     )
 
     helper = StreamerHelper(response)
 
     tar = tarfile.open(name=None, fileobj=helper, mode="w|bz2", bufsize=256 * 512)
 
-    root = os.path.commonpath(list(files))
+    root = commonpath(list(files))
     for fname in files:
         log.info("Write file to tar: %s", fname)
         with open(fname, "rb") as fobj:
             tarinfo = tar.gettarinfo(fname)
-            tarinfo.name = os.path.relpath(fname, root)
+            tarinfo.name = join(file_basename, relpath(fname, root))
             tar.addfile(tarinfo, fobj)
             await helper.send_all()
     tar.close()

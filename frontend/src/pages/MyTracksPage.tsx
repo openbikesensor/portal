@@ -240,10 +240,17 @@ function TracksTable({ title }) {
         action,
         tracks: Object.keys(selectedTracks),
       },
-      returnResponse: true
+      returnResponse: true,
     });
     if (action === "download") {
-       download(await response.blob(), "tracks.tar.bz2", "application/x-gtar");
+      const contentType =
+        response.headers.get("content-type") ?? "application/x-gtar";
+
+      const filename =
+        response.headers
+          .get("content-disposition")
+          ?.match(/filename="([^"]+)"/)?.[1] ?? "tracks.tar.bz2";
+      download(await response.blob(), filename, contentType);
     }
 
     setShowBulkDelete(false);

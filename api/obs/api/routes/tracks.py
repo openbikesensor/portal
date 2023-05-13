@@ -1,10 +1,12 @@
 import logging
 import re
+from datetime import date
 from json import load as jsonload
 from os.path import join, exists, isfile
 
 from sanic.exceptions import InvalidUsage, NotFound, Forbidden
 from sanic.response import file_stream, empty
+from slugify import slugify
 from sqlalchemy import select, func, and_
 from sqlalchemy.orm import joinedload
 
@@ -163,7 +165,11 @@ async def tracks_bulk_action(req):
     await req.ctx.db.commit()
 
     if action == "download":
-        await tar_of_tracks(req, files)
+        username_slug = slugify(req.ctx.user.username, separator="-")
+        date_str = date.today().isoformat()
+        file_basename = f"tracks_{username_slug}_{date_str}"
+
+        await tar_of_tracks(req, files, file_basename)
         return
 
     return empty()
