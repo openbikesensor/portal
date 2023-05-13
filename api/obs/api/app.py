@@ -1,3 +1,4 @@
+import asyncio
 import logging
 import re
 
@@ -23,7 +24,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from obs.api.db import User, make_session, connect_db
 from obs.api.cors import setup_options, add_cors_headers
 from obs.api.utils import get_single_arg
-from sqlalchemy.util import asyncio
 
 log = logging.getLogger(__name__)
 
@@ -57,6 +57,24 @@ app = Sanic(
     env_prefix="OBS_",
 )
 configure_sanic_logging()
+
+app.config.update(
+    dict(
+        DEBUG=False,
+        VERBOSE=False,
+        AUTO_RELOAD=False,
+        POSTGRES_POOL_SIZE=20,
+        POSTGRES_MAX_OVERFLOW=40,
+        DEDICATED_WORKER=True,
+        FRONTEND_URL=None,
+        FRONTEND_HTTPS=True,
+        TILES_FILE=None,
+        TILE_SEMAPHORE_SIZE=4,
+    )
+)
+
+# overwrite from defaults again
+app.config.load_environment_vars("OBS_")
 
 if isfile("./config.py"):
     app.update_config("./config.py")
@@ -167,6 +185,9 @@ async def app_connect_db(app, loop):
         app.config.POSTGRES_MAX_OVERFLOW,
     )
     app.ctx._db_engine = await app.ctx._db_engine_ctx.__aenter__()
+
+    if app.config.TILE_SEMAPHORE_SIZE:
+        app.ctx._tile_semaphore = asyncio.Semaphore(app.config.TILE_SEMAPHORE_SIZE)
 
 
 @app.after_server_stop
