@@ -3,11 +3,12 @@ from enum import Enum
 from contextlib import contextmanager
 import zipfile
 import io
+import re
 from sqlite3 import connect
 
 import shapefile
 from obs.api.db import OvertakingEvent
-from sqlalchemy import select, func
+from sqlalchemy import select, func, text
 from sanic.response import raw
 from sanic.exceptions import InvalidUsage
 
@@ -39,11 +40,11 @@ PROJECTION_4326 = (
 
 
 @contextmanager
-def shapefile_zip():
+def shapefile_zip(shape_type=shapefile.POINT, basename="events"):
     zip_buffer = io.BytesIO()
     shp, shx, dbf = (io.BytesIO() for _ in range(3))
     writer = shapefile.Writer(
-        shp=shp, shx=shx, dbf=dbf, shapeType=shapefile.POINT, encoding="utf8"
+        shp=shp, shx=shx, dbf=dbf, shapeType=shape_type, encoding="utf8"
     )
 
     yield writer, zip_buffer
@@ -52,10 +53,10 @@ def shapefile_zip():
     writer.close()
 
     zip_file = zipfile.ZipFile(zip_buffer, "a", zipfile.ZIP_DEFLATED, False)
-    zip_file.writestr("events.shp", shp.getbuffer())
-    zip_file.writestr("events.shx", shx.getbuffer())
-    zip_file.writestr("events.dbf", dbf.getbuffer())
-    zip_file.writestr("events.prj", PROJECTION_4326)
+    zip_file.writestr(f"{basename}.shp", shp.getbuffer())
+    zip_file.writestr(f"{basename}.shx", shx.getbuffer())
+    zip_file.writestr(f"{basename}.dbf", dbf.getbuffer())
+    zip_file.writestr(f"{basename}.prj", PROJECTION_4326)
     zip_file.close()
 
 
@@ -74,7 +75,7 @@ async def export_events(req):
         )
 
         if fmt == ExportFormat.SHAPEFILE:
-            with shapefile_zip() as (writer, zip_buffer):
+            with shapefile_zip(basename="events") as (writer, zip_buffer):
                 writer.field("distance_overtaker", "N", decimal=4)
                 writer.field("distance_stationary", "N", decimal=4)
                 writer.field("way_id", "N", decimal=0)
@@ -111,6 +112,77 @@ async def export_events(req):
                             "course": event.course,
                             "speed": event.speed,
                             "time": event.time,
+                        },
+                    }
+                )
+
+            geojson = {"type": "FeatureCollection", "features": features}
+            return json_response(geojson)
+
+        raise InvalidUsage("unknown export format")
+
+
+@api.get(r"/export/road_usage")
+async def export_road_usage(req):
+    async with use_request_semaphore(req, "export_semaphore", timeout=30):
+        bbox = req.ctx.get_single_arg(
+            "bbox", default="-180,-90,180,90"
+        )
+        assert re.match(r"(-?\d+\.?\d+,?){4}", bbox)
+        fmt = req.ctx.get_single_arg("fmt", convert=ExportFormat)
+        events = await req.ctx.db.stream(
+            text(
+                f"select ST_AsGeoJSON(ST_Transform(geometry,4326)), way_id, distance_overtaker_mean, distance_overtaker_min,distance_overtaker_max,distance_overtaker_median,overtaking_event_count,usage_count,direction,zone,offset_direction,distance_overtaker_array from layer_obs_roads(ST_Transform(ST_MakeEnvelope({bbox},4326),3857),11,NULL,'1900-01-01'::timestamp,'2100-01-01'::timestamp) WHERE usage_count>0"
+            )
+        )
+
+        if fmt == ExportFormat.SHAPEFILE:
+            with shapefile_zip(shape_type=3, basename="road_usage") as (writer, zip_buffer):
+                writer.field("distance_overtaker_mean", "N", decimal=4)
+                writer.field("distance_overtaker_max", "N", decimal=4)
+                writer.field("distance_overtaker_min", "N", decimal=4)
+                writer.field("distance_overtaker_median", "N", decimal=4)
+                writer.field("overtaking_event_count", "N", decimal=4)
+                writer.field("usage_count", "N", decimal=4)
+                writer.field("way_id", "N", decimal=0)
+                writer.field("direction", "N", decimal=0)
+                writer.field("zone", "C")
+
+                async for road in events:
+                    geom = json.loads(road.st_asgeojson)
+                    writer.line([geom["coordinates"]])
+                    writer.record(
+                        distance_overtaker_mean=road.distance_overtaker_mean,
+                        distance_overtaker_median=road.distance_overtaker_median,
+                        distance_overtaker_max=road.distance_overtaker_max,
+                        distance_overtaker_min=road.distance_overtaker_min,
+                        usage_count=road.usage_count,
+                        overtaking_event_count=road.overtaking_event_count,
+                        direction=road.direction,
+                        way_id=road.way_id,
+                        zone=road.zone,
+                        # "time"=event.time,
+                    )
+
+            return raw(zip_buffer.getbuffer())
+
+        if fmt == ExportFormat.GEOJSON:
+            features = []
+            async for road in events:
+                features.append(
+                    {
+                        "type": "Feature",
+                        "geometry": json.loads(road.st_asgeojson),
+                        "properties": {
+                            "distance_overtaker_mean": road.distance_overtaker_mean,
+                            "distance_overtaker_max": road.distance_overtaker_max,
+                            "distance_overtaker_median": road.distance_overtaker_median,
+                            "overtaking_event_count": road.overtaking_event_count,
+                            "usage_count": road.usage_count,
+                            "distance_overtaker_array": road.distance_overtaker_array,
+                            "direction": road.direction,
+                            "way_id": road.way_id,
+                            "zone": road.zone,
                         },
                     }
                 )
