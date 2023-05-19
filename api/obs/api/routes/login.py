@@ -170,4 +170,4 @@ async def logout(req):
     auth_req = client.construct_EndSessionRequest(state=session["state"])
     logout_url = auth_req.request(client.end_session_endpoint)
 
-    return redirect(logout_url + f"&redirect_uri={req.ctx.api_url}/logout")
+    return redirect(logout_url + f"&post_logout_redirect_uri={req.ctx.api_url}/logout")
