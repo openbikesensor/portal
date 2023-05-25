@@ -1,9 +1,31 @@
 # Upgrading
-
 This document describes the general steps to upgrade between major changes.
 Simple migrations, e.g. for adding schema changes, are not documented
 explicitly. Their general usage is described in the [README](./README.md) (for
 development) and [docs/production-deployment.md](docs/production-deployment.md) (for production).
+
+
+## 0.8.0
+Upgrade to `0.7.x` first. See below for details. Then follow these steps:
+
+> **Warning** The update includes a reprocessing of tracks after import. Depending on the number of tracks this can take a few hours. The portal is reachable during that time but events disappear and incrementally reappear during reimport.
+
+> **Info** With this version the Import process for OpenStreetMap data has changed: the [new process](docs/osm-import.md) is easier on resources and finally permits to import a full country on a low-end VM.
+
+- Do your [usual backup](docs/production-deployment.md)
+- Rebuild images
+- Stop your portal and worker services
+- run upgrade
+  ```bash
+  docker-compose run --rm portal tools/upgrade.py
+  ```
+  this automatically does the following
+  - Migration of database schema using alembic.
+  - Upgrade of SQL tile schema to new schema.
+  - Import the nuts-regions from the web into the database.
+  - Trigger a re-import of all tracks.
+- Start your portal and worker services.
+
 
 ## 0.7.0
 
