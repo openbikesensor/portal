@@ -61,4 +61,13 @@ TILES_FILE = None
 # default. Python list, or whitespace separated string.
 ADDITIONAL_CORS_ORIGINS = None
 
+# How many asynchronous requests may be sent to the database to generate tile
+# information. Should be less than POSTGRES_POOL_SIZE to leave some connections
+# to the other features of the API ;)
+TILE_SEMAPHORE_SIZE = 4
+
+# How many asynchronous requests may generate exported data simultaneously.
+# Keep this small.
+EXPORT_SEMAPHORE_SIZE = 1
+
 # vim: set ft=python :
