@@ -101,6 +101,7 @@ ExportPage:
     label: Mode
     placeholder: Select mode
     events: Events
+    segments: Road statistics
   format:
     label: Format
     placeholder: Select format

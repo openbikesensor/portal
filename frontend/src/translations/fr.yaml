@@ -102,6 +102,7 @@ ExportPage:
     label: Mode
     placeholder: Sélectionner un mode
     events: Evénements
+    segments: Statistiques des rues
   format:
     label: Format
     placeholder: Sélectionner un format

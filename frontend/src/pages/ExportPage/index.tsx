@@ -104,7 +104,7 @@ const BoundingBoxSelector = React.forwardRef(
   }
 );
 
-const MODES = ["events"];
+const MODES = ["events", "segments"];
 const FORMATS = ["geojson", "shapefile"];
 
 export default function ExportPage() {
@@ -112,7 +112,6 @@ export default function ExportPage() {
   const [bbox, setBbox] = useState("8.294678,49.651182,9.059601,50.108249");
   const [fmt, setFmt] = useState("geojson");
   const config = useConfig();
-  const exportUrl = `${config?.apiUrl}/export/events?bbox=${bbox}&fmt=${fmt}`;
   const { t } = useTranslation();
   return (
     <Page title="Export">
@@ -163,7 +162,7 @@ export default function ExportPage() {
         <Button
           primary
           as="a"
-          href={exportUrl}
+          href={`${config?.apiUrl}/export/${mode}?bbox=${bbox}&fmt=${fmt}`}
           target="_blank"
           rel="noreferrer noopener"
         >
