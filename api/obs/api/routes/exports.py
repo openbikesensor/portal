@@ -122,22 +122,22 @@ async def export_events(req):
         raise InvalidUsage("unknown export format")
 
 
-@api.get(r"/export/road_usage")
-async def export_road_usage(req):
+@api.get(r"/export/segments")
+async def export_segments(req):
     async with use_request_semaphore(req, "export_semaphore", timeout=30):
         bbox = req.ctx.get_single_arg(
             "bbox", default="-180,-90,180,90"
         )
         assert re.match(r"(-?\d+\.?\d+,?){4}", bbox)
         fmt = req.ctx.get_single_arg("fmt", convert=ExportFormat)
-        events = await req.ctx.db.stream(
+        segments = await req.ctx.db.stream(
             text(
-                f"select ST_AsGeoJSON(ST_Transform(geometry,4326)), way_id, distance_overtaker_mean, distance_overtaker_min,distance_overtaker_max,distance_overtaker_median,overtaking_event_count,usage_count,direction,zone,offset_direction,distance_overtaker_array from layer_obs_roads(ST_Transform(ST_MakeEnvelope({bbox},4326),3857),11,NULL,'1900-01-01'::timestamp,'2100-01-01'::timestamp) WHERE usage_count>0"
+                f"select ST_AsGeoJSON(ST_Transform(geometry,4326)) AS geometry, way_id, distance_overtaker_mean, distance_overtaker_min,distance_overtaker_max,distance_overtaker_median,overtaking_event_count,usage_count,direction,zone,offset_direction,distance_overtaker_array from layer_obs_roads(ST_Transform(ST_MakeEnvelope({bbox},4326),3857),11,NULL,'1900-01-01'::timestamp,'2100-01-01'::timestamp) WHERE usage_count>0"
             )
         )
 
         if fmt == ExportFormat.SHAPEFILE:
-            with shapefile_zip(shape_type=3, basename="road_usage") as (writer, zip_buffer):
+            with shapefile_zip(shape_type=3, basename="segments") as (writer, zip_buffer):
                 writer.field("distance_overtaker_mean", "N", decimal=4)
                 writer.field("distance_overtaker_max", "N", decimal=4)
                 writer.field("distance_overtaker_min", "N", decimal=4)
@@ -148,41 +148,40 @@ async def export_road_usage(req):
                 writer.field("direction", "N", decimal=0)
                 writer.field("zone", "C")
 
-                async for road in events:
-                    geom = json.loads(road.st_asgeojson)
+                async for segment in segments:
+                    geom = json.loads(segment.st_asgeojson)
                     writer.line([geom["coordinates"]])
                     writer.record(
-                        distance_overtaker_mean=road.distance_overtaker_mean,
-                        distance_overtaker_median=road.distance_overtaker_median,
-                        distance_overtaker_max=road.distance_overtaker_max,
-                        distance_overtaker_min=road.distance_overtaker_min,
-                        usage_count=road.usage_count,
-                        overtaking_event_count=road.overtaking_event_count,
-                        direction=road.direction,
-                        way_id=road.way_id,
-                        zone=road.zone,
-                        # "time"=event.time,
+                        distance_overtaker_mean=segment.distance_overtaker_mean,
+                        distance_overtaker_median=segment.distance_overtaker_median,
+                        distance_overtaker_max=segment.distance_overtaker_max,
+                        distance_overtaker_min=segment.distance_overtaker_min,
+                        usage_count=segment.usage_count,
+                        overtaking_event_count=segment.overtaking_event_count,
+                        direction=segment.direction,
+                        way_id=segment.way_id,
+                        zone=segment.zone,
                     )
 
             return raw(zip_buffer.getbuffer())
 
         if fmt == ExportFormat.GEOJSON:
             features = []
-            async for road in events:
+            async for segment in segments:
                 features.append(
                     {
                         "type": "Feature",
-                        "geometry": json.loads(road.st_asgeojson),
+                        "geometry": json.loads(segment.geometry),
                         "properties": {
-                            "distance_overtaker_mean": road.distance_overtaker_mean,
-                            "distance_overtaker_max": road.distance_overtaker_max,
-                            "distance_overtaker_median": road.distance_overtaker_median,
-                            "overtaking_event_count": road.overtaking_event_count,
-                            "usage_count": road.usage_count,
-                            "distance_overtaker_array": road.distance_overtaker_array,
-                            "direction": road.direction,
-                            "way_id": road.way_id,
-                            "zone": road.zone,
+                            "distance_overtaker_mean": segment.distance_overtaker_mean,
+                            "distance_overtaker_max": segment.distance_overtaker_max,
+                            "distance_overtaker_median": segment.distance_overtaker_median,
+                            "overtaking_event_count": segment.overtaking_event_count,
+                            "usage_count": segment.usage_count,
+                            "distance_overtaker_array": segment.distance_overtaker_array,
+                            "direction": segment.direction,
+                            "way_id": segment.way_id,
+                            "zone": segment.zone,
                         },
                     }
                 )

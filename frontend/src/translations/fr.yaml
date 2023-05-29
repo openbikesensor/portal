@@ -102,7 +102,7 @@ ExportPage:
     label: Mode
     placeholder: Sélectionner un mode
     events: Evénements
-    road_usage: Utilisation des rues
+    segments: Statistiques des rues
   format:
     label: Format
     placeholder: Sélectionner un format

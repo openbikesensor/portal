@@ -95,7 +95,7 @@ ExportPage:
     label: Modus
     placeholder: Modus wählen
     events: Überholvorgänge
-    road_usage: Straßennutzung
+    segments: Straßenstatistiken
   format:
     label: Format
     placeholder: Format wählen

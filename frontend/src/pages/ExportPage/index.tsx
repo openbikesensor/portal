@@ -104,7 +104,7 @@ const BoundingBoxSelector = React.forwardRef(
   }
 );
 
-const MODES = ["events", "road_usage"];
+const MODES = ["events", "segments"];
 const FORMATS = ["geojson", "shapefile"];
 
 export default function ExportPage() {
