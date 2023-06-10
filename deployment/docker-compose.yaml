@@ -14,7 +14,7 @@ services:
   ############################################################
 
   postgres:
-    image: "openmaptiles/postgis:6.0"
+    image: "openmaptiles/postgis:7.0"
     environment:
       - POSTGRES_DB=${OBS_POSTGRES_DB}
       - POSTGRES_USER=${OBS_POSTGRES_USER}
@@ -136,7 +136,7 @@ services:
       - "traefik.docker.network=gateway"
 
   postgres-keycloak:
-    image: postgres:13.3
+    image: postgres:15
     restart: always
     networks:
       - backend
