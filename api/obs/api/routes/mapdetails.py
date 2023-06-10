@@ -88,7 +88,7 @@ async def mapdetails_road(req):
 
     data, mask = arrays[:-1], arrays[-1]
     data = data.astype(numpy.float64)
-    mask = mask.astype(numpy.bool)
+    mask = mask.astype(bool)
 
     def partition(arr, cond):
         return arr[:, cond], arr[:, ~cond]
