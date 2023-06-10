@@ -74,7 +74,7 @@ async def import_osm(connection, filename, import_group=None):
         amount = 0
         for items in chunk(read_file(filename), 10000):
             amount += 10000
-            log.info(f"...{amount}/{len(ids)} ({100*amount/len(ids)}%)")
+            log.info(f"...{amount}/{len(road_ids)} ({100*amount/len(road_ids)}%)")
             async with cursor.copy(
                 "COPY road (way_id, name, zone, directionality, oneway, geometry, import_group) FROM STDIN"
             ) as copy:
