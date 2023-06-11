@@ -160,7 +160,7 @@ function Map({
       attributionControl={false}
     >
       <AttributionControl style={{ top: 0, right: 0 }} />
-      <NavigationControl style={{ left: 16, top: hasToolbar ? 64 : 16 }} />
+      <NavigationControl showCompass={false} style={{ left: 16, top: hasToolbar ? 64 : 16 }} />
       <ScaleControl
         maxWidth={200}
         unit="metric"
