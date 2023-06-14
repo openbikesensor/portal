@@ -9,7 +9,7 @@ h1.ui.header {
 }
 
 h2.ui.header {
-  font-weight: 300;
+  font-weight: 400;
   line-height: 25pt;
   font-size: 20pt;
   color: @obsColorG1;
