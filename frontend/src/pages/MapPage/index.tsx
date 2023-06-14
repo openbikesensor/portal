@@ -95,7 +95,6 @@ const getEventsTextLayer = () => ({
       { "min-fraction-digits": 2, "max-fraction-digits": 2 },
     ],
     "text-allow-overlap": true,
-    "text-font": ["Open Sans Bold", "Arial Unicode MS Regular"],
     "text-size": 14,
     "text-keep-upright": false,
     "text-anchor": "left",

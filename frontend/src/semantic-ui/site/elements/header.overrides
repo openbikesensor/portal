@@ -3,14 +3,12 @@
 *******************************/
 
 h1.ui.header {
-  font-family: "Open Sans Condensed";
   line-height: 35pt;
   font-size: 30pt;
   color: @obsColorB4;
 }
 
 h2.ui.header {
-  font-family: "Open Sans";
   font-weight: 300;
   line-height: 25pt;
   font-size: 20pt;
@@ -18,7 +16,6 @@ h2.ui.header {
 }
 
 h3.ui.header {
-  font-family: "Open Sans";
   font-weight: normal;
   line-height: 18pt;
   font-size: 15pt;
@@ -26,7 +23,6 @@ h3.ui.header {
 }
 
 h4.ui.header {
-  font-family: "Open Sans";
   font-weight: bold;
   line-height: 15pt;
   font-size: 15pt;
