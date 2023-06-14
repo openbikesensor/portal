@@ -3,7 +3,7 @@ import {Settings} from 'luxon'
 import ReactDOM from 'react-dom'
 import 'fomantic-ui-less/semantic.less'
 
-import './index.css'
+import './index.less'
 import App from './App'
 
 import 'maplibre-gl/dist/maplibre-gl.css'
