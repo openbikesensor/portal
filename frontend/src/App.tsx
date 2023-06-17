@@ -31,32 +31,6 @@ import {
 import {Avatar, LoginButton} from 'components'
 import api from 'api'
 
-// This component removes the "navigate" prop before rendering a Menu.Item,
-// which is a workaround for an annoying warning that is somehow caused by the
-// <Link /> and <Menu.Item /> combination.
-function MenuItemForLink({navigate, ...props}) {
-  return (
-    <Menu.Item
-      {...props}
-      onClick={(e) => {
-        e.preventDefault()
-        navigate()
-      }}
-    />
-  )
-}
-function DropdownItemForLink({navigate, ...props}) {
-  return (
-    <Dropdown.Item
-      {...props}
-      onClick={(e) => {
-        e.preventDefault()
-        navigate()
-      }}
-    />
-  )
-}
-
 function Banner({text, style = 'warning'}: {text: string; style: 'warning' | 'info'}) {
   return <div className={classnames(styles.banner, styles[style])}>{text}</div>
 }
@@ -81,41 +55,44 @@ const App = connect((state) => ({login: state.login}))(function App({login}) {
       {config?.banner && <Banner {...config.banner} />}
       <Menu className={styles.menu} stackable>
         <Container>
-          <Link to="/" component={MenuItemForLink} header className={styles.pageTitle}>
-            OpenBikeSensor
+          <Link to="/">
+            <Menu.Item header className={styles.pageTitle}>
+              OpenBikeSensor
+            </Menu.Item>
           </Link>
 
           {hasMap && (
-            <Link component={MenuItemForLink} to="/map" as="a">
-              {t('App.menu.map')}
+            <Link to="/map">
+              <Menu.Item>{t('App.menu.map')}</Menu.Item>
             </Link>
           )}
 
-          <Link component={MenuItemForLink} to="/tracks" as="a">
-            {t('App.menu.tracks')}
+          <Link to="/tracks">
+            <Menu.Item>{t('App.menu.tracks')}</Menu.Item>
           </Link>
 
-          <Link component={MenuItemForLink} to="/export" as="a">
-            {t('App.menu.export')}
+          <Link to="/export">
+            <Menu.Item>{t('App.menu.export')}</Menu.Item>
           </Link>
 
           <Menu.Menu position="right">
             {login ? (
               <>
-                <Link component={MenuItemForLink} to="/my/tracks" as="a">
-                  {t('App.menu.myTracks')}
+                <Link to="/my/tracks">
+                  <Menu.Item>{t('App.menu.myTracks')}</Menu.Item>
                 </Link>
                 <Dropdown item trigger={<Avatar user={login} className={styles.avatar} />}>
                   <Dropdown.Menu>
-                    <Link
-                      to="/upload"
-                      component={DropdownItemForLink}
-                      icon="cloud upload"
-                      text={t('App.menu.uploadTracks')}
-                    />
-                    <Link to="/settings" component={DropdownItemForLink} icon="cog" text={t('App.menu.settings')} />
+                    <Link to="/upload">
+                      <Dropdown.Item icon="cloud upload" text={t('App.menu.uploadTracks')} />
+                    </Link>
+                    <Link to="/settings">
+                      <Dropdown.Item icon="cog" text={t('App.menu.settings')} />
+                    </Link>
                     <Dropdown.Divider />
-                    <Link to="/logout" component={DropdownItemForLink} icon="sign-out" text={t('App.menu.logout')} />
+                    <Link to="/logout">
+                      <Dropdown.Item icon="sign-out" text={t('App.menu.logout')} />
+                    </Link>
                   </Dropdown.Menu>
                 </Dropdown>
               </>
@@ -161,16 +138,14 @@ const App = connect((state) => ({login: state.login}))(function App({login}) {
         <Route path="/logout" exact>
           <LogoutPage />
         </Route>
-        {login && (
-          <>
-            <Route path="/upload" exact>
-              <UploadPage />
-            </Route>
-            <Route path="/settings" exact>
-              <SettingsPage />
-            </Route>
-          </>
-        )}
+        {login && [
+          <Route path="/upload" key="/upload" exact>
+            <UploadPage />
+          </Route>,
+          <Route path="/settings" key="/settings" exact>
+            <SettingsPage />
+          </Route>,
+        ]}
         <Route>
           <NotFoundPage />
         </Route>
