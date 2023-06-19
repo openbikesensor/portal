@@ -1,5 +1,28 @@
 # Changelog
 
+## 0.8.0
+
+### Features
+
+* Bulk actions on users owned tracks (reprocess, download, make private, make public, delete) (#269, #38)
+* Easy sorting by device for "multi-device users" (e.g. group lending out OBSes)
+* Region display at higher zoom levels to easily find interesting areas (#112)
+* Export of road statistics on top of the already-existing event statistics (#341)
+
+### Improvements
+
+* Refactored database access to hopefully combat portal crashes (#337)
+* New infrastructure for map imports that makes import of larger maps possible on small VMs (#334)
+* Reference current postgres and postgis versions in docker-compose.yaml files (#286)
+* Configurable terms-and-conditions link (#320)
+* French translation by @cbiteau (#303)
+
+### Bug Fixes
+
+* Logout not working (#285)
+* Duplicate road usage hashes (#335, #253)
+* cannot import name .... (#338)
+
 ## 0.7.0
 
 ### Features
