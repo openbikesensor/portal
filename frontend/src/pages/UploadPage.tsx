@@ -1,6 +1,6 @@
 import _ from "lodash";
 import React from "react";
-import { List, Loader, Table, Icon } from "semantic-ui-react";
+import { Header, List, Loader, Table, Icon } from "semantic-ui-react";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 
@@ -150,8 +150,10 @@ export default function UploadPage() {
 
   const { t } = useTranslation();
 
+  const title = t("UploadPage.title");
   return (
-    <Page title="Upload">
+    <Page title={title}>
+      <Header as="h1">{title}</Header>
       {files.length ? (
         <Table>
           <Table.Header>

@@ -1,6 +1,7 @@
 import React from "react";
 import _ from "lodash";
 import { connect } from "react-redux";
+import { Link } from "react-router-dom";
 import {
   List,
   Select,
@@ -19,6 +20,7 @@ import {
 } from "reducers/mapConfig";
 import { colorByDistance, colorByCount, viridisSimpleHtml } from "mapstyles";
 import { ColorMapLegend, DiscreteColorMapLegend } from "components";
+import styles from "./styles.module.less";
 
 const BASEMAP_STYLE_OPTIONS = ["positron", "bright"];
 
@@ -50,6 +52,7 @@ function LayerSidebar({
     baseMap: { style },
     obsRoads: { show: showRoads, showUntagged, attribute, maxCount },
     obsEvents: { show: showEvents },
+    obsRegions: { show: showRegions },
     filters: {
       currentUser: filtersCurrentUser,
       dateMode,
@@ -58,6 +61,15 @@ function LayerSidebar({
       thresholdAfter,
     },
   } = mapConfig;
+
+  const openStreetMapCopyright = (
+    <List.Item className={styles.copyright}>
+      {t("MapPage.sidebar.copyright.openStreetMap")}{" "}
+      <Link to="/acknowledgements">
+        {t("MapPage.sidebar.copyright.learnMore")}
+      </Link>
+    </List.Item>
+  );
 
   return (
     <div>
@@ -76,6 +88,44 @@ function LayerSidebar({
             }
           />
         </List.Item>
+        {openStreetMapCopyright}
+        <Divider />
+        <List.Item>
+          <Checkbox
+            toggle
+            size="small"
+            id="obsRegions.show"
+            style={{ float: "right" }}
+            checked={showRegions}
+            onChange={() => setMapConfigFlag("obsRegions.show", !showRegions)}
+          />
+          <label htmlFor="obsRegions.show">
+            <Header as="h4">{t("MapPage.sidebar.obsRegions.title")}</Header>
+          </label>
+        </List.Item>
+        {showRegions && (
+          <>
+            <List.Item>
+              {t("MapPage.sidebar.obsRegions.colorByEventCount")}
+            </List.Item>
+            <List.Item>
+              <ColorMapLegend
+                twoTicks
+                map={[
+                  [0, "#00897B00"],
+                  [5000, "#00897BFF"],
+                ]}
+                digits={0}
+              />
+            </List.Item>
+            <List.Item className={styles.copyright}>
+              {t("MapPage.sidebar.copyright.boundaries")}{" "}
+              <Link to="/acknowledgements">
+                {t("MapPage.sidebar.copyright.learnMore")}
+              </Link>
+            </List.Item>
+          </>
+        )}
         <Divider />
         <List.Item>
           <Checkbox
@@ -184,6 +234,7 @@ function LayerSidebar({
                 </List.Item>
               </>
             )}
+            {openStreetMapCopyright}
           </>
         )}
         <Divider />

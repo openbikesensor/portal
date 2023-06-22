@@ -2,9 +2,8 @@ HOST = "0.0.0.0"
 PORT = 3000
 DEBUG = True
 VERBOSE = False
-AUTO_RESTART = True
+AUTO_RELOAD = True
 SECRET = "!!!!!!!!!!!!CHANGE ME!!!!!!!!!!!!"
-LEAN_MODE = False
 POSTGRES_URL = "postgresql+asyncpg://obs:obs@postgres/obs"
 POSTGRES_POOL_SIZE = 20
 POSTGRES_MAX_OVERFLOW = 2 * POSTGRES_POOL_SIZE
@@ -30,5 +29,7 @@ ADDITIONAL_CORS_ORIGINS = [
     "http://localhost:8880/",  # for maputnik on 8880
     "http://localhost:8888/",  # for maputnik on 8888
 ]
+TILE_SEMAPHORE_SIZE = 4
+EXPORT_SEMAPHORE_SIZE = 4
 
 # vim: set ft=python :

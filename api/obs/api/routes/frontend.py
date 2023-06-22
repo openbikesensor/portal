@@ -14,22 +14,18 @@ if app.config.FRONTEND_CONFIG:
             **req.app.config.FRONTEND_CONFIG,
             "apiUrl": f"{req.ctx.api_url}/api",
             "loginUrl": f"{req.ctx.api_url}/login",
-            "obsMapSource": (
-                None
-                if app.config.LEAN_MODE
-                else {
-                    "type": "vector",
-                    "tiles": [
-                        req.ctx.api_url
-                        + req.app.url_for("tiles", zoom="000", x="111", y="222.pbf")
-                        .replace("000", "{z}")
-                        .replace("111", "{x}")
-                        .replace("222", "{y}")
-                    ],
-                    "minzoom": 12,
-                    "maxzoom": 14,
-                }
-            ),
+            "obsMapSource": {
+                "type": "vector",
+                "tiles": [
+                    req.ctx.api_url
+                    + req.app.url_for("tiles", zoom="000", x="111", y="222.pbf")
+                    .replace("000", "{z}")
+                    .replace("111", "{x}")
+                    .replace("222", "{y}")
+                ],
+                "minzoom": 0,
+                "maxzoom": 14,
+            },
         }
 
         return response.json(result)

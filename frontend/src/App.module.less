@@ -120,6 +120,15 @@
   }
 }
 
+@media @mobile {
+  .menu.menu {
+    > :global(.ui.container) {
+      height: @menuHeightMobile;
+      align-items: stretch;
+    }
+  }
+}
+
 .banner {
   padding: 8px;
   z-index: 100;

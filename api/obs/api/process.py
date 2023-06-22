@@ -8,7 +8,7 @@ import pytz
 from os.path import join
 from datetime import datetime
 
-from sqlalchemy import delete, select
+from sqlalchemy import delete, func, select, and_
 from sqlalchemy.orm import joinedload
 
 from obs.face.importer import ImportMeasurementsCsv
@@ -25,9 +25,9 @@ from obs.face.filter import (
     RequiredFieldsFilter,
 )
 
-from obs.face.osm import DataSource, DatabaseTileSource, OverpassTileSource
+from obs.face.osm import DataSource, DatabaseTileSource
 
-from obs.api.db import OvertakingEvent, RoadUsage, Track, make_session
+from obs.api.db import OvertakingEvent, RoadUsage, Track, UserDevice, make_session
 from obs.api.app import app
 
 log = logging.getLogger(__name__)
@@ -39,12 +39,7 @@ def get_data_source():
     mode, the OverpassTileSource is used to fetch data on demand. In normal
     mode, the roads database is used.
     """
-    if app.config.LEAN_MODE:
-        tile_source = OverpassTileSource(cache_dir=app.config.OBS_FACE_CACHE_DIR)
-    else:
-        tile_source = DatabaseTileSource()
-
-    return DataSource(tile_source)
+    return DataSource(DatabaseTileSource())
 
 
 async def process_tracks_loop(delay):
@@ -144,10 +139,11 @@ async def process_track(session, track, data_source):
         os.makedirs(output_dir, exist_ok=True)
 
         log.info("Annotating and filtering CSV file")
-        imported_data, statistics = ImportMeasurementsCsv().read(
+        imported_data, statistics, track_metadata = ImportMeasurementsCsv().read(
             original_file_path,
             user_id="dummy",  # TODO: user username or id or nothing?
             dataset_id=Track.slug,  # TODO: use track id or slug or nothing?
+            return_metadata=True,
         )
 
         annotator = AnnotateMeasurements(
@@ -217,6 +213,36 @@ async def process_track(session, track, data_source):
         await clear_track_data(session, track)
         await session.commit()
 
+        device_identifier = track_metadata.get("DeviceId")
+        if device_identifier:
+            if isinstance(device_identifier, list):
+                device_identifier = device_identifier[0]
+
+            log.info("Finding or creating device %s", device_identifier)
+            user_device = (
+                await session.execute(
+                    select(UserDevice).where(
+                        and_(
+                            UserDevice.user_id == track.author_id,
+                            UserDevice.identifier == device_identifier,
+                        )
+                    )
+                )
+            ).scalar()
+
+            log.debug("user_device is %s", user_device)
+
+            if not user_device:
+                user_device = UserDevice(
+                    user_id=track.author_id, identifier=device_identifier
+                )
+                log.debug("Create new device for this user")
+                session.add(user_device)
+
+            track.user_device = user_device
+        else:
+            log.info("No DeviceId in track metadata.")
+
         log.info("Import events into database...")
         await import_overtaking_events(session, track, overtaking_events)
 
@@ -280,11 +306,16 @@ async def import_overtaking_events(session, track, overtaking_events):
             hex_hash=hex_hash,
             way_id=m.get("OSM_way_id"),
             direction_reversed=m.get("OSM_way_orientation", 0) < 0,
-            geometry=json.dumps(
-                {
-                    "type": "Point",
-                    "coordinates": [m["longitude"], m["latitude"]],
-                }
+            geometry=func.ST_Transform(
+                func.ST_GeomFromGeoJSON(
+                    json.dumps(
+                        {
+                            "type": "Point",
+                            "coordinates": [m["longitude"], m["latitude"]],
+                        }
+                    )
+                ),
+                3857,
             ),
             latitude=m["latitude"],
             longitude=m["longitude"],

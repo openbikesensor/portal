@@ -3,7 +3,7 @@ RETURNS TABLE(event_id bigint, geometry geometry, distance_overtaker float, dist
 
     SELECT
       overtaking_event.id::bigint as event_id,
-      ST_Transform(overtaking_event.geometry, 3857) as geometry,
+      overtaking_event.geometry as geometry,
       distance_overtaker,
       distance_stationary,
       (case when direction_reversed then -1 else 1 end)::int as direction,
@@ -14,7 +14,8 @@ RETURNS TABLE(event_id bigint, geometry geometry, distance_overtaker float, dist
     FROM overtaking_event
     FULL OUTER JOIN road ON road.way_id = overtaking_event.way_id
     JOIN track on track.id = overtaking_event.track_id
-    WHERE ST_Transform(overtaking_event.geometry, 3857) && bbox
+    WHERE overtaking_event.geometry && bbox
+      AND zoom_level >= 8
       AND (user_id is NULL OR user_id = track.author_id)
       AND time BETWEEN COALESCE(min_time, '1900-01-01'::timestamp) AND COALESCE(max_time, '2100-01-01'::timestamp);
 

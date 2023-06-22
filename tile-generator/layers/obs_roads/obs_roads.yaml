@@ -27,7 +27,7 @@ layer:
     offset_direction: |
       Factor for offset to shift the line to the driving side. One of -1, 0, 1.
   defaults:
-    srs: EPSG:3785
+    srs: EPSG:3857
   datasource:
     srid: 3857
     geometry_field: geometry

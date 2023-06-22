@@ -7,10 +7,10 @@ import dateutil.parser
 from sanic.exceptions import Forbidden, InvalidUsage
 from sanic.response import raw
 
-from sqlalchemy import select, text
-from sqlalchemy.sql.expression import table, column
+from sqlalchemy import text
 
 from obs.api.app import app
+from obs.api.utils import use_request_semaphore
 
 
 def get_tile(filename, zoom, x, y):
@@ -87,24 +87,25 @@ def get_filter_options(
 
 @app.route(r"/tiles/<zoom:int>/<x:int>/<y:(\d+)\.pbf>")
 async def tiles(req, zoom: int, x: int, y: str):
-    if app.config.get("TILES_FILE"):
-        tile = get_tile(req.app.config.TILES_FILE, int(zoom), int(x), int(y))
+    async with use_request_semaphore(req, "tile_semaphore"):
+        if app.config.get("TILES_FILE"):
+            tile = get_tile(req.app.config.TILES_FILE, int(zoom), int(x), int(y))
 
-    else:
-        user_id, start, end = get_filter_options(req)
+        else:
+            user_id, start, end = get_filter_options(req)
 
-        tile = await req.ctx.db.scalar(
-            text(
-                f"select data from getmvt(:zoom, :x, :y, :user_id, :min_time, :max_time) as b(data, key);"
-            ).bindparams(
-                zoom=int(zoom),
-                x=int(x),
-                y=int(y),
-                user_id=user_id,
-                min_time=start,
-                max_time=end,
+            tile = await req.ctx.db.scalar(
+                text(
+                    f"select data from getmvt(:zoom, :x, :y, :user_id, :min_time, :max_time) as b(data, key);"
+                ).bindparams(
+                    zoom=int(zoom),
+                    x=int(x),
+                    y=int(y),
+                    user_id=user_id,
+                    min_time=start,
+                    max_time=end,
+                )
             )
-        )
 
     gzip = "gzip" in req.headers["accept-encoding"]
 
