@@ -1,3 +1,7 @@
 /*******************************
     User Variable Overrides
 *******************************/
+
+.ui.statistic .label{
+  font-size: 13px;
+}
