@@ -36,10 +36,11 @@ git submodule update --init --recursive
 
 ## Production setup
 
-There is a guide for a deployment based on docker in the
-[deployment](deployment) folder. Lots of non-docker deployment strategy are
-possible, but they are not "officially" supported, so please do not expect the
-authors of the software to assist in troubleshooting. 
+There is a guide for a deployment based on docker at
+[docs/production-deployment.md](docs/production-deployment.md). Lots of
+non-docker deployment strategies are possible, but they are not "officially"
+supported, so please do not expect the authors of the software to assist in
+troubleshooting. 
 
 This is a rather complex application, and it is expected that you know the
 basics of deploying a modern web application securely onto a production server.
@@ -52,7 +53,8 @@ Please note that you will always need to install your own reverse proxy that
 terminates TLS for you and handles certificates. We do not support TLS directly
 in the application, instead, please use this prefered method. 
 
-Upgrading and migrating is descrube
+Upgrading and migrating is described in [UPGRADING.md](./UPGRADING.md) for each
+version.
 
 ### Migrating (Production)
 
@@ -75,18 +77,6 @@ docker-compose run --rm api alembic upgrade head
 docker-compose run --rm api tools/prepare_sql_tiles
 ```
 
-
-docker-compose run --rm api alembic upgrade head
-
-### Upgrading from v0.2 to v0.3
-
-After v0.2 we switched the underlying technology of the API and the database.
-We now have no more MongoDB, instead, everything has moved to the PostgreSQL
-installation. For development setups, it is advised to just reset the whole
-state (remove the `local` folder) and start fresh. For production upgrades,
-please follow the relevant section in [`UPGRADING.md`](./UPGRADING.md).
-
-
 ## Development setup
 
 We've moved the whole development setup into Docker to make it easy for
@@ -100,7 +90,6 @@ Please [install Docker Engine](https://docs.docker.com/engine/install/) as well 
 Then clone the repository as described above.
 
 ### Configure Keycloak
-
 
 Login will not be possible until you configure the keycloak realm correctly. Boot your keycloak instance:
 
@@ -164,7 +153,7 @@ You will need to re-run this command after updates, to migrate the database and
 (re-)create the functions in the SQL database that are used when generating
 vector tiles.
 
-You should also import OpenStreetMap data now, see below for instructions.
+You should also [import OpenStreetMap data](docs/osm-import.md) now.
 
 ### Boot the application
 
@@ -190,48 +179,6 @@ docker-compose run --rm api alembic upgrade head
 ```
 
 
-## Import OpenStreetMap data
-
-**Hint:** This step may be skipped if you are using [Lean mode](./docs/lean-mode.md).
-
-You need to import road information from OpenStreetMap for the portal to work.
-This information is stored in your PostgreSQL database and used when processing
-tracks (instead of querying the Overpass API), as well as for vector tile
-generation. The process applies to both development and production setups. For
-development, you should choose a small area for testing, such as your local
-county or city, to keep the amount of data small. For production use you have
-to import the whole region you are serving.
-
-* Install `osm2pgsql`. 
-* Download the area(s) you would like to import from [GeoFabrik](https://download.geofabrik.de). 
-* Import each file like this:
-
-    ```bash
-    osm2pgsql --create --hstore --style roads_import.lua -O flex \
-      -H localhost -d obs -U obs -W \
-      path/to/downloaded/myarea-latest.osm.pbf 
-    ```
-
-You might need to adjust the host, database and username (`-H`, `-d`, `-U`) to
-your setup, and also provide the correct password when queried. For the
-development setup the password is `obs`. For production, you might need to
-expose the containers port and/or create a TCP tunnel, for example with SSH,
-such that you can run the import from your local host and write to the remote
-database.
-
-The import process should take a few seconds to minutes, depending on the area
-size. A whole country might even take one or more hours. You should probably
-not try to import `planet.osm.pbf`. 
-
-You can run the process multiple times, with the same or different area files,
-to import or update the data. However, for this to work, the actual [command
-line arguments](https://osm2pgsql.org/doc/manual.html#running-osm2pgsql) are a
-bit different each time, including when first importing, and the disk space
-required is much higher. 
-
-Refer to the documentation of `osm2pgsql` for assistance. We are using "flex
-mode", the provided script `roads_import.lua` describes the transformations
-and extractions to perform on the original data.
 
 ## Troubleshooting
 

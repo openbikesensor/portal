@@ -1,3 +1,4 @@
+import asyncio
 import logging
 import re
 
@@ -21,16 +22,60 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from obs.api.db import User, make_session, connect_db
+from obs.api.cors import setup_options, add_cors_headers
 from obs.api.utils import get_single_arg
-from sqlalchemy.util import asyncio
 
 log = logging.getLogger(__name__)
+
+
+class SanicAccessMessageFilter(logging.Filter):
+    """
+    A filter that modifies the log message of a sanic.access log entry to
+    include useful information.
+    """
+
+    def filter(self, record):
+        record.msg = f"{record.request} -> {record.status}"
+        return True
+
+
+def configure_sanic_logging():
+    for logger_name in ["sanic.root", "sanic.access", "sanic.error"]:
+        logger = logging.getLogger(logger_name)
+        for handler in logger.handlers:
+            logger.removeHandler(handler)
+
+    logger = logging.getLogger("sanic.access")
+    for filter_ in logger.filters:
+        logger.removeFilter(filter_)
+    logger.addFilter(SanicAccessMessageFilter())
+    logging.getLogger("sanic.root").setLevel(logging.WARNING)
+
 
 app = Sanic(
     "openbikesensor-api",
     env_prefix="OBS_",
-    log_config={},
 )
+configure_sanic_logging()
+
+app.config.update(
+    dict(
+        DEBUG=False,
+        VERBOSE=False,
+        AUTO_RELOAD=False,
+        POSTGRES_POOL_SIZE=20,
+        POSTGRES_MAX_OVERFLOW=40,
+        DEDICATED_WORKER=True,
+        FRONTEND_URL=None,
+        FRONTEND_HTTPS=True,
+        TILES_FILE=None,
+        TILE_SEMAPHORE_SIZE=4,
+        EXPORT_SEMAPHORE_SIZE=1,
+    )
+)
+
+# overwrite from defaults again
+app.config.load_environment_vars("OBS_")
 
 if isfile("./config.py"):
     app.update_config("./config.py")
@@ -57,6 +102,39 @@ class NoConnectionLostFilter(logging.Filter):
 
 
 logging.getLogger("sanic.error").addFilter(NoConnectionLostFilter)
+
+
+def setup_cors(app):
+    frontend_url = app.config.get("FRONTEND_URL")
+    additional_origins = app.config.get("ADDITIONAL_CORS_ORIGINS")
+    if not frontend_url and not additional_origins:
+        # No CORS configured
+        return
+
+    origins = []
+    if frontend_url:
+        u = urlparse(frontend_url)
+        origins.append(f"{u.scheme}://{u.netloc}")
+
+    if isinstance(additional_origins, str):
+        origins += re.split(r"\s+", additional_origins)
+    elif isinstance(additional_origins, list):
+        origins += additional_origins
+    elif additional_origins is not None:
+        raise ValueError(
+            "invalid option type for ADDITIONAL_CORS_ORIGINS, must be list or space separated str"
+        )
+
+    app.ctx.cors_origins = origins
+
+    # Add OPTIONS handlers to any route that is missing it
+    app.register_listener(setup_options, "before_server_start")
+
+    # Fill in CORS headers
+    app.register_middleware(add_cors_headers, "response")
+
+
+setup_cors(app)
 
 
 @app.exception(SanicException, BaseException)
@@ -95,39 +173,6 @@ def configure_paths(c):
 configure_paths(app.config)
 
 
-def setup_cors(app):
-    frontend_url = app.config.get("FRONTEND_URL")
-    additional_origins = app.config.get("ADDITIONAL_CORS_ORIGINS")
-    if not frontend_url and not additional_origins:
-        # No CORS configured
-        return
-
-    origins = []
-    if frontend_url:
-        u = urlparse(frontend_url)
-        origins.append(f"{u.scheme}://{u.netloc}")
-
-    if isinstance(additional_origins, str):
-        origins += re.split(r"\s+", additional_origins)
-    elif isinstance(additional_origins, list):
-        origins += additional_origins
-    elif additional_origins is not None:
-        raise ValueError(
-            "invalid option type for ADDITIONAL_CORS_ORIGINS, must be list or space separated str"
-        )
-
-    from sanic_cors import CORS
-
-    CORS(
-        app,
-        origins=origins,
-        supports_credentials=True,
-        expose_headers={"Content-Disposition"},
-    )
-
-
-setup_cors(app)
-
 # TODO: use a different interface, maybe backed by the PostgreSQL, to allow
 # scaling the API
 Session(app, interface=InMemorySessionInterface())
@@ -141,6 +186,12 @@ async def app_connect_db(app, loop):
         app.config.POSTGRES_MAX_OVERFLOW,
     )
     app.ctx._db_engine = await app.ctx._db_engine_ctx.__aenter__()
+
+    if app.config.TILE_SEMAPHORE_SIZE:
+        app.ctx.tile_semaphore = asyncio.Semaphore(app.config.TILE_SEMAPHORE_SIZE)
+
+    if app.config.EXPORT_SEMAPHORE_SIZE:
+        app.ctx.export_semaphore = asyncio.Semaphore(app.config.EXPORT_SEMAPHORE_SIZE)
 
 
 @app.after_server_stop
@@ -294,9 +345,7 @@ from .routes import (
     exports,
 )
 
-if not app.config.LEAN_MODE:
-    from .routes import tiles, mapdetails
-
+from .routes import tiles, mapdetails
 from .routes import frontend
 
 

@@ -1,35 +1,30 @@
 # Bind address of the server
-#HOST = "127.0.0.1"
-#PORT = 3000
+# HOST = "127.0.0.1"
+# PORT = 3000
 
 # Extended log output, but slower
 DEBUG = False
 VERBOSE = DEBUG
-AUTO_RESTART = DEBUG
-
-# Turn on lean mode to simplify the setup. Lots of features will be
-# unavailable, but you will not need to manage OpenStreetMap data. Please make
-# sure to configure the OBS_FACE_CACHE_DIR correctly for lean mode.
-LEAN_MODE = False
+AUTO_RELOAD = DEBUG
 
 # Required to encrypt or sign sessions, cookies, tokens, etc.
-#SECRET = "!!!<<<CHANGEME>>>!!!"
+# SECRET = "!!!<<<CHANGEME>>>!!!"
 
 # Connection to the database
-#POSTGRES_URL = "postgresql+asyncpg://user:pass@host/dbname"
-#POSTGRES_POOL_SIZE = 20
-#POSTGRES_MAX_OVERFLOW = 2 * POSTGRES_POOL_SIZE
+# POSTGRES_URL = "postgresql+asyncpg://user:pass@host/dbname"
+# POSTGRES_POOL_SIZE = 20
+# POSTGRES_MAX_OVERFLOW = 2 * POSTGRES_POOL_SIZE
 
 # URL to the keycloak realm, as reachable by the API service. This is not
 # necessarily its publicly reachable URL, keycloak advertises that iself.
-#KEYCLOAK_URL = "http://localhost:1234/auth/realms/obs/"
+# KEYCLOAK_URL = "http://localhost:1234/auth/realms/obs/"
 
 # Auth client credentials
-#KEYCLOAK_CLIENT_ID = "portal"
-#KEYCLOAK_CLIENT_SECRET = "00000000-0000-0000-0000-000000000000"
+# KEYCLOAK_CLIENT_ID = "portal"
+# KEYCLOAK_CLIENT_SECRET = "00000000-0000-0000-0000-000000000000"
 
 # Whether the API should run the worker loop, or a dedicated worker is used
-#DEDICATED_WORKER = True
+# DEDICATED_WORKER = True
 
 # The root of the frontend. Needed for redirecting after login, and for CORS.
 # Set to None if frontend is served by the API.

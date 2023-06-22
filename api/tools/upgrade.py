@@ -1,13 +1,14 @@
 #!/usr/bin/env python3
-import logging
 import asyncio
-from alembic.config import Config
-from alembic import command
-from os.path import join, dirname
+import logging
 
 log = logging.getLogger(__name__)
 
 from prepare_sql_tiles import prepare_sql_tiles, _run
+
+from import_regions import main as import_nuts
+
+from reimport_tracks import main as reimport_tracks
 
 
 async def _migrate():
@@ -20,7 +21,11 @@ async def main():
     await _migrate()
     log.info("Preparing SQL tiles...")
     await prepare_sql_tiles()
-    log.info("Upgraded")
+    log.info("Importing nuts regions...")
+    await import_nuts()
+    log.info("Nuts regions imported, scheduling reimport of tracks")
+    await reimport_tracks()
+
 
 
 if __name__ == "__main__":

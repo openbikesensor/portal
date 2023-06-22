@@ -1,0 +1,21 @@
+layer:
+  id: "obs_regions"
+  description: |
+      Statistics on administrative boundary areas ("regions")
+  buffer_size: 4
+  fields:
+    overtaking_event_count: |
+      Number of overtaking events.
+    name: |
+      Name of the region
+  defaults:
+    srs: EPSG:3857
+  datasource:
+    srid: 3857
+    geometry_field: geometry
+    key_field: region_id
+    key_field_as_attribute: no
+    query: (SELECT region_id, geometry, name, overtaking_event_count FROM layer_obs_regions(!bbox!, z(!scale_denominator!))) AS t
+
+schema:
+  - ./layer.sql

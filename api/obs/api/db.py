@@ -34,8 +34,9 @@ from sqlalchemy import (
     select,
     text,
     literal,
+    Text,
 )
-from sqlalchemy.dialects.postgresql import HSTORE, UUID
+from sqlalchemy.dialects.postgresql import UUID
 
 
 log = logging.getLogger(__name__)
@@ -107,6 +108,28 @@ class Geometry(UserDefinedType):
         return func.ST_AsGeoJSON(func.ST_Transform(col, 4326), type_=self)
 
 
+class LineString(UserDefinedType):
+    def get_col_spec(self):
+        return "geometry(LineString, 3857)"
+
+    def bind_expression(self, bindvalue):
+        return func.ST_GeomFromGeoJSON(bindvalue, type_=self)
+
+    def column_expression(self, col):
+        return func.ST_AsGeoJSON(func.ST_Transform(col, 4326), type_=self)
+
+
+class GeometryGeometry(UserDefinedType):
+    def get_col_spec(self):
+        return "geometry(GEOMETRY, 3857)"
+
+    def bind_expression(self, bindvalue):
+        return func.ST_GeomFromGeoJSON(bindvalue, type_=self)
+
+    def column_expression(self, col):
+        return func.ST_AsGeoJSON(func.ST_Transform(col, 4326), type_=self)
+
+
 class OvertakingEvent(Base):
     __tablename__ = "overtaking_event"
     __table_args__ = (Index("road_segment", "way_id", "direction_reversed"),)
@@ -134,12 +157,23 @@ class OvertakingEvent(Base):
 
 class Road(Base):
     __tablename__ = "road"
-    way_id = Column(BIGINT, primary_key=True, index=True)
+    way_id = Column(BIGINT, primary_key=True, index=True, autoincrement=False)
     zone = Column(ZoneType)
-    name = Column(String)
-    geometry = Column(Geometry)
+    name = Column(Text)
+    geometry = Column(LineString)
     directionality = Column(Integer)
     oneway = Column(Boolean)
+    import_group = Column(String)
+
+    __table_args__ = (
+        # We keep the index name as osm2pgsql created it, way back when.
+        Index(
+            "road_geometry_idx",
+            "geometry",
+            postgresql_using="gist",
+            postgresql_with={"fillfactor": 100},
+        ),
+    )
 
     def to_dict(self):
         return {
@@ -165,6 +199,12 @@ class RoadUsage(Base):
 
     def __repr__(self):
         return f"<RoadUsage {self.id}>"
+
+    def __hash__(self):
+        return int(self.hex_hash, 16)
+
+    def __eq__(self, other):
+        return self.hex_hash == other.hex_hash
 
 
 NOW = text("NOW()")
@@ -221,6 +261,12 @@ class Track(Base):
         Integer, ForeignKey("user.id", ondelete="CASCADE"), nullable=False
     )
 
+    user_device_id = Column(
+        Integer,
+        ForeignKey("user_device.id", ondelete="RESTRICT"),
+        nullable=True,
+    )
+
     # Statistics... maybe we'll drop some of this if we can easily compute them from SQL
     recorded_at = Column(DateTime)
     recorded_until = Column(DateTime)
@@ -253,6 +299,7 @@ class Track(Base):
         if for_user_id is not None and for_user_id == self.author_id:
             result["uploadedByUserAgent"] = self.uploaded_by_user_agent
             result["originalFileName"] = self.original_file_name
+            result["userDeviceId"] = self.user_device_id
 
         if self.author:
             result["author"] = self.author.to_dict(for_user_id=for_user_id)
@@ -362,7 +409,7 @@ class User(Base):
     api_key = Column(String)
 
     # This user can be matched by the email address from the auth service
-    # instead of having to match by `sub`. If a matching user logs in, the
+    # instead of having to match by `sub`. If  a matching user logs in, the
     # `sub` is updated to the new sub and this flag is disabled. This is for
     # migrating *to* the external authentication scheme.
     match_by_username_email = Column(Boolean, server_default=false())
@@ -409,6 +456,28 @@ class User(Base):
         self.username = new_name
 
 
+class UserDevice(Base):
+    __tablename__ = "user_device"
+    id = Column(Integer, autoincrement=True, primary_key=True)
+    user_id = Column(Integer, ForeignKey("user.id", ondelete="CASCADE"))
+    identifier = Column(String, nullable=False)
+    display_name = Column(String, nullable=True)
+
+    __table_args__ = (
+        Index("user_id_identifier", "user_id", "identifier", unique=True),
+    )
+
+    def to_dict(self, for_user_id=None):
+        if for_user_id != self.user_id:
+            return {}
+
+        return {
+            "id": self.id,
+            "identifier": self.identifier,
+            "displayName": self.display_name,
+        }
+
+
 class Comment(Base):
     __tablename__ = "comment"
     id = Column(Integer, autoincrement=True, primary_key=True)
@@ -430,6 +499,26 @@ class Comment(Base):
             "author": self.author.to_dict(for_user_id=for_user_id),
             "createdAt": self.created_at,
         }
+
+
+class Region(Base):
+    __tablename__ = "region"
+
+    id = Column(String(24), primary_key=True, index=True)
+    name = Column(Text)
+    geometry = Column(GeometryGeometry)
+    admin_level = Column(Integer, index=True)
+    import_group = Column(String)
+
+    __table_args__ = (
+        # We keep the index name as osm2pgsql created it, way back when.
+        Index(
+            "region_geometry_idx",
+            "geometry",
+            postgresql_using="gist",
+            postgresql_with={"fillfactor": 100},
+        ),
+    )
 
 
 Comment.author = relationship("User", back_populates="authored_comments")
@@ -456,6 +545,14 @@ Track.overtaking_events = relationship(
     order_by=OvertakingEvent.time,
     back_populates="track",
     passive_deletes=True,
+)
+
+Track.user_device = relationship("UserDevice", back_populates="tracks")
+UserDevice.tracks = relationship(
+    "Track",
+    order_by=Track.created_at,
+    back_populates="user_device",
+    passive_deletes=False,
 )
 
 
