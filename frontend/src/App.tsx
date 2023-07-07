@@ -1,19 +1,27 @@
-import React from 'react'
-import classnames from 'classnames'
-import {connect} from 'react-redux'
-import {List, Grid, Container, Menu, Header, Dropdown} from 'semantic-ui-react'
-import {BrowserRouter as Router, Switch, Route, Link} from 'react-router-dom'
-import {useObservable} from 'rxjs-hooks'
-import {from} from 'rxjs'
-import {pluck} from 'rxjs/operators'
-import {Helmet} from "react-helmet";
-import {useTranslation} from 'react-i18next'
+import React from "react";
+import classnames from "classnames";
+import { connect } from "react-redux";
+import {
+  List,
+  Grid,
+  Container,
+  Menu,
+  Header,
+  Dropdown,
+} from "semantic-ui-react";
+import { BrowserRouter as Router, Switch, Route, Link } from "react-router-dom";
+import { useObservable } from "rxjs-hooks";
+import { from } from "rxjs";
+import { pluck } from "rxjs/operators";
+import { Helmet } from "react-helmet";
+import { useTranslation } from "react-i18next";
 
-import {useConfig} from 'config'
-import styles from './App.module.less'
-import {AVAILABLE_LOCALES, setLocale} from 'i18n'
+import { useConfig } from "config";
+import styles from "./App.module.less";
+import { AVAILABLE_LOCALES, setLocale } from "i18n";
 
 import {
+  AcknowledgementsPage,
   ExportPage,
   HomePage,
   LoginRedirectPage,
@@ -25,24 +33,29 @@ import {
   TrackPage,
   TracksPage,
   UploadPage,
-} from 'pages'
-import {Avatar, LoginButton} from 'components'
-import api from 'api'
+  MyTracksPage,
+} from "pages";
+import { Avatar, LoginButton } from "components";
+import api from "api";
 
 function Banner({text, style = 'warning'}: {text: string; style: 'warning' | 'info'}) {
   return <div className={classnames(styles.banner, styles[style])}>{text}</div>
 }
 
-const App = connect((state) => ({login: state.login}))(function App({login}) {
-  const {t} = useTranslation()
-  const config = useConfig()
-  const apiVersion = useObservable(() => from(api.get('/info')).pipe(pluck('version')))
+const App = connect((state) => ({ login: state.login }))(function App({
+  login,
+}) {
+  const { t } = useTranslation();
+  const config = useConfig();
+  const apiVersion = useObservable(() =>
+    from(api.get("/info")).pipe(pluck("version"))
+  );
 
-  const hasMap = Boolean(config?.obsMapSource)
+  const hasMap = Boolean(config?.obsMapSource);
 
   React.useEffect(() => {
-    api.loadUser()
-  }, [])
+    api.loadUser();
+  }, []);
 
   return config ? (
     <Router basename={config.basename}>
@@ -51,7 +64,7 @@ const App = connect((state) => ({login: state.login}))(function App({login}) {
         <title>OpenBikeSensor Portal</title>
       </Helmet>
       {config?.banner && <Banner {...config.banner} />}
-      <Menu className={styles.menu}>
+      <Menu className={styles.menu} stackable>
         <Container>
           <Link to="/">
             <Menu.Item header className={styles.pageTitle}>
@@ -60,22 +73,22 @@ const App = connect((state) => ({login: state.login}))(function App({login}) {
           </Link>
 
           {hasMap && (
-          <Link to="/map">
+            <Link to="/map">
             <Menu.Item>
-              {t('App.menu.map')}
+              {t("App.menu.map")}
             </Menu.Item>
-          </Link>
+            </Link>
           )}
 
           <Link to="/tracks">
             <Menu.Item>
-              {t('App.menu.tracks')}
+              {t("App.menu.tracks")}
             </Menu.Item>
           </Link>
 
           <Link to="/export">
             <Menu.Item>
-              {t('App.menu.export')}
+              {t("App.menu.export")}
             </Menu.Item>
           </Link>
 
@@ -84,20 +97,26 @@ const App = connect((state) => ({login: state.login}))(function App({login}) {
               <>
                 <Link to="/my/tracks">
                   <Menu.Item>
-                    {t('App.menu.myTracks')}
+                    {t("App.menu.myTracks")}
                   </Menu.Item>
                 </Link>
                 <Dropdown item trigger={<Avatar user={login} className={styles.avatar} />}>
                   <Dropdown.Menu>
                     <Link to="/upload">
-                      <Dropdown.Item icon="cloud upload" text={t('App.menu.uploadTracks')} />
+                      <Dropdown.Item
+                      icon="cloud upload"
+                      text={t("App.menu.uploadTracks")} />
                     </Link>
                     <Link to="/settings">
-                      <Dropdown.Item icon="cog" text={t('App.menu.settings')}/>
+                      <Dropdown.Item
+                      icon="cog"
+                      text={t("App.menu.settings")}/>
                     </Link>
                     <Dropdown.Divider />
                     <Link to="/logout">
-                      <Dropdown.Item icon="sign-out" text={t('App.menu.logout')} />
+                      <Dropdown.Item
+                      icon="sign-out"
+                      text={t("App.menu.logout")} />
                     </Link>
                   </Dropdown.Menu>
                 </Dropdown>
@@ -115,14 +134,16 @@ const App = connect((state) => ({login: state.login}))(function App({login}) {
         <Route path="/" exact>
           <HomePage />
         </Route>
-        {hasMap && <Route path="/map" exact>
-          <MapPage />
-        </Route>}
+        {hasMap && (
+          <Route path="/map" exact>
+            <MapPage />
+          </Route>
+        )}
         <Route path="/tracks" exact>
           <TracksPage />
         </Route>
         <Route path="/my/tracks" exact>
-          <TracksPage privateTracks />
+          <MyTracksPage />
         </Route>
         <Route path={`/tracks/:slug`} exact>
           <TrackPage />
@@ -132,6 +153,9 @@ const App = connect((state) => ({login: state.login}))(function App({login}) {
         </Route>
         <Route path="/export" exact>
           <ExportPage />
+        </Route>
+        <Route path="/acknowledgements" exact>
+          <AcknowledgementsPage />
         </Route>
         <Route path="/redirect" exact>
           <LoginRedirectPage />
@@ -159,12 +183,14 @@ const App = connect((state) => ({login: state.login}))(function App({login}) {
           <Grid columns={4} stackable>
             <Grid.Row>
               <Grid.Column>
-                <Header as="h5">
-                  {t('App.footer.aboutTheProject')}
-                </Header>
+                <Header as="h5">{t("App.footer.aboutTheProject")}</Header>
                 <List>
                   <List.Item>
-                    <a href="https://openbikesensor.org/" target="_blank" rel="noreferrer">
+                    <a
+                      href="https://openbikesensor.org/"
+                      target="_blank"
+                      rel="noreferrer"
+                    >
                       openbikesensor.org
                     </a>
                   </List.Item>
@@ -172,68 +198,96 @@ const App = connect((state) => ({login: state.login}))(function App({login}) {
               </Grid.Column>
 
               <Grid.Column>
-                <Header as="h5">
-                  {t('App.footer.getInvolved')}
-                </Header>
+                <Header as="h5">{t("App.footer.getInvolved")}</Header>
                 <List>
                   <List.Item>
-                    <a href="https://forum.openbikesensor.org/" target="_blank" rel="noreferrer">
-                      {t('App.footer.getHelpInForum')}
+                    <a
+                      href="https://forum.openbikesensor.org/"
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      {t("App.footer.getHelpInForum")}
                     </a>
                   </List.Item>
                   <List.Item>
-                    <a href="https://github.com/openbikesensor/portal/issues/new" target="_blank" rel="noreferrer">
-                      {t('App.footer.reportAnIssue')}
+                    <a
+                      href="https://github.com/openbikesensor/portal/issues/new"
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      {t("App.footer.reportAnIssue")}
                     </a>
                   </List.Item>
                   <List.Item>
-                    <a href="https://github.com/openbikesensor/portal" target="_blank" rel="noreferrer">
-                      {t('App.footer.development')}
+                    <a
+                      href="https://github.com/openbikesensor/portal"
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      {t("App.footer.development")}
                     </a>
                   </List.Item>
                 </List>
               </Grid.Column>
 
               <Grid.Column>
-                <Header as="h5">
-                  {t('App.footer.thisInstallation')}
-                </Header>
+                <Header as="h5">{t("App.footer.thisInstallation")}</Header>
                 <List>
                   <List.Item>
-                    <a href={config?.privacyPolicyUrl} target="_blank" rel="noreferrer">
-                      {t('App.footer.privacyPolicy')}
+                    <a
+                      href={config?.privacyPolicyUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      {t("App.footer.privacyPolicy")}
                     </a>
                   </List.Item>
                   <List.Item>
-                    <a href={config?.imprintUrl} target="_blank" rel="noreferrer">
-                      {t('App.footer.imprint')}
+                    <a
+                      href={config?.imprintUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      {t("App.footer.imprint")}
                     </a>
                   </List.Item>
-                  { config?.termsUrl &&
-                      <List.Item>
-                          <a href={config?.termsUrl} target="_blank" rel="noreferrer">
-                               {t('App.footer.terms')}
-                           </a>
-                       </List.Item>
-                   }
+                  {config?.termsUrl && (
+                    <List.Item>
+                      <a
+                        href={config?.termsUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        {t("App.footer.terms")}
+                      </a>
+                    </List.Item>
+                  )}
                   <List.Item>
                     <a
                       href={`https://github.com/openbikesensor/portal${
-                        apiVersion ? `/releases/tag/${apiVersion}` : ''
+                        apiVersion ? `/releases/tag/${apiVersion}` : ""
                       }`}
                       target="_blank"
                       rel="noreferrer"
                     >
-                      {apiVersion ? t('App.footer.version', {apiVersion}) : t('App.footer.versionLoading')}
+                      {apiVersion
+                        ? t("App.footer.version", { apiVersion })
+                        : t("App.footer.versionLoading")}
                     </a>
                   </List.Item>
                 </List>
               </Grid.Column>
 
               <Grid.Column>
-                <Header as="h5">{t('App.footer.changeLanguage')}</Header>
+                <Header as="h5">{t("App.footer.changeLanguage")}</Header>
                 <List>
-                    {AVAILABLE_LOCALES.map(locale => <List.Item key={locale}><a onClick={() => setLocale(locale)}>{t(`locales.${locale}`)}</a></List.Item>)}
+                  {AVAILABLE_LOCALES.map((locale) => (
+                    <List.Item key={locale}>
+                      <a onClick={() => setLocale(locale)}>
+                        {t(`locales.${locale}`)}
+                      </a>
+                    </List.Item>
+                  ))}
                 </List>
               </Grid.Column>
             </Grid.Row>
@@ -241,7 +295,7 @@ const App = connect((state) => ({login: state.login}))(function App({login}) {
         </Container>
       </div>
     </Router>
-  ) : null
-})
+  ) : null;
+});
 
-export default App
+export default App;

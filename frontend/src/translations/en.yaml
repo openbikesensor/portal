@@ -54,17 +54,17 @@ LoginButton:
   login: Login
 
 HomePage:
+  stats: Statistics
   mostRecentTrack: Most recent track
 
 Stats:
-  title: Statistics
-  titleUser: My Statistic
   placeholder: "..."
   totalTrackLength: Total track length
   timeRecorded: Time recorded
   eventsConfirmed: Events confirmed
   tracksRecorded: Tracks recorded
   membersJoined: Members joined
+  deviceCount: Devices used
   thisMonth: This month
   thisYear: This year
   allTime: All time
@@ -101,6 +101,7 @@ ExportPage:
     label: Mode
     placeholder: Select mode
     events: Events
+    segments: Road statistics
   format:
     label: Format
     placeholder: Select format
@@ -110,6 +111,7 @@ ExportPage:
     label: Bounding Box
 
 UploadPage:
+  title: Upload tracks
   uploadProgress: Uploading {{progress}}%
   processing: Processing...
 
@@ -139,6 +141,11 @@ NotFoundPage:
 
 MapPage:
   sidebar:
+    copyright:
+      learnMore: Learn more
+      openStreetMap: © OpenStreetMap
+      boundaries: © EuroGeographics for the administrative boundaries
+
     baseMap:
       style:
         label: Basemap Style
@@ -163,6 +170,10 @@ MapPage:
 
     obsEvents:
       title: Event points
+
+    obsRegions:
+      title: Regions
+      colorByEventCount: Color regions are based on event count
 
     filters:
       title: Filters
@@ -208,11 +219,15 @@ MapPage:
       west: west bound
       northWest: north-west bound
 
+  regionInfo:
+    unnamedRegion: Unnamed region
+    eventCount: Event count
+
 SettingsPage:
-  title: Settings
+  title: My Account
 
   profile:
-    title: My profile
+    title: Profile
     publicNotice: All of the information below is public.
     username:
       label: Username
@@ -228,7 +243,7 @@ SettingsPage:
       label: Avatar URL
 
   apiKey:
-    title: My API Key
+    title: API Key
     description: |
       Here you find your API Key, for use in the OpenBikeSensor. You can to
       copy and paste it into your sensor's configuration interface to allow
@@ -252,6 +267,13 @@ SettingsPage:
 
     generate: Generate new API key
 
+  stats:
+    title: Statistics
+
+  devices:
+    title: Devices
+    identifier: Identifier
+    alias: Alias
 
 TrackPage:
   downloadFailed: Download failed
@@ -342,3 +364,43 @@ TrackEditor:
       later.
 
       **Use at your own risk.**
+
+RegionStats:
+  title: Top regions
+  regionName: Region name
+  eventCount: Event count
+
+AcknowledgementsPage:
+  title: Acknowledgements
+  information: |
+    This software is only able to function thanks to the work of other people.
+    On this page we'd like to acknowledge the work we depend on and the
+    databases and libraries we use.
+
+    If you use any data provided by this software, including exports,
+    downloads, screenshots or other extracted information, you might be making
+    use of these datasets, and their copyright provisision might apply to you.
+    Please take care to review this on a case by case basis and attribute the
+    origins of the data you are using in your derivate work, whether that is
+    directly or indirectly through this software.
+
+    ## Basemap
+
+    Basemap data is generally generated from
+    [OpenStreetMap](openstreetmap.org/copyright) data and is using the
+    [OpenMapTiles](https://openmaptiles.org/) schema and styles.
+
+    ## Roadway information
+
+    Roadway information is used to process uploaded tracks and to display road
+    segment statistics. This data is extracted from the
+    [OpenStreetMap](openstreetmap.org/copyright).
+
+    ## Region boundaries
+
+    Region boundaries for statistical analysis and map display are imported from
+    [NUTS](https://ec.europa.eu/eurostat/web/gisco/geodata/reference-data/administrative-units-statistical-units).
+    Provisions apply to the use of region boundary data, please follow above
+    link to learn more if you want to use this information in your derivative work.
+
+    © EuroGeographics for the administrative boundaries

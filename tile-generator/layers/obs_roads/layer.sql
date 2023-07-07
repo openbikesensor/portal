@@ -67,6 +67,7 @@ RETURNS TABLE(
     ) e on (e.way_id = road.way_id and (road.directionality != 0 or e.direction_reversed = r.rev))
 
     WHERE road.geometry && bbox
+      AND zoom_level >= 10
     GROUP BY
       road.name,
       road.way_id,

@@ -6,7 +6,7 @@ import {map, switchMap} from 'rxjs/operators'
 import {useTranslation} from 'react-i18next'
 
 import api from 'api'
-import {Stats, Page} from 'components'
+import {RegionStats, Stats, Page} from 'components'
 import type {Track} from 'types'
 
 import {TrackListItem, NoPublicTracksMessage} from './TracksPage'
@@ -46,9 +46,10 @@ export default function HomePage() {
         <Grid.Row>
           <Grid.Column width={8}>
             <Stats />
+            <MostRecentTrack />
           </Grid.Column>
           <Grid.Column width={8}>
-            <MostRecentTrack />
+            <RegionStats />
           </Grid.Column>
         </Grid.Row>
       </Grid>

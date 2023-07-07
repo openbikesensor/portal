@@ -12,7 +12,7 @@
   "obsMapSource": {
     "type": "vector",
     "tiles": ["https://portal.example.com/tiles/{z}/{x}/{y}.pbf"],
-    "minzoom": 12,
+    "minzoom": 0,
     "maxzoom": 14
   }
 }

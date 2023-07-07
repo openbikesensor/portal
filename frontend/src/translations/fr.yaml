@@ -65,6 +65,7 @@ Stats:
   eventsConfirmed: Evénements confirmées
   tracksRecorded: Traces enregistrées
   membersJoined: Membres enregistrés
+  deviceCount: Appareils utilisés
   thisMonth: Ce mois
   thisYear: Cette annéee
   allTime: De tout temps
@@ -101,6 +102,7 @@ ExportPage:
     label: Mode
     placeholder: Sélectionner un mode
     events: Evénements
+    segments: Statistiques des rues
   format:
     label: Format
     placeholder: Sélectionner un format
@@ -139,6 +141,11 @@ NotFoundPage:
 
 MapPage:
   sidebar:
+    copyright:
+      learnMore: En savoir plus
+      openStreetMap: © OpenStreetMap
+      boundaries: © EuroGeographics pour les limites administratives
+
     baseMap:
       style:
         label: Style de fond de carte
@@ -163,6 +170,10 @@ MapPage:
 
     obsEvents:
       title: Points d'événement
+
+    obsRegions:
+      title: Régions
+      colorByEventCount: Couleurs des régions sont basées sur le nombre d'événements
 
     filters:
       title: Filtres
@@ -208,6 +219,10 @@ MapPage:
       west: Ouest
       northWest: Nord-Ouest
 
+  regionInfo:
+    unnamedRegion: Région sans nom
+    eventCount: Nombre de dépassements
+
 SettingsPage:
   title: Paramètres
 
@@ -228,7 +243,7 @@ SettingsPage:
       label: URL d'avatar
 
   apiKey:
-    title: MA clé d'API
+    title: Ma clé d'API
     description: |
       Ici vous trouvez votre clé API, pour l'utilisation dans le OpenBikeSensor.
       Vous pouvez la copier et coller dans l'interface de configuration de votre
@@ -237,10 +252,10 @@ SettingsPage:
       Veuillez protéger votre clé API soigneusement car elle permet un contrôle
       total sur votre compte.
     urlDescription: |
-      L'URL de l'API doit être définie comme suit :
+      L'URL de l'API doit être définie comme suit:
     generateDescription: |
       Vous pouvez générer une nouvelle clé API ici, qui invalidera l'ancienne,
-      déconnectant de votre compte tous les appareils sur lesquels vous l'avez utilisée..
+      déconnectant de votre compte tous les appareils sur lesquels vous l'avez utilisée.
 
     key:
       label: Clé API Personnel
@@ -252,6 +267,10 @@ SettingsPage:
 
     generate: Générer une nouvelle clé API
 
+  devices:
+    title: Appareils
+    identifier: Identifiant
+    alias: Alias
 
 TrackPage:
   downloadFailed: Le téléchargement a échoué
@@ -343,3 +362,45 @@ TrackEditor:
       ou les rendez anonymes plus tard.
 
       **Utilisation à vos risques et périls.**
+
+RegionStats:
+  title: Top régions
+  regionName: Nom de la région
+  eventCount: Nombre de dépassements
+
+AcknowledgementsPage:
+  title: Remerciements
+  information: |
+    Ce logiciel ne peut fonctionner que grâce au travail d'autres personnes.
+    Sur cette page, nous aimerions reconnaître le travail dont nous dépendons et le
+    bases de données et bibliothèques que nous utilisons.
+
+    Si vous utilisez des données fournies par ce logiciel, y compris les exportations,
+    téléchargements, captures d'écran ou autres informations extraites, vous pourriez faire
+    l'utilisation de ces ensembles de données, et leur disposition sur le droit d'auteur peut s'appliquer à vous.
+    Veuillez prendre soin d'examiner cela au cas par cas et d'attribuer le
+    origines des données que vous utilisez dans votre travail dérivé, que ce soit
+    directement ou indirectement via ce logiciel.
+
+    ## Fond de carte
+
+    Les données de fond de carte sont généralement générées à partir de
+    [OpenStreetMap](openstreetmap.org/copyright) données et utilise le
+    [OpenMapTiles](https://openmaptiles.org/) schéma et styles.
+
+    ## Informations routières
+
+    Les informations routières sont utilisées pour traiter les pistes
+    téléchargées et pour afficher la route statistiques de segments. Ces
+    données sont extraites du [OpenStreetMap](openstreetmap.org/copyright).
+
+    ## Limites administratives
+
+    Les limites administratives pour l'analyse statistique et l'affichage de la
+    carte sont importées de
+    [NUTS](https://ec.europa.eu/eurostat/web/gisco/geodata/reference-data/administrative-units-statistical-units).
+    Des dispositions s'appliquent à l'utilisation des données sur les limites
+    de la région, veuillez suivre ci-dessus lien pour en savoir plus si vous
+    souhaitez utiliser ces informations dans votre travail dérivé.
+
+    © EuroGeographics pour les limites administratives

@@ -18,14 +18,16 @@ round_speed = partial(round_to, multiples=0.1)
 
 log = logging.getLogger(__name__)
 
-def get_bearing(a, b):
+
+def get_bearing(b, a):
     # longitude, latitude
     dL = b[0] - a[0]
     X = numpy.cos(b[1]) * numpy.sin(dL)
     Y = numpy.cos(a[1]) * numpy.sin(b[1]) - numpy.sin(a[1]) * numpy.cos(
         b[1]
     ) * numpy.cos(dL)
-    return numpy.arctan2(X, Y)
+    return numpy.arctan2(Y, X) + 0.5 * math.pi
+
 
 # Bins for histogram on overtaker distances. 0, 0.25, ... 2.25, infinity
 DISTANCE_BINS = numpy.arange(0, 2.5, 0.25).tolist() + [float('inf')]
@@ -82,11 +84,11 @@ async def mapdetails_road(req):
     arrays = numpy.array(arrays).T
 
     if len(arrays) == 0:
-        arrays = numpy.array([[], [], [], []], dtype=numpy.float)
+        arrays = numpy.array([[], [], [], []], dtype=float)
 
     data, mask = arrays[:-1], arrays[-1]
     data = data.astype(numpy.float64)
-    mask = mask.astype(numpy.bool)
+    mask = mask.astype(bool)
 
     def partition(arr, cond):
         return arr[:, cond], arr[:, ~cond]

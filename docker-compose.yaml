@@ -8,7 +8,7 @@ version: '3'
 
 services:
   postgres:
-    image: "openmaptiles/postgis:6.0"
+    image: "openmaptiles/postgis:7.0"
     environment:
       POSTGRES_USER: obs
       POSTGRES_PASSWORD: obs
@@ -20,6 +20,7 @@ services:
 
   api:
     image: openbikesensor-api
+    tty: true
     build:
       context: ./api/
       dockerfile: Dockerfile
@@ -35,6 +36,8 @@ services:
       - ./tile-generator/data/:/tiles
       - ./api/migrations:/opt/obs/api/migrations
       - ./api/alembic.ini:/opt/obs/api/alembic.ini
+      - ./local/pbf:/pbf
+      - ./local/obsdata:/obsdata
     depends_on:
       - postgres
       - keycloak
@@ -46,6 +49,7 @@ services:
 
   worker:
     image: openbikesensor-api
+    tty: true
     build:
       context: ./api/
       dockerfile: Dockerfile

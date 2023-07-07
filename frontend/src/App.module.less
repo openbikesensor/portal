@@ -69,7 +69,6 @@
 }
 
 .pageTitle a {
-  font-family: 'Open Sans Condensed';
   font-weight: 600;
   font-size: 18pt;
 
@@ -116,6 +115,15 @@
           text-decoration: underline;
         }
       }
+    }
+  }
+}
+
+@media @mobile {
+  .menu.menu {
+    > :global(.ui.container) {
+      height: @menuHeightMobile;
+      align-items: stretch;
     }
   }
 }

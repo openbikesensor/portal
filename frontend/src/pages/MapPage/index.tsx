@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo } from "react";
+import React, { useState, useCallback, useMemo, useRef } from "react";
 import _ from "lodash";
 import { connect } from "react-redux";
 import { Button } from "semantic-ui-react";
@@ -6,19 +6,21 @@ import { Layer, Source } from "react-map-gl";
 import produce from "immer";
 import classNames from "classnames";
 
+import api from "api";
 import type { Location } from "types";
 import { Page, Map } from "components";
 import { useConfig } from "config";
 import {
   colorByDistance,
   colorByCount,
+  getRegionLayers,
   borderByZone,
-  reds,
   isValidAttribute,
 } from "mapstyles";
 import { useMapConfig } from "reducers/mapConfig";
 
-import RoadInfo from "./RoadInfo";
+import RoadInfo, { RoadInfoType } from "./RoadInfo";
+import RegionInfo from "./RegionInfo";
 import LayerSidebar from "./LayerSidebar";
 import styles from "./styles.module.less";
 
@@ -27,6 +29,7 @@ const untaggedRoadsLayer = {
   type: "line",
   source: "obs",
   "source-layer": "obs_roads",
+  minzoom: 12,
   filter: ["!", ["to-boolean", ["get", "distance_overtaker_mean"]]],
   layout: {
     "line-cap": "round",
@@ -35,7 +38,7 @@ const untaggedRoadsLayer = {
   paint: {
     "line-width": ["interpolate", ["exponential", 1.5], ["zoom"], 12, 2, 17, 2],
     "line-color": "#ABC",
-    "line-opacity": ["interpolate", ["linear"], ["zoom"], 14, 0, 15, 1],
+    // "line-opacity": ["interpolate", ["linear"], ["zoom"], 14, 0, 15, 1],
     "line-offset": [
       "interpolate",
       ["exponential", 1.5],
@@ -46,10 +49,9 @@ const untaggedRoadsLayer = {
       ["*", ["get", "offset_direction"], 8],
     ],
   },
-  minzoom: 12,
 };
 
-const getUntaggedRoadsLayer = (colorAttribute, maxCount) =>
+const getUntaggedRoadsLayer = (colorAttribute) =>
   produce(untaggedRoadsLayer, (draft) => {
     draft.filter = ["!", isValidAttribute(colorAttribute)];
   });
@@ -58,6 +60,7 @@ const getRoadsLayer = (colorAttribute, maxCount) =>
   produce(untaggedRoadsLayer, (draft) => {
     draft.id = "obs_roads_normal";
     draft.filter = isValidAttribute(colorAttribute);
+    draft.minzoom = 10;
     draft.paint["line-width"][6] = 6; // scale bigger on zoom
     draft.paint["line-color"] = colorAttribute.startsWith("distance_")
       ? colorByDistance(colorAttribute)
@@ -66,8 +69,8 @@ const getRoadsLayer = (colorAttribute, maxCount) =>
       : colorAttribute.endsWith("zone")
       ? borderByZone()
       : "#DDD";
-    draft.paint["line-opacity"][3] = 12;
-    draft.paint["line-opacity"][5] = 13;
+    // draft.paint["line-opacity"][3] = 12;
+    // draft.paint["line-opacity"][5] = 13;
   });
 
 const getEventsLayer = () => ({
@@ -77,9 +80,10 @@ const getEventsLayer = () => ({
   "source-layer": "obs_events",
   paint: {
     "circle-radius": ["interpolate", ["linear"], ["zoom"], 14, 3, 17, 8],
+    "circle-opacity": ["interpolate",["linear"],["zoom"],8,0.1,9,0.3,10,0.5,11,1],
     "circle-color": colorByDistance("distance_overtaker"),
   },
-  minzoom: 11,
+  minzoom: 8,
 });
 
 const getEventsTextLayer = () => ({
@@ -95,7 +99,6 @@ const getEventsTextLayer = () => ({
       { "min-fraction-digits": 2, "max-fraction-digits": 2 },
     ],
     "text-allow-overlap": true,
-    "text-font": ["Open Sans Bold", "Arial Unicode MS Regular"],
     "text-size": 14,
     "text-keep-upright": false,
     "text-anchor": "left",
@@ -110,14 +113,39 @@ const getEventsTextLayer = () => ({
   },
 });
 
+interface RegionInfo {
+  properties: {
+    admin_level: number;
+    name: string;
+    overtaking_event_count: number;
+  };
+}
+
+type Details =
+  | { type: "road"; road: RoadInfoType }
+  | { type: "region"; region: RegionInfo };
+
 function MapPage({ login }) {
   const { obsMapSource, banner } = useConfig() || {};
-  const [clickLocation, setClickLocation] = useState<Location | null>(null);
+  const [details, setDetails] = useState<null | Details>(null);
+
+  const onCloseDetails = useCallback(() => setDetails(null), [setDetails]);
 
   const mapConfig = useMapConfig();
 
+  const viewportRef = useRef();
+  const mapInfoPortal = useRef();
+
+  const onViewportChange = useCallback(
+    (viewport) => {
+      viewportRef.current = viewport;
+    },
+    [viewportRef]
+  );
+
   const onClick = useCallback(
-    (e) => {
+    async (e) => {
+      // check if we clicked inside the mapInfoBox, if so, early exit
       let node = e.target;
       while (node) {
         if (
@@ -130,13 +158,28 @@ function MapPage({ login }) {
         node = node.parentNode;
       }
 
-      setClickLocation({ longitude: e.lngLat[0], latitude: e.lngLat[1] });
+      const { zoom } = viewportRef.current;
+
+      if (zoom < 10) {
+        const clickedRegion = e.features?.find(
+          (f) => f.source === "obs" && f.sourceLayer === "obs_regions"
+        );
+        setDetails(
+          clickedRegion ? { type: "region", region: clickedRegion } : null
+        );
+      } else {
+        const road = await api.get("/mapdetails/road", {
+          query: {
+            longitude: e.lngLat[0],
+            latitude: e.lngLat[1],
+            radius: 100,
+          },
+        });
+        setDetails(road?.road ? { type: "road", road } : null);
+      }
     },
-    [setClickLocation]
+    [setDetails]
   );
-  const onCloseRoadInfo = useCallback(() => {
-    setClickLocation(null);
-  }, [setClickLocation]);
 
   const [layerSidebar, setLayerSidebar] = useState(true);
 
@@ -162,8 +205,14 @@ function MapPage({ login }) {
     layers.push(roadsLayer);
   }
 
+  const regionLayers = useMemo(() => getRegionLayers(), []);
+  if (mapConfig.obsRegions.show) {
+    layers.push(...regionLayers);
+  }
+
   const eventsLayer = useMemo(() => getEventsLayer(), []);
   const eventsTextLayer = useMemo(() => getEventsTextLayer(), []);
+
   if (mapConfig.obsEvents.show) {
     layers.push(eventsLayer);
     layers.push(eventsTextLayer);
@@ -221,6 +270,7 @@ function MapPage({ login }) {
           styles.mapContainer,
           banner ? styles.hasBanner : null
         )}
+        ref={mapInfoPortal}
       >
         {layerSidebar && (
           <div className={styles.mapSidebar}>
@@ -228,7 +278,12 @@ function MapPage({ login }) {
           </div>
         )}
         <div className={styles.map}>
-          <Map viewportFromUrl onClick={onClick} hasToolbar>
+          <Map
+            viewportFromUrl
+            onClick={onClick}
+            hasToolbar
+            onViewportChange={onViewportChange}
+          >
             <div className={styles.mapToolbar}>
               <Button
                 primary
@@ -243,9 +298,22 @@ function MapPage({ login }) {
               ))}
             </Source>
 
-            <RoadInfo
-              {...{ clickLocation, hasFilters, onClose: onCloseRoadInfo }}
-            />
+            {details?.type === "road" && details?.road?.road && (
+              <RoadInfo
+                roadInfo={details.road}
+                mapInfoPortal={mapInfoPortal.current}
+                onClose={onCloseDetails}
+                {...{ hasFilters }}
+              />
+            )}
+
+            {details?.type === "region" && details?.region && (
+              <RegionInfo
+                region={details.region}
+                mapInfoPortal={mapInfoPortal.current}
+                onClose={onCloseDetails}
+              />
+            )}
           </Map>
         </div>
       </div>

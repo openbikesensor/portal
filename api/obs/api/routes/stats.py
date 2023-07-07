@@ -4,12 +4,12 @@ from typing import Optional
 from operator import and_
 from functools import reduce
 
-from sqlalchemy import select, func
+from sqlalchemy import distinct, select, func, desc
 
 from sanic.response import json
 
 from obs.api.app import api
-from obs.api.db import Track, OvertakingEvent, User
+from obs.api.db import Track, OvertakingEvent, User, Region, UserDevice
 from obs.api.utils import round_to
 
 
@@ -92,6 +92,14 @@ async def stats(req):
             .where(track_condition)
         )
     ).scalar()
+    device_count = (
+        await req.ctx.db.execute(
+            select(func.count(distinct(UserDevice.id)))
+            .select_from(UserDevice)
+            .join(Track.user_device)
+            .where(track_condition)
+        )
+    ).scalar()
 
     result = {
         "numEvents": event_count,
@@ -100,6 +108,7 @@ async def stats(req):
         "trackDuration": round_to(track_duration or 0, TRACK_DURATION_ROUNDING),
         "publicTrackCount": public_track_count,
         "trackCount": track_count,
+        "deviceCount": device_count,
     }
 
     return json(result)
@@ -167,3 +176,31 @@ async def stats(req):
 #     });
 #   }),
 # );
+
+
+@api.route("/stats/regions")
+async def stats(req):
+    query = (
+        select(
+            [
+                Region.id,
+                Region.name,
+                func.count(OvertakingEvent.id).label("overtaking_event_count"),
+            ]
+        )
+        .select_from(Region)
+        .join(
+            OvertakingEvent,
+            func.ST_Within(OvertakingEvent.geometry, Region.geometry),
+        )
+        .group_by(
+            Region.id,
+            Region.name,
+            Region.geometry,
+        )
+        .having(func.count(OvertakingEvent.id) > 0)
+        .order_by(desc("overtaking_event_count"))
+    )
+
+    regions = list(map(dict, (await req.ctx.db.execute(query)).all()))
+    return json(regions)

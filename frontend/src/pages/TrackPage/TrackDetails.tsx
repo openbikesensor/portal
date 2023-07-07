@@ -5,10 +5,7 @@ import { Duration } from "luxon";
 import { useTranslation } from "react-i18next";
 
 import { FormattedDate, Visibility } from "components";
-
-function formatDuration(seconds) {
-  return Duration.fromMillis((seconds ?? 0) * 1000).toFormat("h'h' mm'm'");
-}
+import { formatDistance, formatDuration } from "utils";
 
 export default function TrackDetails({ track, isAuthor }) {
   const { t } = useTranslation();
@@ -47,7 +44,7 @@ export default function TrackDetails({ track, isAuthor }) {
 
     track?.length != null && [
       t("TrackPage.details.length"),
-      `${(track?.length / 1000).toFixed(2)} km`,
+      formatDistance(track?.length),
     ],
 
     track?.processingStatus != null &&
@@ -63,23 +60,23 @@ export default function TrackDetails({ track, isAuthor }) {
   ].filter(Boolean);
 
   const COLUMNS = 4;
-  const chunkSize = Math.ceil(items.length / COLUMNS)
+  const chunkSize = Math.ceil(items.length / COLUMNS);
   return (
     <Grid>
       <Grid.Row columns={COLUMNS}>
-      {_.chunk(items, chunkSize).map((chunkItems, idx) => (
-            <Grid.Column key={idx}>
-
-  <List>
-    {chunkItems.map(([title, value]) => (
-      <List.Item key={title}>
-      <List.Header>{title}</List.Header>
-      <List.Description>{value}</List.Description>
-      </List.Item>))}
-    </List>
-            </Grid.Column>
-          ))}
-        </Grid.Row>
+        {_.chunk(items, chunkSize).map((chunkItems, idx) => (
+          <Grid.Column key={idx}>
+            <List>
+              {chunkItems.map(([title, value]) => (
+                <List.Item key={title}>
+                  <List.Header>{title}</List.Header>
+                  <List.Description>{value}</List.Description>
+                </List.Item>
+              ))}
+            </List>
+          </Grid.Column>
+        ))}
+      </Grid.Row>
     </Grid>
   );
 }

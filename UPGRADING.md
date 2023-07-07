@@ -1,9 +1,32 @@
 # Upgrading
-
 This document describes the general steps to upgrade between major changes.
 Simple migrations, e.g. for adding schema changes, are not documented
 explicitly. Their general usage is described in the [README](./README.md) (for
-development) and [deployment/README.md](deployment/README.md) (for production).
+development) and [docs/production-deployment.md](docs/production-deployment.md) (for production).
+
+
+## 0.8.0
+Upgrade to `0.7.x` first. See below for details. Then follow these steps:
+
+> **Warning** The update includes a reprocessing of tracks after import. Depending on the number of tracks this can take a few hours. The portal is reachable during that time but events disappear and incrementally reappear during reimport.
+
+> **Info** With this version the import process for OpenStreetMap data has changed: the [new process](docs/osm-import.md) is easier on resources and finally permits to import a full country on a low-end VM.
+
+- Do your [usual backup](docs/production-deployment.md)
+- get the release in your source folder (``git pull; git checkout 0.8.0`` and update submodules ``git submodule update --recursive``)
+- Rebuild images ``docker-compose build``
+- Stop your portal and worker services ``docker-compose stop worker portal``
+- run upgrade
+  ```bash
+  docker-compose run --rm portal tools/upgrade.py
+  ```
+  this automatically does the following
+  - Migration of database schema using alembic.
+  - Upgrade of SQL tile schema to new schema.
+  - Import the nuts-regions from the web into the database.
+  - Trigger a re-import of all tracks.
+- Start your portal and worker services. ``docker-compose up -d worker portal``
+
 
 ## 0.7.0
 
@@ -57,7 +80,7 @@ You can, but do not have to, reimport all tracks. This will generate a GPX file
 for each track and allow the users to download those. If a GPX file has not yet
 been created, the download will fail. To reimport all tracks, log in to your
 PostgreSQL database (instructions are in [README.md](./README.md) for
-development and [deployment/README.md](./deployment/README.md) for production)
+development and [docs/production-deployment.md](./docs/production-deployment.md) for production)
 and run:
 
 ```sql
@@ -77,7 +100,7 @@ Make sure your worker is running to process the queue.
   `POSTGRES_MAX_OVERFLOW`. Check the example config for sane default values.
 * Re-run `tools/prepare_sql_tiles.py` again (see README)
 * It has been made easier to import OSM data, check
-  [deployment/README.md](deployment/README.md) for the sections "Download
+  [docs/production-deployment.md](./docs/production-deployment.md) for the sections "Download
   OpenStreetMap maps" and "Import OpenStreetMap data". You can now download
   multiple .pbf files and then import them at once, using the docker image
   built with the `Dockerfile`. Alternatively, you can choose to enable [lean
@@ -132,5 +155,5 @@ Make sure your worker is running to process the queue.
   `export/users.json` into your realm, it will re-add all the users from the
   old installation. You should delete the file and `export/` folder afterwards.
 * Start `portal`.
-* Consider configuring a worker service. See [deployment/README.md](deployment/README.md).
+* Consider configuring a worker service. See [docs/production-deployment.md](./docs/production-deployment.md).
 

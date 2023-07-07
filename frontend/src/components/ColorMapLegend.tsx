@@ -59,7 +59,7 @@ export function DiscreteColorMapLegend({map}: {map: ColorMap}) {
   )
 }
 
-export default function ColorMapLegend({map, twoTicks = false}: {map: ColorMap, twoTicks?: boolean}) {
+export default function ColorMapLegend({map, twoTicks = false, digits=2}: {map: ColorMap, twoTicks?: boolean, digits?: number}) {
   const min = map[0][0]
   const max = map[map.length - 1][0]
   const normalizeValue = (v) => (v - min) / (max - min)
@@ -81,7 +81,7 @@ export default function ColorMapLegend({map, twoTicks = false}: {map: ColorMap, 
       </svg>
       {tickValues.map(([value]) => (
         <span className={styles.tick} key={value} style={{left: normalizeValue(value) * 100 + '%'}}>
-          {value.toFixed(2)}
+          {value.toFixed(digits)}
         </span>
       ))}
     </div>
