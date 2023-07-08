@@ -156,7 +156,7 @@ function TrackFilters({
 
 function TracksTable({ title }) {
   const [orderBy, setOrderBy] = useState("recordedAt");
-  const [reversed, setReversed] = useState(false);
+  const [reversed, setReversed] = useState(true);
   const [showFilters, setShowFilters] = useState(false);
   const [filters, setFilters] = useState<Filters>({});
   const [selectedTracks, setSelectedTracks] = useState<Record<string, boolean>>(
