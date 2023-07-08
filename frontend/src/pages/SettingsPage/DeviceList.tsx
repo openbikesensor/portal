@@ -27,6 +27,7 @@ function EditField({value, onEdit}) {
   }, [setEditing, setTempValue, value, cancelTimeout])
 
   const confirm = useCallback(() => {
+  console.log("confirmed")
     cancelTimeout()
     setEditing(false)
     onEdit(tempValue)
@@ -56,8 +57,6 @@ function EditField({value, onEdit}) {
           }}
           style={{marginRight: 8}}
         />
-        <Button icon="check" size="tiny" onClick={confirm} />
-        <Button icon="repeat" size="tiny" onClick={abort} />
       </>
     )
   } else {
