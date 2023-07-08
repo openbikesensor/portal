@@ -45,7 +45,7 @@ async def stats(req):
 
     # Only the user can look for their own stats, for now
     by_user = (
-        user is not None and req.ctx.user is not None and req.ctx.user.username == user
+        user is not None and req.ctx.user is not None and req.ctx.user.id == int(user)
     )
     if by_user:
         conditions.append(Track.author_id == req.ctx.user.id)
