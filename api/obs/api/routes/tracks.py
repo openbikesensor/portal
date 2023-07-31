@@ -41,7 +41,7 @@ async def _return_tracks(req, extend_query, limit, offset, order_by=None):
         extend_query(select(Track).options(joinedload(Track.author)))
         .limit(limit)
         .offset(offset)
-        .order_by(order_by if order_by is not None else Track.created_at)
+        .order_by(order_by if order_by is not None else Track.created_at.desc())
     )
 
     tracks = (await req.ctx.db.execute(query)).scalars()
