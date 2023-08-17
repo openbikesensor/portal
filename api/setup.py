@@ -28,6 +28,7 @@ setup(
     entry_points={
         "console_scripts": [
             "openbikesensor-api=obs.bin.openbikesensor_api:main",
+            "openbikesensor-transform-osm=obs.bin.openbikesensor_transform_osm:main",
         ]
     },
 )
