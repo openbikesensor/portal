@@ -21,5 +21,9 @@ export default function FormattedDate({date, relative = false}) {
   }
 
   const iso = dateTime.toISO()
-  return <time dateTime={iso} title={iso}>{str}</time>
+  return (
+    <time dateTime={iso} title={iso}>
+      {str}
+    </time>
+  )
 }

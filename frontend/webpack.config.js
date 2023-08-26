@@ -163,7 +163,7 @@ module.exports = function (webpackEnv) {
         '/config.json': apiUrl,
         '/api': apiUrl,
         '/login': apiUrl,
-        '/tiles': apiUrl
+        '/tiles': apiUrl,
       },
     },
     module: {
@@ -210,10 +210,12 @@ module.exports = function (webpackEnv) {
         {
           test: /\.ya?ml$/,
           type: 'json',
-          use: [{
-            loader: 'yaml-loader',
-            options: {asJSON: true},
-          }],
+          use: [
+            {
+              loader: 'yaml-loader',
+              options: {asJSON: true},
+            },
+          ],
         },
         {
           test: /\.css$/i,

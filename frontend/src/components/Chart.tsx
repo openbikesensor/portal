@@ -1,7 +1,7 @@
-import React from 'react';
-import ReactEChartsCore from 'echarts-for-react/lib/core';
+import React from 'react'
+import ReactEChartsCore from 'echarts-for-react/lib/core'
 
-import * as echarts from 'echarts/core';
+import * as echarts from 'echarts/core'
 
 import {
   // LineChart,
@@ -26,7 +26,7 @@ import {
   // ThemeRiverChart,
   // SunburstChart,
   // CustomChart,
-} from 'echarts/charts';
+} from 'echarts/charts'
 
 // import components, all suffixed with Component
 import {
@@ -60,25 +60,18 @@ import {
   // AriaComponent,
   // TransformComponent,
   DatasetComponent,
-} from 'echarts/components';
+} from 'echarts/components'
 
 // Import renderer, note that introducing the CanvasRenderer or SVGRenderer is a required step
 import {
   CanvasRenderer,
   // SVGRenderer,
-} from 'echarts/renderers';
+} from 'echarts/renderers'
 
 // Register the required components
-echarts.use(
-  [TitleComponent, TooltipComponent, GridComponent, BarChart, CanvasRenderer]
-);
+echarts.use([TitleComponent, TooltipComponent, GridComponent, BarChart, CanvasRenderer])
 
 // The usage of ReactEChartsCore are same with above.
 export default function Chart(props) {
-  return <ReactEChartsCore
-    echarts={echarts}
-    notMerge
-    lazyUpdate
-    {...props}
-  />
+  return <ReactEChartsCore echarts={echarts} notMerge lazyUpdate {...props} />
 }

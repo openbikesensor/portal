@@ -27,7 +27,7 @@ function EditField({value, onEdit}) {
   }, [setEditing, setTempValue, value, cancelTimeout])
 
   const confirm = useCallback(() => {
-  console.log("confirmed")
+    console.log('confirmed')
     cancelTimeout()
     setEditing(false)
     onEdit(tempValue)

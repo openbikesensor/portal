@@ -1,9 +1,9 @@
-import React from "react";
-import classnames from "classnames";
-import { Container } from "semantic-ui-react";
-import { Helmet } from "react-helmet";
+import React from 'react'
+import classnames from 'classnames'
+import {Container} from 'semantic-ui-react'
+import {Helmet} from 'react-helmet'
 
-import styles from "./Page.module.less";
+import styles from './Page.module.less'
 
 export default function Page({
   small,
@@ -12,11 +12,11 @@ export default function Page({
   stage,
   title,
 }: {
-  small?: boolean;
-  children: ReactNode;
-  fullScreen?: boolean;
-  stage?: ReactNode;
-  title?: string;
+  small?: boolean
+  children: ReactNode
+  fullScreen?: boolean
+  stage?: ReactNode
+  title?: string
 }) {
   return (
     <>
@@ -37,5 +37,5 @@ export default function Page({
         {fullScreen ? children : <Container>{children}</Container>}
       </main>
     </>
-  );
+  )
 }

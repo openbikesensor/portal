@@ -1,10 +1,10 @@
 import React from 'react'
 import {Link} from 'react-router-dom'
 import {Icon, Popup, Button, Dropdown} from 'semantic-ui-react'
-import { useTranslation } from "react-i18next";
+import {useTranslation} from 'react-i18next'
 
 export default function TrackActions({slug, isAuthor, onDownload}) {
-  const { t } = useTranslation();
+  const {t} = useTranslation()
 
   return (
     <>
@@ -25,7 +25,11 @@ export default function TrackActions({slug, isAuthor, onDownload}) {
 
       <Dropdown text={t('TrackPage.actions.download')} button>
         <Dropdown.Menu>
-          <Dropdown.Item text={t('TrackPage.actions.original')}onClick={() => onDownload('original.csv')} disabled={!isAuthor} />
+          <Dropdown.Item
+            text={t('TrackPage.actions.original')}
+            onClick={() => onDownload('original.csv')}
+            disabled={!isAuthor}
+          />
           <Dropdown.Item text={t('TrackPage.actions.gpx')} onClick={() => onDownload('track.gpx')} />
         </Dropdown.Menu>
       </Dropdown>
