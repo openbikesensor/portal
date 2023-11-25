@@ -132,7 +132,7 @@ async def export_segments(req):
         fmt = req.ctx.get_single_arg("fmt", convert=ExportFormat)
         segments = await req.ctx.db.stream(
             text(
-                f"select ST_AsGeoJSON(ST_Transform(geometry,4326)) AS geometry, way_id, distance_overtaker_mean, distance_overtaker_min,distance_overtaker_max,distance_overtaker_median,overtaking_event_count,usage_count,direction,zone,offset_direction,distance_overtaker_array from layer_obs_roads(ST_Transform(ST_MakeEnvelope({bbox},4326),3857),11,NULL,'1900-01-01'::timestamp,'2100-01-01'::timestamp) WHERE usage_count>0"
+                f"select ST_AsGeoJSON(ST_Transform(geometry,4326)) AS geometry, segment_length, name, way_id, distance_overtaker_mean, distance_overtaker_min,distance_overtaker_max,distance_overtaker_median,overtaking_event_count,usage_count,direction,zone,offset_direction,distance_overtaker_array from layer_obs_roads(ST_Transform(ST_MakeEnvelope({bbox},4326),3857),11,NULL,'1900-01-01'::timestamp,'2100-01-01'::timestamp) WHERE usage_count>0"
             )
         )
 
@@ -146,6 +146,8 @@ async def export_segments(req):
                 writer.field("usage_count", "N", decimal=4)
                 writer.field("way_id", "N", decimal=0)
                 writer.field("direction", "N", decimal=0)
+                writer.field("segment_length", "N", decimal=4)
+                writer.field("name", "C")
                 writer.field("zone", "C")
 
                 async for segment in segments:
@@ -159,8 +161,10 @@ async def export_segments(req):
                         usage_count=segment.usage_count,
                         overtaking_event_count=segment.overtaking_event_count,
                         direction=segment.direction,
+                        segment_length=segment.segment_length,
                         way_id=segment.way_id,
                         zone=segment.zone,
+                        name=segment.name,
                     )
 
             return raw(zip_buffer.getbuffer())
@@ -180,6 +184,8 @@ async def export_segments(req):
                             "usage_count": segment.usage_count,
                             "distance_overtaker_array": segment.distance_overtaker_array,
                             "direction": segment.direction,
+                            "segment_length": segment.segment_length,
+                            "name": segment.name,
                             "way_id": segment.way_id,
                             "zone": segment.zone,
                         },

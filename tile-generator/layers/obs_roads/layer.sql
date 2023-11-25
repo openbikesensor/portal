@@ -5,6 +5,8 @@ CREATE OR REPLACE FUNCTION layer_obs_roads(bbox geometry, zoom_level int, user_i
 RETURNS TABLE(
   way_id bigint,
   geometry geometry,
+  segment_length float,
+  name text,
   distance_overtaker_mean float,
   distance_overtaker_min float,
   distance_overtaker_max float,
@@ -20,6 +22,8 @@ RETURNS TABLE(
     SELECT
       road.way_id::bigint as way_id,
       road.geometry as geometry,
+      ST_length(road.geometry) as segment_length,
+      road.name as name,
       e.distance_overtaker_mean,
       e.distance_overtaker_min,
       e.distance_overtaker_max,

@@ -38,6 +38,8 @@ layer:
         SELECT
           way_id,
           geometry,
+          segment_length,
+          name,
           distance_overtaker_mean,
           distance_overtaker_min,
           distance_overtaker_max,
