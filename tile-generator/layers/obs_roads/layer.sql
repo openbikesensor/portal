@@ -22,7 +22,7 @@ RETURNS TABLE(
     SELECT
       road.way_id::bigint as way_id,
       road.geometry as geometry,
-      ST_length(road.geometry) as segment_length,
+      ST_Length(ST_GeogFromWKB(ST_Transform(road.geometry,4326))) as segment_length,
       road.name as name,
       e.distance_overtaker_mean,
       e.distance_overtaker_min,

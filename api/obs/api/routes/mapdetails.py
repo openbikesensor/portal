@@ -4,7 +4,9 @@ import logging
 import numpy
 import math
 
-from sqlalchemy import select, func, column
+from sqlalchemy import select, func, column, text
+
+from shapely import LineString
 
 import sanic.response as response
 from sanic.exceptions import InvalidUsage
@@ -63,6 +65,9 @@ async def mapdetails_road(req):
         )
     ).scalar()
 
+    length = await req.ctx.db.scalar(
+        text("select ST_Length(ST_GeogFromWKB(ST_Transform(geometry,4326))) from road where way_id=:wayid").bindparams(wayid=road.way_id)
+    )
     if road is None:
         return response.json({})
 
@@ -141,6 +146,7 @@ async def mapdetails_road(req):
     return response.json(
         {
             "road": road.to_dict(),
+            "length": length,
             "forwards": get_direction_stats(forwards),
             "backwards": get_direction_stats(backwards, True),
         }
