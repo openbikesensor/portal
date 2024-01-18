@@ -132,7 +132,7 @@ async def export_segments(req):
         fmt = req.ctx.get_single_arg("fmt", convert=ExportFormat)
         segments = await req.ctx.db.stream(
             text(
-                f"select ST_AsGeoJSON(ST_Transform(road.geometry,4326)) AS geometry, ST_Length(ST_GeogFromWKB(ST_Transform(road.geometry,4326))) as segment_length, road.name as name, road.way_id, distance_overtaker_mean, distance_overtaker_min,distance_overtaker_max,distance_overtaker_median,overtaking_event_count,usage_count,direction,road.zone,offset_direction,distance_overtaker_array from layer_obs_roads(ST_Transform(ST_MakeEnvelope({bbox},4326),3857),11,NULL,'1900-01-01'::timestamp,'2100-01-01'::timestamp) JOIN road ON road.way_id = layer_obs_roads.way_id WHERE usage_count>0 "
+                f"select ST_AsGeoJSON(ST_Transform(road.geometry,4326)) AS geometry, ST_Length(ST_GeogFromWKB(ST_Transform(road.geometry,4326)))::integer as segment_length, road.name as name, road.way_id, distance_overtaker_mean, distance_overtaker_min,distance_overtaker_max,distance_overtaker_median,overtaking_event_count,usage_count,direction,road.zone,offset_direction,distance_overtaker_array from layer_obs_roads(ST_Transform(ST_MakeEnvelope({bbox},4326),3857),11,NULL,'1900-01-01'::timestamp,'2100-01-01'::timestamp) JOIN road ON road.way_id = layer_obs_roads.way_id WHERE usage_count>0 "
             )
         )
 

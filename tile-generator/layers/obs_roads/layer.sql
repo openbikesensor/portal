@@ -5,7 +5,7 @@ CREATE OR REPLACE FUNCTION layer_obs_roads(bbox geometry, zoom_level int, user_i
 RETURNS TABLE(
   way_id bigint,
   geometry geometry,
-  segment_length float,
+  segment_length integer,
   name text,
   distance_overtaker_mean float,
   distance_overtaker_min float,
@@ -22,7 +22,7 @@ RETURNS TABLE(
     SELECT
       road.way_id::bigint as way_id,
       road.geometry as geometry,
-      ST_Length(ST_GeogFromWKB(ST_Transform(road.geometry,4326))) as segment_length,
+      ST_Length(ST_GeogFromWKB(ST_Transform(road.geometry,4326)))::integer as segment_length,
       road.name as name,
       e.distance_overtaker_mean,
       e.distance_overtaker_min,
@@ -30,6 +30,7 @@ RETURNS TABLE(
       e.distance_overtaker_median,
       e.distance_overtaker_array,
       e.distance_overtaker_count,
+      e.distance_overtaker_count_below_150,
       -- Since this is just one field we can subquery directly inline
       (
         SELECT count(road_usage.id) from road_usage
@@ -60,6 +61,7 @@ RETURNS TABLE(
           max(overtaking_event.distance_overtaker) as distance_overtaker_max,
           -- complicated way of saying "median" :)
           PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY overtaking_event.distance_overtaker) as distance_overtaker_median,
+          count(*) where overtaking_event.distance_overtaker < 1.5 as distance_overtaker_count_below_150,
           -- get all single values as well
           array_agg(overtaking_event.distance_overtaker) as distance_overtaker_array,
           count(overtaking_event.id)::int as distance_overtaker_count

@@ -12,7 +12,7 @@ import sanic.response as response
 from sanic.exceptions import InvalidUsage
 
 from obs.api.app import api
-from obs.api.db import Road, OvertakingEvent, Track
+from obs.api.db import Road, RoadUsage, OvertakingEvent, Track
 from obs.api.utils import round_to
 
 round_distance = partial(round_to, multiples=0.001)
@@ -65,6 +65,17 @@ async def mapdetails_road(req):
         )
     ).scalar()
 
+    async def get_road_usage():
+        return (
+            await req.ctx.db.execute(
+                text(
+                    "select count(*) filter (where direction_reversed=false), count(*) filter(where direction_reversed=true) from road_usage where way_id=:wayid").bindparams(
+                    wayid=road.way_id)
+            )
+        ).all()
+
+    road_usage, = await get_road_usage()
+
     length = await req.ctx.db.scalar(
         text("select ST_Length(ST_GeogFromWKB(ST_Transform(geometry,4326))) from road where way_id=:wayid").bindparams(wayid=road.way_id)
     )
@@ -100,11 +111,14 @@ async def mapdetails_road(req):
 
     forwards, backwards = partition(data, ~mask)
 
-    def array_stats(arr, rounder, bins=30):
+    def array_stats(arr, rounder, bins=30, road_usage=1):
         if len(arr):
             arr = arr[~numpy.isnan(arr)]
 
         n = len(arr)
+
+        below_150 = sum(arr < 1.50)/n if n != 0 else 1
+
 
         hist, bins = numpy.histogram(arr, bins=bins)
 
@@ -115,6 +129,10 @@ async def mapdetails_road(req):
                 "min": rounder(numpy.min(arr)) if n else None,
                 "max": rounder(numpy.max(arr)) if n else None,
                 "median": rounder(numpy.median(arr)) if n else None,
+                "below_150": below_150,
+                "usage": road_usage,
+                "below_150/km": 1000*below_150/length,
+                "below_150/(l*n)": 1000*below_150/(road_usage*length) if road_usage >0 else 0
             },
             "histogram": {
                 "bins": [None if math.isinf(b) else b for b in bins.tolist()],
@@ -138,8 +156,8 @@ async def mapdetails_road(req):
             "bearing": ((bearing + 180) % 360 if backwards else bearing)
             if bearing is not None
             else None,
-            "distanceOvertaker": array_stats(direction_arrays[0], round_distance, bins=DISTANCE_BINS),
-            "distanceStationary": array_stats(direction_arrays[1], round_distance, bins=DISTANCE_BINS),
+            "distanceOvertaker": array_stats(direction_arrays[0], round_distance, bins=DISTANCE_BINS, road_usage=road_usage[backwards*1]),
+            "distanceStationary": array_stats(direction_arrays[1], round_distance, bins=DISTANCE_BINS, road_usage=road_usage[backwards*1]),
             "speed": array_stats(direction_arrays[2], round_speed),
         }
 

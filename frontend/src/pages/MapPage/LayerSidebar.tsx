@@ -23,6 +23,7 @@ const ROAD_ATTRIBUTE_OPTIONS = [
   'distance_overtaker_median',
   'overtaking_event_count',
   'usage_count',
+  'segment_length',
   'zone',
 ]
 
@@ -140,7 +141,7 @@ function LayerSidebar({
                 onChange={(_e, {value}) => setMapConfigFlag('obsRoads.attribute', value)}
               />
             </List.Item>
-            {attribute.endsWith('_count') ? (
+            {(attribute.endsWith('_count')|attribute.endsWith("_length")) ? (
               <>
                 <List.Item>
                   <List.Header>{t('MapPage.sidebar.obsRoads.maxCount.label')}</List.Header>
