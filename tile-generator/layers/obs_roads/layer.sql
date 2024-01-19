@@ -13,6 +13,7 @@ RETURNS TABLE(
   distance_overtaker_median float,
   distance_overtaker_array float[],
   overtaking_event_count int,
+  overtaking_events_below_150 int,
   usage_count bigint,
   direction int,
   zone zone_type,
