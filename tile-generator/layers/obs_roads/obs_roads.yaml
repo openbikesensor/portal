@@ -16,6 +16,8 @@ layer:
       All overtaker distance values in meters.
     overtaking_event_count: |
       Number of overtaking events.
+    overtaking_events_below_150: |
+      Number of events with less than 150cm distance.
     usage_count: |
       Number of times the road was traveled on.
     direction: |
@@ -46,6 +48,7 @@ layer:
           distance_overtaker_median,
           distance_overtaker_array,
           overtaking_event_count,
+          overtaking_events_below_150,
           usage_count,
           direction,
           zone,
