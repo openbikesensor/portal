@@ -59,9 +59,9 @@ RETURNS TABLE(
           avg(overtaking_event.distance_overtaker) as distance_overtaker_mean,
           min(overtaking_event.distance_overtaker) as distance_overtaker_min,
           max(overtaking_event.distance_overtaker) as distance_overtaker_max,
+          count(CASE WHEN overtaking_event.distance_overtaker < 1.5 THEN overtaking_event.id END)::int as distance_overtaker_count_below_150,
           -- complicated way of saying "median" :)
           PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY overtaking_event.distance_overtaker) as distance_overtaker_median,
-          count(*) where overtaking_event.distance_overtaker < 1.5 as distance_overtaker_count_below_150,
           -- get all single values as well
           array_agg(overtaking_event.distance_overtaker) as distance_overtaker_array,
           count(overtaking_event.id)::int as distance_overtaker_count
@@ -89,7 +89,7 @@ RETURNS TABLE(
       e.distance_overtaker_max,
       e.distance_overtaker_median,
       e.distance_overtaker_array,
-      e.distance_overtaker_count
-    ;
-
+      e.distance_overtaker_count,
+      e.distance_overtaker_count_below_150
+;
 $$ LANGUAGE SQL IMMUTABLE;
