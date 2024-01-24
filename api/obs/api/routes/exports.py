@@ -4,6 +4,7 @@ from contextlib import contextmanager
 import zipfile
 import io
 import re
+import math
 from sqlite3 import connect
 
 import shapefile
@@ -14,6 +15,9 @@ from sanic.exceptions import InvalidUsage
 
 from obs.api.app import api, json as json_response
 from obs.api.utils import use_request_semaphore
+
+import logging
+log = logging.getLogger(__name__)
 
 
 class ExportFormat(str, Enum):
@@ -64,13 +68,13 @@ def shapefile_zip(shape_type=shapefile.POINT, basename="events"):
 async def export_events(req):
     async with use_request_semaphore(req, "export_semaphore", timeout=30):
         bbox = req.ctx.get_single_arg(
-            "bbox", default="-180,-90,180,90", convert=parse_bounding_box
+            "bbox", default="-180,-90,180,90"
         )
         fmt = req.ctx.get_single_arg("fmt", convert=ExportFormat)
 
-        events = await req.ctx.db.stream_scalars(
-            select(OvertakingEvent).where(
-                OvertakingEvent.geometry.bool_op("&&")(func.ST_Transform(bbox, 3857))
+        events = await req.ctx.db.stream(
+            text(
+                f"select ST_AsGeoJSON(ST_Transform(geometry,4326)) AS geometry,distance_overtaker,distance_stationary,way_id,direction,speed,time_stamp,course,zone from layer_obs_events(ST_Transform(ST_MakeEnvelope({bbox},4326),3857),19,NULL,'1900-01-01'::timestamp,'2100-01-01'::timestamp) "
             )
         )
 
@@ -82,16 +86,18 @@ async def export_events(req):
                 writer.field("direction", "N", decimal=0)
                 writer.field("course", "N", decimal=4)
                 writer.field("speed", "N", decimal=4)
+                writer.field("zone", "C")
 
                 async for event in events:
-                    writer.point(event.longitude, event.latitude)
+                    writer.point(json.loads(event.geometry))
                     writer.record(
                         distance_overtaker=event.distance_overtaker,
                         distance_stationary=event.distance_stationary,
-                        direction=-1 if event.direction_reversed else 1,
+                        direction=event.direction,
                         way_id=event.way_id,
                         course=event.course,
                         speed=event.speed,
+                        zone=event.zone
                         # "time"=event.time,
                     )
 
@@ -100,18 +106,20 @@ async def export_events(req):
         if fmt == ExportFormat.GEOJSON:
             features = []
             async for event in events:
+                geom = json.loads(event.geometry)
                 features.append(
                     {
                         "type": "Feature",
-                        "geometry": json.loads(event.geometry),
+                        "geometry": geom,
                         "properties": {
-                            "distance_overtaker": event.distance_overtaker,
-                            "distance_stationary": event.distance_stationary,
-                            "direction": -1 if event.direction_reversed else 1,
+                            "distance_overtaker": event.distance_overtaker if not math.isnan(event.distance_overtaker) else None,
+                            "distance_stationary": event.distance_stationary if not math.isnan(event.distance_stationary) else None,
+                            "direction": event.direction if not math.isnan(event.direction) else None,
                             "way_id": event.way_id,
-                            "course": event.course,
-                            "speed": event.speed,
-                            "time": event.time,
+                            "course": event.course if not math.isnan(event.course) else None,
+                            "speed": event.speed if not math.isnan(event.speed) else None,
+                            "time": event.time_stamp,
+                            "zone": event.zone
                         },
                     }
                 )
