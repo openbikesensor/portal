@@ -89,7 +89,8 @@ async def export_events(req):
                 writer.field("zone", "C")
 
                 async for event in events:
-                    writer.point(json.loads(event.geometry))
+                    coords = json.loads(event.geometry)['coordinates']
+                    writer.point(*coords)
                     writer.record(
                         distance_overtaker=event.distance_overtaker,
                         distance_stationary=event.distance_stationary,
@@ -112,15 +113,16 @@ async def export_events(req):
                         "type": "Feature",
                         "geometry": geom,
                         "properties": {
-                            "distance_overtaker": event.distance_overtaker if not math.isnan(event.distance_overtaker) else None,
-                            "distance_stationary": event.distance_stationary if not math.isnan(event.distance_stationary) else None,
-                            "direction": event.direction if not math.isnan(event.direction) else None,
+                            "distance_overtaker": event.distance_overtaker if event.distance_overtaker is not None and not math.isnan(event.distance_overtaker) else None,
+                            "distance_stationary": event.distance_stationary if event.distance_stationary is not None and not math.isnan(event.distance_stationary) else None,
+                            "direction": event.direction if event.direction is not None and not math.isnan(event.direction) else None,
                             "way_id": event.way_id,
-                            "course": event.course if not math.isnan(event.course) else None,
-                            "speed": event.speed if not math.isnan(event.speed) else None,
+                            "course": event.course if event.course is not None and not math.isnan(event.course) else None,
+                            "speed": event.speed if event.speed is not None and not math.isnan(event.speed) else None,
                             "time": event.time_stamp,
                             "zone": event.zone
                         },
+
                     }
                 )
 
