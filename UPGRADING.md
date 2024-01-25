@@ -5,6 +5,17 @@ explicitly. Their general usage is described in the [README](./README.md) (for
 development) and [docs/production-deployment.md](docs/production-deployment.md) (for production).
 
 
+## 0.8.1
+ 
+- Get the release in your source folder (``git pull; git checkout 0.8.0`` and update submodules ``git submodule update --recursive``)
+- Rebuild images ``docker-compose build``
+- No database upgrade is required, but tile functions need an update:
+  ```bash
+  docker-compose run --rm portal tools/prepare_sql_tiles.py
+  ```
+- Start your portal and worker services. ``docker-compose up -d worker portal``
+
+
 ## 0.8.0
 Upgrade to `0.7.x` first. See below for details. Then follow these steps:
 

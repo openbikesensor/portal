@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.8.1
+
+### Improvements
+
+* The zone (urban/rural) is now also exported with the events GeoJson export.
+
+### Bug Fixes
+
+* Update to a current version of gpstime (python dependency) fix portal startup.
+
 ## 0.8.0
 
 ### Features
