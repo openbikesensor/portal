@@ -16,6 +16,8 @@ layer:
       Direction of travel, as reported by GPS, in degree from North.
     speed: |
       Speed of travel, as reported by GPS, in meters per second (?).
+    time_stamp: |
+      the time of the overtaking
     zone: |
       rural or urban
   defaults:
