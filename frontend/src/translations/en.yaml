@@ -207,6 +207,7 @@ MapPage:
     mean: Average
 
     overtakerDistanceDistribution: Overtaker distance distribution
+    closeOvertakerPercentage: Overtakings < 1.5m
     hintFiltersNotApplied: Filters from the sidebar are not (yet) applied on this data.
 
     cardinalDirections:

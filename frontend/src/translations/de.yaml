@@ -201,6 +201,7 @@ MapPage:
     mean: Durchschnitt
 
     overtakerDistanceDistribution: Verteilung der Überholabstände
+    closeOvertakerPercentage: Überholvorgänge < 1.5m
     hintFiltersNotApplied: Filter aus der Seiteleiste werden (noch) nicht auf diese Daten angewandt.
 
     cardinalDirections:

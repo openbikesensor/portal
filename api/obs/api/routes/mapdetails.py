@@ -111,14 +111,11 @@ async def mapdetails_road(req):
 
     forwards, backwards = partition(data, ~mask)
 
-    def array_stats(arr, rounder, bins=30, road_usage=1):
+    def array_stats(arr, rounder, bins=30):
         if len(arr):
             arr = arr[~numpy.isnan(arr)]
 
         n = len(arr)
-
-        below_150 = sum(arr < 1.50)/n if n != 0 else 1
-
 
         hist, bins = numpy.histogram(arr, bins=bins)
 
@@ -129,10 +126,6 @@ async def mapdetails_road(req):
                 "min": rounder(numpy.min(arr)) if n else None,
                 "max": rounder(numpy.max(arr)) if n else None,
                 "median": rounder(numpy.median(arr)) if n else None,
-                "below_150": below_150,
-                "usage": road_usage,
-                "below_150/km": 1000*below_150/length,
-                "below_150/(l*n)": 1000*below_150/(road_usage*length) if road_usage >0 else 0
             },
             "histogram": {
                 "bins": [None if math.isinf(b) else b for b in bins.tolist()],
@@ -153,11 +146,12 @@ async def mapdetails_road(req):
 
     def get_direction_stats(direction_arrays, backwards=False):
         return {
-            "bearing": ((bearing + 180) % 360 if backwards else bearing)
-            if bearing is not None
-            else None,
-            "distanceOvertaker": array_stats(direction_arrays[0], round_distance, bins=DISTANCE_BINS, road_usage=road_usage[backwards*1]),
-            "distanceStationary": array_stats(direction_arrays[1], round_distance, bins=DISTANCE_BINS, road_usage=road_usage[backwards*1]),
+            "bearing": ((bearing + 180) % 360 if backwards else bearing) if bearing is not None else None,
+            "count": len(direction_arrays[0][~numpy.isnan(direction_arrays[0])]),
+            "below_150": len(direction_arrays[0][direction_arrays[0]<1.50]),
+            "roadUsage": road_usage[backwards * 1],
+            "distanceOvertaker": array_stats(direction_arrays[0], round_distance, bins=DISTANCE_BINS),
+            "distanceStationary": array_stats(direction_arrays[1], round_distance, bins=DISTANCE_BINS),
             "speed": array_stats(direction_arrays[2], round_speed),
         }
 
