@@ -1,4 +1,4 @@
-DROP FUNCTION IF EXISTS layer_obs_events;
+DROP FUNCTION IF EXISTS layer_obs_events(bbox geometry, zoom_level int, user_id integer, min_time timestamp, max_time timestamp);
 
 CREATE OR REPLACE FUNCTION layer_obs_events(bbox geometry, zoom_level int, user_id integer, min_time timestamp, max_time timestamp)
 RETURNS TABLE(event_id bigint, geometry geometry, distance_overtaker float, distance_stationary float, direction int, course float, speed float, time_stamp timestamp, zone zone_type, way_id bigint) AS $$

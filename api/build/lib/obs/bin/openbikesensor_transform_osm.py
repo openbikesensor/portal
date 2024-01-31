@@ -163,11 +163,6 @@ class OSMHandler(osmium.SimpleHandler):
         if not highway or highway not in HIGHWAY_TYPES:
             return
 
-        access = tags.get("access", None)
-        bicycle = tags.get("bicycle", None)
-        if access == "no" and bicycle not in ["designated", "yes", "permissive", "destination"]:
-            return
-
         zone = determine_zone(tags)
         directionality, oneway = determine_direction(tags, zone)
         name = tags.get("name")
