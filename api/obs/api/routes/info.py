@@ -6,7 +6,7 @@ from sanic.response import json
 
 log = logging.getLogger(__name__)
 
-from obs.api import __version__ as version
+from obs import __version__ as version
 
 
 @api.route("/info")

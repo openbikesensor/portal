@@ -3,6 +3,10 @@ from setuptools import setup, find_packages
 with open("requirements.txt", encoding="utf-8") as f:
     requires = list(f.readlines())
 
+requires = [line for line in requires if "openmaptiles-tools" not in line] + [
+    "openmaptiles-tools"
+]
+
 setup(
     name="openbikesensor-api",
     version="0.0.1",
