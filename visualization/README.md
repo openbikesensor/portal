@@ -1,18 +1,22 @@
 # Overview
-OBS-FACE-Visualization visualizes the output of the [OpenBikeSensor FACE script](https://github.com/openbikesensor/OpenBikeSensor-Scripts/blob/main/docs/obs-face.md) in a map overlay style.    
+OBS-FACE-Visualization visualizes the output of the [OpenBikeSensor FACE [`obs-face`](../docs/obs-face.md) in a map overlay style.    
 
 The visualization is implemented as two static HTMl/JavaScript websites, requiring a simple HTTP server and a recent web browser on client side. 
 
 # Installation
-Clone the script repository
+Clone the script repository 
 
- `git clone https://github.com/openbikesensor/OpenBikeSensor-Scripts.git`
+```bash
+git clone https://github.com/openbikesensor/portal
+```
 
 and go to the visualization subdirectory
 
- `cd OpenBikeSensor-Scripts/OBS-FACE-Visualization`.
+```bash
+cd portal/visualization
+```
 
-Create a subdirectory `json` and copy the GeoJson files resulting from running  [OpenBikeSensor FACE script](https://github.com/openbikesensor/OpenBikeSensor-Scripts/blob/main/docs/obs-face.md) (by default `./data/visualization/*.json`) there. 
+Create a subdirectory `json` and copy the GeoJson files resulting from running [`obs-face`](../docs/obs-face.md) (by default `./data/visualization/*.json`) there. 
 
 The directory containing `measurements.html` and `roads.html` must be served using an HTTP server.   
 For local, *non-public use*, a simple one - e.g. [SimpleHTTPServer](https://docs.python.org/2/library/simplehttpserver.html#module-SimpleHTTPServer) is sufficient. 

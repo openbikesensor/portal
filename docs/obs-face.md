@@ -23,7 +23,7 @@ All confirmed and valid measurements are collected and consolidated in one file 
 
 ### Export
 
-The consolidated measurements are converted to GeoJson format and exported for visualization as required by the [OpenBikeSensor visualization](https://github.com/openbikesensor/OpenBikeSensor-Scripts/blob/main/visualization/README.md).
+The consolidated measurements are converted to GeoJson format and exported for visualization as required by the [visualization](../visualization/README.md).
 
 ## Installation
 
