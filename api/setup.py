@@ -1,5 +1,8 @@
 from setuptools import setup, find_packages
 
+with open("requirements.txt", encoding="utf-8") as f:
+    requires = list(f.readlines())
+
 setup(
     name="openbikesensor-api",
     version="0.0.1",
@@ -9,26 +12,20 @@ setup(
     url="https://github.com/openbikesensor/portal",
     packages=find_packages(),
     package_data={},
-    install_requires=[
-        "coloredlogs~=15.0.1",
-        "sanic==22.6.2",
-        "oic>=1.3.0, <2",
-        "sanic-session~=0.8.0",
-        "python-slugify>=5.0.2,<6.2.0",
-        "motor>=2.5.1,<3.1.2",
-        "pyyaml<6",
-        "sqlparse~=0.4.3",
-        "openmaptiles-tools",  # install from git
-        "pyshp>=2.2,<2.4",
-        "sqlalchemy[asyncio]~=1.4.46",
-        "asyncpg~=0.27.0",
-        "alembic~=1.9.4",
-        "stream-zip~=0.0.50",
-    ],
+    install_requires=requires,
     entry_points={
         "console_scripts": [
             "openbikesensor-api=obs.bin.openbikesensor_api:main",
             "openbikesensor-transform-osm=obs.bin.openbikesensor_transform_osm:main",
+            "openbikesensor-face=obs.bin.obs_face:main",
+            "openbikesensor-filter-privacy=obs.bin.obs_filter_privacy:main",
+            "openbikesensor-process-track=obs.bin.obs_process_track:main",
+            "openbikesensor-provision=obs.bin.obs_provision:main",
+            # legacy obs- prefix
+            "obs-face=obs.bin.obs_face:main",
+            "obs-filter-privacy=obs.bin.obs_filter_privacy:main",
+            "obs-process-track=obs.bin.obs_process_track:main",
+            "obs-provision=obs.bin.obs_provision:main",
         ]
     },
 )

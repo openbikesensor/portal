@@ -1,8 +1,0 @@
-*.egg-info
-data
-cache
-*.pyc
-__pycache__
-dist
-build
-devices.txt
