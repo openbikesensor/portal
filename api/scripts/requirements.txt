@@ -1,0 +1,14 @@
+numpy==1.24.2
+pytz==2023.2
+joblib>=1.0.0
+tzwhere>=3.0.3
+haversine==2.8.0
+requests>=2.25.1
+aabbtree>=2.6.2
+jsons==1.6.3
+memoization>=0.3.2
+coloredlogs>=15.0
+httpx>=0.17.1
+gpstime==0.8.1
+geopy>=2.2.0
+sqlalchemy[asyncio]~=1.4.47
