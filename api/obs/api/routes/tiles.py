@@ -96,7 +96,7 @@ async def tiles(req, zoom: int, x: int, y: str):
 
             tile = await req.ctx.db.scalar(
                 text(
-                    f"select data from getmvt(:zoom, :x, :y, :user_id, :min_time, :max_time) as b(data, key);"
+                    "select data from getmvt(:zoom, :x, :y, :user_id, :min_time, :max_time) as b(data, key);"
                 ).bindparams(
                     zoom=int(zoom),
                     x=int(x),
