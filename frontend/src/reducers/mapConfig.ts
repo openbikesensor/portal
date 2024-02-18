@@ -11,8 +11,10 @@ type RoadAttribute =
   | 'distance_overtaker_max'
   | 'distance_overtaker_median'
   | 'overtaking_event_count'
+  | 'segment_length'
   | 'usage_count'
   | 'zone'
+
 
 export type MapConfig = {
   baseMap: {

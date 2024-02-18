@@ -186,6 +186,7 @@ async def stats(req):
                 Region.id,
                 Region.name,
                 func.count(OvertakingEvent.id).label("overtaking_event_count"),
+                func.count(distinct(OvertakingEvent.track_id)).label("track_count"),
             ]
         )
         .select_from(Region)

@@ -4,13 +4,15 @@ import logging
 import numpy
 import math
 
-from sqlalchemy import select, func, column
+from sqlalchemy import select, func, column, text
+
+from shapely import LineString
 
 import sanic.response as response
 from sanic.exceptions import InvalidUsage
 
 from obs.api.app import api
-from obs.api.db import Road, OvertakingEvent, Track
+from obs.api.db import Road, RoadUsage, OvertakingEvent, Track
 from obs.api.utils import round_to
 
 round_distance = partial(round_to, multiples=0.001)
@@ -63,6 +65,20 @@ async def mapdetails_road(req):
         )
     ).scalar()
 
+    async def get_road_usage():
+        return (
+            await req.ctx.db.execute(
+                text(
+                    "select count(*) filter (where direction_reversed=false), count(*) filter(where direction_reversed=true) from road_usage where way_id=:wayid").bindparams(
+                    wayid=road.way_id)
+            )
+        ).all()
+
+    road_usage, = await get_road_usage()
+
+    length = await req.ctx.db.scalar(
+        text("select ST_Length(ST_GeogFromWKB(ST_Transform(geometry,4326))) from road where way_id=:wayid").bindparams(wayid=road.way_id)
+    )
     if road is None:
         return response.json({})
 
@@ -130,9 +146,10 @@ async def mapdetails_road(req):
 
     def get_direction_stats(direction_arrays, backwards=False):
         return {
-            "bearing": ((bearing + 180) % 360 if backwards else bearing)
-            if bearing is not None
-            else None,
+            "bearing": ((bearing + 180) % 360 if backwards else bearing) if bearing is not None else None,
+            "count": len(direction_arrays[0][~numpy.isnan(direction_arrays[0])]),
+            "below_150": len(direction_arrays[0][direction_arrays[0]<1.50]),
+            "roadUsage": road_usage[backwards * 1],
             "distanceOvertaker": array_stats(direction_arrays[0], round_distance, bins=DISTANCE_BINS),
             "distanceStationary": array_stats(direction_arrays[1], round_distance, bins=DISTANCE_BINS),
             "speed": array_stats(direction_arrays[2], round_speed),
@@ -141,6 +158,7 @@ async def mapdetails_road(req):
     return response.json(
         {
             "road": road.to_dict(),
+            "length": length,
             "forwards": get_direction_stats(forwards),
             "backwards": get_direction_stats(backwards, True),
         }

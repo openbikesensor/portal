@@ -206,6 +206,7 @@ MapPage:
     mean: Moyenne
 
     overtakerDistanceDistribution: Distribution des distances de dépassement
+    closeOvertakerPercentage: Dépassements < 1.5m
     hintFiltersNotApplied: Les filtres de la barre latérale ne sont pas (encore) appliqués à ces données.
 
     cardinalDirections:

@@ -201,6 +201,7 @@ MapPage:
     mean: Durchschnitt
 
     overtakerDistanceDistribution: Verteilung der Überholabstände
+    closeOvertakerPercentage: Überholvorgänge < 1.5m
     hintFiltersNotApplied: Filter aus der Seiteleiste werden (noch) nicht auf diese Daten angewandt.
 
     cardinalDirections:
@@ -370,7 +371,9 @@ TrackEditor:
 RegionStats:
   title: Top-Regionen
   regionName: Region
-  eventCount: Anzahl Überholungen
+  eventCount: Überholungen
+  trackCount: Fahrten
+  trackCountTooltip: Eine Fahrt kann zu mehreren Regionen gehören, wenn sie Überholungen darin enthält.
 
 AcknowledgementsPage:
   title: Danksagungen

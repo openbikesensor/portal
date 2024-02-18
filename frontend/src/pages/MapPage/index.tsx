@@ -58,7 +58,7 @@ const getRoadsLayer = (colorAttribute, maxCount) =>
     draft.paint['line-width'][6] = 6 // scale bigger on zoom
     draft.paint['line-color'] = colorAttribute.startsWith('distance_')
       ? colorByDistance(colorAttribute)
-      : colorAttribute.endsWith('_count')
+      : (colorAttribute.endsWith('_count') | colorAttribute.endsWith('_length'))
       ? colorByCount(colorAttribute, maxCount)
       : colorAttribute.endsWith('zone')
       ? borderByZone()

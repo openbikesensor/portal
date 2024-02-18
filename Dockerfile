@@ -44,9 +44,6 @@ RUN pip install -r requirements.txt
 
 ADD tile-generator /opt/obs/tile-generator
 
-ADD api/scripts /opt/obs/scripts
-RUN pip install -e /opt/obs/scripts
-
 ADD api/setup.py  /opt/obs/api/
 ADD api/alembic.ini /opt/obs/api/
 ADD api/migrations /opt/obs/api/migrations/
