@@ -370,7 +370,9 @@ TrackEditor:
 RegionStats:
   title: Top regions
   regionName: Region name
-  eventCount: Event count
+  eventCount: Events
+  trackCount: Tracks
+  trackCountTooltip: A track can count to multiple regions if it has events in each.
 
 AcknowledgementsPage:
   title: Acknowledgements

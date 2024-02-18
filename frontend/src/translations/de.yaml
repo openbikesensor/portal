@@ -371,7 +371,9 @@ TrackEditor:
 RegionStats:
   title: Top-Regionen
   regionName: Region
-  eventCount: Anzahl Überholungen
+  eventCount: Überholungen
+  trackCount: Fahrten
+  trackCountTooltip: Eine Fahrt kann zu mehreren Regionen gehören, wenn sie Überholungen darin enthält.
 
 AcknowledgementsPage:
   title: Danksagungen
