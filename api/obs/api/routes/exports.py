@@ -17,6 +17,7 @@ from obs.api.app import api, json as json_response
 from obs.api.utils import use_request_semaphore
 
 import logging
+
 log = logging.getLogger(__name__)
 
 
@@ -67,15 +68,35 @@ def shapefile_zip(shape_type=shapefile.POINT, basename="events"):
 @api.get(r"/export/events")
 async def export_events(req):
     async with use_request_semaphore(req, "export_semaphore", timeout=30):
-        bbox = req.ctx.get_single_arg(
-            "bbox", default="-180,-90,180,90"
-        )
+        bbox = req.ctx.get_single_arg("bbox", default="-180,-90,180,90")
+        assert re.match(r"(-?\d+\.?\d+,?){4}", bbox)
+        bbox = list(map(float, bbox.split(",")))
+
         fmt = req.ctx.get_single_arg("fmt", convert=ExportFormat)
 
         events = await req.ctx.db.stream(
             text(
-                f"select ST_AsGeoJSON(ST_Transform(geometry,4326)) AS geometry,distance_overtaker,distance_stationary,way_id,direction,speed,time_stamp,course,zone from layer_obs_events(ST_Transform(ST_MakeEnvelope({bbox},4326),3857),19,NULL,'1900-01-01'::timestamp,'2100-01-01'::timestamp) "
-            )
+                """
+                SELECT
+                    ST_AsGeoJSON(ST_Transform(geometry, 4326)) AS geometry,
+                    distance_overtaker,
+                    distance_stationary,
+                    way_id,
+                    direction,
+                    speed,
+                    time_stamp,
+                    course,
+                    zone
+                FROM
+                    layer_obs_events(
+                        ST_Transform(ST_MakeEnvelope(:bbox0, :bbox1, :bbox2, :bbox3, 4326), 3857),
+                        19,
+                        NULL,
+                        '1900-01-01'::timestamp,
+                        '2100-01-01'::timestamp
+                    )
+                """
+            ).bindparams(bbox0=bbox[0], bbox1=bbox[1], bbox2=bbox[2], bbox3=bbox[3])
         )
 
         if fmt == ExportFormat.SHAPEFILE:
@@ -89,7 +110,7 @@ async def export_events(req):
                 writer.field("zone", "C")
 
                 async for event in events:
-                    coords = json.loads(event.geometry)['coordinates']
+                    coords = json.loads(event.geometry)["coordinates"]
                     writer.point(*coords)
                     writer.record(
                         distance_overtaker=event.distance_overtaker,
@@ -113,16 +134,28 @@ async def export_events(req):
                         "type": "Feature",
                         "geometry": geom,
                         "properties": {
-                            "distance_overtaker": event.distance_overtaker if event.distance_overtaker is not None and not math.isnan(event.distance_overtaker) else None,
-                            "distance_stationary": event.distance_stationary if event.distance_stationary is not None and not math.isnan(event.distance_stationary) else None,
-                            "direction": event.direction if event.direction is not None and not math.isnan(event.direction) else None,
+                            "distance_overtaker": event.distance_overtaker
+                            if event.distance_overtaker is not None
+                            and not math.isnan(event.distance_overtaker)
+                            else None,
+                            "distance_stationary": event.distance_stationary
+                            if event.distance_stationary is not None
+                            and not math.isnan(event.distance_stationary)
+                            else None,
+                            "direction": event.direction
+                            if event.direction is not None
+                            and not math.isnan(event.direction)
+                            else None,
                             "way_id": event.way_id,
-                            "course": event.course if event.course is not None and not math.isnan(event.course) else None,
-                            "speed": event.speed if event.speed is not None and not math.isnan(event.speed) else None,
+                            "course": event.course
+                            if event.course is not None and not math.isnan(event.course)
+                            else None,
+                            "speed": event.speed
+                            if event.speed is not None and not math.isnan(event.speed)
+                            else None,
                             "time": event.time_stamp,
-                            "zone": event.zone
+                            "zone": event.zone,
                         },
-
                     }
                 )
 
@@ -135,19 +168,45 @@ async def export_events(req):
 @api.get(r"/export/segments")
 async def export_segments(req):
     async with use_request_semaphore(req, "export_semaphore", timeout=30):
-        bbox = req.ctx.get_single_arg(
-            "bbox", default="-180,-90,180,90"
-        )
+        bbox = req.ctx.get_single_arg("bbox", default="-180,-90,180,90")
         assert re.match(r"(-?\d+\.?\d+,?){4}", bbox)
+        bbox = list(map(float, bbox.split(",")))
+
         fmt = req.ctx.get_single_arg("fmt", convert=ExportFormat)
         segments = await req.ctx.db.stream(
             text(
-                f"select ST_AsGeoJSON(ST_Transform(geometry,4326)) AS geometry, way_id, distance_overtaker_mean, distance_overtaker_min,distance_overtaker_max,distance_overtaker_median,overtaking_event_count,usage_count,direction,zone,offset_direction,distance_overtaker_array from layer_obs_roads(ST_Transform(ST_MakeEnvelope({bbox},4326),3857),11,NULL,'1900-01-01'::timestamp,'2100-01-01'::timestamp) WHERE usage_count>0"
-            )
+                """
+                SELECT
+                    ST_AsGeoJSON(ST_Transform(geometry, 4326)) AS geometry,
+                    way_id,
+                    distance_overtaker_mean,
+                    distance_overtaker_min,
+                    distance_overtaker_max,
+                    distance_overtaker_median,
+                    overtaking_event_count,
+                    usage_count,
+                    direction,
+                    zone,
+                    offset_direction,
+                    distance_overtaker_array
+                FROM
+                    layer_obs_roads(
+                        ST_Transform(ST_MakeEnvelope(:bbox0, :bbox1, :bbox2, :bbox3, 4326), 3857),
+                        11,
+                        NULL,
+                        '1900-01-01'::timestamp,
+                        '2100-01-01'::timestamp
+                    )
+                WHERE usage_count > 0
+                """
+            ).bindparams(bbox0=bbox[0], bbox1=bbox[1], bbox2=bbox[2], bbox3=bbox[3])
         )
 
         if fmt == ExportFormat.SHAPEFILE:
-            with shapefile_zip(shape_type=3, basename="segments") as (writer, zip_buffer):
+            with shapefile_zip(shape_type=3, basename="segments") as (
+                writer,
+                zip_buffer,
+            ):
                 writer.field("distance_overtaker_mean", "N", decimal=4)
                 writer.field("distance_overtaker_max", "N", decimal=4)
                 writer.field("distance_overtaker_min", "N", decimal=4)
