@@ -164,6 +164,7 @@ MapPage:
         distance_overtaker_median: Overtaker distance median
         overtaking_event_count: Event count
         usage_count: Usage count
+        segment_length: Segment length (m)
         zone: Overtaking distance zone
       maxCount:
         label: Maximum value for color scale
@@ -206,6 +207,7 @@ MapPage:
     mean: Average
 
     overtakerDistanceDistribution: Overtaker distance distribution
+    closeOvertakerPercentage: Overtakings < 1.5m
     hintFiltersNotApplied: Filters from the sidebar are not (yet) applied on this data.
 
     cardinalDirections:

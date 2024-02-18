@@ -4,11 +4,11 @@
   "sources": {
     "openmaptiles": {
       "type": "vector",
-      "url": "https://tiles.openbikesensor.org/data/basemap.json"
+      "url": "http://localhost:8000/data/basemap.json"
     }
   },
   "sprite": "https://openmaptiles.github.io/osm-bright-gl-style/sprite",
-  "glyphs": "https://tiles.openbikesensor.org/fonts/{fontstack}/{range}.pbf?key={key}",
+  "glyphs": "http://localhost:8000/fonts/{fontstack}/{range}.pbf?key={key}",
   "layers": [
     {
       "id": "background",

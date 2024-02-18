@@ -126,6 +126,7 @@ interface ArrayStats {
   histogram: {
     bins: number[]
     counts: number[]
+    zone: string
   }
   values: number[]
 }
@@ -135,6 +136,9 @@ export interface RoadDirectionInfo {
   distanceOvertaker: ArrayStats
   distanceStationary: ArrayStats
   speed: ArrayStats
+  below_150: number,
+  roadUsage: number,
+  count: number
 }
 
 export interface RoadInfoType {
@@ -197,7 +201,7 @@ export default function RoadInfo({
           {t(`general.zone.${info.road.zone}`)}
         </Label>
       )}
-
+      <Label>{Math.round(info.length)}m</Label>
       {info?.road.oneway && (
         <Label size="small" color="blue">
           <Icon name="long arrow alternate right" fitted /> {t('MapPage.roadInfo.oneway')}
@@ -215,6 +219,11 @@ export default function RoadInfo({
           </Menu.Item>
         </Menu>
       )}
+
+      {info?.[direction] && <Label>{Math.round(100*info[direction].below_150/info[direction].count)}% {t(`MapPage.roadInfo.closeOvertakerPercentage`)} ({info[direction].below_150}/{info[direction].count}) </Label>}
+      {info?.[direction] && <Label>{(1000*info[direction].below_150/(info.length*info[direction].roadUsage)).toFixed(1)} {t(`MapPage.roadInfo.closeOvertakerPercentage`)}/km </Label>}
+      {info?.[direction] && <Label>roadUsage {info[direction].roadUsage} </Label>}
+
 
       {info?.[direction] && <RoadStatsTable data={info[direction]} />}
 
