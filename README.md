@@ -23,15 +23,11 @@ what that means for our project and what is considered the public interface.
 
 ## Clone the Project
 
-First of all, you must clone this project. This project uses submodules,
-thus ensure, that they are cloned as well:
+First of all, you must clone this project. This project **does not** use
+submodules anymore:
 
 ```bash
-git clone --recursive https://github.com/openbikesensor/portal
-
-# ... or if you forgot the --recursive argument, you can run this in the
-# repository's directory later:
-git submodule update --init --recursive
+git clone https://github.com/openbikesensor/portal
 ```
 
 ## Production setup
