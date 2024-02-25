@@ -165,7 +165,9 @@ class OSMHandler(osmium.SimpleHandler):
 
         access = tags.get("access", None)
         bicycle = tags.get("bicycle", None)
-        if access == "no" and bicycle not in ["designated", "yes", "permissive", "destination"]:
+        vehicle = tags.get("vehicle", None)
+
+        if bicycle == "no" or ((access == "no" or vehicle == "no") and bicycle not in ["designated", "yes", "permissive", "destination"]):
             return
 
         zone = determine_zone(tags)
