@@ -40,8 +40,12 @@ from sqlalchemy.dialects.postgresql import UUID
 
 
 log = logging.getLogger(__name__)
-
-Base = declarative_base()
+try:
+    from sqlalchemy.orm import DeclarativeBase
+    class Base(DeclarativeBase):
+        pass
+except ImportError:
+    Base = declarative_base()
 
 
 engine = None

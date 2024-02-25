@@ -26,7 +26,7 @@ requests>=2.25.1
 sanic-session~=0.8.0
 sanic==22.6.2
 shapely~=2.0.1
-sqlalchemy[asyncio]~=1.4.47
+sqlalchemy[asyncio]~=2.0.27
 sqlparse~=0.4.3
 stream-zip~=0.0.50
 tzwhere>=3.0.3
