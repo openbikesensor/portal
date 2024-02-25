@@ -174,7 +174,11 @@ class OSMHandler(osmium.SimpleHandler):
         directionality, oneway = determine_direction(tags, zone)
         name = tags.get("name")
 
-        geometry = wkb.loads(wkbfab.create_linestring(way), hex=True)
+        try:
+            geometry = wkb.loads(wkbfab.create_linestring(way), hex=True)
+        except RuntimeError: # We can get runtimeerrors for linestrings that have only one point. (see #363)
+            print(f"WARNING: {way} has only one point, cant pack it", file=sys.stderr)
+            return
         geometry = transform(project, geometry)
         geometry = wkb.dumps(geometry)
         self.packer.pack(
