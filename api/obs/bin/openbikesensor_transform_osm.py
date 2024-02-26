@@ -23,7 +23,10 @@ HIGHWAY_TYPES = {
     "service",
     "track",
     "road",
+    "pedestrian",
+    "footway",
 }
+
 ZONE_TYPES = {
     "urban",
     "rural",
@@ -45,6 +48,42 @@ MINSPEED_RURAL = 60
 
 ONEWAY_YES = {"yes", "true", "1"}
 ONEWAY_REVERSE = {"reverse", "-1"}
+
+ACCESS_TRUTHY = {
+    "designated",
+    "yes",
+    "permissive",
+    "destination",
+}
+
+# From https://wiki.openstreetmap.org/wiki/OSM_tags_for_routing/Access_restrictions#Germany
+BICYCLE_ALLOWED_HIGHWAYS = {
+    "trunk",
+    "primary",
+    "secondary",
+    "tertiary",
+    "unclassified",
+    "residential",
+    "living_street",
+    "road",
+    "service",
+    "path",
+    "cycleway",
+    "track",
+}
+
+CAR_ALLOWED_HIGHWAYS = {
+    "motorway",
+    "trunk",
+    "primary",
+    "secondary",
+    "tertiary",
+    "unclassified",
+    "residential",
+    "living_street",
+    "road",
+    "service",
+}
 
 
 def parse_number(tag):
@@ -112,6 +151,26 @@ def determine_direction(tags, zone):
     return 0, False
 
 
+def determine_access(tags, highway):
+    """
+    Determines if this road is for cycles only, for mixed traffic, or not
+    allowed for cycles.
+    """
+    vehicle_access = tags.get("vehicle") or tags.get("access")
+    bicycle_access = tags.get("bicycle") or vehicle_access
+    car_access = tags.get("motorcar") or tags.get("motor_vehicle") or vehicle_access
+
+    bicycle = (
+        bicycle_access in ACCESS_TRUTHY
+        if bicycle_access
+        else highway in BICYCLE_ALLOWED_HIGHWAYS
+    )
+
+    car = car_access in ACCESS_TRUTHY if car_access else highway in CAR_ALLOWED_HIGHWAYS
+
+    return bicycle, car
+
+
 class StreamPacker:
     def __init__(self, stream, *args, **kwargs):
         self.stream = stream
@@ -160,14 +219,21 @@ class OSMHandler(osmium.SimpleHandler):
         tags = way.tags
 
         highway = tags.get("highway")
-        if not highway or highway not in HIGHWAY_TYPES:
+
+        # Fix highway according to OSM Wiki Access_restrictions page
+        highway = "motorway" if tags.get("motorroad") == "yes" else highway
+
+        if not highway:
             return
 
-        access = tags.get("access", None)
-        bicycle = tags.get("bicycle", None)
-        vehicle = tags.get("vehicle", None)
+        # Drop _link suffix, we don't care about that subtype
+        if highway.endswith("_link"):
+            highway = highway[:5]
 
-        if bicycle == "no" or ((access == "no" or vehicle == "no") and bicycle not in ["designated", "yes", "permissive", "destination"]):
+        bicycles_allowed, cars_allowed = determine_access(tags, highway)
+
+        # Remove any road
+        if not cars_allowed and not bicycles_allowed:
             return
 
         zone = determine_zone(tags)
@@ -176,13 +242,25 @@ class OSMHandler(osmium.SimpleHandler):
 
         try:
             geometry = wkb.loads(wkbfab.create_linestring(way), hex=True)
-        except RuntimeError: # We can get runtimeerrors for linestrings that have only one point. (see #363)
+        except (
+            RuntimeError
+        ):  # We can get runtimeerrors for linestrings that have only one point. (see #363)
             print(f"WARNING: {way} has only one point, cant pack it", file=sys.stderr)
             return
         geometry = transform(project, geometry)
         geometry = wkb.dumps(geometry)
         self.packer.pack(
-            [b"\x01", way.id, name, zone, directionality, oneway, geometry]
+            [
+                b"\x01",
+                way.id,
+                name,
+                zone,
+                directionality,
+                oneway,
+                geometry,
+                bicycles_allowed,
+                cars_allowed,
+            ]
         )
 
 

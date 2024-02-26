@@ -28,6 +28,10 @@ layer:
       ural or urban
     offset_direction: |
       Factor for offset to shift the line to the driving side. One of -1, 0, 1.
+    bicycles_allowed: |
+      Whether tags indicate that bicycles are allowed on this road.
+    cars_allowed: |
+      Whether tags indicate that cars are allowed on this road.
   defaults:
     srs: EPSG:3857
   datasource:
@@ -52,7 +56,9 @@ layer:
           usage_count,
           direction,
           zone,
-          offset_direction
+          offset_direction,
+          bicycles_allowed,
+          cars_allowed
         FROM layer_obs_roads(!bbox!, z(!scale_denominator!), user_id, min_time, max_time)
       ) AS t
 

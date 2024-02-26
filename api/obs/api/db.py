@@ -167,6 +167,8 @@ class Road(Base):
     geometry = Column(LineString)
     directionality = Column(Integer)
     oneway = Column(Boolean)
+    bicycles_allowed = Column(Boolean)
+    cars_allowed = Column(Boolean)
     import_group = Column(String)
 
     __table_args__ = (

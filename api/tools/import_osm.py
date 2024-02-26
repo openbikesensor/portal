@@ -27,6 +27,8 @@ class Road:
     directionality: int
     oneway: int
     geometry: bytes
+    bicycles_allowed: bool
+    cars_allowed: bool
 
 
 def read_file(filename):
@@ -74,9 +76,11 @@ async def import_osm(connection, filename, import_group=None):
         amount = 0
         for items in chunk(read_file(filename), 10000):
             amount += 10000
-            log.info(f"...{amount}/{len(road_ids)} ({100*amount/len(road_ids)}%)")
+            log.info(
+                f"Importing {len(road_ids)/1000:.1f}k roads for {import_group}... {100*amount/len(road_ids):.1f}%"
+            )
             async with cursor.copy(
-                "COPY road (way_id, name, zone, directionality, oneway, geometry, import_group) FROM STDIN"
+                "COPY road (way_id, name, zone, directionality, oneway, geometry, bicycles_allowed, cars_allowed, import_group) FROM STDIN"
             ) as copy:
                 for item in items:
                     await copy.write_row(
@@ -87,6 +91,8 @@ async def import_osm(connection, filename, import_group=None):
                             item.directionality,
                             item.oneway,
                             bytes.hex(item.geometry),
+                            item.bicycles_allowed,
+                            item.cars_allowed,
                             import_group,
                         )
                     )

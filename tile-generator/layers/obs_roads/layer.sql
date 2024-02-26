@@ -17,7 +17,9 @@ RETURNS TABLE(
   usage_count bigint,
   direction int,
   zone zone_type,
-  offset_direction int
+  offset_direction int,
+  bicycles_allowed boolean,
+  cars_allowed boolean
 ) AS $$
 
     SELECT
@@ -44,7 +46,9 @@ RETURNS TABLE(
       r.dir as direction,
       road.zone::zone_type as zone,
       -- Generate the "offset" column to be 0 for undirectional roads
-      case when road.directionality = 0 then r.dir else 0 end as offset_direction
+      case when road.directionality = 0 then r.dir else 0 end as offset_direction,
+      road.bicycles_allowed as bicycles_allowed,
+      road.cars_allowed as cars_allowed
     FROM road
 
     -- This JOIN duplicates directional roads with r.reversed set to TRUE and
@@ -81,6 +85,8 @@ RETURNS TABLE(
       road.geometry,
       road.directionality,
       road.zone,
+      road.bicycles_allowed,
+      road.cars_allowed,
       r.dir,
       r.rev,
       e.way_id,
