@@ -85,15 +85,15 @@ async def mapdetails_road(req):
     arrays = (
         await req.ctx.db.execute(
             select(
-                [
-                    OvertakingEvent.distance_overtaker,
-                    OvertakingEvent.distance_stationary,
-                    OvertakingEvent.speed,
-                    # Keep this as the last entry always for numpy.partition
-                    # below to work.
-                    OvertakingEvent.direction_reversed,
-                ]
-            ).where(OvertakingEvent.way_id == road.way_id)
+                OvertakingEvent.distance_overtaker,
+                OvertakingEvent.distance_stationary,
+                OvertakingEvent.speed,
+                # Keep this as the last entry always for numpy.partition
+                # below to work.
+                OvertakingEvent.direction_reversed,
+            )
+            .select_from(OvertakingEvent)
+            .where(OvertakingEvent.way_id == road.way_id)
         )
     ).all()
 
