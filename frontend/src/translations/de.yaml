@@ -159,8 +159,15 @@ MapPage:
         overtaking_event_count: Anzahl Überholvorgänge
         usage_count: Anzahl Befahrungen
         zone: Überholabstands-Zone
+        combined_score: Kombinierte Auswertung
       maxCount:
         label: Maximalwert für Farbskala
+      combinedScore:
+        label: Wertungsskala
+        description: >
+          Die Wertung kombiniert den Anteil illegaler Überholungen
+          mit der Anzahl der Überholvorgänge pro gefahrener Distanz.
+          Weniger Verkehr kann schlechte Abstände aufwiegen.
 
     obsEvents:
       title: Überholvorgänge

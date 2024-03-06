@@ -166,8 +166,15 @@ MapPage:
         usage_count: Usage count
         segment_length: Segment length (m)
         zone: Overtaking distance zone
+        combined_score: Combined score
       maxCount:
         label: Maximum value for color scale
+      combinedScore:
+        label: Score
+        description: >
+          The score combines the percentage of illegal overtakings with the
+          number of overtakings per distance of usage (overtaking frequency).
+          Less traffic can be as helpful as more overtaking distance.
 
     obsEvents:
       title: Event points

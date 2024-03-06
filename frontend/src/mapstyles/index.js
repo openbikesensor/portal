@@ -45,6 +45,15 @@ export const viridis = simplifyColormap(viridisBase.map(rgbArrayToColor), 20)
 export const viridisSimpleHtml = simplifyColormap(viridisBase.map(rgbArrayToHtml), 10)
 export const grayscale = ['#FFFFFF', '#000000']
 export const reds = ['rgba( 255, 0, 0, 0)', 'rgba( 255, 0, 0, 255)']
+export const DARK_RED = 'rgba(150, 0, 0, 1)'
+export const RED = 'rgba(255, 0, 0, 1)'
+export const YELLOW = 'rgba(255, 220, 0, 1)'
+export const GREEN = 'rgba(67, 200, 0, 1)'
+export const DARK_GREEN = 'rgba(67, 150, 0, 1)'
+
+const COLOR_RURAL = 'cyan'
+const COLOR_URBAN = 'blue'
+const COLOR_UNKNOWN_ZONE = 'purple'
 
 export function colorByCount(attribute = 'event_count', maxCount, colormap = viridis) {
   return colormapToScale(colormap, ['case', isValidAttribute(attribute), ['get', attribute], 0], 0, maxCount)
@@ -56,11 +65,14 @@ export function isValidAttribute(attribute) {
   if (attribute.endsWith('zone')) {
     return ['in', ['get', attribute], ['literal', ['rural', 'urban']]]
   }
+  if (attribute === 'combined_score') {
+    return ['to-boolean', ['get', 'overtaking_event_count']]
+  }
   return ['to-boolean', ['get', attribute]]
 }
 
 export function borderByZone() {
-  return ['match', ['get', 'zone'], 'rural', 'cyan', 'urban', 'blue', 'purple']
+  return ['match', ['get', 'zone'], 'rural', COLOR_RURAL, 'urban', COLOR_URBAN, COLOR_UNKNOWN_ZONE]
 }
 
 export function colorByDistance(attribute = 'distance_overtaker_mean', fallback = '#ABC', zone = 'urban') {
@@ -75,44 +87,70 @@ export function colorByDistance(attribute = 'distance_overtaker_mean', fallback 
       [
         'step',
         ['get', attribute],
-        'rgba(150, 0, 0, 1)',
+        DARK_RED,
         steps['rural'][0],
-        'rgba(255, 0, 0, 1)',
+        RED,
         steps['rural'][1],
-        'rgba(255, 220, 0, 1)',
+        YELLOW,
         steps['rural'][2],
-        'rgba(67, 200, 0, 1)',
+        GREEN,
         steps['rural'][3],
-        'rgba(67, 150, 0, 1)',
-      ],
-      'urban',
-      [
-        'step',
-        ['get', attribute],
-        'rgba(150, 0, 0, 1)',
-        steps['urban'][0],
-        'rgba(255, 0, 0, 1)',
-        steps['urban'][1],
-        'rgba(255, 220, 0, 1)',
-        steps['urban'][2],
-        'rgba(67, 200, 0, 1)',
-        steps['urban'][3],
-        'rgba(67, 150, 0, 1)',
+        DARK_GREEN,
       ],
       [
         'step',
         ['get', attribute],
-        'rgba(150, 0, 0, 1)',
+        DARK_RED,
         steps['urban'][0],
-        'rgba(255, 0, 0, 1)',
+        RED,
         steps['urban'][1],
-        'rgba(255, 220, 0, 1)',
+        YELLOW,
         steps['urban'][2],
-        'rgba(67, 200, 0, 1)',
+        GREEN,
         steps['urban'][3],
-        'rgba(67, 150, 0, 1)',
+        DARK_GREEN,
       ],
     ],
+  ]
+}
+
+const class0 = GREEN
+const class1 = YELLOW
+const class2 = RED
+
+export const COMBINED_SCORE_THRESHOLDS_ILLEGAL = [0.25, 0.5, 0.75] // percentage illegal
+export const COMBINED_SCORE_THRESHOLDS_FREQUENCY = [0.003, 0.006] // events per meter usage
+export const COMBINED_SCORE_MATRIX = [
+  [class0, class0, class1],
+  [class0, class1, class2],
+  [class1, class2, class2],
+  [class1, class2, class2],
+]
+
+export function colorCombinedScore() {
+  const countPerMeterUsage = [
+    '/',
+    ['get', 'overtaking_event_count'],
+    ['*', ['get', 'usage_count'], ['get', 'segment_length']],
+  ]
+
+  // TODO: introduce legal limit, not just use 150cm
+
+  const rationIllegal = ['/', ['get', 'overtaking_events_below_150'], ['get', 'overtaking_event_count']]
+
+  const [t0, t1, t2] = COMBINED_SCORE_THRESHOLDS_ILLEGAL
+  const [f0, f1] = COMBINED_SCORE_THRESHOLDS_FREQUENCY
+
+  return [
+    'case',
+
+    ['<', countPerMeterUsage, f0],
+    ['case', ['<', rationIllegal, t1], class0, class1],
+
+    ['<', countPerMeterUsage, f1],
+    ['case', ['<', rationIllegal, t0], class0, ['<', rationIllegal, t1], class1, class2],
+
+    ['case', ['<', rationIllegal, t0], class1, class2],
   ]
 }
 

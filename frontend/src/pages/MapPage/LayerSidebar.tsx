@@ -2,7 +2,7 @@ import React from 'react'
 import _ from 'lodash'
 import {connect} from 'react-redux'
 import {Link} from 'react-router-dom'
-import {List, Select, Input, Divider, Label, Checkbox, Header} from 'semantic-ui-react'
+import {List, Select, Input, Divider, Label, Checkbox, Header, Table} from 'semantic-ui-react'
 import {useTranslation} from 'react-i18next'
 
 import {
@@ -10,7 +10,7 @@ import {
   setMapConfigFlag as setMapConfigFlagAction,
   initialState as defaultMapConfig,
 } from 'reducers/mapConfig'
-import {colorByDistance, colorByCount, viridisSimpleHtml} from 'mapstyles'
+import {colorByDistance, colorByCount, viridisSimpleHtml, GREEN, YELLOW, RED} from 'mapstyles'
 import {ColorMapLegend, DiscreteColorMapLegend} from 'components'
 import styles from './styles.module.less'
 
@@ -25,6 +25,7 @@ const ROAD_ATTRIBUTE_OPTIONS = [
   'usage_count',
   'segment_length',
   'zone',
+  'combined_score',
 ]
 
 const DATE_FILTER_MODES = ['none', 'range', 'threshold']
@@ -141,7 +142,13 @@ function LayerSidebar({
                 onChange={(_e, {value}) => setMapConfigFlag('obsRoads.attribute', value)}
               />
             </List.Item>
-            {(attribute.endsWith('_count')|attribute.endsWith("_length")) ? (
+            {attribute === 'combined_score' ? (
+                <List.Item>
+                  <List.Header>{t('MapPage.sidebar.obsRoads.combinedScore.label')}</List.Header>
+                  <ScoreTable />
+                  <p>{t('MapPage.sidebar.obsRoads.combinedScore.description')}</p>
+                </List.Item>
+            ) : attribute.endsWith('_count') | attribute.endsWith('_length') ? (
               <>
                 <List.Item>
                   <List.Header>{t('MapPage.sidebar.obsRoads.maxCount.label')}</List.Header>
@@ -177,7 +184,7 @@ function LayerSidebar({
               <>
                 <List.Item>
                   <List.Header>{_.upperFirst(t('general.zone.urban'))}</List.Header>
-                  <DiscreteColorMapLegend map={colorByDistance('distance_overtaker')[3][5].slice(2)} />
+                  <DiscreteColorMapLegend map={colorByDistance('distance_overtaker')[3][4].slice(2)} />
                 </List.Item>
                 <List.Item>
                   <List.Header>{_.upperFirst(t('general.zone.rural'))}</List.Header>
@@ -319,6 +326,46 @@ function LayerSidebar({
         {!login && <List.Item>{t('MapPage.sidebar.filters.needsLogin')}</List.Item>}
       </List>
     </div>
+  )
+}
+
+function ScoreTable() {
+  const border = '1px solid white'
+  return (
+    <Table size="small" compact border>
+      <Table.Header>
+        <Table.Row>
+          <Table.HeaderCell width="four"></Table.HeaderCell>
+          <Table.HeaderCell width="four">&le;&nbsp;3/km</Table.HeaderCell>
+          <Table.HeaderCell width="four">&le;&nbsp;6/km</Table.HeaderCell>
+          <Table.HeaderCell width="four">&gt;&nbsp;6/km</Table.HeaderCell>
+        </Table.Row>
+        <Table.Row>
+          <Table.HeaderCell>&le;&nbsp;25%</Table.HeaderCell>
+          <Table.Cell style={{border, backgroundColor: GREEN}}></Table.Cell>
+          <Table.Cell style={{border, backgroundColor: GREEN}}></Table.Cell>
+          <Table.Cell style={{border, backgroundColor: YELLOW}}></Table.Cell>
+        </Table.Row>
+        <Table.Row>
+          <Table.HeaderCell>&le;&nbsp;50%</Table.HeaderCell>
+          <Table.Cell style={{border, backgroundColor: GREEN}}></Table.Cell>
+          <Table.Cell style={{border, backgroundColor: YELLOW}}></Table.Cell>
+          <Table.Cell style={{border, backgroundColor: RED}}></Table.Cell>
+        </Table.Row>
+        <Table.Row>
+          <Table.HeaderCell>&le;&nbsp;75%</Table.HeaderCell>
+          <Table.Cell style={{border, backgroundColor: YELLOW}}></Table.Cell>
+          <Table.Cell style={{border, backgroundColor: RED}}></Table.Cell>
+          <Table.Cell style={{border, backgroundColor: RED}}></Table.Cell>
+        </Table.Row>
+        <Table.Row>
+          <Table.HeaderCell>&gt;&nbsp;75%</Table.HeaderCell>
+          <Table.Cell style={{border, backgroundColor: YELLOW}}></Table.Cell>
+          <Table.Cell style={{border, backgroundColor: RED}}></Table.Cell>
+          <Table.Cell style={{border, backgroundColor: RED}}></Table.Cell>
+        </Table.Row>
+      </Table.Header>
+    </Table>
   )
 }
 

@@ -10,7 +10,14 @@ import api from 'api'
 import type {Location} from 'types'
 import {Page, Map} from 'components'
 import {useConfig} from 'config'
-import {colorByDistance, colorByCount, getRegionLayers, borderByZone, isValidAttribute} from 'mapstyles'
+import {
+  colorByDistance,
+  colorByCount,
+  getRegionLayers,
+  borderByZone,
+  isValidAttribute,
+  colorCombinedScore,
+} from 'mapstyles'
 import {useMapConfig} from 'reducers/mapConfig'
 
 import RoadInfo, {RoadInfoType} from './RoadInfo'
@@ -56,13 +63,16 @@ const getRoadsLayer = (colorAttribute, maxCount) =>
     draft.filter = isValidAttribute(colorAttribute)
     draft.minzoom = 10
     draft.paint['line-width'][6] = 6 // scale bigger on zoom
-    draft.paint['line-color'] = colorAttribute.startsWith('distance_')
-      ? colorByDistance(colorAttribute)
-      : (colorAttribute.endsWith('_count') | colorAttribute.endsWith('_length'))
-      ? colorByCount(colorAttribute, maxCount)
-      : colorAttribute.endsWith('zone')
-      ? borderByZone()
-      : '#DDD'
+    draft.paint['line-color'] =
+      colorAttribute === 'combined_score'
+        ? colorCombinedScore()
+        : colorAttribute.startsWith('distance_')
+        ? colorByDistance(colorAttribute)
+        : colorAttribute.endsWith('_count') | colorAttribute.endsWith('_length')
+        ? colorByCount(colorAttribute, maxCount)
+        : colorAttribute.endsWith('zone')
+        ? borderByZone()
+        : '#DDD'
     // draft.paint["line-opacity"][3] = 12;
     // draft.paint["line-opacity"][5] = 13;
   })
