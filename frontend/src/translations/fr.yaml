@@ -165,8 +165,17 @@ MapPage:
         overtaking_event_count: Nombre d'événement
         usage_count: Nombre de passages
         zone: Overtaking distance zone
+        combined_score: Score combinée
       maxCount:
         label: Valeur maximale pour l'échelle de couleur
+      combinedScore:
+        label: Score
+        description: >
+          Le score combine le pourcentage de dépassements
+          rapprochés et le nombre de dépassements par distance
+          d'utilisation de la route (fréquence de dépassement).
+          Un trafic réduit peut être aussi utile qu'une plus grande
+          distance de dépassement.
 
     obsEvents:
       title: Points d'événement
