@@ -14,6 +14,7 @@ from .Way import Way
 
 log = logging.getLogger(__name__)
 
+
 class DatabaseTileSource(TileSource):
     def __init__(self):
         if Road is None:
@@ -30,15 +31,15 @@ class DatabaseTileSource(TileSource):
         async with make_session() as session:
             roads = await session.execute(
                 select(
-                    [
-                        Road.way_id,
-                        Road.zone,
-                        Road.oneway,
-                        Road.name,
-                        Road.directionality,
-                        func.ST_AsGeoJSON(func.ST_Transform(Road.geometry, 4326)),
-                    ]
-                ).where(Road.geometry.bool_op("&&")(func.ST_TileEnvelope(z, x, y)))
+                    Road.way_id,
+                    Road.zone,
+                    Road.oneway,
+                    Road.name,
+                    Road.directionality,
+                    func.ST_AsGeoJSON(func.ST_Transform(Road.geometry, 4326)),
+                )
+                .select_from(Road)
+                .where(Road.geometry.bool_op("&&")(func.ST_TileEnvelope(z, x, y)))
             )
             roads = roads.all()
 
