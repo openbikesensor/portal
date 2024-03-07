@@ -160,8 +160,8 @@ MapPage:
         usage_count: Anzahl Befahrungen
         zone: Überholabstands-Zone
         combined_score: Kombinierte Auswertung
-      maxCount:
-        label: Maximalwert für Farbskala
+        overtaking_legality: Anteil legal
+        overtaking_frequency: Überholvorgänge pro gefahrenem Kilometer
       combinedScore:
         label: Wertungsskala
         description: >
@@ -208,8 +208,12 @@ MapPage:
     mean: Durchschnitt
 
     overtakerDistanceDistribution: Verteilung der Überholabstände
-    closeOvertakerPercentage: Überholvorgänge < 1.5m
+    closeOvertakerPercentage: Überholvorgänge unter 1,5m
+    overtakersPerKilometer: Überholvorgänge pro km
+    of: von
+    segmentLength: Länge des Segments
     hintFiltersNotApplied: Filter aus der Seiteleiste werden (noch) nicht auf diese Daten angewandt.
+    usageCount: Anzahl Befahrungen
 
     cardinalDirections:
       unknown: unbekannt

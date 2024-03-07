@@ -167,8 +167,8 @@ MapPage:
         segment_length: Segment length (m)
         zone: Overtaking distance zone
         combined_score: Combined score
-      maxCount:
-        label: Maximum value for color scale
+        overtaking_legality: Percent legal
+        overtaking_frequency: Events per kilometer usage
       combinedScore:
         label: Score
         description: >
@@ -214,8 +214,12 @@ MapPage:
     mean: Average
 
     overtakerDistanceDistribution: Overtaker distance distribution
-    closeOvertakerPercentage: Overtakings < 1.5m
+    closeOvertakerPercentage: Overtakings below 1.5m
+    overtakersPerKilometer: Overtakings per km
+    of: of
+    segmentLength: Segment length
     hintFiltersNotApplied: Filters from the sidebar are not (yet) applied on this data.
+    usageCount: Usage count
 
     cardinalDirections:
       unknown: unknown

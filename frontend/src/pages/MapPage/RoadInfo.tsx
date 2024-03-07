@@ -1,18 +1,12 @@
 import React, {useState, useCallback} from 'react'
 import {createPortal} from 'react-dom'
 import _ from 'lodash'
-import {Segment, Menu, Header, Label, Icon, Table, Message, Button} from 'semantic-ui-react'
+import {Menu, Header, Label, Icon, Table, Message, Button} from 'semantic-ui-react'
 import {Layer, Source} from 'react-map-gl'
-import {of, from, concat} from 'rxjs'
-import {useObservable} from 'rxjs-hooks'
-import {switchMap, distinctUntilChanged} from 'rxjs/operators'
 import {Chart} from 'components'
-import {pairwise} from 'utils'
 import {useTranslation} from 'react-i18next'
 
-import type {Location} from 'types'
-import api from 'api'
-import {colorByDistance, borderByZone} from 'mapstyles'
+import {colorByDistance} from 'mapstyles'
 
 import styles from './styles.module.less'
 
@@ -79,7 +73,7 @@ function RoadStatsTable({data}) {
 
 function HistogramChart({bins, counts, zone}) {
   const diff = bins[1] - bins[0]
-  const colortype = zone === 'rural' ? 3 : 5
+  const colortype = zone === 'rural' ? 3 : 4
   const data = _.zip(
     bins.slice(0, bins.length - 1).map((v) => v + diff / 2),
     counts
@@ -136,8 +130,8 @@ export interface RoadDirectionInfo {
   distanceOvertaker: ArrayStats
   distanceStationary: ArrayStats
   speed: ArrayStats
-  below_150: number,
-  roadUsage: number,
+  below_150: number
+  roadUsage: number
   count: number
 }
 
@@ -152,6 +146,7 @@ export interface RoadInfoType {
   }
   forwards: RoadDirectionInfo
   backwards: RoadDirectionInfo
+  length: number
 }
 
 export default function RoadInfo({
@@ -166,7 +161,7 @@ export default function RoadInfo({
   mapInfoPortal: HTMLElement
 }) {
   const {t} = useTranslation()
-  const [direction, setDirection] = useState('forwards')
+  const [direction, setDirection] = useState<'forwards' | 'backwards'>('forwards')
 
   const onClickDirection = useCallback(
     (e, {name}) => {
@@ -191,7 +186,7 @@ export default function RoadInfo({
 
       {hasFilters && (
         <Message info icon>
-          <Icon name="info circle" small />
+          <Icon name="info circle" />
           <Message.Content>{t('MapPage.roadInfo.hintFiltersNotApplied')}</Message.Content>
         </Message>
       )}
@@ -201,7 +196,6 @@ export default function RoadInfo({
           {t(`general.zone.${info.road.zone}`)}
         </Label>
       )}
-      <Label>{Math.round(info.length)}m</Label>
       {info?.road.oneway && (
         <Label size="small" color="blue">
           <Icon name="long arrow alternate right" fitted /> {t('MapPage.roadInfo.oneway')}
@@ -220,12 +214,35 @@ export default function RoadInfo({
         </Menu>
       )}
 
-      {info?.[direction] && <Label>{Math.round(100*info[direction].below_150/info[direction].count)}% {t(`MapPage.roadInfo.closeOvertakerPercentage`)} ({info[direction].below_150}/{info[direction].count}) </Label>}
-      {info?.[direction] && <Label>{(1000*info[direction].below_150/(info.length*info[direction].roadUsage)).toFixed(1)} {t(`MapPage.roadInfo.closeOvertakerPercentage`)}/km </Label>}
-      {info?.[direction] && <Label>roadUsage {info[direction].roadUsage} </Label>}
-
-
       {info?.[direction] && <RoadStatsTable data={info[direction]} />}
+
+      {info?.[direction] && (
+        <Table definition size="small" compact>
+          <Table.Body>
+            <Table.Row>
+              <Table.Cell>{t(`MapPage.roadInfo.usageCount`)}</Table.Cell>
+              <Table.Cell textAlign="right">{info[direction].roadUsage}</Table.Cell>
+            </Table.Row>
+            <Table.Row>
+              <Table.Cell>{t(`MapPage.roadInfo.segmentLength`)}</Table.Cell>
+              <Table.Cell textAlign="right">{info.length.toFixed(0)} m</Table.Cell>
+            </Table.Row>
+            <Table.Row>
+              <Table.Cell>{t(`MapPage.roadInfo.closeOvertakerPercentage`)}</Table.Cell>
+              <Table.Cell textAlign="right">
+                {Math.round((100 * info[direction].below_150) / info[direction].count)}% ({info[direction].below_150}{' '}
+                {t(`MapPage.roadInfo.of`)} {info[direction].count})
+              </Table.Cell>
+            </Table.Row>
+            <Table.Row>
+              <Table.Cell>{t(`MapPage.roadInfo.overtakersPerKilometer`)}</Table.Cell>
+              <Table.Cell textAlign="right">
+                {(info[direction].count / (info[direction].roadUsage * info.length * 0.001)).toFixed(1)}
+              </Table.Cell>
+            </Table.Row>
+          </Table.Body>
+        </Table>
+      )}
 
       {info?.[direction]?.distanceOvertaker?.histogram && (
         <>

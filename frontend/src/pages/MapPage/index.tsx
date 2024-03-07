@@ -1,5 +1,4 @@
 import React, {useState, useCallback, useMemo, useRef} from 'react'
-import _ from 'lodash'
 import {connect} from 'react-redux'
 import {Button} from 'semantic-ui-react'
 import {Layer, Source} from 'react-map-gl'
@@ -7,16 +6,17 @@ import produce from 'immer'
 import classNames from 'classnames'
 
 import api from 'api'
-import type {Location} from 'types'
 import {Page, Map} from 'components'
 import {useConfig} from 'config'
 import {
   colorByDistance,
   colorByCount,
   getRegionLayers,
-  borderByZone,
+  COLOR_BY_ZONE,
   isValidAttribute,
-  colorCombinedScore,
+  COLOR_COMBINED_SCORE,
+  COLOR_LEGALITY,
+  COLOR_FREQUENCY,
 } from 'mapstyles'
 import {useMapConfig} from 'reducers/mapConfig'
 
@@ -63,18 +63,24 @@ const getRoadsLayer = (colorAttribute, maxCount) =>
     draft.filter = isValidAttribute(colorAttribute)
     draft.minzoom = 10
     draft.paint['line-width'][6] = 6 // scale bigger on zoom
-    draft.paint['line-color'] =
-      colorAttribute === 'combined_score'
-        ? colorCombinedScore()
-        : colorAttribute.startsWith('distance_')
-        ? colorByDistance(colorAttribute)
-        : colorAttribute.endsWith('_count') | colorAttribute.endsWith('_length')
-        ? colorByCount(colorAttribute, maxCount)
-        : colorAttribute.endsWith('zone')
-        ? borderByZone()
-        : '#DDD'
-    // draft.paint["line-opacity"][3] = 12;
-    // draft.paint["line-opacity"][5] = 13;
+
+    let color: any = '#DDD'
+
+    if (colorAttribute === 'combined_score') {
+      color = COLOR_COMBINED_SCORE
+    } else if (colorAttribute === 'overtaking_legality') {
+      color = COLOR_LEGALITY
+    } else if (colorAttribute === 'overtaking_frequency') {
+      color = COLOR_FREQUENCY
+    } else if (colorAttribute.startsWith('distance_')) {
+      color = colorByDistance(colorAttribute)
+    } else if (colorAttribute.endsWith('_count') | colorAttribute.endsWith('_length')) {
+      color = colorByCount(colorAttribute, maxCount)
+    } else if (colorAttribute.endsWith('zone')) {
+      color = COLOR_BY_ZONE
+    }
+
+    draft.paint['line-color'] = color
   })
 
 const getEventsLayer = () => ({

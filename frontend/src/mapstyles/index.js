@@ -59,21 +59,42 @@ export function colorByCount(attribute = 'event_count', maxCount, colormap = vir
   return colormapToScale(colormap, ['case', isValidAttribute(attribute), ['get', attribute], 0], 0, maxCount)
 }
 
-var steps = {rural: [1.6, 1.8, 2.0, 2.2], urban: [1.1, 1.3, 1.5, 1.7]}
+function zipStepped(arr1, arr2) {
+  let max = Math.max(arr1.length, arr2.length)
+  const arr = []
+  for (let i = 0; i < max; i++) {
+    if (arr1.length > i) {
+      arr.push(arr1[i])
+    }
+    if (arr2.length > i) {
+      arr.push(arr2[i])
+    }
+  }
+  return arr
+}
+
+export const DISTANCE_STEPS_RURAL = [1.6, 1.8, 2.0, 2.2]
+export const DISTANCE_STEPS_URBAN = [1.1, 1.3, 1.5, 1.7]
+export const DISTANCE_COLORS = [DARK_RED, RED, YELLOW, GREEN, DARK_GREEN]
+export const COLORMAP_RURAL = zipStepped(DISTANCE_COLORS, DISTANCE_STEPS_RURAL)
+export const COLORMAP_URBAN = zipStepped(DISTANCE_COLORS, DISTANCE_STEPS_URBAN)
+export const COLORMAP_LEGAL = zipStepped(DISTANCE_COLORS.toReversed(), [0.2, 0.4, 0.6, 0.8])
 
 export function isValidAttribute(attribute) {
   if (attribute.endsWith('zone')) {
     return ['in', ['get', attribute], ['literal', ['rural', 'urban']]]
   }
-  if (attribute === 'combined_score') {
+  if (attribute === 'combined_score' || attribute === 'overtaking_frequency') {
     return ['to-boolean', ['get', 'overtaking_event_count']]
+  }
+  if (attribute === 'overtaking_legality') {
+    // Percentage is useless with just 1 or 2 events
+    return ['>=', ['get', 'overtaking_event_count'], 5]
   }
   return ['to-boolean', ['get', attribute]]
 }
 
-export function borderByZone() {
-  return ['match', ['get', 'zone'], 'rural', COLOR_RURAL, 'urban', COLOR_URBAN, COLOR_UNKNOWN_ZONE]
-}
+export const COLOR_BY_ZONE = ['match', ['get', 'zone'], 'rural', COLOR_RURAL, 'urban', COLOR_URBAN, COLOR_UNKNOWN_ZONE]
 
 export function colorByDistance(attribute = 'distance_overtaker_mean', fallback = '#ABC', zone = 'urban') {
   return [
@@ -84,75 +105,34 @@ export function colorByDistance(attribute = 'distance_overtaker_mean', fallback 
       'match',
       ['get', 'zone'],
       'rural',
-      [
-        'step',
-        ['get', attribute],
-        DARK_RED,
-        steps['rural'][0],
-        RED,
-        steps['rural'][1],
-        YELLOW,
-        steps['rural'][2],
-        GREEN,
-        steps['rural'][3],
-        DARK_GREEN,
-      ],
-      [
-        'step',
-        ['get', attribute],
-        DARK_RED,
-        steps['urban'][0],
-        RED,
-        steps['urban'][1],
-        YELLOW,
-        steps['urban'][2],
-        GREEN,
-        steps['urban'][3],
-        DARK_GREEN,
-      ],
+      ['step', ['get', attribute], ...COLORMAP_RURAL],
+      ['step', ['get', attribute], ...COLORMAP_URBAN],
     ],
   ]
 }
 
-const class0 = GREEN
-const class1 = YELLOW
-const class2 = RED
-
-export const COMBINED_SCORE_THRESHOLDS_ILLEGAL = [0.25, 0.5, 0.75] // percentage illegal
-export const COMBINED_SCORE_THRESHOLDS_FREQUENCY = [0.003, 0.006] // events per meter usage
-export const COMBINED_SCORE_MATRIX = [
-  [class0, class0, class1],
-  [class0, class1, class2],
-  [class1, class2, class2],
-  [class1, class2, class2],
+export const COUNT_PER_KILOMETER_USAGE = [
+  '/',
+  ['get', 'overtaking_event_count'],
+  ['*', ['get', 'usage_count'], ['get', 'segment_length'], 0.001],
 ]
 
-export function colorCombinedScore() {
-  const countPerMeterUsage = [
-    '/',
-    ['get', 'overtaking_event_count'],
-    ['*', ['get', 'usage_count'], ['get', 'segment_length']],
-  ]
+export const RATIO_ILLEGAL = ['/', ['get', 'overtaking_events_below_150'], ['get', 'overtaking_event_count']]
+export const COLOR_LEGALITY = ['step', RATIO_ILLEGAL, ...COLORMAP_LEGAL]
 
-  // TODO: introduce legal limit, not just use 150cm
+export const COLOR_FREQUENCY = colormapToScale(viridis, COUNT_PER_KILOMETER_USAGE, 0, 10)
 
-  const rationIllegal = ['/', ['get', 'overtaking_events_below_150'], ['get', 'overtaking_event_count']]
+export const COLOR_COMBINED_SCORE = [
+  'case',
 
-  const [t0, t1, t2] = COMBINED_SCORE_THRESHOLDS_ILLEGAL
-  const [f0, f1] = COMBINED_SCORE_THRESHOLDS_FREQUENCY
+  ['<', COUNT_PER_KILOMETER_USAGE, 3],
+  ['case', ['<', RATIO_ILLEGAL, 0.5], GREEN, YELLOW],
 
-  return [
-    'case',
+  ['<', COUNT_PER_KILOMETER_USAGE, 6],
+  ['case', ['<', RATIO_ILLEGAL, 0.25], GREEN, ['<', RATIO_ILLEGAL, 0.5], YELLOW, RED],
 
-    ['<', countPerMeterUsage, f0],
-    ['case', ['<', rationIllegal, t1], class0, class1],
-
-    ['<', countPerMeterUsage, f1],
-    ['case', ['<', rationIllegal, t0], class0, ['<', rationIllegal, t1], class1, class2],
-
-    ['case', ['<', rationIllegal, t0], class1, class2],
-  ]
-}
+  ['case', ['<', RATIO_ILLEGAL, 0.25], YELLOW, RED],
+]
 
 export const trackLayer = {
   type: 'line',

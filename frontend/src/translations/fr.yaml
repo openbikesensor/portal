@@ -166,8 +166,6 @@ MapPage:
         usage_count: Nombre de passages
         zone: Overtaking distance zone
         combined_score: Score combinée
-      maxCount:
-        label: Valeur maximale pour l'échelle de couleur
       combinedScore:
         label: Score
         description: >
@@ -215,8 +213,12 @@ MapPage:
     mean: Moyenne
 
     overtakerDistanceDistribution: Distribution des distances de dépassement
-    closeOvertakerPercentage: Dépassements < 1.5m
+    closeOvertakerPercentage: Dépassements moins de 1,5m
+    overtakersPerKilometer: Dépassements par km
+    of: de
+    segmentLength: Longueur du segment
     hintFiltersNotApplied: Les filtres de la barre latérale ne sont pas (encore) appliqués à ces données.
+    usageCount: Nombre de dépassements
 
     cardinalDirections:
       unknown: Inconnu

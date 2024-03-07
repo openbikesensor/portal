@@ -14,7 +14,9 @@ type RoadAttribute =
   | 'segment_length'
   | 'usage_count'
   | 'zone'
-
+  | 'combined_score'
+  | 'overtaking_legality'
+  | 'overtaking_frequency'
 
 export type MapConfig = {
   baseMap: {

@@ -10,7 +10,7 @@ import {
   setMapConfigFlag as setMapConfigFlagAction,
   initialState as defaultMapConfig,
 } from 'reducers/mapConfig'
-import {colorByDistance, colorByCount, viridisSimpleHtml, GREEN, YELLOW, RED} from 'mapstyles'
+import {viridisSimpleHtml, GREEN, YELLOW, RED, COLORMAP_RURAL, COLORMAP_URBAN, COLORMAP_LEGAL} from 'mapstyles'
 import {ColorMapLegend, DiscreteColorMapLegend} from 'components'
 import styles from './styles.module.less'
 
@@ -23,8 +23,10 @@ const ROAD_ATTRIBUTE_OPTIONS = [
   'distance_overtaker_median',
   'overtaking_event_count',
   'usage_count',
-  'segment_length',
+  // 'segment_length', // this doens't make much sense to show on the map
   'zone',
+  'overtaking_frequency',
+  'overtaking_legality',
   'combined_score',
 ]
 
@@ -91,14 +93,7 @@ function LayerSidebar({
           <>
             <List.Item>{t('MapPage.sidebar.obsRegions.colorByEventCount')}</List.Item>
             <List.Item>
-              <ColorMapLegend
-                twoTicks
-                map={[
-                  [0, '#00897B00'],
-                  [5000, '#00897BFF'],
-                ]}
-                digits={0}
-              />
+              <ColorMapLegend start="0" end="5000" map={['#00897B00', '#00897BFF']} />
             </List.Item>
             <List.Item className={styles.copyright}>
               {t('MapPage.sidebar.copyright.boundaries')}{' '}
@@ -142,34 +137,52 @@ function LayerSidebar({
                 onChange={(_e, {value}) => setMapConfigFlag('obsRoads.attribute', value)}
               />
             </List.Item>
-            {attribute === 'combined_score' ? (
-                <List.Item>
-                  <List.Header>{t('MapPage.sidebar.obsRoads.combinedScore.label')}</List.Header>
-                  <ScoreTable />
-                  <p>{t('MapPage.sidebar.obsRoads.combinedScore.description')}</p>
-                </List.Item>
-            ) : attribute.endsWith('_count') | attribute.endsWith('_length') ? (
+
+            {attribute === 'combined_score' && (
+              <List.Item>
+                <List.Header>{t('MapPage.sidebar.obsRoads.combinedScore.label')}</List.Header>
+                <ScoreTable />
+                <p>{t('MapPage.sidebar.obsRoads.combinedScore.description')}</p>
+              </List.Item>
+            )}
+
+            {attribute === 'overtaking_frequency' && (
               <>
                 <List.Item>
-                  <List.Header>{t('MapPage.sidebar.obsRoads.maxCount.label')}</List.Header>
-                  <Input
-                    fluid
-                    type="number"
-                    value={maxCount}
-                    onChange={(_e, {value}) => setMapConfigFlag('obsRoads.maxCount', value)}
-                  />
+                  <ColorMapLegend map={viridisSimpleHtml} start="0/km" end="10/km" />
                 </List.Item>
+              </>
+            )}
+
+            {attribute === 'overtaking_legality' && (
+              <>
                 <List.Item>
-                  <ColorMapLegend
-                    map={_.chunk(
-                      colorByCount('obsRoads.maxCount', mapConfig.obsRoads.maxCount, viridisSimpleHtml).slice(3),
-                      2
-                    )}
-                    twoTicks
+                  <DiscreteColorMapLegend
+                    map={COLORMAP_LEGAL}
+                    renderValue={(x) => (x * 100).toFixed(0) + ' %'}
+                    min={0}
+                    max={1}
                   />
                 </List.Item>
               </>
-            ) : attribute.endsWith('zone') ? (
+            )}
+
+            {(attribute === 'usage_count' || attribute === 'overtaking_event_count') && (
+              <>
+                <List.Item style={{display: 'flex', flexDirection: 'column', alignItems: 'flex-end'}}>
+                  <ColorMapLegend map={viridisSimpleHtml} start="0" end="" />
+                  <Input
+                    type="number"
+                    value={maxCount}
+                    size="small"
+                    style={{width: '10ch', marginRight: 10, marginTop: -11}}
+                    onChange={(_e, {value}) => setMapConfigFlag('obsRoads.maxCount', value)}
+                  />
+                </List.Item>
+              </>
+            )}
+
+            {attribute === 'zone' && (
               <>
                 <List.Item>
                   <Label size="small" style={{background: 'blue', color: 'white'}}>
@@ -180,18 +193,20 @@ function LayerSidebar({
                   </Label>
                 </List.Item>
               </>
-            ) : (
+            )}
+            {attribute.startsWith('distance_') && (
               <>
                 <List.Item>
                   <List.Header>{_.upperFirst(t('general.zone.urban'))}</List.Header>
-                  <DiscreteColorMapLegend map={colorByDistance('distance_overtaker')[3][4].slice(2)} />
+                  <DiscreteColorMapLegend map={COLORMAP_URBAN} />
                 </List.Item>
                 <List.Item>
                   <List.Header>{_.upperFirst(t('general.zone.rural'))}</List.Header>
-                  <DiscreteColorMapLegend map={colorByDistance('distance_overtaker')[3][3].slice(2)} />
+                  <DiscreteColorMapLegend map={COLORMAP_RURAL} />
                 </List.Item>
               </>
             )}
+
             {openStreetMapCopyright}
           </>
         )}
@@ -213,11 +228,11 @@ function LayerSidebar({
           <>
             <List.Item>
               <List.Header>{_.upperFirst(t('general.zone.urban'))}</List.Header>
-              <DiscreteColorMapLegend map={colorByDistance('distance_overtaker')[3][5].slice(2)} />
+              <DiscreteColorMapLegend map={COLORMAP_URBAN} />
             </List.Item>
             <List.Item>
               <List.Header>{_.upperFirst(t('general.zone.rural'))}</List.Header>
-              <DiscreteColorMapLegend map={colorByDistance('distance_overtaker')[3][3].slice(2)} />
+              <DiscreteColorMapLegend map={COLORMAP_RURAL} />
             </List.Item>
           </>
         )}
