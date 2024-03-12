@@ -1,3 +1,4 @@
+from functools import partial
 import logging
 import os
 import json
@@ -8,38 +9,20 @@ import pytz
 from os.path import join
 from datetime import datetime
 
+import numpy
+from shapely import Point
+from shapely.wkb import dumps as dump_wkb
 from sqlalchemy import delete, func, select, and_
 from sqlalchemy.orm import joinedload
+from haversine import Unit, haversine_vector
 
-from obs.face.importer import ImportMeasurementsCsv
-from obs.face.geojson import ExportMeasurements
-from obs.face.annotate import AnnotateMeasurements
-from obs.face.filter import (
-    AnonymizationMode,
-    ChainFilter,
-    ConfirmedFilter,
-    DistanceMeasuredFilter,
-    PrivacyFilter,
-    PrivacyZone,
-    PrivacyZonesFilter,
-    RequiredFieldsFilter,
-)
-
-from obs.face.osm import DataSource, DatabaseTileSource
+from .snapping import snap_to_roads, wsg84_to_mercator
+from .obs_csv import import_csv
 
 from obs.api.db import OvertakingEvent, RoadUsage, Track, UserDevice, make_session
 from obs.api.app import app
 
 log = logging.getLogger(__name__)
-
-
-def get_data_source():
-    """
-    Creates a data source based on the configuration of the portal. In *lean*
-    mode, the OverpassTileSource is used to fetch data on demand. In normal
-    mode, the roads database is used.
-    """
-    return DataSource(DatabaseTileSource())
 
 
 async def process_tracks_loop(delay):
@@ -59,8 +42,7 @@ async def process_tracks_loop(delay):
                     await asyncio.sleep(delay)
                     continue
 
-                data_source = get_data_source()
-                await process_track(session, track, data_source)
+                await process_track(session, track)
         except BaseException:
             log.exception("Failed to process track. Will continue.")
             await asyncio.sleep(1)
@@ -73,8 +55,6 @@ async def process_tracks(tracks):
 
     :param tracks: A list of strings which
     """
-    data_source = get_data_source()
-
     async with make_session() as session:
         for track_id_or_slug in tracks:
             track = (
@@ -92,7 +72,7 @@ async def process_tracks(tracks):
             if not track:
                 raise ValueError(f"Track {track_id_or_slug!r} not found.")
 
-            await process_track(session, track, data_source)
+            await process_track(session, track)
 
 
 def to_naive_utc(t):
@@ -101,7 +81,7 @@ def to_naive_utc(t):
     return t.astimezone(pytz.UTC).replace(tzinfo=None)
 
 
-async def export_gpx(track, filename, name):
+async def export_gpx(df, filename, name):
     import xml.etree.ElementTree as ET
 
     gpx = ET.Element("gpx")
@@ -115,17 +95,17 @@ async def export_gpx(track, filename, name):
 
     trkseg = ET.SubElement(trk, "trkseg")
 
-    for point in track:
+    for _, point in df.iterrows():
         trkpt = ET.SubElement(
             trkseg, "trkpt", lat=str(point["latitude"]), lon=str(point["longitude"])
         )
-        ET.SubElement(trkpt, "time").text = point["time"].isoformat()
+        ET.SubElement(trkpt, "time").text = point["datetime"].isoformat()
 
     et = ET.ElementTree(gpx)
     et.write(filename, encoding="utf-8", xml_declaration=True)
 
 
-async def process_track(session, track, data_source):
+async def process_track(session, track):
     try:
         track.processing_status = "complete"
         track.processed_at = datetime.utcnow()
@@ -138,76 +118,26 @@ async def process_track(session, track, data_source):
         )
         os.makedirs(output_dir, exist_ok=True)
 
-        log.info("Annotating and filtering CSV file")
-        imported_data, statistics, track_metadata = ImportMeasurementsCsv().read(
-            original_file_path,
-            user_id="dummy",  # TODO: user username or id or nothing?
-            dataset_id=Track.slug,  # TODO: use track id or slug or nothing?
-            return_metadata=True,
-        )
-
-        annotator = AnnotateMeasurements(
-            data_source,
-            cache_dir=app.config.OBS_FACE_CACHE_DIR,
-            fully_annotate_unconfirmed=True,
-        )
-        input_data = await annotator.annotate(imported_data)
-
-        track_filter = ChainFilter(
-            RequiredFieldsFilter(),
-            PrivacyFilter(
-                user_id_mode=AnonymizationMode.REMOVE,
-                measurement_id_mode=AnonymizationMode.REMOVE,
-            ),
-            # TODO: load user privacy zones and create a PrivacyZonesFilter() from them
-        )
-        measurements_filter = DistanceMeasuredFilter()
-        overtaking_events_filter = ConfirmedFilter()
-
-        track_points = track_filter.filter(input_data, log=log)
-        measurements = measurements_filter.filter(track_points, log=log)
-        overtaking_events = overtaking_events_filter.filter(measurements, log=log)
-
-        exporter = ExportMeasurements("measurements.dummy")
-        await exporter.add_measurements(measurements)
-        measurements_json = exporter.get_data()
-        del exporter
-
-        exporter = ExportMeasurements("overtaking_events.dummy")
-        await exporter.add_measurements(overtaking_events)
-        overtaking_events_json = exporter.get_data()
-        del exporter
-
-        track_json = {
-            "type": "Feature",
-            "geometry": {
-                "type": "LineString",
-                "coordinates": [[m["longitude"], m["latitude"]] for m in track_points],
-            },
-        }
-
-        track_raw_json = {
-            "type": "Feature",
-            "geometry": {
-                "type": "LineString",
-                "coordinates": [
-                    [m["longitude_GPS"], m["latitude_GPS"]] for m in track_points
-                ],
-            },
-        }
+        (
+            df,
+            event_rows,
+            track_metadata,
+            events,
+            track_json,
+            track_raw_json,
+        ) = await process_track_file(session, original_file_path)
 
         for output_filename, data in [
-            ("measurements.json", measurements_json),
-            ("overtakingEvents.json", overtaking_events_json),
+            ("events.json", events),
             ("track.json", track_json),
             ("trackRaw.json", track_raw_json),
         ]:
             target = join(output_dir, output_filename)
             log.debug("Writing file %s", target)
-            with open(target, "w") as fp:
+            with open(target, "wt", encoding="utf-8") as fp:
                 json.dump(data, fp, indent=4)
 
-        await export_gpx(track_points, join(output_dir, "track.gpx"), track.slug)
+        await export_gpx(df, join(output_dir, "track.gpx"), track.slug)
 
         log.info("Clearing old track data...")
         await clear_track_data(session, track)
@@ -244,22 +174,36 @@ async def process_track(session, track, data_source):
             log.info("No DeviceId in track metadata.")
 
         log.info("Import events into database...")
-        await import_overtaking_events(session, track, overtaking_events)
+        await import_overtaking_events(session, track, event_rows)
 
         log.info("import road usages...")
-        await import_road_usages(session, track, track_points)
+        await import_road_usages(session, track, df)
+
+        # compute distance from previous point
+        coordinates = numpy.dstack((df["longitude"], df["latitude"]))[0].tolist()
+        df["distance"] = numpy.concatenate(
+            (
+                [numpy.nan],
+                haversine_vector(coordinates[:-1], coordinates[1:], unit=Unit.METERS),
+            )
+        )
 
         log.info("Write track statistics and update status...")
-        track.recorded_at = to_naive_utc(statistics["t_min"])
-        track.recorded_until = to_naive_utc(statistics["t_max"])
-        track.duration = statistics["t"]
-        track.length = statistics["d"]
-        track.segments = statistics["n_segments"]
-        track.num_events = statistics["n_confirmed"]
-        track.num_measurements = statistics["n_measurements"]
-        track.num_valid = statistics["n_valid"]
+        # statistics = compute_statistics(df)
+        track.recorded_at = to_naive_utc(numpy.nanmin(df["datetime"]))
+        track.recorded_until = to_naive_utc(numpy.nanmax(df["datetime"]))
+        track.duration = (track.recorded_until - track.recorded_at).total_seconds()
+        track.length = numpy.nansum(df["distance"])
+        track.segments = 1  # we don't do splitting yet
+        track.num_events = len(event_rows)
+        track.num_measurements = len(event_rows)  # not distinguished anymore
+        track.num_valid = len(event_rows)  # not distinguished anymore
         track.processing_status = "complete"
         track.processed_at = datetime.utcnow()
+        track.geometry = func.ST_Transform(
+            func.ST_GeomFromGeoJSON(json.dumps(track_raw_json["geometry"])),
+            3857,
+        )
         await session.commit()
 
         log.info("Track %s imported.", track.slug)
@@ -271,6 +215,65 @@ async def process_track(session, track, data_source):
 
         await session.commit()
         raise
+
+
+def fix_nan(v):
+    if numpy.isnan(v):
+        return None
+    return v
+
+
+async def process_track_file(session, track_file):
+    log.info("Load CSV file at %s", track_file)
+    df, track_metadata = import_csv(track_file)
+
+    # Snap track to roads from the database, adding latitude_snapped and longitude_snapped
+    df = await snap_to_roads(session, df)
+
+    # remove entries with missing data
+    event_rows = df[df["confirmed"] & ~numpy.isnan(df["distance_overtaker"])]
+
+    events = {
+        "type": "FeatureCollection",
+        "features": [
+            {
+                "type": "Feature",
+                "geometry": {
+                    "type": "Point",
+                    "coordinates": [row["longitude"], row["latitude"]],
+                },
+                "properties": {
+                    "time": row["datetime"].replace(tzinfo=None).isoformat(),
+                    "distance_overtaker": fix_nan(row["distance_overtaker"]),
+                    "distance_stationary": fix_nan(row["distance_stationary"]),
+                    "course": fix_nan(row["course"]),
+                    "speed": fix_nan(row["speed"]),
+                    "direction_reversed": row.get("direction_reversed", 0) < 0,
+                },
+            }
+            for _, row in event_rows.iterrows()
+        ],
+    }
+
+    track_json = {
+        "type": "Feature",
+        "geometry": {
+            "type": "LineString",
+            "coordinates": numpy.dstack(
+                (df["longitude_snapped"], df["latitude_snapped"])
+            )[0].tolist(),
+        },
+    }
+
+    track_raw_json = {
+        "type": "Feature",
+        "geometry": {
+            "type": "LineString",
+            "coordinates": numpy.dstack((df["longitude"], df["latitude"]))[0].tolist(),
+        },
+    }
+
+    return df, event_rows, track_metadata, events, track_json, track_raw_json
 
 
 async def clear_track_data(session, track):
@@ -289,77 +292,80 @@ async def clear_track_data(session, track):
     await session.execute(delete(RoadUsage).where(RoadUsage.track_id == track.id))
 
 
-async def import_overtaking_events(session, track, overtaking_events):
+async def import_overtaking_events(session, track, event_rows):
     # We use a dictionary to prevent per-track hash collisions, ignoring all
     # but the first event of the same hash
     event_models = {}
 
-    for m in overtaking_events:
+    for _, row in event_rows.iterrows():
         hex_hash = hashlib.sha256(
             struct.pack(
-                "ddQ", m["latitude"], m["longitude"], int(m["time"].timestamp())
+                "ddQ",
+                row["latitude"],
+                row["longitude"],
+                int(row["datetime"].timestamp()),
             )
         ).hexdigest()
 
         event_models[hex_hash] = OvertakingEvent(
             track_id=track.id,
             hex_hash=hex_hash,
-            way_id=m.get("OSM_way_id"),
-            direction_reversed=m.get("OSM_way_orientation", 0) < 0,
-            geometry=func.ST_Transform(
-                func.ST_GeomFromGeoJSON(
-                    json.dumps(
-                        {
-                            "type": "Point",
-                            "coordinates": [m["longitude"], m["latitude"]],
-                        }
-                    )
-                ),
-                3857,
+            way_id=row["way_id"],
+            direction_reversed=row["direction_reversed"],
+            geometry=func.ST_GeomFromWKB(
+                dump_wkb(wsg84_to_mercator(Point(row["longitude"], row["latitude"])))
             ),
-            latitude=m["latitude"],
-            longitude=m["longitude"],
-            time=m["time"].astimezone(pytz.utc).replace(tzinfo=None),
-            distance_overtaker=m["distance_overtaker"],
-            distance_stationary=m["distance_stationary"],
-            course=m["course"],
-            speed=m["speed"],
+            latitude=row["latitude"],
+            longitude=row["longitude"],
+            time=row["datetime"].astimezone(pytz.utc).replace(tzinfo=None),
+            distance_overtaker=row["distance_overtaker"],
+            distance_stationary=row["distance_stationary"],
+            course=row["course"],
+            speed=row["speed"],
         )
 
     session.add_all(event_models.values())
 
 
-def get_road_usages(track_points):
-    last_key = None
-    last = None
+def get_road_usage_segments(df):
+    way_ids = set(df["way_id"]) - {0}
 
-    for p in track_points:
-        way_id = p.get("OSM_way_id")
-        direction_reversed = p.get("OSM_way_orientation", 0) < 0
+    for way_id in way_ids:
+        rows = df[df["way_id"] == way_id]
+        prev_row = None
 
-        key = (way_id, direction_reversed)
+        current_segment = []
 
-        if last_key is None or last_key[0] is None:
-            last = p
-            last_key = key
-            continue
+        for i, (_, row) in enumerate(rows.iterrows()):
+            current_segment.append(row)
 
-        if last_key != key:
-            if last_key[0] is not None:
-                yield last
-            last_key = key
-            last = p
+            if prev_row is None:
+                prev_row = row
+                continue
 
-    if last is not None and last_key[0] is not None:
-        yield last
+            time_delta = (row["datetime"] - prev_row["datetime"]).total_seconds()
+            p0 = wsg84_to_mercator(
+                Point(prev_row["longitude_snapped"], prev_row["latitude_snapped"])
+            )
+            p1 = wsg84_to_mercator(
+                Point(row["longitude_snapped"], row["latitude_snapped"])
+            )
+            distance = p0.distance(p1)
+
+            if i == len(rows) - 1 or distance > 50 or time_delta > 30:
+                yield (way_id, current_segment)
+                current_segment = []
+
+            prev_row = row
 
 
-async def import_road_usages(session, track, track_points):
+async def import_road_usages(session, track, df):
     usages = set()
-    for p in get_road_usages(track_points):
-        direction_reversed = p.get("OSM_way_orientation", 0) < 0
-        way_id = p.get("OSM_way_id")
-        time = p["time"]
+    for way_id, rows in get_road_usage_segments(df):
+        direction_reversed = numpy.mean(df["direction_reversed"]) > 0.5
+        start_time = rows[0]["datetime"]
+        end_time = rows[-1]["datetime"]
+        time = start_time + (end_time - start_time) / 2
 
         hex_hash = hashlib.sha256(
             struct.pack("dQ", way_id, int(time.timestamp()))

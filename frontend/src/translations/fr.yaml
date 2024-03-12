@@ -291,20 +291,10 @@ TrackPage:
   processingError: Le traitement de cette trace a échoué. Veuillez demander à l'administrateur de votre site de vous aider à résoudre le problème.
   description: Description
 
-
-  mapSettings:
-    title: Paramètres de la carte
-    showTrack: Montrer la trace
+  mapLegend:
+    title: Légende de la carte
     gpsTrack: Trace GPS
     snappedTrack: Suivre la route
-
-    points: Points
-    confirmedPoints: Confirmé(s)
-    allPoints: Toutes les mesures
-
-    side: Côté (pour la couleur)
-    overtakerSide: Dépassement (Gauche)
-    stationarySide: Stationnemnt (Droite)
 
   details:
     visibility: Visibilité

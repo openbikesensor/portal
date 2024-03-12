@@ -296,19 +296,10 @@ TrackPage:
   description: Description
 
 
-  mapSettings:
-    title: Map settings
-    showTrack: Show track
+  mapLegend:
+    title: Map legend
     gpsTrack: GPS track
-    snappedTrack: Snapped to road
-
-    points: Points
-    confirmedPoints: Confirmed
-    allPoints: All measurements
-
-    side: Side (for color)
-    overtakerSide: Overtaker (Left)
-    stationarySide: Stationary (Right)
+    snappedTrack: Snapped to roads
 
   details:
     visibility: Visibility

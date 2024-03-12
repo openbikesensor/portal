@@ -8,15 +8,13 @@ import {colorByDistance, trackLayer, trackLayerRaw} from '../../mapstyles'
 
 export default function TrackMap({
   trackData,
-  showTrack,
-  pointsMode = 'overtakingEvents',
-  side = 'overtaker',
+  showTrack = true,
+  showPoints = true,
   ...props
 }: {
   trackData: TrackData
   showTrack: boolean
-  pointsMode: 'none' | 'overtakingEvents' | 'measurements'
-  side: 'overtaker' | 'stationary'
+  showPoints: boolean
 }) {
   if (!trackData) {
     return null
@@ -37,35 +35,36 @@ export default function TrackMap({
           </Source>
         )}
 
-        {pointsMode !== 'none' && (
-          <Source key="overtakingEvents" id="overtakingEvents" type="geojson" data={trackData[pointsMode]}>
+        {showPoints && (
+          <Source key="events" id="events" type="geojson" data={trackData.events}>
             <Layer
-              id="overtakingEvents"
+              id="events"
               type="circle"
               paint={{
                 'circle-radius': ['interpolate', ['linear'], ['zoom'], 14, 5, 17, 10],
-                'circle-color': colorByDistance('distance_' + side),
+                'circle-color': colorByDistance('distance_overtaker'),
               }}
             />
 
-            {[
-              ['distance_overtaker', 'right'],
-              ['distance_stationary', 'left'],
-            ].map(([p, a]) => (
+            {['distance_overtaker', 'distance_stationary'].map((property) => (
               <Layer
-                key={p}
+                key={property}
                 {...{
-                  id: p,
+                  id: property,
                   type: 'symbol',
                   minzoom: 15,
                   layout: {
-                    'text-field': ['number-format', ['get', p], {'min-fraction-digits': 2, 'max-fraction-digits': 2}],
+                    'text-field': [
+                      'number-format',
+                      ['get', property],
+                      {'min-fraction-digits': 2, 'max-fraction-digits': 2},
+                    ],
                     'text-allow-overlap': true,
                     'text-size': 14,
                     'text-keep-upright': false,
-                    'text-anchor': a,
+                    'text-anchor': property === 'distance_overtaker' ? 'right' : 'left',
                     'text-radial-offset': 1,
-                    'text-rotate': ['get', 'course'],
+                    'text-rotate': ['-', 90, ['*', 180, ['/', ['get', 'course'], Math.PI]]],
                     'text-rotation-alignment': 'map',
                   },
                   paint: {

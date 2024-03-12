@@ -1,0 +1,327 @@
+# Copyright (C) 2020-2021 OpenBikeSensor Contributors
+# Contact: https://openbikesensor.org
+#
+# This file is part of the OpenBikeSensor Portal Software.
+#
+# The OpenBikeSensor Portal Software is free software: you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public License as
+# published by the Free Software Foundation, either version 3 of the License,
+# or (at your option) any later version.
+#
+# The OpenBikeSensor Portal Software is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser
+# General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with the OpenBikeSensor Portal Software.  If not, see
+# <http://www.gnu.org/licenses/>.
+
+from collections import defaultdict
+from dataclasses import dataclass
+from functools import partial
+
+from networkx import DiGraph, dijkstra_path
+import numpy as np
+from pyproj import Transformer
+import shapely
+import shapely
+from shapely.geometry import MultiPoint
+from shapely.ops import transform
+from shapely.wkb import dumps as dump_wkb
+from sqlalchemy import func, select
+from transformations import unit_vector
+
+from obs.api.db import Road
+
+# https://epsg.io/4326 -- World Geodetic System 1984, used in GPS
+WSG84 = "EPSG:4326"  # degrees lat/lng WSG84
+
+# https://epsg.io/3857 -- WGS 84 / Pseudo-Mercator (e. g. OpenStreetMap)
+WEB_MERCATOR = "EPSG:3857"
+
+wsg84_to_mercator = partial(
+    transform, Transformer.from_crs(WSG84, WEB_MERCATOR, always_xy=True).transform
+)
+mercator_to_wsg84 = partial(
+    transform, Transformer.from_crs(WEB_MERCATOR, WSG84, always_xy=True).transform
+)
+
+
+def point_feature_collection(df) -> MultiPoint:
+    coordinates = np.dstack((df["longitude"], df["latitude"]))[0]
+    return MultiPoint(coordinates)
+
+
+async def load_roads(session, track_points: MultiPoint, buffer):
+    # Road.geometry and track_points are both in mercator projection, and the
+    # unit for distance in that projection is meters, so the buffer is in
+    # meters.
+    query = select(Road).where(
+        func.ST_DWithin(
+            Road.geometry,
+            func.ST_GeomFromWKB(dump_wkb(track_points, srid=3857)),
+            buffer,
+        )
+    )
+
+    return list((await session.execute(query)).scalars())
+
+
+def create_road_lookup(roads, track: MultiPoint, buffer: float):
+    points = track.geoms
+
+    roads_by_index, road_geometries = zip(
+        *[
+            (road, wsg84_to_mercator(shapely.from_geojson(road.geometry)))
+            for road in roads
+        ]
+    )
+
+    tree = shapely.STRtree(road_geometries)
+    lookup = defaultdict(list)
+    for point_index, road_index in tree.query(points, "dwithin", buffer).T:
+        road_geometry = road_geometries[road_index]
+        distance = road_geometry.distance(points[point_index])
+        road = roads_by_index[road_index]
+        lookup[point_index].append((distance, road, road_geometry))
+
+    return lookup
+
+
+def coordinate_array(measurements):
+    """
+    Transform a list of coordinates into a 2D array in the compute coordinate
+    system.
+    """
+    return transform(
+        wsg84_to_web_mercator,
+        MultiPoint([[m["longitude"], m["latitude"]] for m in measurements]),
+    )
+
+
+def line_directions(line: MultiPoint, offset=1):
+    c = shapely.to_ragged_array(line.geoms)[1]
+    dirs = unit_vector(c[2 * offset :] - c[: -2 * offset], axis=1)
+    dirs = np.concatenate([[dirs[0]] * offset, dirs, [dirs[-1]]] * offset)
+    return dirs
+
+
+def project_on_line(line, point, d=10):
+    loc = shapely.line_locate_point(line, point)
+    target = shapely.line_interpolate_point(line, loc)
+
+    a = shapely.line_interpolate_point(line, loc - d)
+    b = shapely.line_interpolate_point(line, loc + d)
+    diff = np.array([b.x - a.x, b.y - a.y])
+
+    return target, unit_vector(diff)
+
+
+def cost_by_direction_dot(dot, directionality):
+    if True or directionality == 0:
+        dot = abs(dot)
+    elif directionality < 0:
+        dot *= -1
+
+    if dot < 0:
+        return (1 + dot) ** 2 * 0.7 + 0.3
+    else:
+        return (1 - dot) ** 2
+
+
+def cost_by_angle(direction, road_direction, directionality):
+    forward_angle = abs(angle_between(direction, road_direction))
+    backward_angle = abs(angle_between(direction, road_direction * -1))
+
+    if directionality > 0:
+        used_angle = forward_angle
+    elif directionality < 0:
+        used_angle = backward_angle
+    else:
+        used_angle = min(forward_angle, backward_angle)
+
+    return used_angle / np.pi
+
+
+def cost_by_distance(distance, radius):
+    return (distance / radius) ** 1.2
+
+
+def cost_by_switching_distance(distance, radius):
+    return (distance / radius) ** 1.2
+
+
+def get_factor_for_changing_way(b, a, leave, enter, stay, stay_offroad, switch):
+    # staying on the way
+    if a == b:
+        if a == 0:
+            return stay_offroad
+        return stay
+
+    # switching off a way
+    if b == 0:
+        return leave
+
+    # switching onto a way
+    if a == 0:
+        return enter
+
+    # switching between normal ways
+    return switch
+
+
+def angle_between(v1, v2):
+    v1_u = unit_vector(v1)
+    v2_u = unit_vector(v2)
+    return np.arccos(np.clip(np.dot(v1_u, v2_u), -1.0, 1.0))
+
+
+def candidate_cost(distance_to_gps, road_direction_dot):
+    return distance_to_gps * (2 - abs(road_direction_dot))
+
+
+@dataclass
+class Candidate:
+    cost: float
+    distance_to_gps: float
+    road_direction_dot: float
+    road: Road
+    road_point: shapely.Point
+    road_direction: np.ndarray
+    road_geometry: shapely.Geometry
+    direction: np.ndarray
+
+
+def edge_cost(c1: Candidate, c2: Candidate):
+    distance_traveled = c1.road_point.distance(c2.road_point)
+    return 1 + distance_traveled
+
+
+async def snap_to_roads(session, df, buffer=50.0):
+    choice_count = 3
+    point_count = len(df)
+    direction_offset = 5
+    min_points = 2 * direction_offset + 1
+
+    if point_count < min_points:
+        raise ValueError("Too few points to process track.")
+
+    # Create a raw point collection, and change it to the mercator projection,
+    # in which we do all our computations
+    track_points = wsg84_to_mercator(point_feature_collection(df))
+
+    # Load roads that are within `buffer` meters to any point of the track.
+    roads = await load_roads(session, track_points, buffer)
+
+    if not roads:
+        raise ValueError("No roads found in the import area.")
+
+    # Figure out the roads in range of each point on the raw track, sorted by
+    # bounding box distance.
+    road_lookup = create_road_lookup(roads, track_points, buffer)
+
+    # Compute the track directions (we ignore the "course" for now). We will use
+    # this for snapping based on the direction of the line segment.
+    track_directions = line_directions(track_points, offset=direction_offset)
+
+    # Now we start building a directed graph that contains a node for each choice of way
+    # that each point has. This results in choice_count*point_count nodes,
+    # where each pair of nodes from consecutive points are connected by edges representing
+    # the cost to use those nodes *and* to switch from one node to the other.
+    # This lets us model the cost of switching ways, of using or not using
+    # certain types of ways, and of course the distance traveled or the
+    # distance from the measured GPS. We will later perform a "shortest path"
+    # (Dijkstra) computation on the directed graph.
+    graph = DiGraph()
+
+    candidates_list = []
+
+    for point_index, (row, point) in enumerate(zip(df.iterrows(), track_points.geoms)):
+        direction = track_directions[point_index]
+
+        # get road candidates
+        candidates: list[Candidate] = []
+        for distance_to_gps, road, road_geometry in road_lookup[point_index]:
+            road_point, road_direction = project_on_line(road_geometry, point)
+            road_direction_dot = np.dot(direction, road_direction)
+            if np.isnan(road_direction_dot):
+                road_direction_dot = 0
+
+            cost = candidate_cost(distance_to_gps, road_direction_dot)
+            candidates.append(
+                Candidate(
+                    cost,
+                    distance_to_gps,
+                    road_direction_dot,
+                    road,
+                    road_point,
+                    road_direction,
+                    road_geometry,
+                    direction,
+                )
+            )
+
+        candidates.sort(key=lambda c: c.cost)
+        candidates = candidates[:choice_count]
+
+        if not candidates:
+            print("no candidate for point", point_index, point)
+            candidates = [Candidate(0, 0, 1, None, point, direction, None, direction)]
+
+        if candidates_list:
+            prev_candidates = candidates_list[-1]
+            for ci, candidate in enumerate(candidates):
+                for prev_ci, prev_candidate in enumerate(prev_candidates):
+                    cost = edge_cost(
+                        prev_candidate,
+                        candidate,
+                    )
+
+                    # We define nodes by a tuple of point_index and candidate_index
+                    source = (point_index - 1, prev_ci)
+                    target = (point_index, ci)
+
+                    # This automatically adds the nodes to the graph when they
+                    # are unknown
+                    if not isinstance(cost, float) and cost > 0:
+                        raise ValueError(f"invalid cost: {cost}")
+                    graph.add_edge(source, target, weight=cost)
+
+        candidates_list.append(candidates)
+
+    # Add start and end dummy nodes so we can compute a single-pair shortest path.
+    for ci in range(choice_count):
+        graph.add_edge(
+            "start",
+            (0, ci),
+            weight=0,
+        )
+        graph.add_edge(
+            (point_count - 1, ci),
+            "end",
+            weight=0,
+        )
+
+    # Now we have a list of matrixes that describe the cost relationship
+    # between each pair of consecutive candidates. Let's find the shortest
+    # path from start to finish.
+    result_candidates: list[Candidate] = []
+    for node in dijkstra_path(graph, "start", "end"):
+        if node in ("start", "end"):
+            continue
+        point_index, candidate_index = node
+        result_candidates.append(candidates_list[point_index][candidate_index])
+
+    # Extract information
+    df = df.copy()
+
+    coordinates_wsg80 = mercator_to_wsg84(
+        MultiPoint([c.road_point for c in result_candidates])
+    )
+
+    df["longitude_snapped"] = [p.x for p in coordinates_wsg80.geoms]
+    df["latitude_snapped"] = [p.y for p in coordinates_wsg80.geoms]
+    df["way_id"] = [c.road.way_id if c.road else 0 for c in result_candidates]
+    df["direction_reversed"] = [c.road_direction_dot < 0 for c in result_candidates]
+    return df

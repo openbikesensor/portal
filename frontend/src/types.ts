@@ -9,8 +9,7 @@ export interface UserProfile {
 
 export interface TrackData {
   track: Feature<LineString>
-  measurements: FeatureCollection
-  overtakingEvents: FeatureCollection
+  events: FeatureCollection<Point>
 }
 
 export type ProcessingStatus = 'error' | 'complete' | 'created' | 'queued' | 'processing'

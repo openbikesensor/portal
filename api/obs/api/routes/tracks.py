@@ -265,8 +265,7 @@ async def get_track_data(req, slug: str):
     track = await _load_track(req, slug)
 
     FILE_BY_KEY = {
-        "measurements": "measurements.json",
-        "overtakingEvents": "overtakingEvents.json",
+        "events": "events.json",
         "track": "track.json",
         "trackRaw": "trackRaw.json",
     }

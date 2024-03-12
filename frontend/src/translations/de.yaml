@@ -292,19 +292,10 @@ TrackPage:
   processingError: Beim Import dieser Fahrt ist ein Fehler aufgetreten, bitte frage den Administrator um Hilfe mit diesem Problem.
   description: Beschreibung
 
-  mapSettings:
-    title: Karteneinstellungen
-    showTrack: Route anzeigen
+  mapLegend:
+    title: Legende
     gpsTrack: GPS-Route
     snappedTrack: Erkannte Straßenroute
-
-    points: Punkte
-    confirmedPoints: Bestätigte Überholungen
-    allPoints: Alle Messungen
-
-    side: Seite für Einfärbung
-    overtakerSide: Überholung (links)
-    stationarySide: Ruhender Verkehr (rechts)
 
   details:
     visibility: Sichtbarkeit
