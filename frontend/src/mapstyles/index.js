@@ -3,11 +3,12 @@ import produce from 'immer'
 
 import bright from './bright.json'
 import positron from './positron.json'
+import darkmatter from './darkmatter.json'
 
 import viridisBase from 'colormap/res/res/viridis'
 
-export {bright, positron}
-export const baseMapStyles = {bright, positron}
+export {bright, positron, darkmatter}
+export const baseMapStyles = {bright, positron, darkmatter}
 
 function simplifyColormap(colormap, maxCount = 16) {
   const result = []

@@ -219,6 +219,7 @@ are included in a file next to each of them, named accordingly:
 
 * `frontend/src/mapstyles/bright.json`
 * `frontend/src/mapstyles/positron.json`
+* `frontend/src/mapstyles/darkmatter.json`
 
 There are lots of other licenses to consider when using this software,
 especially in conjunction with imported data and other tools. Check out the

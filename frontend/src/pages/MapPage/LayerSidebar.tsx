@@ -14,7 +14,7 @@ import {viridisSimpleHtml, GREEN, YELLOW, RED, COLORMAP_RURAL, COLORMAP_URBAN, C
 import {ColorMapLegend, DiscreteColorMapLegend} from 'components'
 import styles from './styles.module.less'
 
-const BASEMAP_STYLE_OPTIONS = ['positron', 'bright']
+const BASEMAP_STYLE_OPTIONS = ['positron', 'bright', 'darkmatter']
 
 const ROAD_ATTRIBUTE_OPTIONS = [
   'distance_overtaker_mean',

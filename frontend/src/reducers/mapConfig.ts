@@ -3,7 +3,7 @@ import {useSelector} from 'react-redux'
 import produce from 'immer'
 import _ from 'lodash'
 
-type BaseMapStyle = 'positron' | 'bright'
+type BaseMapStyle = 'positron' | 'bright' | 'darkmatter'
 
 type RoadAttribute =
   | 'distance_overtaker_mean'
