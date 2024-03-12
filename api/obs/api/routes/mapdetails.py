@@ -3,6 +3,8 @@ from functools import partial
 import logging
 import numpy
 import math
+import pyproj
+
 
 from sqlalchemy import select, func, column, text
 
@@ -20,15 +22,13 @@ round_speed = partial(round_to, multiples=0.1)
 
 log = logging.getLogger(__name__)
 
+g = pyproj.Geod(ellps='WGS84')
 
-def get_bearing(b, a):
-    # longitude, latitude
-    dL = b[0] - a[0]
-    X = numpy.cos(b[1]) * numpy.sin(dL)
-    Y = numpy.cos(a[1]) * numpy.sin(b[1]) - numpy.sin(a[1]) * numpy.cos(
-        b[1]
-    ) * numpy.cos(dL)
-    return numpy.arctan2(Y, X) + 0.5 * math.pi
+
+def get_bearing(p1, p2):
+    (az12, az21, dist) = g.inv(p1[0], p1[1], p2[0], p2[1])
+    bearing = (az12 + 360)%360
+    return bearing
 
 
 # Bins for histogram on overtaker distances. 0, 0.25, ... 2.25, infinity
@@ -158,7 +158,7 @@ async def mapdetails_road(req):
         coordinates = geom["coordinates"]
         bearing = get_bearing(coordinates[0], coordinates[-1])
         # convert to degrees, as this is more natural to understand for consumers
-        bearing = round_to((bearing / math.pi * 180 + 360) % 360, 1)
+        bearing = round_to(bearing, 1)
 
     def get_direction_stats(direction_arrays, usage, backwards=False):
         return {
