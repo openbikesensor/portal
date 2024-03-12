@@ -37,7 +37,7 @@ const untaggedRoadsLayer = {
     'line-join': 'round',
   },
   paint: {
-    'line-width': ['interpolate', ['exponential', 1.5], ['zoom'], 12, 2, 17, 2],
+    'line-width': ['interpolate', ['exponential', 1.5], ['zoom'], 12, 1, 17, 2],
     'line-color': '#ABC',
     // "line-opacity": ["interpolate", ["linear"], ["zoom"], 14, 0, 15, 1],
     'line-offset': [
@@ -62,7 +62,7 @@ const getRoadsLayer = (colorAttribute, maxCount) =>
     draft.id = 'obs_roads_normal'
     draft.filter = isValidAttribute(colorAttribute)
     draft.minzoom = 10
-    draft.paint['line-width'][6] = 6 // scale bigger on zoom
+    draft.paint['line-width'][6] = 4 // scale bigger on zoom
 
     let color: any = '#DDD'
 
@@ -89,7 +89,7 @@ const getEventsLayer = () => ({
   source: 'obs',
   'source-layer': 'obs_events',
   paint: {
-    'circle-radius': ['interpolate', ['linear'], ['zoom'], 14, 3, 17, 8],
+    'circle-radius': ['interpolate', ['linear'], ['zoom'], 14, 2, 17, 5],
     'circle-opacity': ['interpolate', ['linear'], ['zoom'], 8, 0.1, 9, 0.3, 10, 0.5, 11, 1],
     'circle-color': colorByDistance('distance_overtaker'),
   },
@@ -112,7 +112,7 @@ const getEventsTextLayer = () => ({
     'text-size': 14,
     'text-keep-upright': false,
     'text-anchor': 'left',
-    'text-radial-offset': 1,
+    'text-radial-offset': 0.75,
     'text-rotate': ['-', 90, ['*', ['get', 'course'], 180 / Math.PI]],
     'text-rotation-alignment': 'map',
   },
