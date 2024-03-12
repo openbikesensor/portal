@@ -32,6 +32,7 @@ export interface Track {
   numMeasurements?: number
   numValid?: number
   userDeviceId?: number
+  processingLog?: string
 }
 
 export interface TrackPoint {

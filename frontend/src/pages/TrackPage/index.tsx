@@ -155,7 +155,8 @@ const TrackPage = connect((state) => ({login: state.login}))(function TrackPage(
           concat(
             of(undefined),
             from(api.get(url)).pipe(
-              catchError(() => {
+              catchError((e) => {
+                console.log('Error loading track data', e)
                 return of(null)
               })
             )
@@ -295,6 +296,7 @@ const TrackPage = connect((state) => ({login: state.login}))(function TrackPage(
               {error && (
                 <Message error>
                   <Message.Content>{t('TrackPage.processingError')}</Message.Content>
+                  {track.processingLog && <Message.Content>{track?.processingLog}</Message.Content>}
                 </Message>
               )}
             </div>

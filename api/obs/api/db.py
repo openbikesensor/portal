@@ -312,6 +312,7 @@ class Track(Base):
             result["uploadedByUserAgent"] = self.uploaded_by_user_agent
             result["originalFileName"] = self.original_file_name
             result["userDeviceId"] = self.user_device_id
+            result["processingLog"] = self.processing_log
 
         if self.author:
             result["author"] = self.author.to_dict(for_user_id=for_user_id)
