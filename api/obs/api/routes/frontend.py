@@ -5,7 +5,7 @@ from sanic.exceptions import NotFound
 
 from obs.api.app import app
 
-if app.config.FRONTEND_CONFIG:
+if app.config.get("FRONTEND_CONFIG"):
 
     @app.get("/config.json")
     def get_frontend_config(req):
