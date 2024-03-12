@@ -151,6 +151,7 @@ MapPage:
         label: Style de fond de carte
         positron: Positron
         bright: OSM Bright
+        darkmatter: Darkmatter
 
     obsRoads:
       title: Segments de route

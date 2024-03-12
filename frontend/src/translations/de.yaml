@@ -145,6 +145,7 @@ MapPage:
         label: Stil der Basiskarte
         positron: Positron
         bright: OSM Bright
+        darkmatter: Darkmatter
 
     obsRoads:
       title: Straßenabschnitte

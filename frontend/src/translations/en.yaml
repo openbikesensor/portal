@@ -151,6 +151,7 @@ MapPage:
         label: Basemap Style
         positron: Positron
         bright: OSM Bright
+        darkmatter: Darkmatter
 
     obsRoads:
       title: Road segments
