@@ -239,7 +239,7 @@ function LayerSidebar({
         )}
         <Divider />
 
-        {filtersCurrentUser && (
+        {filtersCurrentUser && login && (
           <>
             <List.Item>
               <Checkbox

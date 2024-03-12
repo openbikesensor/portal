@@ -250,7 +250,7 @@ function MapPage({login}) {
     layers.push(...regionLayers)
   }
 
-  if (mapConfig.obsTracks.show) {
+  if (mapConfig.obsTracks.show && login) {
     layers.push(getMyTracksLayer(mapConfig.baseMap.style === 'darkmatter'))
   }
 
