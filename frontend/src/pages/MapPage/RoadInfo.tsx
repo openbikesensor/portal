@@ -185,6 +185,12 @@ export default function RoadInfo({
 
       <List.Header as="h3">{info?.road.name || t('MapPage.roadInfo.unnamedWay')}</List.Header>
 
+      <p>
+        <a target="_blank" href={`https://www.openstreetmap.org/way/${info?.road.way_id}`} rel="noreferrer">
+          In OpenStreetMap öffnen <Icon name="window restore outline" fitted />
+        </a>
+      </p>
+
       {hasFilters && (
         <List.Item>
           <Message info icon>
