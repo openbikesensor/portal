@@ -10,7 +10,7 @@ import {
   setMapConfigFlag as setMapConfigFlagAction,
   initialState as defaultMapConfig,
 } from 'reducers/mapConfig'
-import {viridisSimpleHtml, GREEN, YELLOW, RED, COLORMAP_RURAL, COLORMAP_URBAN, COLORMAP_LEGAL} from 'mapstyles'
+import {baseColormapSimpleHtml, GREEN, YELLOW, RED, COLORMAP_RURAL, COLORMAP_URBAN, COLORMAP_LEGAL} from 'mapstyles'
 import {ColorMapLegend, DiscreteColorMapLegend} from 'components'
 import styles from './styles.module.less'
 
@@ -149,7 +149,7 @@ function LayerSidebar({
             {attribute === 'overtaking_frequency' && (
               <>
                 <List.Item>
-                  <ColorMapLegend map={viridisSimpleHtml} start="0/km" end="10/km" />
+                  <ColorMapLegend map={baseColormapSimpleHtml} start="0/km" end="10/km" />
                 </List.Item>
               </>
             )}
@@ -170,7 +170,7 @@ function LayerSidebar({
             {(attribute === 'usage_count' || attribute === 'overtaking_event_count') && (
               <>
                 <List.Item style={{display: 'flex', flexDirection: 'column', alignItems: 'flex-end'}}>
-                  <ColorMapLegend map={viridisSimpleHtml} start="0" end="" />
+                  <ColorMapLegend map={baseColormapSimpleHtml} start="0" end="" />
                   <Input
                     type="number"
                     value={maxCount}
