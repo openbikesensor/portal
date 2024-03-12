@@ -266,7 +266,6 @@ function MapPage({login}) {
     (e) => {
       e.stopPropagation()
       e.preventDefault()
-      console.log('toggl;e')
       setLayerSidebar((v) => !v)
     },
     [setLayerSidebar]
