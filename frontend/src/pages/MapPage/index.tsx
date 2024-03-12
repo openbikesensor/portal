@@ -17,6 +17,7 @@ import {
   COLOR_COMBINED_SCORE,
   COLOR_LEGALITY,
   COLOR_FREQUENCY,
+  basemap,
 } from 'mapstyles'
 import {useMapConfig} from 'reducers/mapConfig'
 
@@ -51,6 +52,51 @@ const untaggedRoadsLayer = {
     ],
   },
 }
+
+const getMyTracksLayer = (dark?: boolean) => ({
+  id: 'tracks',
+  type: 'line',
+  source: 'obs',
+  'source-layer': 'obs_tracks',
+  minzoom: 12,
+  paint: {
+    'line-width': ['interpolate', ['exponential', 1.5], ['zoom'], 12, 0.5, 17, 1],
+    'line-color': dark ? 'hsla(50, 100%, 50%, 0.3)' : 'hsla(210, 100%, 30%, 0.3)',
+  },
+})
+
+/*
+// You can add this layer to the map to debug attributes or computed values on
+// the road segments in the tiles.
+
+const roadAttributesTextLayer = {
+  id: 'road-attributes',
+  type: 'symbol',
+  source: 'obs',
+  'source-layer': 'obs_roads',
+  minzoom: 12,
+  filter: ['to-boolean', ['get', 'distance_overtaker_mean']],
+  layout: {
+    'symbol-placement': 'line',
+    'text-field': [
+      'number-format',
+      ['get', 'usage_count'],
+      // ['get', 'distance_overtaker_mean'],
+      {'min-fraction-digits': 0, 'max-fraction-digits': 2},
+    ],
+    'text-offset': [0, 1],
+    'text-font': ['Noto Sans Bold'],
+    'text-rotation-alignment': 'map',
+    // 'text-rotate': 90,
+    'text-size': 18,
+  },
+  paint: {
+    'text-color': 'hsl(30, 23%, 42%)',
+    'text-halo-color': '#f8f4f0',
+    'text-halo-width': 0.5,
+  },
+}
+*/
 
 const getUntaggedRoadsLayer = (colorAttribute) =>
   produce(untaggedRoadsLayer, (draft) => {
@@ -187,7 +233,7 @@ function MapPage({login}) {
     obsRoads: {attribute, maxCount},
   } = mapConfig
 
-  const layers = []
+  const layers = [] // [roadAttributesTextLayer]
 
   const untaggedRoadsLayerCustom = useMemo(() => getUntaggedRoadsLayer(attribute), [attribute])
   if (mapConfig.obsRoads.show && mapConfig.obsRoads.showUntagged) {
@@ -202,6 +248,10 @@ function MapPage({login}) {
   const regionLayers = useMemo(() => getRegionLayers(), [])
   if (mapConfig.obsRegions.show) {
     layers.push(...regionLayers)
+  }
+
+  if (mapConfig.obsTracks.show) {
+    layers.push(getMyTracksLayer(mapConfig.baseMap.style === 'darkmatter'))
   }
 
   const eventsLayer = useMemo(() => getEventsLayer(), [])

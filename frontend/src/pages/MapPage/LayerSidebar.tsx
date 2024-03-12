@@ -49,6 +49,7 @@ function LayerSidebar({
     obsRoads: {show: showRoads, showUntagged, attribute, maxCount},
     obsEvents: {show: showEvents},
     obsRegions: {show: showRegions},
+    obsTracks: {show: showTracks},
     filters: {currentUser: filtersCurrentUser, dateMode, startDate, endDate, thresholdAfter},
   } = mapConfig
 
@@ -237,6 +238,25 @@ function LayerSidebar({
           </>
         )}
         <Divider />
+
+        {filtersCurrentUser && (
+          <>
+            <List.Item>
+              <Checkbox
+                toggle
+                size="small"
+                id="obsTracks.show"
+                style={{float: 'right'}}
+                checked={showTracks}
+                onChange={() => setMapConfigFlag('obsTracks.show', !showTracks)}
+              />
+              <label htmlFor="obsTracks.show">
+                <Header as="h4">{t('MapPage.sidebar.obsTracks.title')}</Header>
+              </label>
+            </List.Item>
+            <Divider />
+          </>
+        )}
 
         <List.Item>
           <Header as="h4">{t('MapPage.sidebar.filters.title')}</Header>

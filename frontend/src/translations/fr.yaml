@@ -179,6 +179,9 @@ MapPage:
     obsEvents:
       title: Points d'événement
 
+    obsTracks:
+      title: Mes propre traces
+
     obsRegions:
       title: Régions
       colorByEventCount: Couleurs des régions sont basées sur le nombre d'événements

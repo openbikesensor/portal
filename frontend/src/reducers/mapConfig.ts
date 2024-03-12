@@ -34,6 +34,9 @@ export type MapConfig = {
   obsRegions: {
     show: boolean
   }
+  obsTracks: {
+    show: boolean
+  }
   filters: {
     currentUser: boolean
     dateMode: 'none' | 'range' | 'threshold'
@@ -58,6 +61,9 @@ export const initialState: MapConfig = {
   },
   obsRegions: {
     show: true,
+  },
+  obsTracks: {
+    show: false,
   },
   filters: {
     currentUser: false,

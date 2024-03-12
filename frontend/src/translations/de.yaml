@@ -173,6 +173,9 @@ MapPage:
     obsEvents:
       title: Überholvorgänge
 
+    obsTracks:
+      title: Meine eigenen Fahrten
+
     obsRegions:
       title: Regionen
       colorByEventCount: Regionen eingefärbt nach Anzahl Überholungen

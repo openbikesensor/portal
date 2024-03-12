@@ -180,6 +180,9 @@ MapPage:
     obsEvents:
       title: Event points
 
+    obsTracks:
+      title: My own tracks
+
     obsRegions:
       title: Regions
       colorByEventCount: Color regions are based on event count
