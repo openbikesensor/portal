@@ -42,8 +42,10 @@ from sqlalchemy.dialects.postgresql import UUID
 log = logging.getLogger(__name__)
 try:
     from sqlalchemy.orm import DeclarativeBase
+
     class Base(DeclarativeBase):
         pass
+
 except ImportError:
     Base = declarative_base()
 
@@ -102,6 +104,8 @@ ProcessingStatus = SqlEnum(
 
 
 class Geometry(UserDefinedType):
+    cache_ok = True
+
     def get_col_spec(self):
         return "GEOMETRY"
 
@@ -113,6 +117,8 @@ class Geometry(UserDefinedType):
 
 
 class LineString(UserDefinedType):
+    cache_ok = True
+
     def get_col_spec(self):
         return "geometry(LineString, 3857)"
 
@@ -124,6 +130,8 @@ class LineString(UserDefinedType):
 
 
 class GeometryGeometry(UserDefinedType):
+    cache_ok = True
+
     def get_col_spec(self):
         return "geometry(GEOMETRY, 3857)"
 
