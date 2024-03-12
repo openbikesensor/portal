@@ -288,6 +288,7 @@ class Track(Base):
     num_events = Column(Integer)
     num_measurements = Column(Integer)
     num_valid = Column(Integer)
+    geometry = Column(LineString)
 
     def to_dict(self, for_user_id=None):
         result = {
