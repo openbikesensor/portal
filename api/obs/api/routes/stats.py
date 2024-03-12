@@ -56,15 +56,26 @@ async def stats(req):
 
     query = (
         select(
-            func.count().label("publicTrackCount"),
             func.sum(Track.duration).label("trackDuration"),
             func.sum(Track.length).label("trackLength"),
+        )
+        .select_from(Track)
+        .where(track_condition)
+    )
+
+    track_duration, track_length = (
+        await req.ctx.db.execute(query)
+    ).first()
+
+    query = (
+        select(
+            func.count().label("publicTrackCount"),
         )
         .select_from(Track)
         .where(public_track_condition)
     )
 
-    public_track_count, track_duration, track_length = (
+    public_track_count, = (
         await req.ctx.db.execute(query)
     ).first()
 
