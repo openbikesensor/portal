@@ -1,6 +1,7 @@
 const roadColor = '#DDD'
 const woodColor = 'hsl(110, 30%, 94%)'
 const waterColor = 'hsl(180, 30%, 80%)'
+const builtupColor = 'hsl(30, 10%, 92%)'
 
 function withZoom(baseSize: number) {
   return [
@@ -74,7 +75,7 @@ const obsLight = {
         ],
       ],
       paint: {
-        'fill-color': 'hsl(30, 20%, 94%)',
+        'fill-color': builtupColor,
         'fill-opacity': ['interpolate', ['linear'], ['zoom'], 14, 1, 15, 0],
       },
     },
