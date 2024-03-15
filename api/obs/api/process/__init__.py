@@ -43,7 +43,7 @@ async def process_tracks_loop(delay):
                     continue
 
                 await process_track(session, track)
-        except BaseException:
+        except Exception:
             log.exception("Failed to process track. Will continue.")
             await asyncio.sleep(1)
             continue
