@@ -3,7 +3,7 @@ import {useSelector} from 'react-redux'
 import produce from 'immer'
 import _ from 'lodash'
 
-type BaseMapStyle = 'positron' | 'bright' | 'darkmatter'
+type BaseMapStyle = 'obsLight' | 'positron' | 'bright' | 'darkmatter'
 
 type RoadAttribute =
   | 'distance_overtaker_mean'
@@ -48,7 +48,7 @@ export type MapConfig = {
 
 export const initialState: MapConfig = {
   baseMap: {
-    style: 'positron',
+    style: 'obsLight',
   },
   obsRoads: {
     show: true,

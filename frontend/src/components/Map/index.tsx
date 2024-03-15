@@ -21,7 +21,7 @@ interface Viewport {
 const EMPTY_VIEWPORT: Viewport = {longitude: 0, latitude: 0, zoom: 0}
 
 export const withBaseMapStyle = connect((state) => ({
-  baseMapStyle: state.mapConfig?.baseMap?.style ?? 'positron',
+  baseMapStyle: state.mapConfig?.baseMap?.style ?? 'obsLight',
 }))
 
 function parseHash(v: string): Viewport | null {

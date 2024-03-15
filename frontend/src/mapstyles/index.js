@@ -1,14 +1,14 @@
-import _ from 'lodash'
 import produce from 'immer'
 
+import obsLight from './obsLight'
 import bright from './bright.json'
 import positron from './positron.json'
 import darkmatter from './darkmatter.json'
 
 import baseColorMap from 'colormap/res/res/plasma'
 
-export {bright, positron, darkmatter}
-export const baseMapStyles = {bright, positron, darkmatter}
+export {bright, positron, darkmatter, obsLight}
+export const baseMapStyles = {bright, positron, darkmatter, obsLight}
 
 function simplifyColormap(colormap, maxCount = 16) {
   const result = []
@@ -28,7 +28,7 @@ function rgbArrayToHtml(arr) {
     '#' +
     arr
       .map((v) => Math.round(v * 255).toString(16))
-      .map((v) => (v.length == 1 ? '0' : '') + v)
+      .map((v) => (v.length === 1 ? '0' : '') + v)
       .join('')
   )
 }
@@ -97,7 +97,7 @@ export function isValidAttribute(attribute) {
 
 export const COLOR_BY_ZONE = ['match', ['get', 'zone'], 'rural', COLOR_RURAL, 'urban', COLOR_URBAN, COLOR_UNKNOWN_ZONE]
 
-export function colorByDistance(attribute = 'distance_overtaker_mean', fallback = '#ABC', zone = 'urban') {
+export function colorByDistance(attribute = 'distance_overtaker_mean', fallback = '#ABC') {
   return [
     'case',
     ['!', isValidAttribute(attribute)],
@@ -202,4 +202,4 @@ export const trackLayerRaw = produce(trackLayer, (draft) => {
   delete draft.paint['line-opacity']
 })
 
-export const basemap = positron
+export const basemap = obsLight

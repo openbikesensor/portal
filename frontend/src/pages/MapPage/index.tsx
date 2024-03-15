@@ -17,7 +17,6 @@ import {
   COLOR_COMBINED_SCORE,
   COLOR_LEGALITY,
   COLOR_FREQUENCY,
-  basemap,
 } from 'mapstyles'
 import {useMapConfig} from 'reducers/mapConfig'
 
