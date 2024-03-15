@@ -119,15 +119,17 @@ def project_on_line(line, point, d=10):
 
 
 def cost_by_direction_dot(dot, directionality):
-    if True or directionality == 0:
-        dot = abs(dot)
-    elif directionality < 0:
+    if directionality == 0:
+        # normal two-way
+        return 2 - abs(dot)
+
+    if directionality < 0:
         dot *= -1
 
     if dot < 0:
-        return (1 + dot) ** 2 * 0.7 + 0.3
+        return (2 + dot) ** 2 * 0.7 + 0.3
     else:
-        return (1 - dot) ** 2
+        return (2 - dot) ** 2
 
 
 def cost_by_angle(direction, road_direction, directionality):
@@ -144,31 +146,27 @@ def cost_by_angle(direction, road_direction, directionality):
     return used_angle / np.pi
 
 
-def cost_by_distance(distance, radius):
-    return (distance / radius) ** 1.2
+def get_factor_for_changing_way(a, b, road_distance):
+    factor_go_offroad = 20
+    factor_snap_back_onto_road = 0.5
+    factor_stay_on_road = 1.0
+    factor_stay_off_road = 40
+    factor_switch_roads = 1
+    factor_switch_roads_per_meter_jump = 10
 
-
-def cost_by_switching_distance(distance, radius):
-    return (distance / radius) ** 1.2
-
-
-def get_factor_for_changing_way(b, a, leave, enter, stay, stay_offroad, switch):
-    # staying on the way
+    if a == 0 and b == 0:
+        return factor_stay_off_road
     if a == b:
-        if a == 0:
-            return stay_offroad
-        return stay
-
-    # switching off a way
+        return factor_stay_on_road
     if b == 0:
-        return leave
-
-    # switching onto a way
+        return factor_go_offroad
     if a == 0:
-        return enter
+        return factor_snap_back_onto_road
 
-    # switching between normal ways
-    return switch
+    if road_distance < 0.5:  # threshold
+        return factor_switch_roads
+    else:
+        return road_distance * factor_switch_roads_per_meter_jump
 
 
 def angle_between(v1, v2):
@@ -177,8 +175,14 @@ def angle_between(v1, v2):
     return np.arccos(np.clip(np.dot(v1_u, v2_u), -1.0, 1.0))
 
 
-def candidate_cost(distance_to_gps, road_direction_dot):
-    return distance_to_gps * (2 - abs(road_direction_dot))
+def candidate_cost(distance_to_gps, road_direction_dot, directionality):
+    cost_direction_factor = 15
+    cost_per_meter_distance_to_gps = 0.1
+
+    return (
+        cost_by_direction_dot(road_direction_dot, directionality)
+        * cost_direction_factor
+    ) + distance_to_gps * cost_per_meter_distance_to_gps
 
 
 @dataclass
@@ -194,12 +198,26 @@ class Candidate:
 
 
 def edge_cost(c1: Candidate, c2: Candidate):
+    cost_per_meter_travel_distance = 1
     distance_traveled = c1.road_point.distance(c2.road_point)
-    return 1 + distance_traveled
+
+    # Remove all parts of the road geometry not in proximity to the snapping
+    # point. Check how close the local road segment is to the other road, i. e
+    # whether there is an intersection between those roads in the vicinity of
+    # the current location (not somewhere unrelated)
+    local_road = c2.road_point.buffer(30).intersection(c2.road_geometry)
+    road_distance = local_road.distance(c1.road_geometry)
+
+    change_way_factor = get_factor_for_changing_way(
+        c1.road.way_id if c1.road else 0,
+        c2.road.way_id if c2.road else 0,
+        road_distance,
+    )
+    cost = distance_traveled * cost_per_meter_travel_distance * change_way_factor
+    return c2.cost + cost
 
 
-async def snap_to_roads(session, df, buffer=50.0):
-    choice_count = 3
+async def snap_to_roads(session, df, buffer=120.0, choice_count=10):
     point_count = len(df)
     direction_offset = 5
     min_points = 2 * direction_offset + 1
@@ -248,7 +266,9 @@ async def snap_to_roads(session, df, buffer=50.0):
             if np.isnan(road_direction_dot):
                 road_direction_dot = 0
 
-            cost = candidate_cost(distance_to_gps, road_direction_dot)
+            cost = candidate_cost(
+                distance_to_gps, road_direction_dot, road.directionality
+            )
             candidates.append(
                 Candidate(
                     cost,
