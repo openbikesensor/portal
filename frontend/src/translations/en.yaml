@@ -149,6 +149,7 @@ MapPage:
     baseMap:
       style:
         label: Basemap Style
+        obsLight: OpenBikeSensor clair
         positron: Positron
         bright: OSM Bright
         darkmatter: Darkmatter
@@ -168,8 +169,8 @@ MapPage:
         segment_length: Segment length (m)
         zone: Overtaking distance zone
         combined_score: Combined score
-        overtaking_legality: Percent legal
-        overtaking_frequency: Events per kilometer usage
+        overtaking_legality: Percent illegal
+        overtaking_frequency: Events per kilometer
       combinedScore:
         label: Score
         description: >

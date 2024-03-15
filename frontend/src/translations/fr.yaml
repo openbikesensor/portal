@@ -149,6 +149,7 @@ MapPage:
     baseMap:
       style:
         label: Style de fond de carte
+        obsLight: OpenBikeSensor Light
         positron: Positron
         bright: OSM Bright
         darkmatter: Darkmatter
@@ -167,6 +168,8 @@ MapPage:
         usage_count: Nombre de passages
         zone: Overtaking distance zone
         combined_score: Score combinée
+        overtaking_legality: Pourcent illégal
+        overtaking_frequency: Dépassements par km
       combinedScore:
         label: Score
         description: >

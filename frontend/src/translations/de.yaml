@@ -143,6 +143,7 @@ MapPage:
     baseMap:
       style:
         label: Stil der Basiskarte
+        obsLight: OpenBikeSensor Hell
         positron: Positron
         bright: OSM Bright
         darkmatter: Darkmatter
@@ -161,8 +162,8 @@ MapPage:
         usage_count: Anzahl Befahrungen
         zone: Überholabstands-Zone
         combined_score: Kombinierte Auswertung
-        overtaking_legality: Anteil legal
-        overtaking_frequency: Überholvorgänge pro gefahrenem Kilometer
+        overtaking_legality: Anteil illegal
+        overtaking_frequency: Überholvorgänge pro km
       combinedScore:
         label: Wertungsskala
         description: >
