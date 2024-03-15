@@ -360,7 +360,7 @@ def get_road_usage_segments(df):
 
 
 async def import_road_usages(session, track, df):
-    usages = set()
+    usages = {}
     for way_id, rows in get_road_usage_segments(df):
         direction_reversed = numpy.mean(df["direction_reversed"]) > 0.5
         start_time = rows[0]["datetime"]
@@ -371,13 +371,11 @@ async def import_road_usages(session, track, df):
             struct.pack("dQ", way_id, int(time.timestamp()))
         ).hexdigest()
 
-        usages.add(
-            RoadUsage(
-                track_id=track.id,
-                hex_hash=hex_hash,
-                way_id=way_id,
-                time=time.astimezone(pytz.utc).replace(tzinfo=None),
-                direction_reversed=direction_reversed,
-            )
+        usages[hex_hash] = RoadUsage(
+            track_id=track.id,
+            hex_hash=hex_hash,
+            way_id=way_id,
+            time=time.astimezone(pytz.utc).replace(tzinfo=None),
+            direction_reversed=direction_reversed,
         )
-    session.add_all(usages)
+    session.add_all(usages.values())
