@@ -25,7 +25,7 @@
       "url": "https://tiles.openbikesensor.org/data/basemap.json"
     }
   },
-  "sprite": "https://openmaptiles.github.io/osm-bright-gl-style/sprite",
+  "sprite": "https://openmaptiles.github.io/dark-matter-gl-style/sprite",
   "glyphs": "https://tiles.openbikesensor.org/fonts/{fontstack}/{range}.pbf?key={key}",
   "layers": [
     {
