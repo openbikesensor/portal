@@ -205,8 +205,11 @@ def edge_cost(c1: Candidate, c2: Candidate):
     # point. Check how close the local road segment is to the other road, i. e
     # whether there is an intersection between those roads in the vicinity of
     # the current location (not somewhere unrelated)
-    local_road = c2.road_point.buffer(30).intersection(c2.road_geometry)
-    road_distance = local_road.distance(c1.road_geometry)
+    if not c2.road_geometry:
+        road_distance = distance_traveled
+    else:
+        local_road = c2.road_point.buffer(30).intersection(c2.road_geometry)
+        road_distance = local_road.distance(c1.road_geometry)
 
     change_way_factor = get_factor_for_changing_way(
         c1.road.way_id if c1.road else 0,
