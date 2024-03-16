@@ -34,6 +34,7 @@ async def process_tracks_loop(delay):
                         select(Track)
                         .where(Track.processing_status == "queued")
                         .order_by(Track.processing_queued_at)
+                        .with_for_update(of=Track)
                         .options(joinedload(Track.author))
                     )
                 ).scalar()
@@ -139,7 +140,7 @@ async def process_track(session, track):
 
         await export_gpx(df, join(output_dir, "track.gpx"), track.slug)
 
-        log.info("Clearing old track data...")
+        log.info("Clear old track data...")
         await clear_track_data(session, track)
         await session.commit()
 
@@ -148,7 +149,6 @@ async def process_track(session, track):
             if isinstance(device_identifier, list):
                 device_identifier = device_identifier[0]
 
-            log.info("Finding or creating device %s", device_identifier)
             user_device = (
                 await session.execute(
                     select(UserDevice).where(
@@ -160,13 +160,11 @@ async def process_track(session, track):
                 )
             ).scalar()
 
-            log.debug("user_device is %s", user_device)
-
             if not user_device:
                 user_device = UserDevice(
                     user_id=track.author_id, identifier=device_identifier
                 )
-                log.debug("Create new device for this user")
+                log.info("Create new device %s for this user", device_identifier)
                 session.add(user_device)
 
             track.user_device = user_device
@@ -176,7 +174,7 @@ async def process_track(session, track):
         log.info("Import events into database...")
         await import_overtaking_events(session, track, event_rows)
 
-        log.info("import road usages...")
+        log.info("Import road usages...")
         await import_road_usages(session, track, df)
 
         # compute distance from previous point
