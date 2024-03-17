@@ -20,11 +20,10 @@
 from collections import defaultdict
 from dataclasses import dataclass
 from functools import partial
+from typing import Optional
 
-from networkx import DiGraph, dijkstra_path
 import numpy as np
 from pyproj import Transformer
-import shapely
 import shapely
 from shapely.geometry import MultiPoint
 from shapely.ops import transform
@@ -49,14 +48,24 @@ mercator_to_wsg84 = partial(
 
 
 def point_feature_collection(df) -> MultiPoint:
+    """
+    Produces a MultiPoint geometry from a dataframe that contains the
+    `latitude` and `longitude` columns. Geometry will be same projection
+    as the input, i.e. usually WGS84.
+    """
     coordinates = np.dstack((df["longitude"], df["latitude"]))[0]
     return MultiPoint(coordinates)
 
 
 async def load_roads(session, track_points: MultiPoint, buffer):
-    # Road.geometry and track_points are both in mercator projection, and the
-    # unit for distance in that projection is meters, so the buffer is in
-    # meters.
+    """
+    Loads all those roads from the database that are in the vicinity of the
+    provided track. The distance to the track is given in meters via `buffer`.
+
+    Road.geometry and track_points are both in mercator projection, and the
+    unit for distance in that projection is meters, so the buffer is in
+    meters.
+    """
     query = select(Road).where(
         func.ST_DWithin(
             Road.geometry,
@@ -69,6 +78,11 @@ async def load_roads(session, track_points: MultiPoint, buffer):
 
 
 def create_road_lookup(roads, track: MultiPoint, buffer: float):
+    """
+    Produces a lookup table for each point on the track (by index)
+    that contains a list of roads in its buffer radius. Each entry
+    in the list is a tuple of (distance, road, road_geometry).
+    """
     points = track.geoms
 
     roads_by_index, road_geometries = zip(
@@ -89,17 +103,6 @@ def create_road_lookup(roads, track: MultiPoint, buffer: float):
     return lookup
 
 
-def coordinate_array(measurements):
-    """
-    Transform a list of coordinates into a 2D array in the compute coordinate
-    system.
-    """
-    return transform(
-        wsg84_to_web_mercator,
-        MultiPoint([[m["longitude"], m["latitude"]] for m in measurements]),
-    )
-
-
 def line_directions(line: MultiPoint, offset=1):
     c = shapely.to_ragged_array(line.geoms)[1]
     dirs = unit_vector(c[2 * offset :] - c[: -2 * offset], axis=1)
@@ -108,6 +111,10 @@ def line_directions(line: MultiPoint, offset=1):
 
 
 def project_on_line(line, point, d=10):
+    """
+    Projects the point onto the line and determines the tangent direction of
+    that point. Returns a tuple `(projected_point, tangent_vector)`.
+    """
     loc = shapely.line_locate_point(line, point)
     target = shapely.line_interpolate_point(line, loc)
 
@@ -190,11 +197,14 @@ class Candidate:
     cost: float
     distance_to_gps: float
     road_direction_dot: float
-    road: Road
+    road: Optional[Road]
     road_point: shapely.Point
     road_direction: np.ndarray
     road_geometry: shapely.Geometry
     direction: np.ndarray
+
+    total_cost: float = 0
+    chosen_previous: Optional["Candidate"] = None
 
 
 def edge_cost(c1: Candidate, c2: Candidate):
@@ -246,19 +256,9 @@ async def snap_to_roads(session, df, buffer=120.0, choice_count=10):
     # this for snapping based on the direction of the line segment.
     track_directions = line_directions(track_points, offset=direction_offset)
 
-    # Now we start building a directed graph that contains a node for each choice of way
-    # that each point has. This results in choice_count*point_count nodes,
-    # where each pair of nodes from consecutive points are connected by edges representing
-    # the cost to use those nodes *and* to switch from one node to the other.
-    # This lets us model the cost of switching ways, of using or not using
-    # certain types of ways, and of course the distance traveled or the
-    # distance from the measured GPS. We will later perform a "shortest path"
-    # (Dijkstra) computation on the directed graph.
-    graph = DiGraph()
-
     candidates_list = []
 
-    for point_index, (row, point) in enumerate(zip(df.iterrows(), track_points.geoms)):
+    for point_index, point in enumerate(track_points.geoms):
         direction = track_directions[point_index]
 
         # get road candidates
@@ -294,47 +294,35 @@ async def snap_to_roads(session, df, buffer=120.0, choice_count=10):
 
         if candidates_list:
             prev_candidates = candidates_list[-1]
-            for ci, candidate in enumerate(candidates):
-                for prev_ci, prev_candidate in enumerate(prev_candidates):
+            for candidate in candidates:
+                for prev_candidate in prev_candidates:
                     cost = edge_cost(
                         prev_candidate,
                         candidate,
                     )
 
-                    # We define nodes by a tuple of point_index and candidate_index
-                    source = (point_index - 1, prev_ci)
-                    target = (point_index, ci)
-
-                    # This automatically adds the nodes to the graph when they
-                    # are unknown
                     if not isinstance(cost, float) and cost > 0:
                         raise ValueError(f"invalid cost: {cost}")
-                    graph.add_edge(source, target, weight=cost)
+
+                    total_cost = prev_candidate.total_cost + cost
+                    if (
+                        candidate.chosen_previous is None
+                        or total_cost < candidate.total_cost
+                    ):
+                        candidate.chosen_previous = prev_candidate
+                        candidate.total_cost = total_cost
 
         candidates_list.append(candidates)
 
-    # Add start and end dummy nodes so we can compute a single-pair shortest path.
-    for ci in range(choice_count):
-        graph.add_edge(
-            "start",
-            (0, ci),
-            weight=0,
-        )
-        graph.add_edge(
-            (point_count - 1, ci),
-            "end",
-            weight=0,
-        )
+    backwards_path: list[Candidate] = []
+    # find the best target candidate
+    best_end_index = np.argmin([c.total_cost for c in candidates_list[-1]])
+    c = candidates_list[-1][best_end_index]
+    while c:
+        backwards_path.append(c)
+        c = c.chosen_previous
 
-    # Now we have a list of matrixes that describe the cost relationship
-    # between each pair of consecutive candidates. Let's find the shortest
-    # path from start to finish.
-    result_candidates: list[Candidate] = []
-    for node in dijkstra_path(graph, "start", "end"):
-        if node in ("start", "end"):
-            continue
-        point_index, candidate_index = node
-        result_candidates.append(candidates_list[point_index][candidate_index])
+    result_candidates = list(reversed(backwards_path))
 
     # Extract information
     df = df.copy()
