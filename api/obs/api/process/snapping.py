@@ -60,7 +60,7 @@ async def load_roads(session, track_points: MultiPoint, buffer):
     query = select(Road).where(
         func.ST_DWithin(
             Road.geometry,
-            func.ST_GeomFromWKB(dump_wkb(track_points, srid=3857)),
+            func.ST_GeomFromEWKB(dump_wkb(track_points, srid=3857)),
             buffer,
         )
     )

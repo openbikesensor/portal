@@ -491,6 +491,9 @@ class UserDevice(Base):
             "displayName": self.display_name,
         }
 
+    def __str__(self):
+        return f"<OBS dev.id={self.id}: dev.identifier={self.identifier} dev.displayName={self.display_name}>"
+
 
 class Comment(Base):
     __tablename__ = "comment"
