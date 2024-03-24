@@ -19,7 +19,7 @@
 
 from collections import defaultdict
 from dataclasses import dataclass
-from functools import partial
+from functools import cached_property, partial
 from typing import Optional
 
 import numpy as np
@@ -206,6 +206,18 @@ class Candidate:
     total_cost: float = 0
     chosen_previous: Optional["Candidate"] = None
 
+    _road_point_buffered = None
+
+    @property
+    def road_point_buffered(self):
+        if self._road_point_buffered is None:
+            buffer = 30
+            x, y = self.road_point.x, self.road_point.y
+            self._road_point_buffered = shapely.box(
+                x - buffer, y - buffer, x + buffer, y + buffer
+            )
+        return self._road_point_buffered
+
 
 def edge_cost(c1: Candidate, c2: Candidate):
     cost_per_meter_travel_distance = 1
@@ -218,7 +230,7 @@ def edge_cost(c1: Candidate, c2: Candidate):
     if not c2.road_geometry:
         road_distance = distance_traveled
     else:
-        local_road = c2.road_point.buffer(30).intersection(c2.road_geometry)
+        local_road = c2.road_point_buffered.intersection(c2.road_geometry)
         road_distance = local_road.distance(c1.road_geometry)
 
     change_way_factor = get_factor_for_changing_way(
