@@ -66,13 +66,14 @@ async def mapdetails_road(req):
         )
     ).scalar()
 
+    if road is None:
+        return response.json({})
+
     length = await req.ctx.db.scalar(
         text(
             "select ST_Length(ST_GeogFromWKB(ST_Transform(geometry,4326))) from road where way_id=:wayid"
         ).bindparams(wayid=road.way_id)
     )
-    if road is None:
-        return response.json({})
 
     arrays = (
         await req.ctx.db.execute(
