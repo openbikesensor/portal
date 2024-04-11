@@ -15,6 +15,7 @@ from shapely.wkb import dumps as dump_wkb
 from sqlalchemy import delete, func, select, and_
 from sqlalchemy.orm import joinedload
 from haversine import Unit, haversine_vector
+from geopy import distance
 
 from .snapping import snap_to_roads, wsg84_to_mercator
 from .obs_csv import import_csv
@@ -178,7 +179,8 @@ async def process_track(session, track):
         await import_road_usages(session, track, df)
 
         # compute distance from previous point
-        coordinates = numpy.dstack((df["longitude"], df["latitude"]))[0].tolist()
+        coordinates = numpy.dstack((df["latitude"], df["longitude"]))[0].tolist()
+
         df["distance"] = numpy.concatenate(
             (
                 [numpy.nan],
