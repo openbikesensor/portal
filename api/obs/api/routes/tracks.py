@@ -191,6 +191,9 @@ async def post_track(req):
     except (LookupError, InvalidUsage):
         body = {}
 
+    if len(file.body) == 0:
+        raise InvalidUsage("Track body can't be empty.")
+
     title = body.get("title")
     public = body.get("public")
 
