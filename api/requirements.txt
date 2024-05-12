@@ -31,6 +31,6 @@ shapely~=2.0.1
 sqlalchemy[asyncio]~=2.0.27
 sqlparse~=0.4.3
 stream-zip~=0.0.50
-transformations>=2024.6
+transformations>=2024.4.24
 tzwhere>=3.0.3
 websockets<11

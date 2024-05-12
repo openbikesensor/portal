@@ -6,8 +6,11 @@ development) and [docs/production-deployment.md](docs/production-deployment.md) 
 
 
 ## 0.8.1
- 
-- Get the release in your source folder (``git pull; git checkout 0.8.0`` and update submodules ``git submodule update --recursive``)
+
+Upgrade to `0.8.0` first. See below for details. Then follow these steps:
+
+- Do your [usual backup](docs/production-deployment.md)
+- Get the release in your source folder (``git pull; git checkout 0.8.1`` and update submodules ``git submodule update --recursive``)
 - Rebuild images ``docker-compose build``
 - No database upgrade is required, but tile functions need an update:
   ```bash
