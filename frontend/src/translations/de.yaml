@@ -294,7 +294,7 @@ TrackPage:
   downloadFailed: Download fehlgeschlagen
   downloadError: Diese Fahrt wurde vermutlich nicht korrekt importiert, oder in letzter Zeit nicht aktualisiert. Bitte frage den Administrator um Hilfe mit diesem Problem.
   processing: Diese Fahrt wird gerade importiert, bitte lade die Seite später neu.
-  processingError: Beim Import dieser Fahrt ist ein Fehler aufgetreten, bitte frage den Administrator um Hilfe mit diesem Problem.
+  processingError: Beim Import dieser Fahrt ist ein Fehler aufgetreten,  Lies dir die folgende Fehlermeldung durch und falls diese dir nichts sagt, bitte frage den Administrator um Hilfe mit diesem Problem.
   description: Beschreibung
 
   mapLegend:

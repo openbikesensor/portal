@@ -297,7 +297,7 @@ TrackPage:
   downloadFailed: Download failed
   downloadError: The track probably has not been imported correctly or recently enough. Please ask your administrator for assistance.
   processing: Track data is still being processed, please reload page in a while.
-  processingError: The processing of this track failed, please ask your site administrator for help in debugging the issue.
+  processingError: The processing of this track failed, please ask your site administrator for help in debugging the issue in case the following error message isn't clear.
   description: Description
 
 
