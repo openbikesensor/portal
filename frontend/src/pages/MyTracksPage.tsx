@@ -53,6 +53,15 @@ function ProcessingStatusLabel({status}: {status: ProcessingStatus}) {
     </span>
   )
 }
+function ProcessingLog({log, status}: {log: string, status:ProcessingStatus}) {
+  const {t} = useTranslation()
+
+  return (
+    <span title={t(`TracksPage.processing.${status}`) + ': ' + log}>
+          <Icon color={COLOR_BY_STATUS[status]} name={ICON_BY_STATUS[status]} />
+    </span>
+  )
+}
 
 function SortableHeader({children, setOrderBy, orderBy, reversed, setReversed, name, ...props}) {
   const toggleSort = (e) => {
@@ -303,7 +312,10 @@ function TracksTable({title}) {
                   />
                 </Table.Cell>
                 <Table.Cell>
-                  {track.processingStatus == null ? null : <ProcessingStatusLabel status={track.processingStatus} />}
+                  {track.processingStatus == 'error'?
+                  <ProcessingLog log={track.processingLog} status={track.processingStatus}/>:
+                  <ProcessingStatusLabel status={track.processingStatus}/>
+                  }
                   <Item.Header as={Link} to={`/tracks/${track.slug}`}>
                     {track.title || t('general.unnamedTrack')}
                   </Item.Header>
