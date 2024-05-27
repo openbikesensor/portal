@@ -190,6 +190,9 @@ def _read_csv(filename):
             }
         )
 
+        if len(df) < 3:
+            raise ValueError("Can't process track with so few points.")
+
         # Remove rows that are useless
         df = df[
             (df["datetime"] != pandas.NaT)
