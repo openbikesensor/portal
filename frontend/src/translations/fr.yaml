@@ -54,7 +54,7 @@ LoginButton:
   login: Se connecter
 
 HomePage:
-  mostRecentTrack: Trace la plus récente
+  mostRecentTrack: Trace publique la plus récente
 
 Stats:
   title: Statistiques

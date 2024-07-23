@@ -50,7 +50,7 @@ LoginButton:
 
 HomePage:
   stats: Statistik
-  mostRecentTrack: Neueste Fahrt
+  mostRecentTrack: Neueste öffentliche Fahrt
 
 Stats:
   placeholder: "..."
