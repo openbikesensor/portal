@@ -42,10 +42,14 @@ export default function Stats() {
               <Table.HeaderCell>{t('RegionStats.eventCount')}</Table.HeaderCell>
               <Table.HeaderCell>
                 <Popup
-                  trigger={<span>{t('RegionStats.trackCount')} <Icon name="info circle" /></span>}
+                  trigger={
+                    <span>
+                      {t('RegionStats.trackCount')} <Icon name="info circle" />
+                    </span>
+                  }
                   content={<p>{t('RegionStats.trackCountTooltip')}</p>}
                 />
-            </Table.HeaderCell>
+              </Table.HeaderCell>
             </Table.Row>
           </Table.Header>
 

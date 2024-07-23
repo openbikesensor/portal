@@ -53,12 +53,12 @@ function ProcessingStatusLabel({status}: {status: ProcessingStatus}) {
     </span>
   )
 }
-function ProcessingLog({log, status}: {log: string, status:ProcessingStatus}) {
+function ProcessingLog({log, status}: {log: string; status: ProcessingStatus}) {
   const {t} = useTranslation()
 
   return (
     <span title={t(`TracksPage.processing.${status}`) + ': ' + log}>
-          <Icon color={COLOR_BY_STATUS[status]} name={ICON_BY_STATUS[status]} />
+      <Icon color={COLOR_BY_STATUS[status]} name={ICON_BY_STATUS[status]} />
     </span>
   )
 }
@@ -312,10 +312,11 @@ function TracksTable({title}) {
                   />
                 </Table.Cell>
                 <Table.Cell>
-                  {track.processingStatus == 'error'?
-                  <ProcessingLog log={track.processingLog} status={track.processingStatus}/>:
-                  <ProcessingStatusLabel status={track.processingStatus}/>
-                  }
+                  {track.processingStatus == 'error' ? (
+                    <ProcessingLog log={track.processingLog} status={track.processingStatus} />
+                  ) : (
+                    <ProcessingStatusLabel status={track.processingStatus} />
+                  )}
                   <Item.Header as={Link} to={`/tracks/${track.slug}`}>
                     {track.title || t('general.unnamedTrack')}
                   </Item.Header>
