@@ -1,8 +1,3 @@
-locales:
-  en: Anglais
-  de: Allemand
-  fr: Français
-
 general:
   loading: Chargement
   unnamedTrack: Trace non nommé

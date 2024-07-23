@@ -61,6 +61,12 @@ function Banner({text, style = 'warning'}: {text: string; style: 'warning' | 'in
   return <div className={classnames(styles.banner, styles[style])}>{text}</div>
 }
 
+const LOCALE_NAMES = {
+  en: 'English',
+  de: 'Deutsch',
+  fr: 'Français',
+} as const
+
 const App = connect((state) => ({login: state.login}))(function App({login}) {
   const {t} = useTranslation()
   const config = useConfig()
@@ -251,7 +257,7 @@ const App = connect((state) => ({login: state.login}))(function App({login}) {
                 <List>
                   {AVAILABLE_LOCALES.map((locale) => (
                     <List.Item key={locale}>
-                      <a onClick={() => setLocale(locale)}>{t(`locales.${locale}`)}</a>
+                      <a onClick={() => setLocale(locale)}>{LOCALE_NAMES[locale]}</a>
                     </List.Item>
                   ))}
                 </List>
