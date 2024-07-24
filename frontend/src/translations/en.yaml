@@ -144,7 +144,7 @@ MapPage:
     baseMap:
       style:
         label: Basemap Style
-        obsLight: OpenBikeSensor clair
+        obsLight: OpenBikeSensor light
         positron: Positron
         bright: OSM Bright
         darkmatter: Darkmatter
