@@ -242,10 +242,14 @@ export default function RoadInfo({
             </Table.Row>
             <Table.Row>
               <Table.Cell>{t(`MapPage.roadInfo.closeOvertakerPercentage`)}</Table.Cell>
-              <Table.Cell textAlign="right">
-                {Math.round((100 * info[direction].below_150) / info[direction].count)}% ({info[direction].below_150}{' '}
-                {t(`MapPage.roadInfo.of`)} {info[direction].count})
-              </Table.Cell>
+              {info[direction].count ? (
+                <Table.Cell textAlign="right">
+                  {Math.round((100 * info[direction].below_150) / info[direction].count)}% ({info[direction].below_150}{' '}
+                  {t(`MapPage.roadInfo.of`)} {info[direction].count})
+                </Table.Cell>
+              ) : (
+                <Table.Cell textAlign="right">&ndash;</Table.Cell>
+              )}
             </Table.Row>
             <Table.Row>
               <Table.Cell>{t(`MapPage.roadInfo.overtakersPerKilometer`)}</Table.Cell>
