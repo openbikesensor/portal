@@ -80,6 +80,7 @@ class API {
     try {
       json = await response.json()
     } catch (err) {
+      console.warn(err)
       json = null
     }
 

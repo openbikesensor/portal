@@ -50,7 +50,7 @@ LoginButton:
 
 HomePage:
   stats: Statistik
-  mostRecentTrack: Neueste Fahrt
+  mostRecentTrack: Neueste öffentliche Fahrt
 
 Stats:
   placeholder: "..."
@@ -143,8 +143,10 @@ MapPage:
     baseMap:
       style:
         label: Stil der Basiskarte
+        obsLight: OpenBikeSensor Hell
         positron: Positron
         bright: OSM Bright
+        darkmatter: Darkmatter
 
     obsRoads:
       title: Straßenabschnitte
@@ -160,8 +162,8 @@ MapPage:
         usage_count: Anzahl Befahrungen
         zone: Überholabstands-Zone
         combined_score: Kombinierte Auswertung
-        overtaking_legality: Anteil legal
-        overtaking_frequency: Überholvorgänge pro gefahrenem Kilometer
+        overtaking_legality: Anteil illegal
+        overtaking_frequency: Überholvorgänge pro km
       combinedScore:
         label: Wertungsskala
         description: >
@@ -171,6 +173,9 @@ MapPage:
 
     obsEvents:
       title: Überholvorgänge
+
+    obsTracks:
+      title: Meine eigenen Fahrten
 
     obsRegions:
       title: Regionen
@@ -289,22 +294,13 @@ TrackPage:
   downloadFailed: Download fehlgeschlagen
   downloadError: Diese Fahrt wurde vermutlich nicht korrekt importiert, oder in letzter Zeit nicht aktualisiert. Bitte frage den Administrator um Hilfe mit diesem Problem.
   processing: Diese Fahrt wird gerade importiert, bitte lade die Seite später neu.
-  processingError: Beim Import dieser Fahrt ist ein Fehler aufgetreten, bitte frage den Administrator um Hilfe mit diesem Problem.
+  processingError: Beim Import dieser Fahrt ist ein Fehler aufgetreten,  Lies dir die folgende Fehlermeldung durch und falls diese dir nichts sagt, bitte frage den Administrator um Hilfe mit diesem Problem.
   description: Beschreibung
 
-  mapSettings:
-    title: Karteneinstellungen
-    showTrack: Route anzeigen
+  mapLegend:
+    title: Legende
     gpsTrack: GPS-Route
     snappedTrack: Erkannte Straßenroute
-
-    points: Punkte
-    confirmedPoints: Bestätigte Überholungen
-    allPoints: Alle Messungen
-
-    side: Seite für Einfärbung
-    overtakerSide: Überholung (links)
-    stationarySide: Ruhender Verkehr (rechts)
 
   details:
     visibility: Sichtbarkeit

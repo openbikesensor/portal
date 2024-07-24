@@ -1,0 +1,25 @@
+layer:
+  id: "obs_tracks"
+  description: |
+      Own tracks
+  buffer_size: 4
+  fields:
+    id: |
+      Track ID.
+  defaults:
+    srs: EPSG:3857
+  datasource:
+    srid: 3857
+    geometry_field: geometry
+    key_field: track_id
+    key_field_as_attribute: no
+    query: |
+      (
+        SELECT
+          track_id,
+          geometry
+        FROM layer_obs_tracks(!bbox!, z(!scale_denominator!), user_id, min_time, max_time)
+      ) AS t
+
+schema:
+  - ./layer.sql

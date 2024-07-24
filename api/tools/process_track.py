@@ -3,9 +3,9 @@ import argparse
 import logging
 import asyncio
 
-from obs.api.db import connect_db
+from obs.api.db import connect_db, make_session
 from obs.api.app import app
-from obs.api.process import process_tracks, process_tracks_loop
+from obs.api.process import process_track_file, process_tracks, process_tracks_loop
 
 log = logging.getLogger(__name__)
 
@@ -27,6 +27,11 @@ async def main():
     )
 
     parser.add_argument(
+        "--file",
+        help="file to load, instead of reading from the database -- prints output",
+    )
+
+    parser.add_argument(
         "tracks",
         metavar="ID_OR_SLUG",
         nargs="*",
@@ -35,8 +40,15 @@ async def main():
 
     args = parser.parse_args()
 
-    async with connect_db(app.config.POSTGRES_URL, app.config.POSTGRES_POOL_SIZE, app.config.POSTGRES_MAX_OVERFLOW):
-        if args.tracks:
+    async with connect_db(
+        app.config.POSTGRES_URL,
+        app.config.POSTGRES_POOL_SIZE,
+        app.config.POSTGRES_MAX_OVERFLOW,
+    ):
+        if args.file:
+            async with make_session() as session:
+                df = await process_track_file(session, args.file)
+        elif args.tracks:
             await process_tracks(args.tracks)
         else:
             await process_tracks_loop(args.loop_delay)

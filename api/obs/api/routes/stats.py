@@ -56,28 +56,41 @@ async def stats(req):
 
     query = (
         select(
-            func.count().label("publicTrackCount"),
             func.sum(Track.duration).label("trackDuration"),
             func.sum(Track.length).label("trackLength"),
+        )
+        .select_from(Track)
+        .where(track_condition)
+    )
+
+    track_duration, track_length = (await req.ctx.db.execute(query)).first()
+
+    query = (
+        select(
+            func.count().label("publicTrackCount"),
         )
         .select_from(Track)
         .where(public_track_condition)
     )
 
-    public_track_count, track_duration, track_length = (
-        await req.ctx.db.execute(query)
-    ).first()
+    (public_track_count,) = (await req.ctx.db.execute(query)).first()
 
     # This is required because SQL returns NULL when the input set to a
     # SUM() aggregation is empty.
     track_duration = track_duration or 0
     track_length = track_length or 0
 
-    user_count = (
-        1
-        if by_user
-        else (await req.ctx.db.execute(select(func.count()).select_from(User))).scalar()
-    )
+    if by_user:
+        user_count = 1
+    else:
+        user_query = select(func.count()).select_from(User)
+        if start is not None:
+            user_query = user_query.where(User.created_at >= start)
+        if end is not None:
+            user_query = user_query.where(User.created_at < end)
+
+        user_count = (await req.ctx.db.execute(user_query)).scalar()
+
     track_count = (
         await req.ctx.db.execute(
             select(func.count()).select_from(Track).where(track_condition)

@@ -38,82 +38,37 @@ function useTriggerSubject() {
   return [trigger, subject$]
 }
 
-function TrackMapSettings({showTrack, setShowTrack, pointsMode, setPointsMode, side, setSide}) {
+function TrackMapLegend() {
   const {t} = useTranslation()
   return (
     <>
-      <Header as="h4">{t('TrackPage.mapSettings.title')}</Header>
+      <Header as="h4">{t('TrackPage.mapLegend.title')}</Header>
       <List>
         <List.Item>
-          <Checkbox checked={showTrack} onChange={(e, d) => setShowTrack(d.checked)} />{' '}
-          {t('TrackPage.mapSettings.showTrack')}
-          <div style={{marginTop: 8}}>
-            <span
-              style={{
-                borderTop: '3px dashed ' + trackLayerRaw.paint['line-color'],
-                height: 0,
-                width: 24,
-                display: 'inline-block',
-                verticalAlign: 'middle',
-                marginRight: 4,
-              }}
-            />
-            {t('TrackPage.mapSettings.gpsTrack')}
-          </div>
-          <div>
-            <span
-              style={{
-                borderTop: '6px solid ' + trackLayerRaw.paint['line-color'],
-                height: 6,
-                width: 24,
-                display: 'inline-block',
-                verticalAlign: 'middle',
-                marginRight: 4,
-              }}
-            />
-            {t('TrackPage.mapSettings.snappedTrack')}
-          </div>
+          <span
+            style={{
+              borderTop: '3px dashed ' + trackLayerRaw.paint['line-color'],
+              height: 0,
+              width: 24,
+              display: 'inline-block',
+              verticalAlign: 'middle',
+              marginRight: 4,
+            }}
+          />
+          {t('TrackPage.mapLegend.gpsTrack')}
         </List.Item>
         <List.Item>
-          <List.Header> {t('TrackPage.mapSettings.points')} </List.Header>
-          <Dropdown
-            selection
-            value={pointsMode}
-            onChange={(e, d) => setPointsMode(d.value)}
-            options={[
-              {key: 'none', value: 'none', text: 'None'},
-              {
-                key: 'overtakingEvents',
-                value: 'overtakingEvents',
-                text: t('TrackPage.mapSettings.confirmedPoints'),
-              },
-              {
-                key: 'measurements',
-                value: 'measurements',
-                text: t('TrackPage.mapSettings.allPoints'),
-              },
-            ]}
+          <span
+            style={{
+              borderTop: '6px solid ' + trackLayerRaw.paint['line-color'],
+              height: 6,
+              width: 24,
+              display: 'inline-block',
+              verticalAlign: 'middle',
+              marginRight: 4,
+            }}
           />
-        </List.Item>
-        <List.Item>
-          <List.Header>{t('TrackPage.mapSettings.side')}</List.Header>
-          <Dropdown
-            selection
-            value={side}
-            onChange={(e, d) => setSide(d.value)}
-            options={[
-              {
-                key: 'overtaker',
-                value: 'overtaker',
-                text: t('TrackPage.mapSettings.overtakerSide'),
-              },
-              {
-                key: 'stationary',
-                value: 'stationary',
-                text: t('TrackPage.mapSettings.stationarySide'),
-              },
-            ]}
-          />
+          {t('TrackPage.mapLegend.snappedTrack')}
         </List.Item>
       </List>
     </>
@@ -155,7 +110,8 @@ const TrackPage = connect((state) => ({login: state.login}))(function TrackPage(
           concat(
             of(undefined),
             from(api.get(url)).pipe(
-              catchError(() => {
+              catchError((e) => {
+                console.log('Error loading track data', e)
                 return of(null)
               })
             )
@@ -234,8 +190,7 @@ const TrackPage = connect((state) => ({login: state.login}))(function TrackPage(
   const error = track?.processingStatus === 'error'
 
   const [showTrack, setShowTrack] = React.useState(true)
-  const [pointsMode, setPointsMode] = React.useState('overtakingEvents') // none|overtakingEvents|measurements
-  const [side, setSide] = React.useState('overtaker') // overtaker|stationary
+  const [showEvents, setShowEvents] = React.useState(true)
 
   const title = track ? track.title || t('general.unnamedTrack') : null
   return (
@@ -269,21 +224,12 @@ const TrackPage = connect((state) => ({login: state.login}))(function TrackPage(
           <div className={styles.stage}>
             <Loader active={loading} />
             <Dimmer.Dimmable blurring dimmed={loading}>
-              <TrackMap {...{track, trackData, pointsMode, side, showTrack}} style={{height: '80vh'}} />
+              <TrackMap {...{track, trackData, showTrack, showEvents}} style={{height: '80vh'}} />
             </Dimmer.Dimmable>
 
             <div className={styles.details}>
               <Segment>
-                <TrackMapSettings
-                  {...{
-                    showTrack,
-                    setShowTrack,
-                    pointsMode,
-                    setPointsMode,
-                    side,
-                    setSide,
-                  }}
-                />
+                <TrackMapLegend />
               </Segment>
 
               {processing && (
@@ -295,6 +241,7 @@ const TrackPage = connect((state) => ({login: state.login}))(function TrackPage(
               {error && (
                 <Message error>
                   <Message.Content>{t('TrackPage.processingError')}</Message.Content>
+                  {track.processingLog && <Message.Content>{track?.processingLog}</Message.Content>}
                 </Message>
               )}
             </div>

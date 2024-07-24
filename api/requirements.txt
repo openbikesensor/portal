@@ -13,9 +13,11 @@ jsons==1.6.3
 memoization>=0.3.2
 motor~=3.1.1
 msgpack~=1.0.5
+networkx>=3.2.1
 numpy==1.24.2
 oic~=1.5.0
 osmium~=3.6.0
+pandas>=2.2.1
 psycopg~=3.1.8
 pyproj~=3.4.1
 pyshp~=2.3.1
@@ -29,5 +31,6 @@ shapely~=2.0.1
 sqlalchemy[asyncio]~=2.0.27
 sqlparse~=0.4.3
 stream-zip~=0.0.50
+transformations>=2024.4.24
 tzwhere>=3.0.3
 websockets<11

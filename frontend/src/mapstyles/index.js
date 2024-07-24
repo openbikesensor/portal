@@ -1,13 +1,14 @@
-import _ from 'lodash'
 import produce from 'immer'
 
+import obsLight from './obsLight'
 import bright from './bright.json'
 import positron from './positron.json'
+import darkmatter from './darkmatter.json'
 
-import viridisBase from 'colormap/res/res/viridis'
+import baseColorMap from 'colormap/res/res/plasma'
 
-export {bright, positron}
-export const baseMapStyles = {bright, positron}
+export {bright, positron, darkmatter, obsLight}
+export const baseMapStyles = {bright, positron, darkmatter, obsLight}
 
 function simplifyColormap(colormap, maxCount = 16) {
   const result = []
@@ -27,7 +28,7 @@ function rgbArrayToHtml(arr) {
     '#' +
     arr
       .map((v) => Math.round(v * 255).toString(16))
-      .map((v) => (v.length == 1 ? '0' : '') + v)
+      .map((v) => (v.length === 1 ? '0' : '') + v)
       .join('')
   )
 }
@@ -41,8 +42,8 @@ export function colormapToScale(colormap, value, min, max) {
   ]
 }
 
-export const viridis = simplifyColormap(viridisBase.map(rgbArrayToColor), 20)
-export const viridisSimpleHtml = simplifyColormap(viridisBase.map(rgbArrayToHtml), 10)
+export const baseColormapSimple = simplifyColormap(baseColorMap.map(rgbArrayToColor))
+export const baseColormapSimpleHtml = simplifyColormap(baseColorMap.map(rgbArrayToHtml))
 export const grayscale = ['#FFFFFF', '#000000']
 export const reds = ['rgba( 255, 0, 0, 0)', 'rgba( 255, 0, 0, 255)']
 export const DARK_RED = 'rgba(150, 0, 0, 1)'
@@ -55,7 +56,7 @@ const COLOR_RURAL = 'cyan'
 const COLOR_URBAN = 'blue'
 const COLOR_UNKNOWN_ZONE = 'purple'
 
-export function colorByCount(attribute = 'event_count', maxCount, colormap = viridis) {
+export function colorByCount(attribute = 'event_count', maxCount, colormap = baseColormapSimple) {
   return colormapToScale(colormap, ['case', isValidAttribute(attribute), ['get', attribute], 0], 0, maxCount)
 }
 
@@ -96,7 +97,7 @@ export function isValidAttribute(attribute) {
 
 export const COLOR_BY_ZONE = ['match', ['get', 'zone'], 'rural', COLOR_RURAL, 'urban', COLOR_URBAN, COLOR_UNKNOWN_ZONE]
 
-export function colorByDistance(attribute = 'distance_overtaker_mean', fallback = '#ABC', zone = 'urban') {
+export function colorByDistance(attribute = 'distance_overtaker_mean', fallback = '#ABC') {
   return [
     'case',
     ['!', isValidAttribute(attribute)],
@@ -120,7 +121,7 @@ export const COUNT_PER_KILOMETER_USAGE = [
 export const RATIO_ILLEGAL = ['/', ['get', 'overtaking_events_below_150'], ['get', 'overtaking_event_count']]
 export const COLOR_LEGALITY = ['step', RATIO_ILLEGAL, ...COLORMAP_LEGAL]
 
-export const COLOR_FREQUENCY = colormapToScale(viridis, COUNT_PER_KILOMETER_USAGE, 0, 10)
+export const COLOR_FREQUENCY = colormapToScale(baseColormapSimple, COUNT_PER_KILOMETER_USAGE, 0, 10)
 
 export const COLOR_COMBINED_SCORE = [
   'case',
@@ -201,4 +202,4 @@ export const trackLayerRaw = produce(trackLayer, (draft) => {
   delete draft.paint['line-opacity']
 })
 
-export const basemap = positron
+export const basemap = obsLight

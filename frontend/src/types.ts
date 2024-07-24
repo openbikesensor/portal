@@ -9,8 +9,7 @@ export interface UserProfile {
 
 export interface TrackData {
   track: Feature<LineString>
-  measurements: FeatureCollection
-  overtakingEvents: FeatureCollection
+  events: FeatureCollection<Point>
 }
 
 export type ProcessingStatus = 'error' | 'complete' | 'created' | 'queued' | 'processing'
@@ -32,6 +31,7 @@ export interface Track {
   numMeasurements?: number
   numValid?: number
   userDeviceId?: number
+  processingLog?: string
 }
 
 export interface TrackPoint {

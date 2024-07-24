@@ -10,11 +10,11 @@ import {
   setMapConfigFlag as setMapConfigFlagAction,
   initialState as defaultMapConfig,
 } from 'reducers/mapConfig'
-import {viridisSimpleHtml, GREEN, YELLOW, RED, COLORMAP_RURAL, COLORMAP_URBAN, COLORMAP_LEGAL} from 'mapstyles'
+import {baseColormapSimpleHtml, GREEN, YELLOW, RED, COLORMAP_RURAL, COLORMAP_URBAN, COLORMAP_LEGAL} from 'mapstyles'
 import {ColorMapLegend, DiscreteColorMapLegend} from 'components'
 import styles from './styles.module.less'
 
-const BASEMAP_STYLE_OPTIONS = ['positron', 'bright']
+const BASEMAP_STYLE_OPTIONS = ['obsLight', 'positron', 'bright', 'darkmatter']
 
 const ROAD_ATTRIBUTE_OPTIONS = [
   'distance_overtaker_mean',
@@ -49,6 +49,7 @@ function LayerSidebar({
     obsRoads: {show: showRoads, showUntagged, attribute, maxCount},
     obsEvents: {show: showEvents},
     obsRegions: {show: showRegions},
+    obsTracks: {show: showTracks},
     filters: {currentUser: filtersCurrentUser, dateMode, startDate, endDate, thresholdAfter},
   } = mapConfig
 
@@ -149,7 +150,7 @@ function LayerSidebar({
             {attribute === 'overtaking_frequency' && (
               <>
                 <List.Item>
-                  <ColorMapLegend map={viridisSimpleHtml} start="0/km" end="10/km" />
+                  <ColorMapLegend map={baseColormapSimpleHtml} start="0/km" end="10/km" />
                 </List.Item>
               </>
             )}
@@ -170,7 +171,7 @@ function LayerSidebar({
             {(attribute === 'usage_count' || attribute === 'overtaking_event_count') && (
               <>
                 <List.Item style={{display: 'flex', flexDirection: 'column', alignItems: 'flex-end'}}>
-                  <ColorMapLegend map={viridisSimpleHtml} start="0" end="" />
+                  <ColorMapLegend map={baseColormapSimpleHtml} start="0" end="" />
                   <Input
                     type="number"
                     value={maxCount}
@@ -237,6 +238,25 @@ function LayerSidebar({
           </>
         )}
         <Divider />
+
+        {filtersCurrentUser && login && (
+          <>
+            <List.Item>
+              <Checkbox
+                toggle
+                size="small"
+                id="obsTracks.show"
+                style={{float: 'right'}}
+                checked={showTracks}
+                onChange={() => setMapConfigFlag('obsTracks.show', !showTracks)}
+              />
+              <label htmlFor="obsTracks.show">
+                <Header as="h4">{t('MapPage.sidebar.obsTracks.title')}</Header>
+              </label>
+            </List.Item>
+            <Divider />
+          </>
+        )}
 
         <List.Item>
           <Header as="h4">{t('MapPage.sidebar.filters.title')}</Header>

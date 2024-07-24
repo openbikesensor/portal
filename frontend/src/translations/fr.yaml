@@ -1,8 +1,3 @@
-locales:
-  en: Anglais
-  de: Allemand
-  fr: Français
-
 general:
   loading: Chargement
   unnamedTrack: Trace non nommé
@@ -54,7 +49,7 @@ LoginButton:
   login: Se connecter
 
 HomePage:
-  mostRecentTrack: Trace la plus récente
+  mostRecentTrack: Trace publique la plus récente
 
 Stats:
   title: Statistiques
@@ -149,8 +144,10 @@ MapPage:
     baseMap:
       style:
         label: Style de fond de carte
+        obsLight: OpenBikeSensor Light
         positron: Positron
         bright: OSM Bright
+        darkmatter: Darkmatter
 
     obsRoads:
       title: Segments de route
@@ -166,6 +163,8 @@ MapPage:
         usage_count: Nombre de passages
         zone: Overtaking distance zone
         combined_score: Score combinée
+        overtaking_legality: Pourcent illégal
+        overtaking_frequency: Dépassements par km
       combinedScore:
         label: Score
         description: >
@@ -177,6 +176,9 @@ MapPage:
 
     obsEvents:
       title: Points d'événement
+
+    obsTracks:
+      title: Mes propre traces
 
     obsRegions:
       title: Régions
@@ -291,20 +293,10 @@ TrackPage:
   processingError: Le traitement de cette trace a échoué. Veuillez demander à l'administrateur de votre site de vous aider à résoudre le problème.
   description: Description
 
-
-  mapSettings:
-    title: Paramètres de la carte
-    showTrack: Montrer la trace
+  mapLegend:
+    title: Légende de la carte
     gpsTrack: Trace GPS
     snappedTrack: Suivre la route
-
-    points: Points
-    confirmedPoints: Confirmé(s)
-    allPoints: Toutes les mesures
-
-    side: Côté (pour la couleur)
-    overtakerSide: Dépassement (Gauche)
-    stationarySide: Stationnemnt (Droite)
 
   details:
     visibility: Visibilité

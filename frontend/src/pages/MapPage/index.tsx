@@ -37,7 +37,7 @@ const untaggedRoadsLayer = {
     'line-join': 'round',
   },
   paint: {
-    'line-width': ['interpolate', ['exponential', 1.5], ['zoom'], 12, 2, 17, 2],
+    'line-width': ['interpolate', ['exponential', 1.5], ['zoom'], 12, 1, 17, 2],
     'line-color': '#ABC',
     // "line-opacity": ["interpolate", ["linear"], ["zoom"], 14, 0, 15, 1],
     'line-offset': [
@@ -52,6 +52,51 @@ const untaggedRoadsLayer = {
   },
 }
 
+const getMyTracksLayer = (dark?: boolean) => ({
+  id: 'tracks',
+  type: 'line',
+  source: 'obs',
+  'source-layer': 'obs_tracks',
+  minzoom: 12,
+  paint: {
+    'line-width': ['interpolate', ['exponential', 1.5], ['zoom'], 12, 0.5, 17, 1],
+    'line-color': dark ? 'hsla(50, 100%, 50%, 0.3)' : 'hsla(210, 100%, 30%, 0.3)',
+  },
+})
+
+/*
+// You can add this layer to the map to debug attributes or computed values on
+// the road segments in the tiles.
+
+const roadAttributesTextLayer = {
+  id: 'road-attributes',
+  type: 'symbol',
+  source: 'obs',
+  'source-layer': 'obs_roads',
+  minzoom: 12,
+  filter: ['to-boolean', ['get', 'distance_overtaker_mean']],
+  layout: {
+    'symbol-placement': 'line',
+    'text-field': [
+      'number-format',
+      ['get', 'usage_count'],
+      // ['get', 'distance_overtaker_mean'],
+      {'min-fraction-digits': 0, 'max-fraction-digits': 2},
+    ],
+    'text-offset': [0, 1],
+    'text-font': ['Noto Sans Bold'],
+    'text-rotation-alignment': 'map',
+    // 'text-rotate': 90,
+    'text-size': 18,
+  },
+  paint: {
+    'text-color': 'hsl(30, 23%, 42%)',
+    'text-halo-color': '#f8f4f0',
+    'text-halo-width': 0.5,
+  },
+}
+*/
+
 const getUntaggedRoadsLayer = (colorAttribute) =>
   produce(untaggedRoadsLayer, (draft) => {
     draft.filter = ['!', isValidAttribute(colorAttribute)]
@@ -62,7 +107,7 @@ const getRoadsLayer = (colorAttribute, maxCount) =>
     draft.id = 'obs_roads_normal'
     draft.filter = isValidAttribute(colorAttribute)
     draft.minzoom = 10
-    draft.paint['line-width'][6] = 6 // scale bigger on zoom
+    draft.paint['line-width'][6] = 4 // scale bigger on zoom
 
     let color: any = '#DDD'
 
@@ -89,7 +134,7 @@ const getEventsLayer = () => ({
   source: 'obs',
   'source-layer': 'obs_events',
   paint: {
-    'circle-radius': ['interpolate', ['linear'], ['zoom'], 14, 3, 17, 8],
+    'circle-radius': ['interpolate', ['linear'], ['zoom'], 14, 2, 17, 5],
     'circle-opacity': ['interpolate', ['linear'], ['zoom'], 8, 0.1, 9, 0.3, 10, 0.5, 11, 1],
     'circle-color': colorByDistance('distance_overtaker'),
   },
@@ -112,7 +157,7 @@ const getEventsTextLayer = () => ({
     'text-size': 14,
     'text-keep-upright': false,
     'text-anchor': 'left',
-    'text-radial-offset': 1,
+    'text-radial-offset': 0.75,
     'text-rotate': ['-', 90, ['*', ['get', 'course'], 180 / Math.PI]],
     'text-rotation-alignment': 'map',
   },
@@ -187,7 +232,7 @@ function MapPage({login}) {
     obsRoads: {attribute, maxCount},
   } = mapConfig
 
-  const layers = []
+  const layers = [] // [roadAttributesTextLayer]
 
   const untaggedRoadsLayerCustom = useMemo(() => getUntaggedRoadsLayer(attribute), [attribute])
   if (mapConfig.obsRoads.show && mapConfig.obsRoads.showUntagged) {
@@ -204,6 +249,10 @@ function MapPage({login}) {
     layers.push(...regionLayers)
   }
 
+  if (mapConfig.obsTracks.show && login) {
+    layers.push(getMyTracksLayer(mapConfig.baseMap.style === 'darkmatter'))
+  }
+
   const eventsLayer = useMemo(() => getEventsLayer(), [])
   const eventsTextLayer = useMemo(() => getEventsTextLayer(), [])
 
@@ -216,7 +265,6 @@ function MapPage({login}) {
     (e) => {
       e.stopPropagation()
       e.preventDefault()
-      console.log('toggl;e')
       setLayerSidebar((v) => !v)
     },
     [setLayerSidebar]

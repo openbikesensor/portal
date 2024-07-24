@@ -1,7 +1,7 @@
 import React, {useState, useCallback} from 'react'
 import {createPortal} from 'react-dom'
 import _ from 'lodash'
-import {Menu, Header, Label, Icon, Table, Message, Button} from 'semantic-ui-react'
+import {Menu, Header, Label, Icon, Table, Message, Button, List} from 'semantic-ui-react'
 import {Layer, Source} from 'react-map-gl'
 import {Chart} from 'components'
 import {useTranslation} from 'react-i18next'
@@ -144,9 +144,10 @@ export interface RoadInfoType {
     oneway: boolean
     geometry: Object
   }
-  forwards: RoadDirectionInfo
-  backwards: RoadDirectionInfo
   length: number
+  forwards?: RoadDirectionInfo
+  backwards?: RoadDirectionInfo
+  oneway?: RoadDirectionInfo
 }
 
 export default function RoadInfo({
@@ -161,7 +162,8 @@ export default function RoadInfo({
   mapInfoPortal: HTMLElement
 }) {
   const {t} = useTranslation()
-  const [direction, setDirection] = useState<'forwards' | 'backwards'>('forwards')
+  const [direction_, setDirection] = useState<'forwards' | 'backwards'>('forwards')
+  const direction = info.road.oneway ? 'oneway' : direction_
 
   const onClickDirection = useCallback(
     (e, {name}) => {
@@ -173,45 +175,56 @@ export default function RoadInfo({
   )
 
   // TODO: change based on left-hand/right-hand traffic
-  const offsetDirection = info.road.oneway ? 0 : direction === 'forwards' ? 1 : -1
+  const offsetDirection = direction === 'oneway' ? 0 : direction === 'forwards' ? 1 : -1
 
   const content = (
-    <>
-      <div className={styles.closeHeader}>
-        <Header as="h3">{info?.road.name || t('MapPage.roadInfo.unnamedWay')}</Header>
-        <Button primary icon onClick={onClose}>
-          <Icon name="close" />
-        </Button>
-      </div>
+    <List>
+      <Button icon size="tiny" onClick={onClose}>
+        <Icon name="close" /> Close
+      </Button>
+
+      <List.Header as="h3">{info?.road.name || t('MapPage.roadInfo.unnamedWay')}</List.Header>
+
+      <p>
+        <a target="_blank" href={`https://www.openstreetmap.org/way/${info?.road.way_id}`} rel="noreferrer">
+          In OpenStreetMap öffnen <Icon name="window restore outline" fitted />
+        </a>
+      </p>
 
       {hasFilters && (
-        <Message info icon>
-          <Icon name="info circle" />
-          <Message.Content>{t('MapPage.roadInfo.hintFiltersNotApplied')}</Message.Content>
-        </Message>
+        <List.Item>
+          <Message info icon>
+            <Icon name="info circle" />
+            <Message.Content>{t('MapPage.roadInfo.hintFiltersNotApplied')}</Message.Content>
+          </Message>
+        </List.Item>
       )}
 
-      {info?.road.zone && (
-        <Label size="small" color={ZONE_COLORS[info?.road.zone]}>
-          {t(`general.zone.${info.road.zone}`)}
-        </Label>
-      )}
-      {info?.road.oneway && (
-        <Label size="small" color="blue">
-          <Icon name="long arrow alternate right" fitted /> {t('MapPage.roadInfo.oneway')}
-        </Label>
-      )}
+      <List.Item>
+        {info?.road.zone && (
+          <Label size="small" color={ZONE_COLORS[info?.road.zone]}>
+            {t(`general.zone.${info.road.zone}`)}
+          </Label>
+        )}
+        {info?.road.oneway && (
+          <Label size="small" color="blue">
+            <Icon name="long arrow alternate right" fitted /> {t('MapPage.roadInfo.oneway')}
+          </Label>
+        )}
+      </List.Item>
 
       {info?.road.oneway ? null : (
-        <Menu size="tiny" pointing>
-          <Menu.Item header>{t('MapPage.roadInfo.direction')}</Menu.Item>
-          <Menu.Item name="forwards" active={direction === 'forwards'} onClick={onClickDirection}>
-            {getCardinalDirection(t, info?.forwards?.bearing)}
-          </Menu.Item>
-          <Menu.Item name="backwards" active={direction === 'backwards'} onClick={onClickDirection}>
-            {getCardinalDirection(t, info?.backwards?.bearing)}
-          </Menu.Item>
-        </Menu>
+        <List.Item>
+          <Menu size="tiny" pointing>
+            <Menu.Item header>{t('MapPage.roadInfo.direction')}</Menu.Item>
+            <Menu.Item name="forwards" active={direction === 'forwards'} onClick={onClickDirection}>
+              {getCardinalDirection(t, info?.forwards?.bearing)}
+            </Menu.Item>
+            <Menu.Item name="backwards" active={direction === 'backwards'} onClick={onClickDirection}>
+              {getCardinalDirection(t, info?.backwards?.bearing)}
+            </Menu.Item>
+          </Menu>
+        </List.Item>
       )}
 
       {info?.[direction] && <RoadStatsTable data={info[direction]} />}
@@ -246,11 +259,11 @@ export default function RoadInfo({
 
       {info?.[direction]?.distanceOvertaker?.histogram && (
         <>
-          <Header as="h5">{t('MapPage.roadInfo.overtakerDistanceDistribution')}</Header>
+          <List.Header as="h5">{t('MapPage.roadInfo.overtakerDistanceDistribution')}</List.Header>
           <HistogramChart {...info[direction]?.distanceOvertaker?.histogram} />
         </>
       )}
-    </>
+    </List>
   )
 
   return (
