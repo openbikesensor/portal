@@ -77,10 +77,13 @@ def get_filter_options(
     start = round_date(start, to="weeks", up=False) if start else None
     end = round_date(end, to="weeks", up=True) if end else None
 
-    if start is not None and end is not None and start >= end:
-        raise InvalidUsage(
-            "end date must be later than start date (note: dates are rounded to weeks)"
-        )
+    if start is not None and end is not None:
+        if start >= end:
+            start, end = end, start
+        elif start == end:
+            raise InvalidUsage(
+                "end date and start date must not be equal (note: dates are rounded to weeks)"
+            )
 
     return user_id, start, end
 
