@@ -22,12 +22,12 @@ round_speed = partial(round_to, multiples=0.1)
 
 log = logging.getLogger(__name__)
 
-g = pyproj.Geod(ellps='WGS84')
+g = pyproj.Geod(ellps="WGS84")
 
 
 def get_bearing(p1, p2):
     (az12, az21, dist) = g.inv(p1[0], p1[1], p2[0], p2[1])
-    bearing = (az12 + 360)%360
+    bearing = (az12 + 360) % 360
     return bearing
 
 
@@ -161,13 +161,21 @@ async def mapdetails_road(req):
         # convert to degrees, as this is more natural to understand for consumers
         bearing = round_to(bearing, 1)
 
-    def get_direction_stats(direction_arrays, usage, backwards=False):
+    def get_direction_stats(direction_arrays, usage, zone, backwards=False):
+        # TODO: this has to change based on administrative boundaries, i.e. country
+        legal_limit = 2.0 if zone == "rural" else 1.5
+
         return {
-            "bearing": ((bearing + 180) % 360 if backwards else bearing)
-            if bearing is not None
-            else None,
+            "bearing": (
+                ((bearing + 180) % 360 if backwards else bearing)
+                if bearing is not None
+                else None
+            ),
             "count": len(direction_arrays[0][~numpy.isnan(direction_arrays[0])]),
-            "below_150": len(direction_arrays[0][direction_arrays[0] < 1.50]),
+            "legalLimit": legal_limit,
+            "belowLegalLimit": len(
+                direction_arrays[0][direction_arrays[0] < legal_limit]
+            ),
             "roadUsage": usage,
             "distanceOvertaker": array_stats(
                 direction_arrays[0], round_distance, bins=DISTANCE_BINS
@@ -183,9 +191,11 @@ async def mapdetails_road(req):
         "length": length,
     }
     if not road.directionality:
-        result["forwards"] = get_direction_stats(forwards, road_usage[0])
-        result["backwards"] = get_direction_stats(backwards, road_usage[1], True)
+        result["forwards"] = get_direction_stats(forwards, road_usage[0], road.zone)
+        result["backwards"] = get_direction_stats(
+            backwards, road_usage[1], road.zone, True
+        )
     else:
-        result["oneway"] = get_direction_stats(data, road_usage_total)
+        result["oneway"] = get_direction_stats(data, road_usage_total, road.zone)
 
     return response.json(result)

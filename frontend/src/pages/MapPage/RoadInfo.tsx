@@ -1,9 +1,10 @@
-import React, {useState, useCallback} from 'react'
+import {useState, useCallback} from 'react'
 import {createPortal} from 'react-dom'
 import _ from 'lodash'
-import {Menu, Header, Label, Icon, Table, Message, Button, List} from 'semantic-ui-react'
+import {Menu, Label, Icon, Table, Message, Button, List, Popup} from 'semantic-ui-react'
 import {Layer, Source} from 'react-map-gl'
 import {Chart} from 'components'
+import Markdown from 'react-markdown'
 import {useTranslation} from 'react-i18next'
 
 import {colorByDistance} from 'mapstyles'
@@ -130,7 +131,8 @@ export interface RoadDirectionInfo {
   distanceOvertaker: ArrayStats
   distanceStationary: ArrayStats
   speed: ArrayStats
-  below_150: number
+  legalLimit: number
+  belowLegalLimit: number
   roadUsage: number
   count: number
 }
@@ -176,6 +178,8 @@ export default function RoadInfo({
 
   // TODO: change based on left-hand/right-hand traffic
   const offsetDirection = direction === 'oneway' ? 0 : direction === 'forwards' ? 1 : -1
+
+  const dirInfo = info[direction]
 
   const content = (
     <List>
@@ -227,25 +231,39 @@ export default function RoadInfo({
         </List.Item>
       )}
 
-      {info?.[direction] && <RoadStatsTable data={info[direction]} />}
+      {dirInfo && <RoadStatsTable data={dirInfo} />}
 
-      {info?.[direction] && (
+      {dirInfo && (
         <Table definition size="small" compact>
           <Table.Body>
             <Table.Row>
               <Table.Cell>{t(`MapPage.roadInfo.usageCount`)}</Table.Cell>
-              <Table.Cell textAlign="right">{info[direction].roadUsage}</Table.Cell>
+              <Table.Cell textAlign="right">{dirInfo.roadUsage}</Table.Cell>
             </Table.Row>
             <Table.Row>
               <Table.Cell>{t(`MapPage.roadInfo.segmentLength`)}</Table.Cell>
               <Table.Cell textAlign="right">{info.length.toFixed(0)} m</Table.Cell>
             </Table.Row>
             <Table.Row>
-              <Table.Cell>{t(`MapPage.roadInfo.closeOvertakerPercentage`)}</Table.Cell>
-              {info[direction].count ? (
+              <Popup
+                hoverable
+                wide="very"
+                content={<Markdown>{t('MapPage.roadInfo.legalLimitHint')}</Markdown>}
+                trigger={
+                  <Table.Cell>
+                    {t(`MapPage.roadInfo.legalLimit`)}
+                    <Icon name="info circle" style={{marginLeft: 8}} />
+                  </Table.Cell>
+                }
+              />
+              <Table.Cell textAlign="right">{dirInfo.legalLimit}m</Table.Cell>
+            </Table.Row>
+            <Table.Row>
+              <Table.Cell>{t(`MapPage.roadInfo.closeOvertakerPercentage`, {limit: dirInfo.legalLimit})}</Table.Cell>
+              {dirInfo.count ? (
                 <Table.Cell textAlign="right">
-                  {Math.round((100 * info[direction].below_150) / info[direction].count)}% ({info[direction].below_150}{' '}
-                  {t(`MapPage.roadInfo.of`)} {info[direction].count})
+                  {Math.round((100 * dirInfo.belowLegalLimit) / dirInfo.count)}% ({dirInfo.belowLegalLimit}{' '}
+                  {t(`MapPage.roadInfo.of`)} {dirInfo.count})
                 </Table.Cell>
               ) : (
                 <Table.Cell textAlign="right">&ndash;</Table.Cell>
@@ -254,17 +272,17 @@ export default function RoadInfo({
             <Table.Row>
               <Table.Cell>{t(`MapPage.roadInfo.overtakersPerKilometer`)}</Table.Cell>
               <Table.Cell textAlign="right">
-                {(info[direction].count / (info[direction].roadUsage * info.length * 0.001)).toFixed(1)}
+                {(dirInfo.count / (dirInfo.roadUsage * info.length * 0.001)).toFixed(1)}
               </Table.Cell>
             </Table.Row>
           </Table.Body>
         </Table>
       )}
 
-      {info?.[direction]?.distanceOvertaker?.histogram && (
+      {dirInfo?.distanceOvertaker?.histogram && (
         <>
           <List.Header as="h5">{t('MapPage.roadInfo.overtakerDistanceDistribution')}</List.Header>
-          <HistogramChart {...info[direction]?.distanceOvertaker?.histogram} />
+          <HistogramChart {...dirInfo.distanceOvertaker.histogram} />
         </>
       )}
     </List>

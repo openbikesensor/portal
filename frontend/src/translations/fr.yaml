@@ -214,8 +214,16 @@ MapPage:
     max: Maximum
     mean: Moyenne
 
+    legalLimit: Limite légale
+    legalLimitHint: >
+      La distance de dépassement minimale est détectée automatiquement sur la
+      base des données OpenStreetMap pour ce segment. Cela peut parfois être inexact.
+      Vous pouvez trouver un guide dans la [FAQ
+      OpenBikeSensor](https://openbikesensor.org/faq/data/mindestabstand/)
+      (en allemand) sur la façon dont cette limite est détectée et
+      comment vous pouvez corriger une mauvaise entrée.
     overtakerDistanceDistribution: Distribution des distances de dépassement
-    closeOvertakerPercentage: Dépassements moins de 1,5m
+    closeOvertakerPercentage: Dépassements moins de {{limit, number}}m
     overtakersPerKilometer: Dépassements par km
     of: de
     segmentLength: Longueur du segment

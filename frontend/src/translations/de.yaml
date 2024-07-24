@@ -212,8 +212,15 @@ MapPage:
     max: Maximum
     mean: Durchschnitt
 
+    legalLimit: Mindestabstand
+    legalLimitHint: >
+      Der Mindestabstand wird anhand der OpenStreetMap Tags zu diesem
+      Straßenabschnitt bestimmt und ist möglicherweise nicht immer akkurat. In
+      den [OpenBikeSensor
+      FAQ](https://openbikesensor.org/faq/data/mindestabstand/) erfährst
+      du, wie der Mindestabstand bestimmt wird, und wie du ihn korrigieren kannst.
     overtakerDistanceDistribution: Verteilung der Überholabstände
-    closeOvertakerPercentage: Überholvorgänge unter 1,5m
+    closeOvertakerPercentage: Überholvorgänge unter {{limit, number}}m
     overtakersPerKilometer: Überholvorgänge pro km
     of: von
     segmentLength: Länge des Segments

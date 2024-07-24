@@ -213,8 +213,15 @@ MapPage:
     max: Maximum
     mean: Average
 
+    legalLimit: Minimum passing distance
+    legalLimitHint: >
+      The minimum passing distance is auto-detected based on OpenStreetMap tags
+      for this road segment. It may not always be accurate. You'll find a guide
+      in the [OpenBikeSensor
+      FAQ](https://openbikesensor.org/faq/data/mindestabstand/) (German) on how
+      this limit is detected and how you could correct a wrong entry.
     overtakerDistanceDistribution: Overtaker distance distribution
-    closeOvertakerPercentage: Overtakings below 1.5m
+    closeOvertakerPercentage: Overtakings below {{limit, number}}m
     overtakersPerKilometer: Overtakings per km
     of: of
     segmentLength: Segment length
