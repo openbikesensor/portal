@@ -1,8 +1,8 @@
-import React from 'react'
+import React, {useState} from 'react'
 import _ from 'lodash'
 import {connect} from 'react-redux'
 import {Link} from 'react-router-dom'
-import {List, Select, Input, Divider, Label, Checkbox, Header, Table} from 'semantic-ui-react'
+import {List, Select, Input, Divider, Label, Checkbox, Header, Table, Dropdown} from 'semantic-ui-react'
 import {useTranslation} from 'react-i18next'
 
 import {
@@ -33,6 +33,35 @@ const ROAD_ATTRIBUTE_OPTIONS = [
 const DATE_FILTER_MODES = ['none', 'range', 'threshold']
 
 type User = Object
+
+const LIMITS = {rural: 2.0, urban: 1.5}
+function ColormapLegendForZones() {
+  const {t} = useTranslation()
+  const [zone, setZone] = useState<'urban' | 'rural'>('urban')
+  const colormap = {rural: COLORMAP_RURAL, urban: COLORMAP_URBAN}[zone]
+
+  return (
+    <List.Item>
+      <List.Header>
+        <Dropdown
+          inline
+          options={(['urban', 'rural'] as const).map((z) => ({
+            key: z,
+            value: z,
+            onClick: () => setZone(z),
+            text: (
+              <>
+                {_.upperFirst(t(`general.zone.${z}`))} ({LIMITS[z]}m)
+              </>
+            ),
+          }))}
+          value={zone}
+        />
+      </List.Header>
+      <DiscreteColorMapLegend map={colormap} />
+    </List.Item>
+  )
+}
 
 function LayerSidebar({
   mapConfig,
@@ -197,14 +226,7 @@ function LayerSidebar({
             )}
             {attribute.startsWith('distance_') && (
               <>
-                <List.Item>
-                  <List.Header>{_.upperFirst(t('general.zone.urban'))}</List.Header>
-                  <DiscreteColorMapLegend map={COLORMAP_URBAN} />
-                </List.Item>
-                <List.Item>
-                  <List.Header>{_.upperFirst(t('general.zone.rural'))}</List.Header>
-                  <DiscreteColorMapLegend map={COLORMAP_RURAL} />
-                </List.Item>
+                <ColormapLegendForZones />
               </>
             )}
 
