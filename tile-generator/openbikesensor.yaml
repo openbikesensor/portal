@@ -5,7 +5,7 @@ tileset:
     - layers/obs_roads/obs_roads.yaml
     - layers/obs_regions/obs_regions.yaml
     - layers/obs_tracks/obs_tracks.yaml
-  version: 0.8.1
+  version: 0.9.0
   id: openbikesensor
   description: >
     A tileset for OpenBikeSensor data -- https://openbikesensor.org.
