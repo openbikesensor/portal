@@ -33,12 +33,12 @@ function rgbArrayToHtml(arr) {
   )
 }
 
-export function colormapToScale(colormap, value, min, max) {
+export function colormapToScale(colormap, value, max, log = false) {
   return [
     'interpolate-hcl',
     ['linear'],
-    value,
-    ...colormap.flatMap((v, i, a) => [(i / (a.length - 1)) * (max - min) + min, v]),
+    log ? ['/', ['log10', value], Math.log10(Number(max))] : ['/', value, max],
+    ...colormap.flatMap((v, i, a) => [i / (a.length - 1), v]),
   ]
 }
 
@@ -57,7 +57,7 @@ const COLOR_URBAN = 'blue'
 const COLOR_UNKNOWN_ZONE = 'purple'
 
 export function colorByCount(attribute = 'event_count', maxCount, colormap = baseColormapSimple) {
-  return colormapToScale(colormap, ['case', isValidAttribute(attribute), ['get', attribute], 0], 0, maxCount)
+  return colormapToScale(colormap, ['case', isValidAttribute(attribute), ['get', attribute], 0], maxCount, true)
 }
 
 function zipStepped(arr1, arr2) {
@@ -121,7 +121,7 @@ export const COUNT_PER_KILOMETER_USAGE = [
 export const RATIO_ILLEGAL = ['/', ['get', 'overtaking_events_below_150'], ['get', 'overtaking_event_count']]
 export const COLOR_LEGALITY = ['step', RATIO_ILLEGAL, ...COLORMAP_LEGAL]
 
-export const COLOR_FREQUENCY = colormapToScale(baseColormapSimple, COUNT_PER_KILOMETER_USAGE, 0, 10)
+export const COLOR_FREQUENCY = colormapToScale(baseColormapSimple, COUNT_PER_KILOMETER_USAGE, 10)
 
 export const COLOR_COMBINED_SCORE = [
   'case',

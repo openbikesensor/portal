@@ -123,7 +123,7 @@ function LayerSidebar({
           <>
             <List.Item>{t('MapPage.sidebar.obsRegions.colorByEventCount')}</List.Item>
             <List.Item>
-              <ColorMapLegend start="0" end="5000" map={['#00897B00', '#00897BFF']} />
+              <ColorMapLegend logTickMax={5000} map={['#00897B00', '#00897BFF']} />
             </List.Item>
             <List.Item className={styles.copyright}>
               {t('MapPage.sidebar.copyright.boundaries')}{' '}
@@ -179,7 +179,15 @@ function LayerSidebar({
             {attribute === 'overtaking_frequency' && (
               <>
                 <List.Item>
-                  <ColorMapLegend map={baseColormapSimpleHtml} start="0/km" end="10/km" />
+                  <ColorMapLegend
+                    map={baseColormapSimpleHtml}
+                    ticks={[
+                      [0, 0],
+                      [0.5, 5],
+                      [1, 10],
+                    ]}
+                    unit="/km"
+                  />
                 </List.Item>
               </>
             )}
@@ -200,12 +208,12 @@ function LayerSidebar({
             {(attribute === 'usage_count' || attribute === 'overtaking_event_count') && (
               <>
                 <List.Item style={{display: 'flex', flexDirection: 'column', alignItems: 'flex-end'}}>
-                  <ColorMapLegend map={baseColormapSimpleHtml} start="0" end="" />
+                  <ColorMapLegend map={baseColormapSimpleHtml} logTickMax={Number(maxCount)} />
                   <Input
                     type="number"
                     value={maxCount}
                     size="small"
-                    style={{width: '10ch', marginRight: 10, marginTop: -11}}
+                    style={{width: '10ch', marginRight: 10, marginTop: 10}}
                     onChange={(_e, {value}) => setMapConfigFlag('obsRoads.maxCount', value)}
                   />
                 </List.Item>

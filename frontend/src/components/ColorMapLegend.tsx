@@ -73,9 +73,27 @@ export function DiscreteColorMapLegend({
   )
 }
 
-export default function ColorMapLegend({map, start, end}: {map: string[]; start: string; end: string}) {
+export default function ColorMapLegend({
+  map,
+  logTickMax,
+  ticks: ticks_,
+  unit = '',
+}: {
+  map: string[]
+  ticks?: [number, number][]
+  logTickMax?: number
+  unit?: string
+}) {
   const gradientId = useMemo(() => `gradient${Math.floor(Math.random() * 1000000)}`, [])
   const gradientUrl = `url(#${gradientId})`
+
+  const ticks = ticks_ ?? []
+  if (logTickMax) {
+    const logMax = Math.log10(logTickMax)
+    for (let i = 0; i <= logMax; i++) {
+      ticks.push([i / logMax, Math.pow(10, i)])
+    }
+  }
 
   return (
     <div className={styles.colorMapLegend}>
@@ -91,12 +109,12 @@ export default function ColorMapLegend({map, start, end}: {map: string[]; start:
         <rect id="rect1" x="0" y="0" width="100%" height="100%" fill={gradientUrl} />
       </svg>
 
-      <span className={styles.tick} style={{left: '0%'}}>
-        {start}
-      </span>
-      <span className={styles.tick} style={{left: '100%'}}>
-        {end}
-      </span>
+      {ticks.map(([pos, val]) => (
+        <span key={pos} className={styles.tick} style={{left: `${pos * 100}%`}}>
+          {val}
+          {unit}
+        </span>
+      ))}
     </div>
   )
 }

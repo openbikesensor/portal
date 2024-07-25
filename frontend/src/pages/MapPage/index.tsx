@@ -239,7 +239,7 @@ function MapPage({login}) {
     layers.push(untaggedRoadsLayerCustom)
   }
 
-  const roadsLayer = useMemo(() => getRoadsLayer(attribute, maxCount), [attribute, maxCount])
+  const roadsLayer = useMemo(() => getRoadsLayer(attribute, Number(maxCount)), [attribute, maxCount])
   if (mapConfig.obsRoads.show) {
     layers.push(roadsLayer)
   }
