@@ -15,6 +15,8 @@
 * Make items on map page smaller to fit higher density
 * Change gradient from viridis to plasma
 * Show processing errors on track page and in track list
+* Use logarithmic color scales for event and usage count
+* Show only one color axis (rural or urban) at a time, add a dropdown to switch it
 
 ### Bug Fixes
 
