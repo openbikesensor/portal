@@ -191,6 +191,9 @@ async def post_track(req):
     except (LookupError, InvalidUsage):
         body = {}
 
+    if len(file.body) == 0:
+        raise InvalidUsage("Track body can't be empty.")
+
     title = body.get("title")
     public = body.get("public")
 
@@ -265,8 +268,7 @@ async def get_track_data(req, slug: str):
     track = await _load_track(req, slug)
 
     FILE_BY_KEY = {
-        "measurements": "measurements.json",
-        "overtakingEvents": "overtakingEvents.json",
+        "events": "events.json",
         "track": "track.json",
         "trackRaw": "trackRaw.json",
     }

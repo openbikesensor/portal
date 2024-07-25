@@ -16,14 +16,29 @@ function* zip(...arrs) {
   }
 }
 
-export function DiscreteColorMapLegend({map}: {map: ColorMap}) {
+export function DiscreteColorMapLegend({
+  map,
+  renderValue,
+  min: min_,
+  max: max_,
+}: {
+  map: ColorMap
+  renderValue?: (x: value) => React.ReactNode
+  min?: number
+  max?: number
+}) {
   const colors: string[] = map.filter((x, i) => i % 2 == 0) as any
   const stops: number[] = map.filter((x, i) => i % 2 == 1) as any
+
   let min = stops[0]
   let max = stops[stops.length - 1]
   const buffer = (max - min) / (stops.length - 1) / 2
   min -= buffer
   max += buffer
+
+  if (min_ != null) min = min_
+  if (max_ != null) max = max_
+
   const normalizeValue = (v) => (v - min) / (max - min)
   const stopPairs = Array.from(pairs([min, ...stops, max]))
 
@@ -51,7 +66,7 @@ export function DiscreteColorMapLegend({map}: {map: ColorMap}) {
 
       {stops.map((value) => (
         <span className={styles.tick} key={value} style={{left: normalizeValue(value) * 100 + '%'}}>
-          {value.toFixed(2)}
+          {renderValue?.(value) ?? value.toFixed(2)}
         </span>
       ))}
     </div>
@@ -60,35 +75,44 @@ export function DiscreteColorMapLegend({map}: {map: ColorMap}) {
 
 export default function ColorMapLegend({
   map,
-  twoTicks = false,
-  digits = 2,
+  logTickMax,
+  ticks: ticks_,
+  unit = '',
 }: {
-  map: ColorMap
-  twoTicks?: boolean
-  digits?: number
+  map: string[]
+  ticks?: [number, number][]
+  logTickMax?: number
+  unit?: string
 }) {
-  const min = map[0][0]
-  const max = map[map.length - 1][0]
-  const normalizeValue = (v) => (v - min) / (max - min)
   const gradientId = useMemo(() => `gradient${Math.floor(Math.random() * 1000000)}`, [])
   const gradientUrl = `url(#${gradientId})`
-  const tickValues = twoTicks ? [map[0], map[map.length - 1]] : map
+
+  const ticks = ticks_ ?? []
+  if (logTickMax) {
+    const logMax = Math.log10(logTickMax)
+    for (let i = 0; i <= logMax; i++) {
+      ticks.push([i / logMax, Math.pow(10, i)])
+    }
+  }
+
   return (
     <div className={styles.colorMapLegend}>
       <svg width="100%" height="20" version="1.1" xmlns="http://www.w3.org/2000/svg">
         <defs>
           <linearGradient id={gradientId} x1="0" x2="1" y1="0" y2="0">
-            {map.map(([value, color]) => (
-              <stop key={value} offset={normalizeValue(value) * 100 + '%'} stopColor={color} />
+            {map.map((color, index) => (
+              <stop key={index} offset={(index / (map.length - 1)) * 100 + '%'} stopColor={color} />
             ))}
           </linearGradient>
         </defs>
 
         <rect id="rect1" x="0" y="0" width="100%" height="100%" fill={gradientUrl} />
       </svg>
-      {tickValues.map(([value]) => (
-        <span className={styles.tick} key={value} style={{left: normalizeValue(value) * 100 + '%'}}>
-          {value.toFixed(digits)}
+
+      {ticks.map(([pos, val]) => (
+        <span key={pos} className={styles.tick} style={{left: `${pos * 100}%`}}>
+          {val}
+          {unit}
         </span>
       ))}
     </div>

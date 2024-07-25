@@ -23,15 +23,11 @@ what that means for our project and what is considered the public interface.
 
 ## Clone the Project
 
-First of all, you must clone this project. This project uses submodules,
-thus ensure, that they are cloned as well:
+First of all, you must clone this project. This project **does not** use
+submodules anymore:
 
 ```bash
-git clone --recursive https://github.com/openbikesensor/portal
-
-# ... or if you forgot the --recursive argument, you can run this in the
-# repository's directory later:
-git submodule update --init --recursive
+git clone https://github.com/openbikesensor/portal
 ```
 
 ## Production setup
@@ -223,6 +219,7 @@ are included in a file next to each of them, named accordingly:
 
 * `frontend/src/mapstyles/bright.json`
 * `frontend/src/mapstyles/positron.json`
+* `frontend/src/mapstyles/darkmatter.json`
 
 There are lots of other licenses to consider when using this software,
 especially in conjunction with imported data and other tools. Check out the

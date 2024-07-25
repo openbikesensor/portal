@@ -3,14 +3,18 @@ from functools import partial
 import logging
 import numpy
 import math
+import pyproj
 
-from sqlalchemy import select, func, column
+
+from sqlalchemy import select, func, column, text
+
+from shapely import LineString
 
 import sanic.response as response
 from sanic.exceptions import InvalidUsage
 
 from obs.api.app import api
-from obs.api.db import Road, OvertakingEvent, Track
+from obs.api.db import Road, RoadUsage, OvertakingEvent, Track
 from obs.api.utils import round_to
 
 round_distance = partial(round_to, multiples=0.001)
@@ -18,19 +22,18 @@ round_speed = partial(round_to, multiples=0.1)
 
 log = logging.getLogger(__name__)
 
+g = pyproj.Geod(ellps="WGS84")
 
-def get_bearing(b, a):
-    # longitude, latitude
-    dL = b[0] - a[0]
-    X = numpy.cos(b[1]) * numpy.sin(dL)
-    Y = numpy.cos(a[1]) * numpy.sin(b[1]) - numpy.sin(a[1]) * numpy.cos(
-        b[1]
-    ) * numpy.cos(dL)
-    return numpy.arctan2(Y, X) + 0.5 * math.pi
+
+def get_bearing(p1, p2):
+    (az12, az21, dist) = g.inv(p1[0], p1[1], p2[0], p2[1])
+    bearing = (az12 + 360) % 360
+    return bearing
 
 
 # Bins for histogram on overtaker distances. 0, 0.25, ... 2.25, infinity
-DISTANCE_BINS = numpy.arange(0, 2.5, 0.25).tolist() + [float('inf')]
+DISTANCE_BINS = numpy.arange(0, 2.5, 0.25).tolist() + [float("inf")]
+
 
 @api.route("/mapdetails/road", methods=["GET"])
 async def mapdetails_road(req):
@@ -66,18 +69,24 @@ async def mapdetails_road(req):
     if road is None:
         return response.json({})
 
+    length = await req.ctx.db.scalar(
+        text(
+            "select ST_Length(ST_GeogFromWKB(ST_Transform(geometry,4326))) from road where way_id=:wayid"
+        ).bindparams(wayid=road.way_id)
+    )
+
     arrays = (
         await req.ctx.db.execute(
             select(
-                [
-                    OvertakingEvent.distance_overtaker,
-                    OvertakingEvent.distance_stationary,
-                    OvertakingEvent.speed,
-                    # Keep this as the last entry always for numpy.partition
-                    # below to work.
-                    OvertakingEvent.direction_reversed,
-                ]
-            ).where(OvertakingEvent.way_id == road.way_id)
+                OvertakingEvent.distance_overtaker,
+                OvertakingEvent.distance_stationary,
+                OvertakingEvent.speed,
+                # Keep this as the last entry always for numpy.partition
+                # below to work.
+                OvertakingEvent.direction_reversed,
+            )
+            .select_from(OvertakingEvent)
+            .where(OvertakingEvent.way_id == road.way_id)
         )
     ).all()
 
@@ -92,8 +101,6 @@ async def mapdetails_road(req):
 
     def partition(arr, cond):
         return arr[:, cond], arr[:, ~cond]
-
-    forwards, backwards = partition(data, ~mask)
 
     def array_stats(arr, rounder, bins=30):
         if len(arr):
@@ -114,10 +121,36 @@ async def mapdetails_road(req):
             "histogram": {
                 "bins": [None if math.isinf(b) else b for b in bins.tolist()],
                 "counts": hist.tolist(),
-                "zone": road.zone
+                "zone": road.zone,
             },
             "values": list(map(rounder, arr.tolist())),
         }
+
+    if not road.directionality:
+        forwards, backwards = partition(data, ~mask)
+
+        (road_usage,) = (
+            await req.ctx.db.execute(
+                text(
+                    """
+                    SELECT
+                        count(*) FILTER (WHERE direction_reversed = false),
+                        count(*) FILTER (WHERE direction_reversed = true)
+                    FROM road_usage WHERE way_id=:wayid
+                """
+                ).bindparams(wayid=road.way_id)
+            )
+        ).all()
+
+    else:
+        road_usage_total = (
+            await req.ctx.db.execute(
+                text("SELECT count(*) FROM road_usage WHERE way_id=:wayid").bindparams(
+                    wayid=road.way_id
+                )
+            )
+        ).scalar()
+        print(road_usage_total)
 
     bearing = None
 
@@ -126,22 +159,43 @@ async def mapdetails_road(req):
         coordinates = geom["coordinates"]
         bearing = get_bearing(coordinates[0], coordinates[-1])
         # convert to degrees, as this is more natural to understand for consumers
-        bearing = round_to((bearing / math.pi * 180 + 360) % 360, 1)
+        bearing = round_to(bearing, 1)
 
-    def get_direction_stats(direction_arrays, backwards=False):
+    def get_direction_stats(direction_arrays, usage, zone, backwards=False):
+        # TODO: this has to change based on administrative boundaries, i.e. country
+        legal_limit = 2.0 if zone == "rural" else 1.5
+
         return {
-            "bearing": ((bearing + 180) % 360 if backwards else bearing)
-            if bearing is not None
-            else None,
-            "distanceOvertaker": array_stats(direction_arrays[0], round_distance, bins=DISTANCE_BINS),
-            "distanceStationary": array_stats(direction_arrays[1], round_distance, bins=DISTANCE_BINS),
+            "bearing": (
+                ((bearing + 180) % 360 if backwards else bearing)
+                if bearing is not None
+                else None
+            ),
+            "count": len(direction_arrays[0][~numpy.isnan(direction_arrays[0])]),
+            "legalLimit": legal_limit,
+            "belowLegalLimit": len(
+                direction_arrays[0][direction_arrays[0] < legal_limit]
+            ),
+            "roadUsage": usage,
+            "distanceOvertaker": array_stats(
+                direction_arrays[0], round_distance, bins=DISTANCE_BINS
+            ),
+            "distanceStationary": array_stats(
+                direction_arrays[1], round_distance, bins=DISTANCE_BINS
+            ),
             "speed": array_stats(direction_arrays[2], round_speed),
         }
 
-    return response.json(
-        {
-            "road": road.to_dict(),
-            "forwards": get_direction_stats(forwards),
-            "backwards": get_direction_stats(backwards, True),
-        }
-    )
+    result = {
+        "road": road.to_dict(),
+        "length": length,
+    }
+    if not road.directionality:
+        result["forwards"] = get_direction_stats(forwards, road_usage[0], road.zone)
+        result["backwards"] = get_direction_stats(
+            backwards, road_usage[1], road.zone, True
+        )
+    else:
+        result["oneway"] = get_direction_stats(data, road_usage_total, road.zone)
+
+    return response.json(result)

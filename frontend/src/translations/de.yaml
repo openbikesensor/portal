@@ -50,7 +50,7 @@ LoginButton:
 
 HomePage:
   stats: Statistik
-  mostRecentTrack: Neueste Fahrt
+  mostRecentTrack: Neueste öffentliche Fahrt
 
 Stats:
   placeholder: "..."
@@ -143,8 +143,10 @@ MapPage:
     baseMap:
       style:
         label: Stil der Basiskarte
+        obsLight: OpenBikeSensor hell
         positron: Positron
         bright: OSM Bright
+        darkmatter: Darkmatter
 
     obsRoads:
       title: Straßenabschnitte
@@ -159,11 +161,21 @@ MapPage:
         overtaking_event_count: Anzahl Überholvorgänge
         usage_count: Anzahl Befahrungen
         zone: Überholabstands-Zone
-      maxCount:
-        label: Maximalwert für Farbskala
+        combined_score: Kombinierte Auswertung
+        overtaking_legality: Anteil illegal
+        overtaking_frequency: Überholvorgänge pro km
+      combinedScore:
+        label: Wertungsskala
+        description: >
+          Die Wertung kombiniert den Anteil illegaler Überholungen
+          mit der Anzahl der Überholvorgänge pro gefahrener Distanz.
+          Weniger Verkehr kann schlechte Abstände aufwiegen.
 
     obsEvents:
       title: Überholvorgänge
+
+    obsTracks:
+      title: Meine eigenen Fahrten
 
     obsRegions:
       title: Regionen
@@ -200,8 +212,20 @@ MapPage:
     max: Maximum
     mean: Durchschnitt
 
+    legalLimit: Mindestabstand
+    legalLimitHint: >
+      Der Mindestabstand wird anhand der OpenStreetMap Tags zu diesem
+      Straßenabschnitt bestimmt und ist möglicherweise nicht immer akkurat. In
+      den [OpenBikeSensor
+      FAQ](https://openbikesensor.org/faq/data/mindestabstand/) erfährst
+      du, wie der Mindestabstand bestimmt wird, und wie du ihn korrigieren kannst.
     overtakerDistanceDistribution: Verteilung der Überholabstände
+    closeOvertakerPercentage: Überholvorgänge unter {{limit, number}}m
+    overtakersPerKilometer: Überholvorgänge pro km
+    of: von
+    segmentLength: Länge des Segments
     hintFiltersNotApplied: Filter aus der Seiteleiste werden (noch) nicht auf diese Daten angewandt.
+    usageCount: Anzahl Befahrungen
 
     cardinalDirections:
       unknown: unbekannt
@@ -277,22 +301,13 @@ TrackPage:
   downloadFailed: Download fehlgeschlagen
   downloadError: Diese Fahrt wurde vermutlich nicht korrekt importiert, oder in letzter Zeit nicht aktualisiert. Bitte frage den Administrator um Hilfe mit diesem Problem.
   processing: Diese Fahrt wird gerade importiert, bitte lade die Seite später neu.
-  processingError: Beim Import dieser Fahrt ist ein Fehler aufgetreten, bitte frage den Administrator um Hilfe mit diesem Problem.
+  processingError: Beim Import dieser Fahrt ist ein Fehler aufgetreten,  Lies dir die folgende Fehlermeldung durch und falls diese dir nichts sagt, bitte frage den Administrator um Hilfe mit diesem Problem.
   description: Beschreibung
 
-  mapSettings:
-    title: Karteneinstellungen
-    showTrack: Route anzeigen
+  mapLegend:
+    title: Legende
     gpsTrack: GPS-Route
     snappedTrack: Erkannte Straßenroute
-
-    points: Punkte
-    confirmedPoints: Bestätigte Überholungen
-    allPoints: Alle Messungen
-
-    side: Seite für Einfärbung
-    overtakerSide: Überholung (links)
-    stationarySide: Ruhender Verkehr (rechts)
 
   details:
     visibility: Sichtbarkeit
@@ -370,7 +385,9 @@ TrackEditor:
 RegionStats:
   title: Top-Regionen
   regionName: Region
-  eventCount: Anzahl Überholungen
+  eventCount: Überholungen
+  trackCount: Fahrten
+  trackCountTooltip: Eine Fahrt kann zu mehreren Regionen gehören, wenn sie Überholungen darin enthält.
 
 AcknowledgementsPage:
   title: Danksagungen

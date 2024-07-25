@@ -3,7 +3,7 @@ import {useSelector} from 'react-redux'
 import produce from 'immer'
 import _ from 'lodash'
 
-type BaseMapStyle = 'positron' | 'bright'
+type BaseMapStyle = 'obsLight' | 'positron' | 'bright' | 'darkmatter'
 
 type RoadAttribute =
   | 'distance_overtaker_mean'
@@ -11,8 +11,12 @@ type RoadAttribute =
   | 'distance_overtaker_max'
   | 'distance_overtaker_median'
   | 'overtaking_event_count'
+  | 'segment_length'
   | 'usage_count'
   | 'zone'
+  | 'combined_score'
+  | 'overtaking_legality'
+  | 'overtaking_frequency'
 
 export type MapConfig = {
   baseMap: {
@@ -30,6 +34,9 @@ export type MapConfig = {
   obsRegions: {
     show: boolean
   }
+  obsTracks: {
+    show: boolean
+  }
   filters: {
     currentUser: boolean
     dateMode: 'none' | 'range' | 'threshold'
@@ -41,7 +48,7 @@ export type MapConfig = {
 
 export const initialState: MapConfig = {
   baseMap: {
-    style: 'positron',
+    style: 'obsLight',
   },
   obsRoads: {
     show: true,
@@ -54,6 +61,9 @@ export const initialState: MapConfig = {
   },
   obsRegions: {
     show: true,
+  },
+  obsTracks: {
+    show: false,
   },
   filters: {
     currentUser: false,

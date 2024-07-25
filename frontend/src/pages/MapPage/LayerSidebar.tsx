@@ -1,8 +1,8 @@
-import React from 'react'
+import React, {useState} from 'react'
 import _ from 'lodash'
 import {connect} from 'react-redux'
 import {Link} from 'react-router-dom'
-import {List, Select, Input, Divider, Label, Checkbox, Header} from 'semantic-ui-react'
+import {List, Select, Input, Divider, Label, Checkbox, Header, Table, Dropdown} from 'semantic-ui-react'
 import {useTranslation} from 'react-i18next'
 
 import {
@@ -10,11 +10,11 @@ import {
   setMapConfigFlag as setMapConfigFlagAction,
   initialState as defaultMapConfig,
 } from 'reducers/mapConfig'
-import {colorByDistance, colorByCount, viridisSimpleHtml} from 'mapstyles'
+import {baseColormapSimpleHtml, GREEN, YELLOW, RED, COLORMAP_RURAL, COLORMAP_URBAN, COLORMAP_LEGAL} from 'mapstyles'
 import {ColorMapLegend, DiscreteColorMapLegend} from 'components'
 import styles from './styles.module.less'
 
-const BASEMAP_STYLE_OPTIONS = ['positron', 'bright']
+const BASEMAP_STYLE_OPTIONS = ['obsLight', 'positron', 'bright', 'darkmatter']
 
 const ROAD_ATTRIBUTE_OPTIONS = [
   'distance_overtaker_mean',
@@ -23,12 +23,45 @@ const ROAD_ATTRIBUTE_OPTIONS = [
   'distance_overtaker_median',
   'overtaking_event_count',
   'usage_count',
+  // 'segment_length', // this doens't make much sense to show on the map
   'zone',
+  'overtaking_frequency',
+  'overtaking_legality',
+  'combined_score',
 ]
 
 const DATE_FILTER_MODES = ['none', 'range', 'threshold']
 
 type User = Object
+
+const LIMITS = {rural: 2.0, urban: 1.5}
+function ColormapLegendForZones() {
+  const {t} = useTranslation()
+  const [zone, setZone] = useState<'urban' | 'rural'>('urban')
+  const colormap = {rural: COLORMAP_RURAL, urban: COLORMAP_URBAN}[zone]
+
+  return (
+    <List.Item>
+      <List.Header>
+        <Dropdown
+          inline
+          options={(['urban', 'rural'] as const).map((z) => ({
+            key: z,
+            value: z,
+            onClick: () => setZone(z),
+            text: (
+              <>
+                {_.upperFirst(t(`general.zone.${z}`))} ({LIMITS[z]}m)
+              </>
+            ),
+          }))}
+          value={zone}
+        />
+      </List.Header>
+      <DiscreteColorMapLegend map={colormap} />
+    </List.Item>
+  )
+}
 
 function LayerSidebar({
   mapConfig,
@@ -45,6 +78,7 @@ function LayerSidebar({
     obsRoads: {show: showRoads, showUntagged, attribute, maxCount},
     obsEvents: {show: showEvents},
     obsRegions: {show: showRegions},
+    obsTracks: {show: showTracks},
     filters: {currentUser: filtersCurrentUser, dateMode, startDate, endDate, thresholdAfter},
   } = mapConfig
 
@@ -89,14 +123,7 @@ function LayerSidebar({
           <>
             <List.Item>{t('MapPage.sidebar.obsRegions.colorByEventCount')}</List.Item>
             <List.Item>
-              <ColorMapLegend
-                twoTicks
-                map={[
-                  [0, '#00897B00'],
-                  [5000, '#00897BFF'],
-                ]}
-                digits={0}
-              />
+              <ColorMapLegend logTickMax={5000} map={['#00897B00', '#00897BFF']} />
             </List.Item>
             <List.Item className={styles.copyright}>
               {t('MapPage.sidebar.copyright.boundaries')}{' '}
@@ -140,28 +167,60 @@ function LayerSidebar({
                 onChange={(_e, {value}) => setMapConfigFlag('obsRoads.attribute', value)}
               />
             </List.Item>
-            {attribute.endsWith('_count') ? (
+
+            {attribute === 'combined_score' && (
+              <List.Item>
+                <List.Header>{t('MapPage.sidebar.obsRoads.combinedScore.label')}</List.Header>
+                <ScoreTable />
+                <p>{t('MapPage.sidebar.obsRoads.combinedScore.description')}</p>
+              </List.Item>
+            )}
+
+            {attribute === 'overtaking_frequency' && (
               <>
                 <List.Item>
-                  <List.Header>{t('MapPage.sidebar.obsRoads.maxCount.label')}</List.Header>
-                  <Input
-                    fluid
-                    type="number"
-                    value={maxCount}
-                    onChange={(_e, {value}) => setMapConfigFlag('obsRoads.maxCount', value)}
-                  />
-                </List.Item>
-                <List.Item>
                   <ColorMapLegend
-                    map={_.chunk(
-                      colorByCount('obsRoads.maxCount', mapConfig.obsRoads.maxCount, viridisSimpleHtml).slice(3),
-                      2
-                    )}
-                    twoTicks
+                    map={baseColormapSimpleHtml}
+                    ticks={[
+                      [0, 0],
+                      [0.5, 5],
+                      [1, 10],
+                    ]}
+                    unit="/km"
                   />
                 </List.Item>
               </>
-            ) : attribute.endsWith('zone') ? (
+            )}
+
+            {attribute === 'overtaking_legality' && (
+              <>
+                <List.Item>
+                  <DiscreteColorMapLegend
+                    map={COLORMAP_LEGAL}
+                    renderValue={(x) => (x * 100).toFixed(0) + ' %'}
+                    min={0}
+                    max={1}
+                  />
+                </List.Item>
+              </>
+            )}
+
+            {(attribute === 'usage_count' || attribute === 'overtaking_event_count') && (
+              <>
+                <List.Item style={{display: 'flex', flexDirection: 'column', alignItems: 'flex-end'}}>
+                  <ColorMapLegend map={baseColormapSimpleHtml} logTickMax={Number(maxCount)} />
+                  <Input
+                    type="number"
+                    value={maxCount}
+                    size="small"
+                    style={{width: '10ch', marginRight: 10, marginTop: 10}}
+                    onChange={(_e, {value}) => setMapConfigFlag('obsRoads.maxCount', value)}
+                  />
+                </List.Item>
+              </>
+            )}
+
+            {attribute === 'zone' && (
               <>
                 <List.Item>
                   <Label size="small" style={{background: 'blue', color: 'white'}}>
@@ -172,18 +231,13 @@ function LayerSidebar({
                   </Label>
                 </List.Item>
               </>
-            ) : (
+            )}
+            {attribute.startsWith('distance_') && (
               <>
-                <List.Item>
-                  <List.Header>{_.upperFirst(t('general.zone.urban'))}</List.Header>
-                  <DiscreteColorMapLegend map={colorByDistance('distance_overtaker')[3][5].slice(2)} />
-                </List.Item>
-                <List.Item>
-                  <List.Header>{_.upperFirst(t('general.zone.rural'))}</List.Header>
-                  <DiscreteColorMapLegend map={colorByDistance('distance_overtaker')[3][3].slice(2)} />
-                </List.Item>
+                <ColormapLegendForZones />
               </>
             )}
+
             {openStreetMapCopyright}
           </>
         )}
@@ -205,15 +259,34 @@ function LayerSidebar({
           <>
             <List.Item>
               <List.Header>{_.upperFirst(t('general.zone.urban'))}</List.Header>
-              <DiscreteColorMapLegend map={colorByDistance('distance_overtaker')[3][5].slice(2)} />
+              <DiscreteColorMapLegend map={COLORMAP_URBAN} />
             </List.Item>
             <List.Item>
               <List.Header>{_.upperFirst(t('general.zone.rural'))}</List.Header>
-              <DiscreteColorMapLegend map={colorByDistance('distance_overtaker')[3][3].slice(2)} />
+              <DiscreteColorMapLegend map={COLORMAP_RURAL} />
             </List.Item>
           </>
         )}
         <Divider />
+
+        {filtersCurrentUser && login && (
+          <>
+            <List.Item>
+              <Checkbox
+                toggle
+                size="small"
+                id="obsTracks.show"
+                style={{float: 'right'}}
+                checked={showTracks}
+                onChange={() => setMapConfigFlag('obsTracks.show', !showTracks)}
+              />
+              <label htmlFor="obsTracks.show">
+                <Header as="h4">{t('MapPage.sidebar.obsTracks.title')}</Header>
+              </label>
+            </List.Item>
+            <Divider />
+          </>
+        )}
 
         <List.Item>
           <Header as="h4">{t('MapPage.sidebar.filters.title')}</Header>
@@ -318,6 +391,46 @@ function LayerSidebar({
         {!login && <List.Item>{t('MapPage.sidebar.filters.needsLogin')}</List.Item>}
       </List>
     </div>
+  )
+}
+
+function ScoreTable() {
+  const border = '1px solid white'
+  return (
+    <Table size="small" compact border>
+      <Table.Header>
+        <Table.Row>
+          <Table.HeaderCell width="four"></Table.HeaderCell>
+          <Table.HeaderCell width="four">&le;&nbsp;3/km</Table.HeaderCell>
+          <Table.HeaderCell width="four">&le;&nbsp;6/km</Table.HeaderCell>
+          <Table.HeaderCell width="four">&gt;&nbsp;6/km</Table.HeaderCell>
+        </Table.Row>
+        <Table.Row>
+          <Table.HeaderCell>&le;&nbsp;25%</Table.HeaderCell>
+          <Table.Cell style={{border, backgroundColor: GREEN}}></Table.Cell>
+          <Table.Cell style={{border, backgroundColor: GREEN}}></Table.Cell>
+          <Table.Cell style={{border, backgroundColor: YELLOW}}></Table.Cell>
+        </Table.Row>
+        <Table.Row>
+          <Table.HeaderCell>&le;&nbsp;50%</Table.HeaderCell>
+          <Table.Cell style={{border, backgroundColor: GREEN}}></Table.Cell>
+          <Table.Cell style={{border, backgroundColor: YELLOW}}></Table.Cell>
+          <Table.Cell style={{border, backgroundColor: RED}}></Table.Cell>
+        </Table.Row>
+        <Table.Row>
+          <Table.HeaderCell>&le;&nbsp;75%</Table.HeaderCell>
+          <Table.Cell style={{border, backgroundColor: YELLOW}}></Table.Cell>
+          <Table.Cell style={{border, backgroundColor: RED}}></Table.Cell>
+          <Table.Cell style={{border, backgroundColor: RED}}></Table.Cell>
+        </Table.Row>
+        <Table.Row>
+          <Table.HeaderCell>&gt;&nbsp;75%</Table.HeaderCell>
+          <Table.Cell style={{border, backgroundColor: YELLOW}}></Table.Cell>
+          <Table.Cell style={{border, backgroundColor: RED}}></Table.Cell>
+          <Table.Cell style={{border, backgroundColor: RED}}></Table.Cell>
+        </Table.Row>
+      </Table.Header>
+    </Table>
   )
 }
 

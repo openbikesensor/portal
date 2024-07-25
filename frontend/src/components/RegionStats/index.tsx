@@ -1,6 +1,6 @@
 import React, {useState, useCallback} from 'react'
 import {pickBy} from 'lodash'
-import {Loader, Statistic, Pagination, Segment, Header, Menu, Table, Icon} from 'semantic-ui-react'
+import {Loader, Statistic, Pagination, Segment, Header, Menu, Table, Icon, Popup} from 'semantic-ui-react'
 import {useObservable} from 'rxjs-hooks'
 import {of, from, concat, combineLatest} from 'rxjs'
 import {map, switchMap, distinctUntilChanged} from 'rxjs/operators'
@@ -40,6 +40,16 @@ export default function Stats() {
             <Table.Row>
               <Table.HeaderCell> {t('RegionStats.regionName')}</Table.HeaderCell>
               <Table.HeaderCell>{t('RegionStats.eventCount')}</Table.HeaderCell>
+              <Table.HeaderCell>
+                <Popup
+                  trigger={
+                    <span>
+                      {t('RegionStats.trackCount')} <Icon name="info circle" />
+                    </span>
+                  }
+                  content={<p>{t('RegionStats.trackCountTooltip')}</p>}
+                />
+              </Table.HeaderCell>
             </Table.Row>
           </Table.Header>
 
@@ -48,6 +58,7 @@ export default function Stats() {
               <Table.Row key={area.id}>
                 <Table.Cell>{area.name}</Table.Cell>
                 <Table.Cell>{area.overtaking_event_count}</Table.Cell>
+                <Table.Cell>{area.track_count}</Table.Cell>
               </Table.Row>
             ))}
           </Table.Body>

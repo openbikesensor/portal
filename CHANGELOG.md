@@ -1,5 +1,30 @@
 # Changelog
 
+## 0.9.0
+
+### Features
+
+* New import logic with advanced road snapping
+* Add link to open way details in OSM
+* Add custom basemap style for better readability of colored overlays
+* Add "My tracks" layer for logged-in users
+* Add new darkmatter base map style
+
+### Improvements
+
+* Make items on map page smaller to fit higher density
+* Change gradient from viridis to plasma
+* Show processing errors on track page and in track list
+* Use logarithmic color scales for event and usage count
+* Show only one color axis (rural or urban) at a time, add a dropdown to switch it
+
+### Bug Fixes
+
+* Fix statistics (track, members, ...)
+* Filter out roads tagged with `motorroad`
+* Do not translate language names, so people find their own language in the list
+
+
 ## 0.8.1
 
 ### Improvements

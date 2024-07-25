@@ -40,8 +40,14 @@ from sqlalchemy.dialects.postgresql import UUID
 
 
 log = logging.getLogger(__name__)
+try:
+    from sqlalchemy.orm import DeclarativeBase
 
-Base = declarative_base()
+    class Base(DeclarativeBase):
+        pass
+
+except ImportError:
+    Base = declarative_base()
 
 
 engine = None
@@ -98,6 +104,8 @@ ProcessingStatus = SqlEnum(
 
 
 class Geometry(UserDefinedType):
+    cache_ok = True
+
     def get_col_spec(self):
         return "GEOMETRY"
 
@@ -109,6 +117,8 @@ class Geometry(UserDefinedType):
 
 
 class LineString(UserDefinedType):
+    cache_ok = True
+
     def get_col_spec(self):
         return "geometry(LineString, 3857)"
 
@@ -120,6 +130,8 @@ class LineString(UserDefinedType):
 
 
 class GeometryGeometry(UserDefinedType):
+    cache_ok = True
+
     def get_col_spec(self):
         return "geometry(GEOMETRY, 3857)"
 
@@ -276,6 +288,7 @@ class Track(Base):
     num_events = Column(Integer)
     num_measurements = Column(Integer)
     num_valid = Column(Integer)
+    geometry = Column(LineString)
 
     def to_dict(self, for_user_id=None):
         result = {
@@ -300,6 +313,7 @@ class Track(Base):
             result["uploadedByUserAgent"] = self.uploaded_by_user_agent
             result["originalFileName"] = self.original_file_name
             result["userDeviceId"] = self.user_device_id
+            result["processingLog"] = self.processing_log
 
         if self.author:
             result["author"] = self.author.to_dict(for_user_id=for_user_id)
@@ -476,6 +490,9 @@ class UserDevice(Base):
             "identifier": self.identifier,
             "displayName": self.display_name,
         }
+
+    def __str__(self):
+        return f"<OBS dev.id={self.id}: dev.identifier={self.identifier} dev.displayName={self.display_name}>"
 
 
 class Comment(Base):

@@ -41,13 +41,11 @@ mkdir /opt/openbikesensor
 
 ### Clone the repository
 
-Clone the repository to `/opt/openbikesensor/`:
+Clone the repository to `/opt/openbikesensor/`.:
 
 ```bash
 cd /opt/openbikesensor/
-git clone --recursive https://github.com/openbikesensor/portal source/
-# If you accidentally cloned without --recursive, fix it by running:
-# git submodule update --init --recursive
+git clone https://github.com/openbikesensor/portal source/
 ```
 
 ### Copy predefined configuration files
@@ -143,20 +141,21 @@ Since we configured the `.env`-file we can run the following commands
 to create a realm and a client now:
 
 ```bash
+[ -d /opt/jboss ] && export KCBASE=/opt/jboss/keycloak || export KCBASE=/opt/keycloak
 # Login
-/opt/jboss/keycloak/bin/kcadm.sh config credentials --server http://localhost:8080/auth --realm master --user $KEYCLOAK_USER --password $KEYCLOAK_PASSWORD
+$KCBSE/bin/kcadm.sh config credentials --server http://localhost:8080/auth --realm master --user $KEYCLOAK_USER --password $KEYCLOAK_PASSWORD
 
 # Create Realm
-/opt/jboss/keycloak/bin/kcadm.sh create realms -s realm=$OBS_KEYCLOAK_REALM -s enabled=true -o
+$KCBASE/bin/kcadm.sh create realms -s realm=$OBS_KEYCLOAK_REALM -s enabled=true -o
 
 # Create a client and remember the unique id of the client
-CID=$(/opt/jboss/keycloak/bin/kcadm.sh create clients -r $OBS_KEYCLOAK_REALM -s clientId=portal -s "redirectUris=[\"$OBS_KEYCLOAK_PORTAL_REDIRECT_URI\"]" -i)
+CID=$($KCBASE/bin/kcadm.sh create clients -r $OBS_KEYCLOAK_REALM -s clientId=portal -s "redirectUris=[\"$OBS_KEYCLOAK_PORTAL_REDIRECT_URI\"]" -i)
 
 # Create a secret for the client
-/opt/jboss/keycloak/bin/kcadm.sh create clients/$CID/client-secret -r $OBS_KEYCLOAK_REALM
+$KCBASE/bin/kcadm.sh create clients/$CID/client-secret -r $OBS_KEYCLOAK_REALM
 
 # Get the secret of the client
-/opt/jboss/keycloak/bin/kcadm.sh get clients/$CID/client-secret -r $OBS_KEYCLOAK_REALM
+$KCBASE/bin/kcadm.sh get clients/$CID/client-secret -r $OBS_KEYCLOAK_REALM
 ```
 
 Exit the container with `exit`. Configure the client secret:

@@ -51,34 +51,46 @@ async def stats(req):
         conditions.append(Track.author_id == req.ctx.user.id)
 
     track_condition = reduce(and_, conditions)
-    public_track_condition = Track.public and track_condition
+    conditions.append((Track.public is True))
+    public_track_condition = reduce(and_, conditions)
 
     query = (
         select(
-            [
-                func.count().label("publicTrackCount"),
-                func.sum(Track.duration).label("trackDuration"),
-                func.sum(Track.length).label("trackLength"),
-            ]
+            func.sum(Track.duration).label("trackDuration"),
+            func.sum(Track.length).label("trackLength"),
+        )
+        .select_from(Track)
+        .where(track_condition)
+    )
+
+    track_duration, track_length = (await req.ctx.db.execute(query)).first()
+
+    query = (
+        select(
+            func.count().label("publicTrackCount"),
         )
         .select_from(Track)
         .where(public_track_condition)
     )
 
-    public_track_count, track_duration, track_length = (
-        await req.ctx.db.execute(query)
-    ).first()
+    (public_track_count,) = (await req.ctx.db.execute(query)).first()
 
     # This is required because SQL returns NULL when the input set to a
     # SUM() aggregation is empty.
     track_duration = track_duration or 0
     track_length = track_length or 0
 
-    user_count = (
-        1
-        if by_user
-        else (await req.ctx.db.execute(select(func.count()).select_from(User))).scalar()
-    )
+    if by_user:
+        user_count = 1
+    else:
+        user_query = select(func.count()).select_from(User)
+        if start is not None:
+            user_query = user_query.where(User.created_at >= start)
+        if end is not None:
+            user_query = user_query.where(User.created_at < end)
+
+        user_count = (await req.ctx.db.execute(user_query)).scalar()
+
     track_count = (
         await req.ctx.db.execute(
             select(func.count()).select_from(Track).where(track_condition)
@@ -182,11 +194,10 @@ async def stats(req):
 async def stats(req):
     query = (
         select(
-            [
-                Region.id,
-                Region.name,
-                func.count(OvertakingEvent.id).label("overtaking_event_count"),
-            ]
+            Region.id,
+            Region.name,
+            func.count(OvertakingEvent.id).label("overtaking_event_count"),
+            func.count(distinct(OvertakingEvent.track_id)).label("track_count"),
         )
         .select_from(Region)
         .join(
@@ -201,6 +212,6 @@ async def stats(req):
         .having(func.count(OvertakingEvent.id) > 0)
         .order_by(desc("overtaking_event_count"))
     )
-
-    regions = list(map(dict, (await req.ctx.db.execute(query)).all()))
+    qres = (await req.ctx.db.execute(query)).all()
+    regions = [dict(zip(r._fields, r._data)) for r in qres]
     return json(regions)

@@ -53,7 +53,7 @@ export function useQueryParam<T extends QueryValue>(
 ): [T, (newValue: T) => void] {
   const history = useHistory()
   useLocation() // to trigger a reload when the url changes
-  const {[name]: value = defaultValue} = parseQuery(history.location.search) as unknown as {
+  const {[name]: value = defaultValue} = (parseQuery(history.location.search) as unknown) as {
     [name: string]: T
   }
   const setter = useMemo(

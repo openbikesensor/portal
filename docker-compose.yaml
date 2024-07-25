@@ -26,7 +26,6 @@ services:
       dockerfile: Dockerfile
     volumes:
       - ./api/obs:/opt/obs/api/obs
-      - ./api/scripts/obs:/opt/obs/scripts/obs
       - ./api/tools:/opt/obs/api/tools
       - ./api/config.dev.py:/opt/obs/api/config.py
       - ./api/config.overrides.py:/opt/obs/api/config.overrides.py
@@ -55,7 +54,6 @@ services:
       dockerfile: Dockerfile
     volumes:
       - ./api/obs:/opt/obs/api/obs
-      - ./api/scripts/obs:/opt/obs/scripts/obs
       - ./api/tools:/opt/obs/api/tools
       - ./api/config.dev.py:/opt/obs/api/config.py
       - ./api/config.overrides.py:/opt/obs/api/config.overrides.py

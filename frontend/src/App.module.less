@@ -86,6 +86,10 @@
     height: @menuHeight;
     align-items: stretch;
   }
+  :global(.menu) > a > :global(.item),
+  :global(.ui.container) > a > :global(.item) {
+    height: 100%;
+  }
 
   align-items: center;
   justify-content: center;

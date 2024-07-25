@@ -1,18 +1,13 @@
-import React, {useState, useCallback} from 'react'
+import {useState, useCallback} from 'react'
 import {createPortal} from 'react-dom'
 import _ from 'lodash'
-import {Segment, Menu, Header, Label, Icon, Table, Message, Button} from 'semantic-ui-react'
+import {Menu, Label, Icon, Table, Message, Button, List, Popup} from 'semantic-ui-react'
 import {Layer, Source} from 'react-map-gl'
-import {of, from, concat} from 'rxjs'
-import {useObservable} from 'rxjs-hooks'
-import {switchMap, distinctUntilChanged} from 'rxjs/operators'
 import {Chart} from 'components'
-import {pairwise} from 'utils'
+import Markdown from 'react-markdown'
 import {useTranslation} from 'react-i18next'
 
-import type {Location} from 'types'
-import api from 'api'
-import {colorByDistance, borderByZone} from 'mapstyles'
+import {colorByDistance} from 'mapstyles'
 
 import styles from './styles.module.less'
 
@@ -79,7 +74,7 @@ function RoadStatsTable({data}) {
 
 function HistogramChart({bins, counts, zone}) {
   const diff = bins[1] - bins[0]
-  const colortype = zone === 'rural' ? 3 : 5
+  const colortype = zone === 'rural' ? 3 : 4
   const data = _.zip(
     bins.slice(0, bins.length - 1).map((v) => v + diff / 2),
     counts
@@ -126,6 +121,7 @@ interface ArrayStats {
   histogram: {
     bins: number[]
     counts: number[]
+    zone: string
   }
   values: number[]
 }
@@ -135,6 +131,10 @@ export interface RoadDirectionInfo {
   distanceOvertaker: ArrayStats
   distanceStationary: ArrayStats
   speed: ArrayStats
+  legalLimit: number
+  belowLegalLimit: number
+  roadUsage: number
+  count: number
 }
 
 export interface RoadInfoType {
@@ -146,8 +146,10 @@ export interface RoadInfoType {
     oneway: boolean
     geometry: Object
   }
-  forwards: RoadDirectionInfo
-  backwards: RoadDirectionInfo
+  length: number
+  forwards?: RoadDirectionInfo
+  backwards?: RoadDirectionInfo
+  oneway?: RoadDirectionInfo
 }
 
 export default function RoadInfo({
@@ -162,7 +164,8 @@ export default function RoadInfo({
   mapInfoPortal: HTMLElement
 }) {
   const {t} = useTranslation()
-  const [direction, setDirection] = useState('forwards')
+  const [direction_, setDirection] = useState<'forwards' | 'backwards'>('forwards')
+  const direction = info.road.oneway ? 'oneway' : direction_
 
   const onClickDirection = useCallback(
     (e, {name}) => {
@@ -174,57 +177,115 @@ export default function RoadInfo({
   )
 
   // TODO: change based on left-hand/right-hand traffic
-  const offsetDirection = info.road.oneway ? 0 : direction === 'forwards' ? 1 : -1
+  const offsetDirection = direction === 'oneway' ? 0 : direction === 'forwards' ? 1 : -1
+
+  const dirInfo = info[direction]
 
   const content = (
-    <>
-      <div className={styles.closeHeader}>
-        <Header as="h3">{info?.road.name || t('MapPage.roadInfo.unnamedWay')}</Header>
-        <Button primary icon onClick={onClose}>
-          <Icon name="close" />
-        </Button>
-      </div>
+    <List>
+      <Button icon size="tiny" onClick={onClose}>
+        <Icon name="close" /> Close
+      </Button>
+
+      <List.Header as="h3">{info?.road.name || t('MapPage.roadInfo.unnamedWay')}</List.Header>
+
+      <p>
+        <a target="_blank" href={`https://www.openstreetmap.org/way/${info?.road.way_id}`} rel="noreferrer">
+          In OpenStreetMap öffnen <Icon name="window restore outline" fitted />
+        </a>
+      </p>
 
       {hasFilters && (
-        <Message info icon>
-          <Icon name="info circle" small />
-          <Message.Content>{t('MapPage.roadInfo.hintFiltersNotApplied')}</Message.Content>
-        </Message>
+        <List.Item>
+          <Message info icon>
+            <Icon name="info circle" />
+            <Message.Content>{t('MapPage.roadInfo.hintFiltersNotApplied')}</Message.Content>
+          </Message>
+        </List.Item>
       )}
 
-      {info?.road.zone && (
-        <Label size="small" color={ZONE_COLORS[info?.road.zone]}>
-          {t(`general.zone.${info.road.zone}`)}
-        </Label>
-      )}
-
-      {info?.road.oneway && (
-        <Label size="small" color="blue">
-          <Icon name="long arrow alternate right" fitted /> {t('MapPage.roadInfo.oneway')}
-        </Label>
-      )}
+      <List.Item>
+        {info?.road.zone && (
+          <Label size="small" color={ZONE_COLORS[info?.road.zone]}>
+            {t(`general.zone.${info.road.zone}`)}
+          </Label>
+        )}
+        {info?.road.oneway && (
+          <Label size="small" color="blue">
+            <Icon name="long arrow alternate right" fitted /> {t('MapPage.roadInfo.oneway')}
+          </Label>
+        )}
+      </List.Item>
 
       {info?.road.oneway ? null : (
-        <Menu size="tiny" pointing>
-          <Menu.Item header>{t('MapPage.roadInfo.direction')}</Menu.Item>
-          <Menu.Item name="forwards" active={direction === 'forwards'} onClick={onClickDirection}>
-            {getCardinalDirection(t, info?.forwards?.bearing)}
-          </Menu.Item>
-          <Menu.Item name="backwards" active={direction === 'backwards'} onClick={onClickDirection}>
-            {getCardinalDirection(t, info?.backwards?.bearing)}
-          </Menu.Item>
-        </Menu>
+        <List.Item>
+          <Menu size="tiny" pointing>
+            <Menu.Item header>{t('MapPage.roadInfo.direction')}</Menu.Item>
+            <Menu.Item name="forwards" active={direction === 'forwards'} onClick={onClickDirection}>
+              {getCardinalDirection(t, info?.forwards?.bearing)}
+            </Menu.Item>
+            <Menu.Item name="backwards" active={direction === 'backwards'} onClick={onClickDirection}>
+              {getCardinalDirection(t, info?.backwards?.bearing)}
+            </Menu.Item>
+          </Menu>
+        </List.Item>
       )}
 
-      {info?.[direction] && <RoadStatsTable data={info[direction]} />}
+      {dirInfo && <RoadStatsTable data={dirInfo} />}
 
-      {info?.[direction]?.distanceOvertaker?.histogram && (
+      {dirInfo && (
+        <Table definition size="small" compact>
+          <Table.Body>
+            <Table.Row>
+              <Table.Cell>{t(`MapPage.roadInfo.usageCount`)}</Table.Cell>
+              <Table.Cell textAlign="right">{dirInfo.roadUsage}</Table.Cell>
+            </Table.Row>
+            <Table.Row>
+              <Table.Cell>{t(`MapPage.roadInfo.segmentLength`)}</Table.Cell>
+              <Table.Cell textAlign="right">{info.length.toFixed(0)} m</Table.Cell>
+            </Table.Row>
+            <Table.Row>
+              <Popup
+                hoverable
+                wide="very"
+                content={<Markdown>{t('MapPage.roadInfo.legalLimitHint')}</Markdown>}
+                trigger={
+                  <Table.Cell>
+                    {t(`MapPage.roadInfo.legalLimit`)}
+                    <Icon name="info circle" style={{marginLeft: 8}} />
+                  </Table.Cell>
+                }
+              />
+              <Table.Cell textAlign="right">{dirInfo.legalLimit}m</Table.Cell>
+            </Table.Row>
+            <Table.Row>
+              <Table.Cell>{t(`MapPage.roadInfo.closeOvertakerPercentage`, {limit: dirInfo.legalLimit})}</Table.Cell>
+              {dirInfo.count ? (
+                <Table.Cell textAlign="right">
+                  {Math.round((100 * dirInfo.belowLegalLimit) / dirInfo.count)}% ({dirInfo.belowLegalLimit}{' '}
+                  {t(`MapPage.roadInfo.of`)} {dirInfo.count})
+                </Table.Cell>
+              ) : (
+                <Table.Cell textAlign="right">&ndash;</Table.Cell>
+              )}
+            </Table.Row>
+            <Table.Row>
+              <Table.Cell>{t(`MapPage.roadInfo.overtakersPerKilometer`)}</Table.Cell>
+              <Table.Cell textAlign="right">
+                {(dirInfo.count / (dirInfo.roadUsage * info.length * 0.001)).toFixed(1)}
+              </Table.Cell>
+            </Table.Row>
+          </Table.Body>
+        </Table>
+      )}
+
+      {dirInfo?.distanceOvertaker?.histogram && (
         <>
-          <Header as="h5">{t('MapPage.roadInfo.overtakerDistanceDistribution')}</Header>
-          <HistogramChart {...info[direction]?.distanceOvertaker?.histogram} />
+          <List.Header as="h5">{t('MapPage.roadInfo.overtakerDistanceDistribution')}</List.Header>
+          <HistogramChart {...dirInfo.distanceOvertaker.histogram} />
         </>
       )}
-    </>
+    </List>
   )
 
   return (

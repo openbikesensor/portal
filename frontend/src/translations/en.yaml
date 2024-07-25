@@ -1,8 +1,3 @@
-locales:
-  en: English
-  de: Deutsch
-  fr: French
-
 general:
   loading: Loading
   unnamedTrack: Unnamed track
@@ -55,7 +50,7 @@ LoginButton:
 
 HomePage:
   stats: Statistics
-  mostRecentTrack: Most recent track
+  mostRecentTrack: Most recent public track
 
 Stats:
   placeholder: "..."
@@ -149,8 +144,10 @@ MapPage:
     baseMap:
       style:
         label: Basemap Style
+        obsLight: OpenBikeSensor light
         positron: Positron
         bright: OSM Bright
+        darkmatter: Darkmatter
 
     obsRoads:
       title: Road segments
@@ -164,12 +161,23 @@ MapPage:
         distance_overtaker_median: Overtaker distance median
         overtaking_event_count: Event count
         usage_count: Usage count
+        segment_length: Segment length (m)
         zone: Overtaking distance zone
-      maxCount:
-        label: Maximum value for color scale
+        combined_score: Combined score
+        overtaking_legality: Percent illegal
+        overtaking_frequency: Events per kilometer
+      combinedScore:
+        label: Score
+        description: >
+          The score combines the percentage of illegal overtakings with the
+          number of overtakings per distance of usage (overtaking frequency).
+          Less traffic can be as helpful as more overtaking distance.
 
     obsEvents:
       title: Event points
+
+    obsTracks:
+      title: My own tracks
 
     obsRegions:
       title: Regions
@@ -205,8 +213,20 @@ MapPage:
     max: Maximum
     mean: Average
 
+    legalLimit: Minimum passing distance
+    legalLimitHint: >
+      The minimum passing distance is auto-detected based on OpenStreetMap tags
+      for this road segment. It may not always be accurate. You'll find a guide
+      in the [OpenBikeSensor
+      FAQ](https://openbikesensor.org/faq/data/mindestabstand/) (German) on how
+      this limit is detected and how you could correct a wrong entry.
     overtakerDistanceDistribution: Overtaker distance distribution
+    closeOvertakerPercentage: Overtakings below {{limit, number}}m
+    overtakersPerKilometer: Overtakings per km
+    of: of
+    segmentLength: Segment length
     hintFiltersNotApplied: Filters from the sidebar are not (yet) applied on this data.
+    usageCount: Usage count
 
     cardinalDirections:
       unknown: unknown
@@ -279,23 +299,14 @@ TrackPage:
   downloadFailed: Download failed
   downloadError: The track probably has not been imported correctly or recently enough. Please ask your administrator for assistance.
   processing: Track data is still being processed, please reload page in a while.
-  processingError: The processing of this track failed, please ask your site administrator for help in debugging the issue.
+  processingError: The processing of this track failed, please ask your site administrator for help in debugging the issue in case the following error message isn't clear.
   description: Description
 
 
-  mapSettings:
-    title: Map settings
-    showTrack: Show track
+  mapLegend:
+    title: Map legend
     gpsTrack: GPS track
-    snappedTrack: Snapped to road
-
-    points: Points
-    confirmedPoints: Confirmed
-    allPoints: All measurements
-
-    side: Side (for color)
-    overtakerSide: Overtaker (Left)
-    stationarySide: Stationary (Right)
+    snappedTrack: Snapped to roads
 
   details:
     visibility: Visibility
@@ -368,7 +379,9 @@ TrackEditor:
 RegionStats:
   title: Top regions
   regionName: Region name
-  eventCount: Event count
+  eventCount: Events
+  trackCount: Tracks
+  trackCountTooltip: A track can count to multiple regions if it has events in each.
 
 AcknowledgementsPage:
   title: Acknowledgements

@@ -1,8 +1,3 @@
-locales:
-  en: Anglais
-  de: Allemand
-  fr: Français
-
 general:
   loading: Chargement
   unnamedTrack: Trace non nommé
@@ -54,7 +49,7 @@ LoginButton:
   login: Se connecter
 
 HomePage:
-  mostRecentTrack: Trace la plus récente
+  mostRecentTrack: Trace publique la plus récente
 
 Stats:
   title: Statistiques
@@ -149,8 +144,10 @@ MapPage:
     baseMap:
       style:
         label: Style de fond de carte
+        obsLight: OpenBikeSensor clair
         positron: Positron
         bright: OSM Bright
+        darkmatter: Darkmatter
 
     obsRoads:
       title: Segments de route
@@ -165,11 +162,23 @@ MapPage:
         overtaking_event_count: Nombre d'événement
         usage_count: Nombre de passages
         zone: Overtaking distance zone
-      maxCount:
-        label: Valeur maximale pour l'échelle de couleur
+        combined_score: Score combinée
+        overtaking_legality: Pourcent illégal
+        overtaking_frequency: Dépassements par km
+      combinedScore:
+        label: Score
+        description: >
+          Le score combine le pourcentage de dépassements
+          rapprochés et le nombre de dépassements par distance
+          d'utilisation de la route (fréquence de dépassement).
+          Un trafic réduit peut être aussi utile qu'une plus grande
+          distance de dépassement.
 
     obsEvents:
       title: Points d'événement
+
+    obsTracks:
+      title: Mes propre traces
 
     obsRegions:
       title: Régions
@@ -205,8 +214,21 @@ MapPage:
     max: Maximum
     mean: Moyenne
 
+    legalLimit: Limite légale
+    legalLimitHint: >
+      La distance de dépassement minimale est détectée automatiquement sur la
+      base des données OpenStreetMap pour ce segment. Cela peut parfois être inexact.
+      Vous pouvez trouver un guide dans la [FAQ
+      OpenBikeSensor](https://openbikesensor.org/faq/data/mindestabstand/)
+      (en allemand) sur la façon dont cette limite est détectée et
+      comment vous pouvez corriger une mauvaise entrée.
     overtakerDistanceDistribution: Distribution des distances de dépassement
+    closeOvertakerPercentage: Dépassements moins de {{limit, number}}m
+    overtakersPerKilometer: Dépassements par km
+    of: de
+    segmentLength: Longueur du segment
     hintFiltersNotApplied: Les filtres de la barre latérale ne sont pas (encore) appliqués à ces données.
+    usageCount: Nombre de dépassements
 
     cardinalDirections:
       unknown: Inconnu
@@ -279,20 +301,10 @@ TrackPage:
   processingError: Le traitement de cette trace a échoué. Veuillez demander à l'administrateur de votre site de vous aider à résoudre le problème.
   description: Description
 
-
-  mapSettings:
-    title: Paramètres de la carte
-    showTrack: Montrer la trace
+  mapLegend:
+    title: Légende de la carte
     gpsTrack: Trace GPS
     snappedTrack: Suivre la route
-
-    points: Points
-    confirmedPoints: Confirmé(s)
-    allPoints: Toutes les mesures
-
-    side: Côté (pour la couleur)
-    overtakerSide: Dépassement (Gauche)
-    stationarySide: Stationnemnt (Droite)
 
   details:
     visibility: Visibilité

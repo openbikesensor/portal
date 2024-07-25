@@ -46,7 +46,7 @@ function EditField({value, onEdit}) {
           value={tempValue}
           onChange={(e) => setTempValue(e.target.value)}
           onBlur={(e) => {
-            timeoutRef.current = setTimeout(abort, 20)
+            timeoutRef.current = setTimeout(abort, 200)
           }}
           onKeyPress={(e) => {
             if (e.key === 'Enter') {
@@ -56,7 +56,10 @@ function EditField({value, onEdit}) {
             }
           }}
           style={{marginRight: 8}}
+          autoFocus
         />
+        <Button icon="check" size="tiny" onClick={confirm} />
+        <Button icon="cancel" size="tiny" onClick={abort} />
       </>
     )
   } else {

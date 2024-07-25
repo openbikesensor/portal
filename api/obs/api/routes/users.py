@@ -1,15 +1,13 @@
 import logging
 
 from sanic.response import json
-from sanic.exceptions import InvalidUsage, Forbidden, NotFound
+from sanic.exceptions import Forbidden, NotFound
 from sqlalchemy import and_, select
 
 from obs.api.app import api, require_auth
 from obs.api.db import UserDevice
 
 log = logging.getLogger(__name__)
-
-from obs.api import __version__ as version
 
 
 def user_to_json(user):
