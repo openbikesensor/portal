@@ -4,6 +4,14 @@ Simple migrations, e.g. for adding schema changes, are not documented
 explicitly. Their general usage is described in the [README](./README.md) (for
 development) and [docs/production-deployment.md](docs/production-deployment.md) (for production).
 
+## 0.9.0
+
+* Backup recommended
+* Update source code and rebuild docker images
+* Run migrations, upgrade database functions and reimport tracks:
+  ```bash
+  docker-compose run --rm portal tools/upgrade.py
+  ```
 
 ## 0.8.1
 
