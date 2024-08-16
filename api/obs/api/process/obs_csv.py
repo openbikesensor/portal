@@ -17,13 +17,11 @@
 # along with the OpenBikeSensor Portal Software.  If not, see
 # <http://www.gnu.org/licenses/>.
 
-import csv
 import datetime
 import gzip
-from itertools import chain
 import logging
 import math
-from typing import Iterator
+import re
 import urllib.parse
 import pandas
 import numpy
@@ -31,7 +29,7 @@ import numpy
 import gpstime
 import pytz
 
-from obs.face.mapping import AzimuthalEquidistant as LocalMap
+from .snapping import snap_to_roads
 
 log = logging.getLogger(__name__)
 
@@ -45,23 +43,27 @@ GPS_UNIX_EPOCH_OFFSET = 315964800
 # assumed invalid data.
 REJECT_MEASUREMENTS_BEFORE = datetime.datetime(2018, 1, 1, tzinfo=datetime.timezone.utc)
 
-MEASUREMENT_TEMPLATE = {
-    "time": None,
-    "latitude": None,
-    "longitude": None,
-    "distance_overtaker": None,
-    "distance_stationary": None,
-    "confirmed": None,
-    "course": None,
-    "speed": None,
-    "in_privacy_zone": None,
-}
-
 
 def convert_gps_to_utc(dt):
     return datetime.datetime.fromtimestamp(
         gpstime.gps2unix(dt.timestamp() - GPS_UNIX_EPOCH_OFFSET), tz=pytz.UTC
     )
+
+
+async def process_csv(session, filename):
+    df, track_metadata = import_csv(filename)
+
+    # Snap track to roads from the database, adding latitude_snapped and longitude_snapped
+    coordinates = numpy.stack((df["longitude"], df["latitude"])).T
+    snap_info = await snap_to_roads(session, coordinates)
+    (
+        df["longitude_snapped"],
+        df["latitude_snapped"],
+        df["way_id"],
+        df["direction_reversed"],
+    ) = snap_info
+
+    return df, track_metadata
 
 
 def import_csv(filename):
@@ -85,7 +87,9 @@ def import_csv(filename):
     """
     df, metadata = _read_csv(filename)
     _correct_gps_time(df, metadata)
+
     # TODO: derive velocity
+
     return df, metadata
 
 
@@ -230,8 +234,8 @@ def _read_csv(filename):
         return df, metadata
 
     except Exception as e:
-        log.exception("Error while reading CSV file")
-        raise ValueError(f"Error while reading CSV: {e}") from e
+        log.exception("Error while reading track file")
+        raise ValueError(f"Error while reading track file: {e}") from e
 
 
 def identify_format(header, metadata):

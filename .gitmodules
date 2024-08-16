@@ -1,0 +1,3 @@
+[submodule "api/proto"]
+	path = api/proto
+	url = https://github.com/openbikesensor/proto.git
