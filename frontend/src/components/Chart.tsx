@@ -7,7 +7,7 @@ import {
   LineChart,
   BarChart,
   // PieChart,
-  // ScatterChart,
+  ScatterChart,
   // RadarChart,
   // MapChart,
   // TreeChart,
@@ -69,7 +69,7 @@ import {
 } from 'echarts/renderers'
 
 // Register the required components
-echarts.use([TitleComponent, TooltipComponent, GridComponent, LineChart, BarChart, CanvasRenderer])
+echarts.use([TitleComponent, TooltipComponent, GridComponent, LineChart, ScatterChart, BarChart, CanvasRenderer])
 
 // The usage of ReactEChartsCore are same with above.
 export default function Chart(props) {

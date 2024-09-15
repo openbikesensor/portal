@@ -29,6 +29,8 @@ import TrackActions from './TrackActions'
 import TrackComments from './TrackComments'
 import TrackDetails from './TrackDetails'
 import TrackMap from './TrackMap'
+import TrackPlot from './TrackPlot'
+
 
 import styles from './TrackPage.module.less'
 
@@ -191,6 +193,7 @@ const TrackPage = connect((state) => ({login: state.login}))(function TrackPage(
 
   const [showTrack, setShowTrack] = React.useState(true)
   const [showEvents, setShowEvents] = React.useState(true)
+  const trackPlot = [[0,5],[5,5]]
 
   const title = track ? track.title || t('general.unnamedTrack') : null
   return (
@@ -221,6 +224,7 @@ const TrackPage = connect((state) => ({login: state.login}))(function TrackPage(
               </Segment>
             )}
           </Container>
+          <TrackPlot {...{trackPlot}}/>
           <div className={styles.stage}>
             <Loader active={loading} />
             <Dimmer.Dimmable blurring dimmed={loading}>
