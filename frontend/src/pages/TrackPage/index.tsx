@@ -193,7 +193,7 @@ const TrackPage = connect((state) => ({login: state.login}))(function TrackPage(
 
   const [showTrack, setShowTrack] = React.useState(true)
   const [showEvents, setShowEvents] = React.useState(true)
-  const trackPlot = [[0,5],[5,5]]
+  const trackPlot = trackData
 
   const title = track ? track.title || t('general.unnamedTrack') : null
   return (
@@ -224,7 +224,7 @@ const TrackPage = connect((state) => ({login: state.login}))(function TrackPage(
               </Segment>
             )}
           </Container>
-          <TrackPlot {...{trackPlot}}/>
+          <TrackPlot {...{trackData}}/>
           <div className={styles.stage}>
             <Loader active={loading} />
             <Dimmer.Dimmable blurring dimmed={loading}>
