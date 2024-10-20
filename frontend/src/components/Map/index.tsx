@@ -91,7 +91,6 @@ function Map({
 
   const [viewport, setViewport_] = viewportFromUrl ? [viewportUrl, setViewportUrl] : [viewportState, setViewportState]
 
-  console.log(viewport)
   const setViewport = useCallback(
     (viewport: Viewport) => {
       setViewport_(viewport)
