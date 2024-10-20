@@ -145,7 +145,6 @@ function Map({
   }, [boundsFromJson])
 
   const onMove = useCallback(evt => {
-    console.log(evt)
     setViewport(evt.viewState);
   }, []);
 
