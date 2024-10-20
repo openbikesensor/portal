@@ -1,5 +1,5 @@
 import React, {useState, useCallback, useMemo} from 'react'
-import {Source, Layer} from 'react-map-gl'
+import {Source, Layer} from 'react-map-gl/maplibre'
 import _ from 'lodash'
 import {Button, Form, Dropdown, Header, Message, Icon} from 'semantic-ui-react'
 import {useTranslation, Trans as Translate} from 'react-i18next'

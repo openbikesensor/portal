@@ -80,6 +80,13 @@ function TrackMapLegend() {
 const TrackPage = connect((state) => ({login: state.login}))(function TrackPage({login}) {
   const {slug} = useParams()
   const {t} = useTranslation()
+  const [marker, setMarker] = React.useState({latitude:55, longitude:55, datetime:0})
+  const updateMarker = (dict) => {
+
+    if ((dict.longitude) && (dict.latitude)) {
+      setMarker({latitude:dict.latitude,longitude:dict.longitude})
+      }
+  }//setMarker({latitude:45, longitude:33, datetime:0})}
 
   const [reloadComments, reloadComments$] = useTriggerSubject()
   const history = useHistory()
@@ -224,11 +231,10 @@ const TrackPage = connect((state) => ({login: state.login}))(function TrackPage(
               </Segment>
             )}
           </Container>
-          <TrackPlot {...{trackData}}/>
           <div className={styles.stage}>
             <Loader active={loading} />
             <Dimmer.Dimmable blurring dimmed={loading}>
-              <TrackMap {...{track, trackData, showTrack, showEvents}} style={{height: '80vh'}} />
+              <TrackMap {...{track, trackData, marker, showTrack, showEvents, }} style={{height: '80vh'}} />
             </Dimmer.Dimmable>
 
             <div className={styles.details}>
@@ -250,6 +256,7 @@ const TrackPage = connect((state) => ({login: state.login}))(function TrackPage(
               )}
             </div>
           </div>
+          <TrackPlot {...{trackData, updateMarker}}/>
 
           <Container>
             {track?.description && (
