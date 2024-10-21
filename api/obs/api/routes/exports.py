@@ -72,9 +72,6 @@ async def export_events(req):
     async with use_request_semaphore(req, "export_semaphore", timeout=30):
         bbox = req.ctx.get_single_arg("bbox", default="-180,-90,180,90")
         snap = str_to_bool(req.ctx.get_single_arg("snap", default="false"))
-        log.info(req.ctx)
-        log.info(snap)
-
 
         assert re.match(r"(-?\d+\.?\d+,?){4}", bbox)
         bbox = list(map(float, bbox.split(",")))
