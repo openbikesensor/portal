@@ -276,10 +276,14 @@ function MapPage({login}) {
 
   const tiles = obsMapSource?.tiles?.map((tileUrl: string) => {
     const query = new URLSearchParams()
+      if (mapConfig.filters.snapEvents) {
+        query.append('snap', true)
+      }
     if (login) {
       if (mapConfig.filters.currentUser) {
         query.append('user', login.id)
       }
+
 
       if (mapConfig.filters.dateMode === 'range') {
         if (mapConfig.filters.startDate) {
