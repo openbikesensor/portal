@@ -8,6 +8,8 @@ import math
 from sqlite3 import connect
 
 import shapefile
+from sanic.utils import str_to_bool
+
 from obs.api.db import OvertakingEvent
 from sqlalchemy import select, func, text
 from sanic.response import raw
@@ -69,6 +71,11 @@ def shapefile_zip(shape_type=shapefile.POINT, basename="events"):
 async def export_events(req):
     async with use_request_semaphore(req, "export_semaphore", timeout=30):
         bbox = req.ctx.get_single_arg("bbox", default="-180,-90,180,90")
+        snap = str_to_bool(req.ctx.get_single_arg("snap", default="false"))
+        log.info(req.ctx)
+        log.info(snap)
+
+
         assert re.match(r"(-?\d+\.?\d+,?){4}", bbox)
         bbox = list(map(float, bbox.split(",")))
 
@@ -93,10 +100,11 @@ async def export_events(req):
                         19,
                         NULL,
                         '1900-01-01'::timestamp,
-                        '2100-01-01'::timestamp
+                        '2100-01-01'::timestamp,
+                        :snap
                     )
                 """
-            ).bindparams(bbox0=bbox[0], bbox1=bbox[1], bbox2=bbox[2], bbox3=bbox[3])
+            ).bindparams(bbox0=bbox[0], bbox1=bbox[1], bbox2=bbox[2], bbox3=bbox[3], snap=snap)
         )
 
         if fmt == ExportFormat.SHAPEFILE:

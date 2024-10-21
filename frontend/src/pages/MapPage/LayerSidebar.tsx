@@ -79,7 +79,7 @@ function LayerSidebar({
     obsEvents: {show: showEvents},
     obsRegions: {show: showRegions},
     obsTracks: {show: showTracks},
-    filters: {currentUser: filtersCurrentUser, dateMode, startDate, endDate, thresholdAfter},
+    filters: {currentUser: filtersCurrentUser, dateMode, startDate, endDate, thresholdAfter, snapEvents},
   } = mapConfig
 
   const openStreetMapCopyright = (
@@ -257,6 +257,12 @@ function LayerSidebar({
         </List.Item>
         {showEvents && (
           <>
+             <List.Item>
+              <Checkbox
+                checked={snapEvents}
+                onChange={() => setMapConfigFlag('filters.snapEvents', !snapEvents)}
+                label={t('MapPage.sidebar.obsEvents.snap')}/>
+            </List.Item>
             <List.Item>
               <List.Header>{_.upperFirst(t('general.zone.urban'))}</List.Header>
               <DiscreteColorMapLegend map={COLORMAP_URBAN} />
@@ -265,8 +271,12 @@ function LayerSidebar({
               <List.Header>{_.upperFirst(t('general.zone.rural'))}</List.Header>
               <DiscreteColorMapLegend map={COLORMAP_RURAL} />
             </List.Item>
+
           </>
         )}
+
+
+
         <Divider />
 
         {filtersCurrentUser && login && (
