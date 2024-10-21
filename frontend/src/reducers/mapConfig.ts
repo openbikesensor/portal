@@ -43,7 +43,7 @@ export type MapConfig = {
     startDate?: null | string
     endDate?: null | string
     thresholdAfter?: null | boolean
-    snap?: false | boolean
+    snap?: boolean
   }
 }
 

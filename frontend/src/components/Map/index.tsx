@@ -1,7 +1,6 @@
 import React, {useState, useCallback, useMemo, useEffect} from 'react'
 import classnames from 'classnames'
 import {connect, useDispatch} from 'react-redux'
-import _ from 'lodash'
 import ReactMapGl, {ScaleControl, NavigationControl, AttributionControl} from 'react-map-gl/maplibre'
 import WebMercatorViewport from 'viewport-mercator-project'
 
@@ -85,7 +84,6 @@ function Map({
   hasToolbar?: boolean
   onViewportChange: (viewport: Viewport) => void
 }) {
-  const dispatch = useDispatch();
   const [viewportState, setViewportState] = useState(EMPTY_VIEWPORT)
   const [viewportUrl, setViewportUrl] = useViewportFromUrl()
 

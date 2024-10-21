@@ -119,7 +119,7 @@ const getRoadsLayer = (colorAttribute, maxCount) =>
       color = COLOR_FREQUENCY
     } else if (colorAttribute.startsWith('distance_')) {
       color = colorByDistance(colorAttribute)
-    } else if (colorAttribute.endsWith('_count') | colorAttribute.endsWith('_length')) {
+    } else if (colorAttribute.endsWith('_count') || colorAttribute.endsWith('_length')) {
       color = colorByCount(colorAttribute, maxCount)
     } else if (colorAttribute.endsWith('zone')) {
       color = COLOR_BY_ZONE

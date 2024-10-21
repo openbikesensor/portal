@@ -200,7 +200,6 @@ const TrackPage = connect((state) => ({login: state.login}))(function TrackPage(
 
   const [showTrack, setShowTrack] = React.useState(true)
   const [showEvents, setShowEvents] = React.useState(true)
-  const trackPlot = trackData
 
   const title = track ? track.title || t('general.unnamedTrack') : null
   return (
