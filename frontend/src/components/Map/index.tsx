@@ -1,6 +1,6 @@
 import React, {useState, useCallback, useMemo, useEffect} from 'react'
 import classnames from 'classnames'
-import {connect, useDispatch} from 'react-redux'
+import {connect} from 'react-redux'
 import ReactMapGl, {ScaleControl, NavigationControl, AttributionControl} from 'react-map-gl/maplibre'
 import WebMercatorViewport from 'viewport-mercator-project'
 
