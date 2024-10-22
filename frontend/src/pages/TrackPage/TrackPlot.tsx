@@ -28,11 +28,10 @@ export default function TrackDetails({trackData, updateMarker}) {
 
 
 
-
-const distance_overtaker = transpose( [trackData.fullData['datetime'],trackData.fullData['distance_overtaker']])
-const distance_stationary = transpose( [trackData.fullData['datetime'],trackData.fullData['distance_stationary']])
-const speed = transpose( [trackData.fullData['datetime'],trackData.fullData['speed']])
-//const speed = transpose( [trackData.fullData['datetime'],trackData.fullData['speed']])
+  const distance_overtaker = transpose( [trackData.fullData['datetime'],trackData.fullData['distance_overtaker']])
+  const distance_stationary = transpose( [trackData.fullData['datetime'],trackData.fullData['distance_stationary']])
+  const speed = transpose( [trackData.fullData['datetime'],trackData.fullData['speed']])
+  //const speed = transpose( [trackData.fullData['datetime'],trackData.fullData['speed']])
 
   return (
 
