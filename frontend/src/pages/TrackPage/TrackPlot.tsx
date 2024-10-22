@@ -7,6 +7,10 @@ function transpose(matrix) {
 }
 
 export default function TrackDetails({trackData, updateMarker}) {
+    const mouseMove = React.useCallback((event) => {
+      handleMouseMove(event)
+    }, [] );
+
     if (!trackData) {
     return null
   }
@@ -23,9 +27,6 @@ export default function TrackDetails({trackData, updateMarker}) {
               'datetime' : param.data[0]
               })
   }
-   const mouseMove = React.useCallback((event) => {
-      handleMouseMove(event)
-    }, [] );
 
 const distance_overtaker = transpose( [trackData.fullData['datetime'],trackData.fullData['distance_overtaker']])
 const distance_stationary = transpose( [trackData.fullData['datetime'],trackData.fullData['distance_stationary']])
