@@ -41,8 +41,7 @@ export default function TrackMap({
         latitude= {marker.latitude}
           ><div>
   <svg width="30" height="30">
-    <circle cx="15" cy="15" r="3" stroke="red" fill="red" />
-
+    <circle cx="15" cy="15" r="6" stroke="red" fill="rgba(255,0,0,20%)" />
 
   </svg>
   </div></Marker>

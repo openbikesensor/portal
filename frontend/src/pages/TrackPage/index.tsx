@@ -233,7 +233,7 @@ const TrackPage = connect((state) => ({login: state.login}))(function TrackPage(
           <div className={styles.stage}>
             <Loader active={loading} />
             <Dimmer.Dimmable blurring dimmed={loading}>
-              <TrackMap {...{track, trackData, marker, showTrack, showEvents, }} style={{height: '80vh'}} />
+              <TrackMap {...{track, trackData, marker, showTrack, showEvents, }} style={{height: '50vh'}} />
             </Dimmer.Dimmable>
 
             <div className={styles.details}>
@@ -255,8 +255,9 @@ const TrackPage = connect((state) => ({login: state.login}))(function TrackPage(
               )}
             </div>
           </div>
-          <TrackPlot {...{trackData, updateMarker}}/>
-
+          { isAuthor && typeof trackData != "undefined" &&
+            <TrackPlot {...{trackData, updateMarker}}/>
+          }
           <Container>
             {track?.description && (
               <>

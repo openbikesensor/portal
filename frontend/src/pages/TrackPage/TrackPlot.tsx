@@ -7,6 +7,10 @@ function transpose(matrix) {
 }
 
 export default function TrackDetails({trackData, updateMarker}) {
+  const minutes = trackData.fullData['datetime'].map(x=>{return(x-trackData.fullData['datetime'][0])/60})
+  function get_index(datetime) {
+      return minutes.indexOf(datetime);
+    }
     function handleMouseMove(param) {
       const index = get_index(param.data[0]);
       updateMarker({'latitude' : trackData.fullData.latitude[index],
@@ -22,43 +26,54 @@ export default function TrackDetails({trackData, updateMarker}) {
     return null
   }
 
-  function get_index(datetime) {
-      return trackData.fullData['datetime'].indexOf(datetime);
-    }
-
-
-
-  const distance_overtaker = transpose( [trackData.fullData['datetime'],trackData.fullData['distance_overtaker']])
-  const distance_stationary = transpose( [trackData.fullData['datetime'],trackData.fullData['distance_stationary']])
-  const speed = transpose( [trackData.fullData['datetime'],trackData.fullData['speed']])
-  //const speed = transpose( [trackData.fullData['datetime'],trackData.fullData['speed']])
+  console.log(trackData)
+  const distance_overtaker = transpose( [ minutes,trackData.fullData['distance_overtaker']])
+  const distance_stationary = transpose( [ minutes,trackData.fullData['distance_stationary']])
+  const speed = transpose( [ minutes,trackData.fullData['speed'].map(x=>{return x*3.6})])
 
   return (
 
     <Chart
-      style={{height: 300}}
+      style={{height: 600}}
+
       onEvents={{
     'mouseMove': mouseMove,
     }}
       option={ {
-  xAxis: {scale:true},
-  yAxis: {scale:true},
-  tooltip: {show:true},
 
+
+  tooltip: {show:true},
+  grid:[
+          {left:'7%', top:'7%',right:'7%',bottom:'70%' },
+          {left:'7%', top:'37%',right:'7%',bottom:'37%' },
+          {left:'7%', top:'70%',right:'7%',bottom:'7%' }
+
+          ],
+      xAxis: [{gridIndex:0, scale:false, name: "minutes"},
+         {gridIndex:1, scale:false, name: "minutes"},
+         {gridIndex:2, scale:false, name: "minutes"}],
+  yAxis: [{gridIndex:0, scale:false, name: "meters right"},
+   {gridIndex:1, scale:false, name: "meters left"},
+   {gridIndex:2, scale:false, name: "km/h"}],
   series: [
-    {
+    { xAxisIndex: 0,
+        yAxisIndex:0,
       symbolSize: 4,
       data: distance_overtaker,
       type: 'scatter'
     },
-  {
+    {
+        xAxisIndex: 1,
+        yAxisIndex: 1,
       symbolSize: 4,
-      data: speed,
+      data: distance_stationary,
       type: 'scatter'
     },
     {
+        xAxisIndex: 2,
+        yAxisIndex: 2,
       symbolSize: 4,
-      data: distance_stationary,
+      data: speed,
       type: 'scatter'
     }
   ]
