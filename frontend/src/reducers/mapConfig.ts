@@ -43,6 +43,7 @@ export type MapConfig = {
     startDate?: null | string
     endDate?: null | string
     thresholdAfter?: null | boolean
+    snap?: boolean
   }
 }
 
@@ -71,6 +72,7 @@ export const initialState: MapConfig = {
     startDate: null,
     endDate: null,
     thresholdAfter: true,
+    snap: false
   },
 }
 

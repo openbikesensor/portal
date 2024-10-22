@@ -1,8 +1,9 @@
 import React, {useState, useCallback, useMemo, useEffect} from 'react'
 import classnames from 'classnames'
 import {connect} from 'react-redux'
-import _ from 'lodash'
-import ReactMapGl, {WebMercatorViewport, ScaleControl, NavigationControl, AttributionControl} from 'react-map-gl'
+import ReactMapGl, {ScaleControl, NavigationControl, AttributionControl} from 'react-map-gl/maplibre'
+import WebMercatorViewport from 'viewport-mercator-project'
+
 import turfBbox from '@turf/bbox'
 import {useHistory, useLocation} from 'react-router-dom'
 
@@ -87,6 +88,7 @@ function Map({
   const [viewportUrl, setViewportUrl] = useViewportFromUrl()
 
   const [viewport, setViewport_] = viewportFromUrl ? [viewportUrl, setViewportUrl] : [viewportState, setViewportState]
+
   const setViewport = useCallback(
     (viewport: Viewport) => {
       setViewport_(viewport)
@@ -139,12 +141,18 @@ function Map({
     }
   }, [boundsFromJson])
 
+  const onMove = useCallback(evt => {
+    setViewport(evt.viewState);
+  }, []);
+
   return (
     <ReactMapGl
+      maplibreLogo
       mapStyle={baseMapStyles[baseMapStyle]}
       width="100%"
       height="100%"
-      onViewportChange={setViewport}
+      initialViewState={{viewport}}
+      onMove={onMove}
       {...{transformRequest}}
       {...viewport}
       {...props}

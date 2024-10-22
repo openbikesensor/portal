@@ -1,5 +1,5 @@
 import React from 'react'
-import {Source, Layer} from 'react-map-gl'
+import {Source, Layer, Marker} from 'react-map-gl/maplibre'
 
 import type {TrackData} from 'types'
 import {Map} from 'components'
@@ -8,6 +8,7 @@ import {colorByDistance, trackLayer, trackLayerRaw} from '../../mapstyles'
 
 export default function TrackMap({
   trackData,
+  marker,
   showTrack = true,
   showPoints = true,
   ...props
@@ -34,6 +35,19 @@ export default function TrackMap({
             <Layer id="track" {...trackLayer} />
           </Source>
         )}
+
+        <Marker
+        longitude= {marker.longitude}
+        latitude= {marker.latitude}
+          ><div>
+  <svg width="30" height="30">
+    <circle cx="15" cy="15" r="3" stroke="red" fill="red" />
+
+
+  </svg>
+  </div></Marker>
+
+
 
         {showPoints && (
           <Source key="events" id="events" type="geojson" data={trackData.events}>

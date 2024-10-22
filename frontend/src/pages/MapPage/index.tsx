@@ -1,7 +1,7 @@
 import React, {useState, useCallback, useMemo, useRef} from 'react'
 import {connect} from 'react-redux'
 import {Button} from 'semantic-ui-react'
-import {Layer, Source} from 'react-map-gl'
+import {Layer, Source} from 'react-map-gl/maplibre'
 import produce from 'immer'
 import classNames from 'classnames'
 
@@ -119,7 +119,7 @@ const getRoadsLayer = (colorAttribute, maxCount) =>
       color = COLOR_FREQUENCY
     } else if (colorAttribute.startsWith('distance_')) {
       color = colorByDistance(colorAttribute)
-    } else if (colorAttribute.endsWith('_count') | colorAttribute.endsWith('_length')) {
+    } else if (colorAttribute.endsWith('_count') || colorAttribute.endsWith('_length')) {
       color = colorByCount(colorAttribute, maxCount)
     } else if (colorAttribute.endsWith('zone')) {
       color = COLOR_BY_ZONE
@@ -276,10 +276,14 @@ function MapPage({login}) {
 
   const tiles = obsMapSource?.tiles?.map((tileUrl: string) => {
     const query = new URLSearchParams()
+      if (mapConfig.filters.snapEvents) {
+        query.append('snap', true)
+      }
     if (login) {
       if (mapConfig.filters.currentUser) {
         query.append('user', login.id)
       }
+
 
       if (mapConfig.filters.dateMode === 'range') {
         if (mapConfig.filters.startDate) {

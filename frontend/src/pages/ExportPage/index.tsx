@@ -1,7 +1,8 @@
 import React, {useState, useCallback, useMemo} from 'react'
-import {Source, Layer} from 'react-map-gl'
+import {Source, Layer} from 'react-map-gl/maplibre'
+
 import _ from 'lodash'
-import {Button, Form, Dropdown, Header, Message, Icon} from 'semantic-ui-react'
+import {Button, Form, Dropdown, Header, Message, Icon, Checkbox} from 'semantic-ui-react'
 import {useTranslation, Trans as Translate} from 'react-i18next'
 import Markdown from 'react-markdown'
 
@@ -11,14 +12,14 @@ import {Page, Map} from 'components'
 const BoundingBoxSelector = React.forwardRef(({value, name, onChange}, ref) => {
   const {t} = useTranslation()
   const [pointNum, setPointNum] = useState(0)
-  const [point0, setPoint0] = useState(null)
-  const [point1, setPoint1] = useState(null)
+  const [point0, setPoint0] = useState([0,0])
+  const [point1, setPoint1] = useState([0,0])
 
   const onClick = (e) => {
     if (pointNum == 0) {
-      setPoint0(e.lngLat)
+      setPoint0([e.lngLat.lng, e.lngLat.lat])
     } else {
-      setPoint1(e.lngLat)
+      setPoint1([e.lngLat.lng, e.lngLat.lat])
     }
     setPointNum(1 - pointNum)
   }
@@ -31,12 +32,6 @@ const BoundingBoxSelector = React.forwardRef(({value, name, onChange}, ref) => {
     }
   }, [point0, point1])
 
-  React.useEffect(() => {
-    if (!value) return
-    const [p00, p01, p10, p11] = value.split(',').map((v) => Number.parseFloat(v))
-    if (!point0 || point0[0] != p00 || point0[1] != p01) setPoint0([p00, p01])
-    if (!point1 || point1[0] != p10 || point1[1] != p11) setPoint1([p10, p11])
-  }, [value])
 
   return (
     <div>
@@ -44,6 +39,7 @@ const BoundingBoxSelector = React.forwardRef(({value, name, onChange}, ref) => {
         label={t('ExportPage.boundingBox.label')}
         {...{name, value}}
         onChange={(e) => onChange(e.target.value)}
+        disabled
       />
 
       <div style={{height: 400, position: 'relative', marginBottom: 16}}>
@@ -96,6 +92,8 @@ const FORMATS = ['geojson', 'shapefile']
 
 export default function ExportPage() {
   const [mode, setMode] = useState('events')
+  const [snap, setSnap] = useState('snap')
+
   const [bbox, setBbox] = useState('8.294678,49.651182,9.059601,50.108249')
   const [fmt, setFmt] = useState('geojson')
   const config = useConfig()
@@ -127,6 +125,16 @@ export default function ExportPage() {
             onChange={(_e, {value}) => setMode(value)}
           />
         </Form.Field>
+        <Form.Field>
+        <Checkbox
+          label={t('ExportPage.snapping')}
+          name="snap"
+          value="true"
+          onChange={(_e, {value}) => setSnap(!snap)}
+
+        />
+        </Form.Field>
+
 
         <Form.Field>
           <label>{t('ExportPage.format.label')}</label>
@@ -149,7 +157,7 @@ export default function ExportPage() {
         <Button
           primary
           as="a"
-          href={`${config?.apiUrl}/export/${mode}?bbox=${bbox}&fmt=${fmt}`}
+          href={`${config?.apiUrl}/export/${mode}?bbox=${bbox}&fmt=${fmt}&snap=${snap}`}
           target="_blank"
           rel="noreferrer noopener"
         >
