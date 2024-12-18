@@ -362,7 +362,7 @@ def get_road_usage_segments(df):
 async def import_road_usages(session, track, df):
     usages = {}
     for way_id, rows in get_road_usage_segments(df):
-        direction_reversed = numpy.mean(df["direction_reversed"]) > 0.5
+        direction_reversed = numpy.mean(list(r["direction_reversed"] for r in rows)) > 0.5
         start_time = rows[0]["datetime"]
         end_time = rows[-1]["datetime"]
         time = start_time + (end_time - start_time) / 2
