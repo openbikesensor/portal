@@ -162,12 +162,12 @@ MapPage:
         usage_count: Anzahl Befahrungen
         zone: Überholabstands-Zone
         combined_score: Kombinierte Auswertung
-        overtaking_legality: Anteil illegal
+        overtaking_legality: Anteil unter 150 cm
         overtaking_frequency: Überholvorgänge pro km
       combinedScore:
         label: Wertungsskala
         description: >
-          Die Wertung kombiniert den Anteil illegaler Überholungen
+          Die Wertung kombiniert den Anteil Überholungen unter 150 cm
           mit der Anzahl der Überholvorgänge pro gefahrener Distanz.
           Weniger Verkehr kann schlechte Abstände aufwiegen.
 
