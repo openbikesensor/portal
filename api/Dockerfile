@@ -1,4 +1,4 @@
-FROM python:3.12.5-bullseye
+FROM python:3.12-bookworm
 
 # install protobuf-compiler (protoc) to /opt/protobuf, but don't use the debian
 # one, as it is horribly outdated
@@ -15,7 +15,6 @@ WORKDIR /opt/obs/api
 
 ADD requirements.txt /opt/obs/api/
 RUN pip install -r requirements.txt
-
 ADD setup.py /opt/obs/api/
 ADD obs /opt/obs/api/obs/
 RUN pip install -e .
