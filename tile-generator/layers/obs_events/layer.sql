@@ -1,11 +1,12 @@
 DROP FUNCTION IF EXISTS layer_obs_events(bbox geometry, zoom_level int, user_id integer, min_time timestamp, max_time timestamp);
+DROP FUNCTION IF EXISTS layer_obs_events(bbox geometry, zoom_level int, user_id integer, min_time timestamp, max_time timestamp, snap boolean);
 
-CREATE OR REPLACE FUNCTION layer_obs_events(bbox geometry, zoom_level int, user_id integer, min_time timestamp, max_time timestamp)
+CREATE OR REPLACE FUNCTION layer_obs_events(bbox geometry, zoom_level int, user_id integer, min_time timestamp, max_time timestamp, snap boolean)
 RETURNS TABLE(event_id bigint, geometry geometry, distance_overtaker float, distance_stationary float, direction int, course float, speed float, time_stamp timestamp, zone zone_type, way_id bigint) AS $$
 
     SELECT
       overtaking_event.id::bigint as event_id,
-      overtaking_event.geometry as geometry,
+      CASE WHEN snap THEN ST_ClosestPoint(road.geometry,overtaking_event.geometry) else overtaking_event.geometry END as geometry,
       distance_overtaker,
       distance_stationary,
       (case when direction_reversed then -1 else 1 end)::int as direction,

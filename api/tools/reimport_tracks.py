@@ -22,7 +22,7 @@ async def reimport_tracks():
         app.config.POSTGRES_MAX_OVERFLOW,
     ):
         async with make_session() as session:
-            await session.execute(text("UPDATE track SET processing_status = 'queued';"))
+            await session.execute(text("UPDATE track SET processing_status = 'queued', processing_queued_at = '2030-01-01 10:10:10.000000';"))
             await session.commit()
 
 
