@@ -345,9 +345,15 @@ def split_by_distance(geolocations, max_time=10, max_distance=100):
         prev = next(it)
     except StopIteration:
         return
-
+    t0 = 0
+    timejumps = False
     for current in it:
         t, lat, lng = current
+        if t < t0:
+            if not timejumps:
+                log.warning("timejump backwards ignored")
+                timejumps = True
+            continue
         t0, lat0, lng0 = prev
 
         distance = haversine((lat0, lng0), (lat, lng), unit=Unit.METERS)
