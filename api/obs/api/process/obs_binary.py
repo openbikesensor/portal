@@ -86,8 +86,17 @@ async def process_binary(session, filename):
 
     with open(filename, "rb") as f:
         binary_data = f.read()
-    chunks = filter(len, map(cobs.decode, binary_data.split(b"\x00")))
-    events = list(map(parse_event, chunks))
+    try:
+        chunks = filter(len, map(cobs.decode, binary_data.split(b"\x00")))
+        events = list(map(parse_event, chunks))
+    except cobs.DecodeError:
+        dta = filter(len, binary_data.split(b"\x00"))
+        events = []
+        for b in dta:
+            try:
+                events.append(parse_event(cobs.decode(b)))
+            except cobs.DecodeError:
+                pass
 
     log.info("Parsed %s raw events from binary recording.", len(events))
 
@@ -103,15 +112,13 @@ async def process_binary(session, filename):
                 )
 
             if (
-                # prefer a time if we don't have one yet
-                best_time_source is None
-                # of it is is UNIX and the previous best one isn't
-                or (
-                    time.reference == Time.UNIX
-                    and best_time_source.reference != Time.UNIX
-                )
-                # of it has a lower source_id
-                or time.source_id < best_time_source.source_id
+                # prefer lowest id unix time source
+                # only for plausible unix times (after introduction of OBS lite)
+                (time.reference == Time.UNIX
+                    and time.seconds > 1722958548)
+                # of it has a lower source_id (but only accept unix times as correct after invention of obs lite)
+                or (best_time_source is not None and time.source_id < best_time_source.source_id
+                and  time.seconds > 1722958548)
             ):
                 best_time_source = time
 
