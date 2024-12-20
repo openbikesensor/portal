@@ -2,17 +2,15 @@ FROM python:3.12.8-bookworm
 
 # install protobuf-compiler (protoc) to /opt/protobuf, but don't use the debian
 # one, as it is horribly outdated
-RUN wget -O /tmp/protoc.zip \
-  https://github.com/protocolbuffers/protobuf/releases/download/v26.0/protoc-26.0-linux-x86_64.zip \
-  && unzip -d /opt/protobuf /tmp/protoc.zip
-
-RUN wget -O /tmp/obsproto.tar.gz https://github.com/openbikesensor/proto/archive/refs/tags/v1.0.0.tar.gz\
+ADD https://github.com/protocolbuffers/protobuf/releases/download/v26.0/protoc-26.0-linux-x86_64.zip /tmp/protoc.zip
+ADD https://github.com/openbikesensor/proto/archive/refs/tags/v1.0.0.tar.gz /tmp/obsproto.tar.gz
+RUN unzip -d /opt/protobuf /tmp/protoc.zip \
   && tar -zvxf /tmp/obsproto.tar.gz\
   && mkdir -p /opt/obs\
   && cp -r proto-1.0.0 /opt/obs/proto
 
 WORKDIR /opt/obs/proto
-RUN PATH=/opt/protobuf/bin:$PATH make && pip install .
+RUN PATH="/opt/protobuf/bin:${PATH}" make && pip install .
 
 WORKDIR /opt/obs/api
 
