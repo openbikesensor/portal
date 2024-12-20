@@ -21,7 +21,7 @@ RUN npm run build
 # Build the API and add the built frontend to it
 #############################################
 
-FROM python:3.12-bookworm
+FROM python:3.12.8-bookworm
 
 RUN apt-get update &&\
     apt-get install -y \
