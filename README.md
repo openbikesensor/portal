@@ -85,83 +85,31 @@ Please [install Docker Engine](https://docs.docker.com/engine/install/) as well 
 
 Then clone the repository as described above.
 
-### Configure Keycloak
+### Prepare the setup
 
-Login will not be possible until you configure the keycloak realm correctly. Boot your keycloak instance:
+> [!WARNING]
+> The following assumes that you run from a fresh clone of the git repo.
+> It will complain if it detects issues. Never run the development portal init
+> on a machine with a production portal.
 
-```bash
-docker-compose up -d keycloak
-```
+> > [!WARNING]
+> The development setup is automatic with unsafe passwords and only exposed
+> to localhost. Do not expose the ports.
 
-Now navigate to http://localhost:3003/ and follow these steps:
+Have a look at ``init_development_portal.sh`` - these are the steps that will set up your development portal.
+The script needs you to run with root permissions or the running user needs to be part of the ``docker`` group to
+set up the containers.
 
-- Click *Administration Console* and log in with `admin` / `admin`.
-- Hover over the realm name on the top left and click *Add realm*.
-- Name the Realm `obs-dev` (spelling matters) and create it.
-- In the sidebar, navigate to *Configure* &rarr; *Clients*, and click *Create* on the top right.
-- *Client ID* should be `portal`. Click *Save*.
-- In the Tab *Settings*, edit the new client's *Access Type* to *confidential*
-  and enter as *Valid Redirect URIs*: `http://localhost:3000/login/redirect`,
-  then *Save*
-- Under *Credentials*, copy the *Secret*. Create a file at `api/config.overrides.py` with the secret in it:
-  
-  ```python
-  KEYCLOAK_CLIENT_SECRET="your secret here"
-  ```
-  
-  You can use this file in development mode to change settings without editing
-  the git-controlled default file at `api/config.dev.py`. Options in this file
-  take precendence.
-- In the sidebar, navigate to *Manage* &rarr; *Users*, and click *Add user* on the top right.
-- Give the user a name (e.g. `test`), leave the rest as-is.
-- Under the tab *Credentials*, choose a new password, and make it
-  non-temporary. Click *Set Password*.
+After running it, you should have a bunch of containers running, which should only listen to localhost:
+- keycloak on http://localhost:3003
+  - Admin user: `admin`, password: `admin`
+  - You see why this should only run on localhost.
+  - The internal "testing only" disk-based database is used.
+- Openbikesensor api on http://localhost:3000
+- Openbikesensor frontend on http://localhost:3001
+  - User `obs`, password `obs`
+  - You can see why this should only run on localhost
 
-We are going to automate this process. For now, you will have to repeat it
-every time you reset your keycloak settings, which are stored inside the
-PostgreSQL as well. Luckily, the script `api/tools/reset_database.py` does
-*not* affect the state of the keycloak database, so this should be rather rare.
-
-### Prepare database
-
-Start the PostgreSQL database:
-
-```bash
-docker-compose up -d postgres
-```
-
-The first time you start postgres, a lot of extensions will be installed. This
-takes a while, so check the logs of the docker container until you see:
-
-> PostgreSQL init process complete; ready for start up.
-
-If you don't wait long enough, the following commands might fail. In this case,
-you can always stop the container, remove the data directory (`local/postgres`)
-and restart the process.
-
-Next, run the upgrade command to generate the database schema:
-
-```bash
-docker-compose run --rm api tools/upgrade.py
-```
-
-You will need to re-run this command after updates, to migrate the database and
-(re-)create the functions in the SQL database that are used when generating
-vector tiles.
-
-You should also [import OpenStreetMap data](docs/osm-import.md) now.
-
-### Boot the application
-
-Now you can run the remaining parts of the application:
-
-```bash
-docker-compose up -d --build api worker frontend
-```
-
-Your frontend should be running at http://localhost:3001 and the API at
-http://localhost:3000 -- but you probably only need to access the frontend for
-testing. 
 
 ### Migrating (Development)
 
