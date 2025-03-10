@@ -4,7 +4,7 @@
 # Build the frontend AS builder
 #############################################
 
-FROM node:18 AS frontend-builder
+FROM node:18 as frontend-builder
 
 WORKDIR /opt/obs/frontend
 ADD frontend/package.json frontend/package-lock.json /opt/obs/frontend/
@@ -34,6 +34,7 @@ RUN apt-get update &&\
     libpq-dev \
     libproj-dev \
     lua5.3 \
+    python3-dev \
     liblua5.3-dev &&\
     rm -rf /var/lib/apt/lists/*
 
