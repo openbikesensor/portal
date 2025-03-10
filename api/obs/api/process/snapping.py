@@ -124,10 +124,7 @@ def cost_by_direction_dot(dot, directionality):
     if directionality < 0:
         dot *= -1
 
-    if dot < 0:
-        return (2 + dot) ** 2 * 0.7 + 0.3
-    else:
-        return (2 - dot) ** 2
+    return 2 - dot
 
 
 def cost_by_angle(direction, road_direction, directionality):
