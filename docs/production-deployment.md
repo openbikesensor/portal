@@ -374,7 +374,7 @@ You might also instead use the `--exclude-table` option to ignore the `road`
 table only (adjust connection parameters and names):
 
 ```bash
-pg_dump -h localhost -d obs -U obs -n public -T road -f backup-`date +%F`.sql
+pg_dump -h localhost -d obs -U obs -n public -T road -T region -f backup-`date +%F`.sql
 ```
 
 Also back up the raw uploaded files, i.e. the `local/api-data/tracks`
