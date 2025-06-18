@@ -129,10 +129,14 @@ async def process_track(session, track):
             track_raw_json,
         ) = await process_track_file(session, original_file_path)
 
+        fdata = json.loads(df.to_json(orient='columns'))
+        full_data = {k:[v for v in fdata[k].values()] for k in fdata.keys()}
+
         for output_filename, data in [
             ("events.json", events),
             ("track.json", track_json),
             ("trackRaw.json", track_raw_json),
+            ("full_data.json", full_data)
         ]:
             target = join(output_dir, output_filename)
             log.debug("Writing file %s", target)
