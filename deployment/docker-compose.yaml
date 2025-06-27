@@ -14,7 +14,7 @@ services:
   ############################################################
 
   postgres:
-    image: "openmaptiles/postgis:7.0"
+    image: "openmaptiles/postgis:7.1"
     environment:
       - POSTGRES_DB=${OBS_POSTGRES_DB}
       - POSTGRES_USER=${OBS_POSTGRES_USER}
@@ -104,7 +104,7 @@ services:
   ############################################################
 
   keycloak:
-    image: jboss/keycloak:15.1.0
+    image: "quay.io/keycloak/keycloak:latest"
     restart: always
     networks:
       - gateway
@@ -112,14 +112,16 @@ services:
     env_file: .env
     environment:
       # database
-      - DB_VENDOR=postgres
-      - DB_ADDR=${OBS_KEYCLOAK_POSTGRES_HOST}
-      - DB_DATABASE=${OBS_KEYCLOAK_POSTGRES_DB}
-      - DB_USER=${OBS_KEYCLOAK_POSTGRES_USER}
-      - DB_PASSWORD=${OBS_KEYCLOAK_POSTGRES_PASSWORD}
+      - KC_DB=postgres
+      - KC_HOSTNAME=${OBS_KEYCLOAK_HOSTNAME}
+      - KC_DB_URL=jdbc:postgresql://${OBS_KEYCLOAK_POSTGRES_HOST}:5432/${OBS_KEYCLOAK_POSTGRES_DB}
+      - KC_DB_USERNAME=${OBS_KEYCLOAK_POSTGRES_USER}
+      - KC_DB_PASSWORD=${OBS_KEYCLOAK_POSTGRES_PASSWORD}
       # admin user
-      - KEYCLOAK_USER=${OBS_KEYCLOAK_ADMIN_USER}
-      - KEYCLOAK_PASSWORD=${OBS_KEYCLOAK_ADMIN_PASSWORD}
+      - KC_USER=${OBS_KEYCLOAK_ADMIN_USER}
+      - KC_PASSWORD=${OBS_KEYCLOAK_ADMIN_PASSWORD}
+      - KC_HTTP_ENABLED=true
+      - KC_PROXY=edge
       - PROXY_ADDRESS_FORWARDING=true
       - OBS_KEYCLOAK_PORTAL_REDIRECT_URI=${OBS_KEYCLOAK_PORTAL_REDIRECT_URI}
     depends_on:
@@ -136,7 +138,7 @@ services:
       - "traefik.docker.network=gateway"
 
   postgres-keycloak:
-    image: postgres:15
+    image: postgres:17
     restart: always
     networks:
       - backend
