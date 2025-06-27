@@ -73,7 +73,7 @@ services:
   ############################################################
 
   traefik:
-    image: traefik:2.4.8
+    image: traefik:3
     restart: always
     ports:
       - "80:80"
