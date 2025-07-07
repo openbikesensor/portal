@@ -14,9 +14,9 @@ services:
   postgres:
     image: "openmaptiles/postgis:7.1"
     environment:
-      - POSTGRES_DB=${OBS_POSTGRES_DB}
-      - POSTGRES_USER=${OBS_POSTGRES_USER}
-      - POSTGRES_PASSWORD=${OBS_POSTGRES_PASSWORD}
+      - POSTGRES_DB=${OBS_POSTGRES_DB:-obs}
+      - POSTGRES_USER=${OBS_POSTGRES_USER:-obs}
+      - POSTGRES_PASSWORD=${OBS_POSTGRES_PASSWORD:?OBS_POSTGRES_PASSWORD is required}
     volumes:
     - ./data/postgres/data:/var/lib/postgresql/data
     networks:
@@ -27,6 +27,17 @@ services:
     build:
       context: ./source
     env_file: .env
+    environment:
+      - OBS_POSTGRES_DB=${OBS_POSTGRES_DB:-obs}
+      - OBS_POSTGRES_USER=${OBS_POSTGRES_USER:-obs}
+      - OBS_POSTGRES_PASSWORD=${OBS_POSTGRES_PASSWORD:?OBS_POSTGRES_PASSWORD is required}
+      - OBS_POSTGRES_URL=postgresql+asyncpg://obs:${OBS_POSTGRES_PASSWORD}@postgres/obs
+      - OBS_POSTGRES_MAX_OVERFLOW=${OBS_POSTGRES_MAX_OVERFLOW:-20}
+      - OBS_POSTGRES_POOL_SIZE=${OBS_POSTGRES_POOL_SIZE:-40}
+      - OBS_SECRET=${OBS_SECRET:?OBS_SECRET needs to be initialized with random value (e.g. uuid)}
+      - OBS_HOST=${OBS_HOST:-0.0.0.0}
+      - OBS_PORT=${OBS_PORT:3000}
+      - OBS_KEYCLOAK_CLIENT_SECRET=${OBS_KEYCLOAK_CLIENT_SECRET:?OBS_KEYCLOAK_CLIENT_SECRET needs to be set to the keycloak realm client secret}
     volumes:
       - ./data/api-data:${OBS_DATA_DIR}
       - ./config/config.py:/opt/obs/api/config.py
@@ -54,8 +65,13 @@ services:
     build:
       context: ./source
     env_file: .env
+    environment:
+      - OBS_POSTGRES_DB=${OBS_POSTGRES_DB:-obs}
+      - OBS_POSTGRES_USER=${OBS_POSTGRES_USER:-obs}
+      - OBS_POSTGRES_URL=postgresql+asyncpg://obs:${OBS_POSTGRES_PASSWORD}@postgres/obs
+      - OBS_POSTGRES_PASSWORD=${OBS_POSTGRES_PASSWORD:?OBS_POSTGRES_PASSWORD is required}
     volumes:
-      - ./data/api-data:${OBS_DATA_DIR}
+      - ./data/api-data:${OBS_DATA_DIR:-/data}
       - ./config/config.py:/opt/obs/api/config.py
     restart: on-failure
     depends_on:
@@ -112,12 +128,14 @@ services:
       # database
       - KC_DB=postgres
       - KC_HOSTNAME=${OBS_KEYCLOAK_HOSTNAME}
-      - KC_DB_URL=jdbc:postgresql://${OBS_KEYCLOAK_POSTGRES_HOST}:5432/${OBS_KEYCLOAK_POSTGRES_DB}
-      - KC_DB_USERNAME=${OBS_KEYCLOAK_POSTGRES_USER}
-      - KC_DB_PASSWORD=${OBS_KEYCLOAK_POSTGRES_PASSWORD}
+      - KC_DB_URL=jdbc:postgresql://${OBS_KEYCLOAK_POSTGRES_HOST:-postgres-keycloak}:5432/${OBS_KEYCLOAK_POSTGRES_DB:-keycloak}
+      - KC_DB_USERNAME=${OBS_KEYCLOAK_POSTGRES_USER:-keycloak}
+      - KC_DB_PASSWORD=${OBS_KEYCLOAK_POSTGRES_PASSWORD:?need to set secure OBS_KEYCLOAK_POSTGRES_PASSWORD}
       # admin user
-      - KC_USER=${OBS_KEYCLOAK_ADMIN_USER}
+      - KC_USER=${OBS_KEYCLOAK_ADMIN_USER:-admin}
       - KC_PASSWORD=${OBS_KEYCLOAK_ADMIN_PASSWORD}
+      - KC_BOOTSTRAP_ADMIN_USERNAME=${OBS_KEYCLOAK_ADMIN_USER:-admin}
+      - KC_BOOTSTRAP_ADMIN_PASSWORD=${OBS_KEYCLOAK_ADMIN_PASSWORD:?need to set secure OBS_KEYCLOAK_ADMIN_PASSWORD}
       - KC_HTTP_ENABLED=true
       - KC_PROXY=edge
       - PROXY_ADDRESS_FORWARDING=true
@@ -143,8 +161,8 @@ services:
     volumes:
     - ./data/postgres-keycloak:/var/lib/postgresql/data
     environment:
-      - POSTGRES_DB=${OBS_KEYCLOAK_POSTGRES_DB}
-      - POSTGRES_USER=${OBS_KEYCLOAK_POSTGRES_USER}
+      - POSTGRES_DB=${OBS_KEYCLOAK_POSTGRES_DB:-keycloak}
+      - POSTGRES_USER=${OBS_KEYCLOAK_POSTGRES_USER:-keycloak}
       - POSTGRES_PASSWORD=${OBS_KEYCLOAK_POSTGRES_PASSWORD}
     labels:
       - traefik.enable=false
