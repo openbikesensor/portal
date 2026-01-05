@@ -4,7 +4,7 @@
 # Build the frontend AS builder
 #############################################
 
-FROM node:18 AS frontend-builder
+FROM node:18 as frontend-builder
 
 WORKDIR /opt/obs/frontend
 ADD frontend/package.json frontend/package-lock.json /opt/obs/frontend/
@@ -21,7 +21,7 @@ RUN npm run build
 # Build the API and add the built frontend to it
 #############################################
 
-FROM python:3.12-bookworm
+FROM python:3.12.8-bookworm
 
 RUN apt-get update &&\
     apt-get install -y \

@@ -26,7 +26,8 @@ then
   echo initializing keycloak and creating api/config.overrides.py
   chmod -R a+rwX local/keycloak
   $COMPOSE up -d keycloak
-  sleep 40
+  echo "waiting 120s for keycloak start"
+  sleep 120
   echo -n "KEYCLOAK_CLIENT_SECRET=" >api/config.overrides.py
   $COMPOSE exec keycloak /prepare_obs_realm.sh | tail -n1 >>api/config.overrides.py
 else
