@@ -1,7 +1,7 @@
 import React, {useState, useCallback, useMemo} from 'react'
 import {Source, Layer} from 'react-map-gl'
 import _ from 'lodash'
-import {Button, Form, Dropdown, Header, Message, Icon} from 'semantic-ui-react'
+import {Button, Form, Dropdown, Header, Message, Icon, Checkbox} from 'semantic-ui-react'
 import {useTranslation, Trans as Translate} from 'react-i18next'
 import Markdown from 'react-markdown'
 
@@ -96,6 +96,8 @@ const FORMATS = ['geojson', 'shapefile']
 
 export default function ExportPage() {
   const [mode, setMode] = useState('events')
+  const [snap, setSnap] = useState('snap')
+
   const [bbox, setBbox] = useState('8.294678,49.651182,9.059601,50.108249')
   const [fmt, setFmt] = useState('geojson')
   const config = useConfig()
@@ -127,6 +129,16 @@ export default function ExportPage() {
             onChange={(_e, {value}) => setMode(value)}
           />
         </Form.Field>
+        <Form.Field>
+        <Checkbox
+          label={t('ExportPage.snapping')}
+          name="snap"
+          value="true"
+          onChange={(_e, {value}) => setSnap(!snap)}
+
+        />
+        </Form.Field>
+
 
         <Form.Field>
           <label>{t('ExportPage.format.label')}</label>
@@ -149,7 +161,7 @@ export default function ExportPage() {
         <Button
           primary
           as="a"
-          href={`${config?.apiUrl}/export/${mode}?bbox=${bbox}&fmt=${fmt}`}
+          href={`${config?.apiUrl}/export/${mode}?bbox=${bbox}&fmt=${fmt}&snap=${snap}`}
           target="_blank"
           rel="noreferrer noopener"
         >

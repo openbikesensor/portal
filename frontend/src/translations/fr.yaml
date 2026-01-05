@@ -93,6 +93,7 @@ ExportPage:
     sélectionnez la zone de délimitation la plus petit possible et
     n'effectuez pas d'export à répétition.
   export: Exporter
+  snap: Snap evénements sur les rues
   mode:
     label: Mode
     placeholder: Sélectionner un mode
@@ -176,6 +177,7 @@ MapPage:
 
     obsEvents:
       title: Points d'événement
+      snap: Snap points d'événement sur rues
 
     obsTracks:
       title: Mes propre traces

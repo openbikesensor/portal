@@ -4,8 +4,10 @@ from datetime import datetime, time, timedelta
 from typing import Optional, Tuple
 
 import dateutil.parser
+from marshmallow.fields import Boolean
 from sanic.exceptions import Forbidden, InvalidUsage
 from sanic.response import raw
+from sanic.utils import str_to_bool
 
 from sqlalchemy import text
 
@@ -13,7 +15,7 @@ from obs.api.app import app
 from obs.api.utils import use_request_semaphore
 
 
-def get_tile(filename, zoom, x, y):
+def get_tile(filename, zoom, x, y, snap):
     """
     Inspired by:
     https://github.com/TileStache/TileStache/blob/master/TileStache/MBTiles.py
@@ -27,8 +29,8 @@ def get_tile(filename, zoom, x, y):
         raise ValueError("mbtiles file is in wrong format: %s" % fmt)
 
     content = db.execute(
-        "SELECT tile_data FROM tiles WHERE zoom_level=? AND tile_column=? AND tile_row=?",
-        (zoom, x, (2**zoom - 1) - y),
+        "SELECT tile_data FROM tiles WHERE zoom_level=? AND tile_column=? AND tile_row=? AND snap=?",
+        (zoom, x, (2 ** zoom - 1) - y, snap),
     ).fetchone()
     return content and content[0] or None
 
@@ -55,7 +57,11 @@ def round_date(date, to="weeks", up=False):
 TILE_CACHE_MAX_AGE = 3600 * 24
 
 
-def get_filter_options(
+def get_public_filter_options(req) -> Tuple[bool,]:
+    return (str_to_bool(req.ctx.get_single_arg("snap", default="false")),)
+
+
+def get_user_filter_options(
     req,
 ) -> Tuple[Optional[str], Optional[datetime], Optional[datetime]]:
     """
@@ -91,15 +97,16 @@ def get_filter_options(
 @app.route(r"/tiles/<zoom:int>/<x:int>/<y:(\d+)\.pbf>")
 async def tiles(req, zoom: int, x: int, y: str):
     async with use_request_semaphore(req, "tile_semaphore"):
+        snap, = get_public_filter_options(req)
         if app.config.get("TILES_FILE"):
-            tile = get_tile(req.app.config.TILES_FILE, int(zoom), int(x), int(y))
+            tile = get_tile(req.app.config.TILES_FILE, int(zoom), int(x), int(y), snap=snap)
 
         else:
-            user_id, start, end = get_filter_options(req)
+            user_id, start, end = get_user_filter_options(req)
 
             tile = await req.ctx.db.scalar(
                 text(
-                    "select data from getmvt(:zoom, :x, :y, :user_id, :min_time, :max_time) as b(data, key);"
+                    "select data from getmvt(:zoom, :x, :y, :user_id, :min_time, :max_time, :snap) as b(data, key);"
                 ).bindparams(
                     zoom=int(zoom),
                     x=int(x),
@@ -107,6 +114,7 @@ async def tiles(req, zoom: int, x: int, y: str):
                     user_id=user_id,
                     min_time=start,
                     max_time=end,
+                    snap=snap,
                 )
             )
 
