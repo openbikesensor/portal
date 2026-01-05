@@ -1,27 +1,28 @@
+import asyncio
+from datetime import datetime
 from functools import partial
+import hashlib
+import json
 import logging
 import os
-import json
-import asyncio
-import hashlib
-import struct
-import pytz
 from os.path import join
-from datetime import datetime
+import re
+import struct
 
-import numpy
+import pytz
 from shapely import Point
 from shapely.wkb import dumps as dump_wkb
-from sqlalchemy import delete, func, select, and_
-from sqlalchemy.orm import joinedload
+
 from haversine import Unit, haversine_vector
-from geopy import distance
+import numpy
+from sqlalchemy import and_, delete, func, select
+from sqlalchemy.orm import joinedload
 
-from .snapping import snap_to_roads, wsg84_to_mercator
-from .obs_csv import import_csv
-
-from obs.api.db import OvertakingEvent, RoadUsage, Track, UserDevice, make_session
 from obs.api.app import app
+from obs.api.db import OvertakingEvent, RoadUsage, Track, UserDevice, make_session
+from .obs_binary import process_binary
+from .obs_csv import process_csv
+from .snapping import wsg84_to_mercator
 
 log = logging.getLogger(__name__)
 
@@ -120,14 +121,11 @@ async def process_track(session, track):
         )
         os.makedirs(output_dir, exist_ok=True)
 
-        (
-            df,
-            event_rows,
-            track_metadata,
-            events,
-            track_json,
-            track_raw_json,
-        ) = await process_track_file(session, original_file_path)
+        df, track_metadata = await process_track_file(
+            session, original_file_path, track.original_file_name
+        )
+
+        event_rows, events, track_json, track_raw_json = convert_result_dataframe(df)
 
         fdata = json.loads(df.to_json(orient='columns'))
         full_data = {k:[v for v in fdata[k].values()] for k in fdata.keys()}
@@ -227,13 +225,40 @@ def fix_nan(v):
     return v
 
 
-async def process_track_file(session, track_file):
-    log.info("Load CSV file at %s", track_file)
-    df, track_metadata = import_csv(track_file)
+def guess(track_file, original_file_name):
+    # This is pretty sure a binary file
+    if re.match(r".+\.(obsr?(\.gz)?|protobuf|cobs|bin)$", original_file_name):
+        log.debug("Trying binary import due to filename %r.", original_file_name)
+        return [process_binary]
 
-    # Snap track to roads from the database, adding latitude_snapped and longitude_snapped
-    df = await snap_to_roads(session, df)
+    # This is pretty sure a binary file
+    if re.match(r"\.csv$", original_file_name):
+        log.debug(
+            "Trying CSV import, then binary, due to filename %r.", original_file_name
+        )
+        return [process_csv, process_binary]
 
+    # TODO: see if it looks like a CSV
+    try:
+        with open(track_file, "rb") as f:
+            start = f.read(256)
+            if b"OBSDataFormat" in start:
+                log.debug(
+                    "Trying CSV import due to file strat containing 'OBSDataFormat'."
+                )
+                return [process_csv]
+    except:
+        pass
+
+    # not sure, no magic
+    log.debug(
+        "Trying binary import, then CSV, because nothing else matched the filename %s.",
+        original_file_name,
+    )
+    return [process_binary, process_csv]
+
+
+def convert_result_dataframe(df):
     # remove entries with missing data
     event_rows = df[df["confirmed"] & ~numpy.isnan(df["distance_overtaker"])]
 
@@ -277,7 +302,28 @@ async def process_track_file(session, track_file):
         },
     }
 
-    return df, event_rows, track_metadata, events, track_json, track_raw_json
+    return event_rows, events, track_json, track_raw_json
+
+
+async def process_track_file(session, track_file, original_file_name):
+    log.info(
+        "Loading track file at %s, original file name %r.",
+        track_file,
+        original_file_name,
+    )
+
+    process_functions = guess(track_file, original_file_name)
+
+    for i, process_function in enumerate(process_functions):
+        try:
+            return await process_function(session, track_file)
+        except:
+            if i < len(process_functions) - 1:
+                log.warning("Import failed, trying next format.", exc_info=True)
+            else:
+                raise
+
+    raise ValueError("No import successful.")
 
 
 async def clear_track_data(session, track):
@@ -366,7 +412,7 @@ def get_road_usage_segments(df):
 async def import_road_usages(session, track, df):
     usages = {}
     for way_id, rows in get_road_usage_segments(df):
-        direction_reversed = numpy.mean(df["direction_reversed"]) > 0.5
+        direction_reversed = numpy.mean(list(r["direction_reversed"] for r in rows)) > 0.5
         start_time = rows[0]["datetime"]
         end_time = rows[-1]["datetime"]
         time = start_time + (end_time - start_time) / 2

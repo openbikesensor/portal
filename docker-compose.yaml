@@ -4,17 +4,16 @@
 #
 # For a production docker setup, please check the corresponding documentation.
 
-version: '3'
 
 services:
   postgres:
-    image: "openmaptiles/postgis:7.0"
+    image: "openmaptiles/postgis:7.1"
     environment:
       POSTGRES_USER: obs
       POSTGRES_PASSWORD: obs
       POSTGRES_DB: obs
     ports:
-      - '5432:5432'
+      - '127.0.0.1:5432:5432'
     volumes:
     - ./local/postgres/data:/var/lib/postgresql/data
 
@@ -41,7 +40,7 @@ services:
       - postgres
       - keycloak
     ports:
-      - '3000:3000'
+      - '127.0.0.1:3000:3000'
     restart: on-failure
     command:
       - openbikesensor-api
@@ -82,24 +81,24 @@ services:
       # used for proxy only
       - API_URL=http://api:3000/
     ports:
-      - '3001:3001'
+      - '127.0.0.1:3001:3001'
     restart: on-failure
     command:
       - npm
       - start
 
   keycloak:
-    image: jboss/keycloak
+    image: "quay.io/keycloak/keycloak:latest"
     ports:
-      - 3003:8080
-    depends_on:
-      - postgres
+      - 127.0.0.1:3003:8080
     environment:
-      KEYCLOAK_USER: admin
-      KEYCLOAK_PASSWORD: admin
-      KEYCLOAK_FRONTEND_URL: http://localhost:3003/auth/
-      DB_VENDOR: postgres
-      DB_ADDR: postgres
-      DB_DATABASE: obs
-      DB_USER: obs
-      DB_PASSWORD: obs
+      KC_HOSTNAME: http://localhost:3003/
+      KC_HOSTNAME_BACKCHANNEL_DYNAMIC: true
+      KC_BOOTSTRAP_ADMIN_USERNAME: admin
+      KC_BOOTSTRAP_ADMIN_PASSWORD: admin
+      OBS_KEYCLOAK_REALM: obs-dev
+      OBS_KEYCLOAK_PORTAL_REDIRECT_URI: http://localhost:3000/login/redirect
+    volumes:
+      - ./local/keycloak:/opt/keycloak/data/
+      - ./docs/prepare_obs_realm.sh:/prepare_obs_realm.sh
+    command: start-dev

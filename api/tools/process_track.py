@@ -6,12 +6,13 @@ import asyncio
 from obs.api.db import connect_db, make_session
 from obs.api.app import app
 from obs.api.process import process_track_file, process_tracks, process_tracks_loop
+from obs.bin.openbikesensor_api import setup_logging
 
 log = logging.getLogger(__name__)
 
 
 async def main():
-    logging.basicConfig(level=logging.DEBUG, format="%(levelname)s: %(message)s")
+    setup_logging(debug=True)
 
     parser = argparse.ArgumentParser(
         description="processes a single track for use in the portal, "
@@ -47,7 +48,7 @@ async def main():
     ):
         if args.file:
             async with make_session() as session:
-                df = await process_track_file(session, args.file)
+                await process_track_file(session, args.file, args.file)
         elif args.tracks:
             await process_tracks(args.tracks)
         else:

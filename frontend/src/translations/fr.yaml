@@ -164,13 +164,13 @@ MapPage:
         usage_count: Nombre de passages
         zone: Overtaking distance zone
         combined_score: Score combinée
-        overtaking_legality: Pourcent illégal
+        overtaking_legality: Pourcent sous 150cm
         overtaking_frequency: Dépassements par km
       combinedScore:
         label: Score
         description: >
           Le score combine le pourcentage de dépassements
-          rapprochés et le nombre de dépassements par distance
+          sous 150cm et le nombre de dépassements par distance
           d'utilisation de la route (fréquence de dépassement).
           Un trafic réduit peut être aussi utile qu'une plus grande
           distance de dépassement.

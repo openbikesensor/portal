@@ -21,7 +21,7 @@ RUN npm run build
 # Build the API and add the built frontend to it
 #############################################
 
-FROM python:3.11.3-bullseye
+FROM python:3.12.8-bookworm
 
 RUN apt-get update &&\
     apt-get install -y \
@@ -34,6 +34,7 @@ RUN apt-get update &&\
     libpq-dev \
     libproj-dev \
     lua5.3 \
+    python3-dev \
     liblua5.3-dev &&\
     rm -rf /var/lib/apt/lists/*
 
