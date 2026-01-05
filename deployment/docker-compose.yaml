@@ -136,7 +136,7 @@ services:
       - KC_PASSWORD=${OBS_KEYCLOAK_ADMIN_PASSWORD}
       - KC_BOOTSTRAP_ADMIN_USERNAME=${OBS_KEYCLOAK_ADMIN_USER:-admin}
       - KC_BOOTSTRAP_ADMIN_PASSWORD=${OBS_KEYCLOAK_ADMIN_PASSWORD:?need to set secure OBS_KEYCLOAK_ADMIN_PASSWORD}
-      - KC_HTTP_ENABLED=true
+      - KC_HTTP_ENABLED=false
       - KC_PROXY=edge
       - PROXY_ADDRESS_FORWARDING=true
       - OBS_KEYCLOAK_PORTAL_REDIRECT_URI=${OBS_KEYCLOAK_PORTAL_REDIRECT_URI}
@@ -144,7 +144,7 @@ services:
       - traefik
       - postgres-keycloak
     labels:
-      - "traefik.http.routers.login.rule=Host(`${OBS_KEYCLOAK_URI}`)"
+      - "traefik.http.routers.login.rule=Host(`${OBS_PORTAL_URI}`) && PathMatch(`/auth`)"
       - "traefik.http.routers.login.entrypoints=websecure"
       - "traefik.http.routers.login.tls=true"
       - "traefik.http.routers.login.tls.certresolver=leresolver"
