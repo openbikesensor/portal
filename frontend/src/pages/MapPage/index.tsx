@@ -186,7 +186,8 @@ function MapPage({login}) {
 
   const mapConfig = useMapConfig()
 
-  const viewportRef = useRef()
+  const viewportRef = useRef<ViewPortRef | null>(null)
+
   const mapInfoPortal = useRef()
 
   const onViewportChange = useCallback(
@@ -198,6 +199,7 @@ function MapPage({login}) {
 
   const onClick = useCallback(
     async (e) => {
+
       // check if we clicked inside the mapInfoBox, if so, early exit
       let node = e.target
       while (node) {
@@ -205,6 +207,12 @@ function MapPage({login}) {
           return
         }
         node = node.parentNode
+      }
+
+      const {lngLat} = e;
+
+      if (viewportRef.current === null) {
+        return
       }
 
       const {zoom} = viewportRef.current
@@ -215,8 +223,8 @@ function MapPage({login}) {
       } else {
         const road = await api.get('/mapdetails/road', {
           query: {
-            longitude: e.lngLat[0],
-            latitude: e.lngLat[1],
+            longitude: lngLat.lng,
+            latitude: lngLat.lat,
             radius: 100,
           },
         })
