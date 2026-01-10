@@ -1,6 +1,9 @@
 import asyncio
+import shutil
 from datetime import datetime
 from functools import partial
+
+import gzip
 import hashlib
 import json
 import logging
@@ -125,23 +128,28 @@ async def process_track(session, track):
             session, original_file_path, track.original_file_name
         )
 
+        if os.path.isdir(output_dir):
+            shutil.rmtree(output_dir)
+
+        os.makedirs(output_dir, exist_ok=True)
+
         event_rows, events, track_json, track_raw_json = convert_result_dataframe(df)
 
         fdata = json.loads(df.to_json(orient='columns'))
         full_data = {k:[v for v in fdata[k].values()] for k in fdata.keys()}
 
         for output_filename, data in [
-            ("events.json", events),
-            ("track.json", track_json),
-            ("trackRaw.json", track_raw_json),
-            ("full_data.json", full_data)
+            ("events.jsonz", events),
+            ("track.jsonz", track_json),
+            ("trackRaw.jsonz", track_raw_json),
+            ("full_data.jsonz", full_data)
         ]:
             target = join(output_dir, output_filename)
             log.debug("Writing file %s", target)
-            with open(target, "wt", encoding="utf-8") as fp:
+            with gzip.open(target, "wt", encoding="utf-8") as fp:
                 json.dump(data, fp, indent=4)
 
-        await export_gpx(df, join(output_dir, "track.gpx"), track.slug)
+        await export_gpx(df, gzip.open(join(output_dir, "track.gpx"),"wb"), track.slug)
 
         log.info("Clear old track data...")
         await clear_track_data(session, track)

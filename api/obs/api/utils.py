@@ -1,4 +1,5 @@
 import asyncio
+import gzip
 from contextlib import asynccontextmanager
 from datetime import datetime
 import logging
@@ -102,7 +103,7 @@ async def tar_of_tracks(req, files, file_basename="tracks"):
     root = commonpath(list(files))
     for fname in files:
         log.info("Write file to tar: %s", fname)
-        with open(fname, "rb") as fobj:
+        with gzip.open(fname, "rb") as fobj:
             tarinfo = tar.gettarinfo(fname)
             tarinfo.name = join(file_basename, relpath(fname, root))
             tar.addfile(tarinfo, fobj)

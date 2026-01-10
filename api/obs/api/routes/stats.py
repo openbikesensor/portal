@@ -113,6 +113,9 @@ async def stats(req):
         )
     ).scalar()
 
+    computing_count = (await req.ctx.db.execute(select(func.count(distinct(Track.id))).select_from(Track).where(Track.processing_status == 'queued'))).scalar()
+
+
     result = {
         "numEvents": event_count,
         "userCount": user_count,
@@ -121,6 +124,7 @@ async def stats(req):
         "publicTrackCount": public_track_count,
         "trackCount": track_count,
         "deviceCount": device_count,
+        "computingTrackCount": computing_count
     }
 
     return json(result)

@@ -1,3 +1,4 @@
+import gzip
 import logging
 import re
 from datetime import date
@@ -15,6 +16,28 @@ from obs.api.db import Track, Comment, DuplicateTrackFileError
 from obs.api.utils import tar_of_tracks
 
 log = logging.getLogger(__name__)
+
+TRACK_FILE_BY_KEY = {
+    "events": "events.json",
+    "track": "track.json",
+    "trackRaw": "trackRaw.json",
+    "fullData": "full_data.json"
+}
+
+TRACK_CONTENT_DUMMY = {
+    "fullData": {"latitude": [],
+                 "longitude": [],
+                 "course": [],
+                 "speed": [],
+                 "distance_overtaker": [],
+                 "distance_stationary": [],
+                 "confirmed": [],
+                 "datetime": [],
+                 "longitude_snapped": [],
+                 "latitude_snapped": [],
+                 "way_id": [],
+                 "direction_reversed": []}
+}
 
 
 def normalize_user_agent(user_agent):
@@ -263,27 +286,23 @@ async def delete_track(req, slug: str):
     return empty()
 
 
+
 @api.get("/tracks/<slug:str>/data")
 async def get_track_data(req, slug: str):
     track = await _load_track(req, slug)
 
-    FILE_BY_KEY = {
-        "events": "events.json",
-        "track": "track.json",
-        "trackRaw": "trackRaw.json",
-        "fullData": "full_data.json"
-    }
-
     result = {}
 
-    for key, filename in FILE_BY_KEY.items():
+    for key, filename in TRACK_FILE_BY_KEY.items():
         file_path = join(
             req.app.config.PROCESSING_OUTPUT_DIR, track.file_path, filename
         )
         if not exists(file_path) or not isfile(file_path):
+            if key in TRACK_CONTENT_DUMMY:
+                result[key]=TRACK_CONTENT_DUMMY[key]
             continue
 
-        with open(file_path) as f:
+        with gzip.open(file_path, "rt", encoding="utf-8") as f:
             result[key] = jsonload(f)
 
     return json(
@@ -320,6 +339,7 @@ async def download_track_gpx(req, slug: str):
         file_path,
         mime_type="application/gpx+xml",
         filename=f"{slug}.gpx",
+        headers={"Content-Encoding": "gzip"},
     )
 
 
