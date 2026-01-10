@@ -19,10 +19,10 @@ from obs.api.utils import tar_of_tracks
 log = logging.getLogger(__name__)
 
 TRACK_FILE_BY_KEY = {
-    "events": "events.json",
-    "track": "track.json",
-    "trackRaw": "trackRaw.json",
-    "fullData": "full_data.json"
+    "events": "events.json.gz",
+    "track": "track.json.gz",
+    "trackRaw": "trackRaw.json.gz",
+    "fullData": "full_data.json.gz"
 }
 
 TRACK_CONTENT_DUMMY = {

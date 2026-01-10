@@ -140,10 +140,10 @@ async def process_track(session, track):
         full_data = {k:[v for v in fdata[k].values()] for k in fdata.keys()}
 
         for output_filename, data in [
-            ("events.jsonz", events),
-            ("track.jsonz", track_json),
-            ("trackRaw.jsonz", track_raw_json),
-            ("full_data.jsonz", full_data)
+            ("events.json.gz", events),
+            ("track.json.gz", track_json),
+            ("trackRaw.json.gz", track_raw_json),
+            ("full_data.json.gz", full_data)
         ]:
             target = join(output_dir, output_filename)
             log.debug("Writing file %s", target)
