@@ -2,9 +2,10 @@ import gzip
 import logging
 import re
 from datetime import date
-from json import load as jsonload
+from json import loads as jsonloads
 from os.path import join, exists, isfile
 
+from aiogzip import AsyncGzipFile
 from sanic.exceptions import InvalidUsage, NotFound, Forbidden
 from sanic.response import file_stream, empty
 from slugify import slugify
@@ -302,8 +303,8 @@ async def get_track_data(req, slug: str):
                 result[key]=TRACK_CONTENT_DUMMY[key]
             continue
 
-        with gzip.open(file_path, "rt", encoding="utf-8") as f:
-            result[key] = jsonload(f)
+        async with AsyncGzipFile(file_path, "rt", encoding="utf-8") as f:
+            result[key] = jsonloads(await f.read())
 
     return json(
         result,

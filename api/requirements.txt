@@ -34,3 +34,4 @@ stream-zip~=0.0.50
 transformations>=2024.4.24
 tzwhere>=3.0.3
 websockets<11
+aiogzip

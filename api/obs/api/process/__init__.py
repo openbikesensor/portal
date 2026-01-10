@@ -2,8 +2,9 @@ import asyncio
 import shutil
 from datetime import datetime
 from functools import partial
-
 import gzip
+
+from aiogzip import AsyncGzipFile
 import hashlib
 import json
 import logging
@@ -146,8 +147,9 @@ async def process_track(session, track):
         ]:
             target = join(output_dir, output_filename)
             log.debug("Writing file %s", target)
-            with gzip.open(target, "wt", encoding="utf-8") as fp:
-                json.dump(data, fp, indent=4)
+            async with AsyncGzipFile(target, "wt", encoding="utf-8") as fp:
+                await fp.write(json.dumps(data, indent=4))
+
 
         await export_gpx(df, gzip.open(join(output_dir, "track.gpx"),"wb"), track.slug)
 
