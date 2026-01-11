@@ -4,6 +4,7 @@ from datetime import datetime
 from functools import partial
 import gzip
 
+import aiofiles
 from aiogzip import AsyncGzipFile
 import hashlib
 import json
@@ -112,6 +113,16 @@ async def export_gpx(df, filename, name):
     et.write(filename, encoding="utf-8", xml_declaration=True)
 
 
+async def gzip_original(original_file_path):
+    if original_file_path.endswith("csv"):
+        extension = "t"
+    else:
+        extension = "b"
+    async with aiofiles.open(original_file_path, f"r{extension}") as f:
+        content = await f.read()
+    async with AsyncGzipFile(f"{original_file_path}.gz", f"w{extension}", compresslevel=9) as gz:
+        await gz.write(content)
+
 async def process_track(session, track):
     try:
         track.processing_status = "complete"
@@ -119,6 +130,12 @@ async def process_track(session, track):
         await session.commit()
 
         original_file_path = track.get_original_file_path(app.config)
+
+        if os.path.isfile(original_file_path):
+            log.info(f"{original_file_path} still uncompressed, gzipping")
+            await gzip_original(original_file_path)
+            log.info(f"gzipping successful, removing uncompressed file {original_file_path}")
+            os.unlink(original_file_path)
 
         output_dir = join(
             app.config.PROCESSING_OUTPUT_DIR, track.author.username, track.slug
@@ -147,7 +164,7 @@ async def process_track(session, track):
         ]:
             target = join(output_dir, output_filename)
             log.debug("Writing file %s", target)
-            async with AsyncGzipFile(target, "wt", encoding="utf-8") as fp:
+            async with AsyncGzipFile(target, "wt", encoding="utf-8", compresslevel=9) as fp:
                 await fp.write(json.dumps(data, indent=4))
 
 
@@ -241,8 +258,8 @@ def guess(track_file, original_file_name):
         log.debug("Trying binary import due to filename %r.", original_file_name)
         return [process_binary]
 
-    # This is pretty sure a binary file
-    if re.match(r"\.csv$", original_file_name):
+    # This is pretty sure a csv file -maybe compressed
+    if re.match(r".*\.csv(\.gz)?$", original_file_name):
         log.debug(
             "Trying CSV import, then binary, due to filename %r.", original_file_name
         )
@@ -322,11 +339,11 @@ async def process_track_file(session, track_file, original_file_name):
         original_file_name,
     )
 
-    process_functions = guess(track_file, original_file_name)
+    process_functions = guess(track_file, f"{original_file_name}.gz")
 
     for i, process_function in enumerate(process_functions):
         try:
-            return await process_function(session, track_file)
+            return await process_function(session, f"{track_file}.gz")
         except:
             if i < len(process_functions) - 1:
                 log.warning("Import failed, trying next format.", exc_info=True)

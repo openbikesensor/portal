@@ -23,6 +23,7 @@ import logging
 
 import pandas
 import numpy
+from aiogzip import AsyncGzipFile
 from cobs import cobs
 from haversine import haversine, Unit
 import pyproj
@@ -84,8 +85,8 @@ async def process_binary(session, filename):
     df = []
     metadata = {}  # TODO
 
-    with open(filename, "rb") as f:
-        binary_data = f.read()
+    async with AsyncGzipFile(filename, "rb") as f:
+        binary_data = await f.read()
     try:
         chunks = filter(len, map(cobs.decode, binary_data.split(b"\x00")))
         events = list(map(parse_event, chunks))

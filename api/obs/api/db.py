@@ -11,6 +11,8 @@ import aiofiles
 import random
 import string
 import secrets
+
+from aiogzip import AsyncGzipFile
 from slugify import slugify
 import logging
 
@@ -360,7 +362,7 @@ class Track(Base):
 
         target = self.get_original_file_path(config)
         os.makedirs(dirname(target), exist_ok=True)
-        async with aiofiles.open(target, mode=mode) as f:
+        async with AsyncGzipFile(f"{target}.gz", mode=mode, compresslevel=9) as f:
             await f.write(body)
 
     def queue_processing(self):

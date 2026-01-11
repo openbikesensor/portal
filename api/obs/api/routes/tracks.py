@@ -1,5 +1,6 @@
 import gzip
 import logging
+import os
 import re
 from datetime import date
 from json import loads as jsonloads
@@ -318,8 +319,19 @@ async def download_original_file(req, slug: str):
     if not track.is_visible_to_private(req.ctx.user):
         raise Forbidden()
 
+    track_filename = track.get_original_file_path(req.app.config)
+    track_filename_gz = track_filename + ".gz"
+
+    if os.path.exists(track_filename_gz) and os.path.isfile(track_filename_gz):
+        return await file_stream(
+           track_filename_gz,
+            mime_type="text/csv",
+            filename=f"{slug}.csv",
+            headers={"Content-Encoding": "gzip"}
+        )
+
     return await file_stream(
-        track.get_original_file_path(req.app.config),
+       track_filename,
         mime_type="text/csv",
         filename=f"{slug}.csv",
     )

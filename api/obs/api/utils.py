@@ -1,12 +1,16 @@
 import asyncio
+import gzip
+import os
 from contextlib import asynccontextmanager
 from datetime import datetime
 import logging
 from os.path import commonpath, join, relpath
 import queue
 import tarfile
-
+import struct
+import aiofiles
 import dateutil.parser
+from aiogzip import AsyncGzipFile
 from sanic.exceptions import InvalidUsage, ServiceUnavailable
 
 log = logging.getLogger(__name__)
@@ -98,15 +102,35 @@ async def tar_of_tracks(req, files, file_basename="tracks"):
     helper = StreamerHelper(response)
 
     tar = tarfile.open(name=None, fileobj=helper, mode="w|bz2", bufsize=256 * 512)
-
     root = commonpath(list(files))
+
+    async def add_to_tar(fname, fobj, size=None):
+        if size is not None:
+            tarinfo = tarfile.TarInfo(fname)
+            tarinfo.size = size
+        else:
+            tarinfo = tar.gettarinfo(fname)
+
+        tarinfo.name = join(file_basename, relpath(fname, root))
+        log.info(f"tarinfo: {tarinfo}")
+        tar.addfile(tarinfo, fobj)
+        await helper.send_all()
+
+
     for fname in files:
         log.info("Write file to tar: %s", fname)
-        with open(fname, "rb") as fobj:
-            tarinfo = tar.gettarinfo(fname)
-            tarinfo.name = join(file_basename, relpath(fname, root))
-            tar.addfile(tarinfo, fobj)
-            await helper.send_all()
+        if os.path.isfile(f"{fname}.gz"):
+            with open(f"{fname}.gz", 'rb') as f:
+                # Seek to the last 4 bytes
+                f.seek(-4, os.SEEK_END)
+                # Read as an unsigned 32-bit integer (little-endian)
+                size = struct.unpack("<I", f.read(4))[0]
+            with gzip.open(f"{fname}.gz", "rb") as fobj:
+                await add_to_tar(fname, fobj, size)
+        else:
+            with open(fname, "rb") as fobj:
+                await add_to_tar(fname,fobj)
+
     tar.close()
     await helper.send_all()
 
