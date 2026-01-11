@@ -8,6 +8,8 @@ from os.path import commonpath, join, relpath
 import queue
 import tarfile
 import struct
+from typing import Any
+
 import aiofiles
 import dateutil.parser
 from aiogzip import AsyncGzipFile
@@ -120,21 +122,26 @@ async def tar_of_tracks(req, files, file_basename="tracks"):
     for fname in files:
         log.info("Write file to tar: %s", fname)
         if os.path.isfile(f"{fname}.gz"):
-            with open(f"{fname}.gz", 'rb') as f:
-                # Seek to the last 4 bytes
-                f.seek(-4, os.SEEK_END)
-                # Read as an unsigned 32-bit integer (little-endian)
-                size = struct.unpack("<I", f.read(4))[0]
+            size = await size_of_uncompressed_data_in_gz(fname)
             with gzip.open(f"{fname}.gz", "rb") as fobj:
                 await add_to_tar(fname, fobj, size)
         else:
             with open(fname, "rb") as fobj:
-                await add_to_tar(fname,fobj)
+                await add_to_tar(fname, fobj)
 
     tar.close()
     await helper.send_all()
 
     await response.eof()
+
+
+async def size_of_uncompressed_data_in_gz(fname) -> Any:
+    async with aiofiles.open(f"{fname}.gz", 'rb') as f:
+        # Seek to the last 4 bytes
+        await f.seek(-4, os.SEEK_END)
+        # Read as an unsigned 32-bit integer (little-endian)
+        size = struct.unpack("<I", await f.read(4))[0]
+    return size
 
 
 class StreamerHelper:
