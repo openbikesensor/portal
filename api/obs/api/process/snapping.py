@@ -171,7 +171,7 @@ def angle_between(v1, v2):
 
 
 def candidate_cost(distance_to_gps, road_direction_dot, directionality):
-    cost_direction_factor = 15
+    cost_direction_factor = 30
     cost_per_meter_distance_to_gps = 0.1
 
     return (
