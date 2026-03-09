@@ -104,6 +104,30 @@ async def export_events(req):
             ).bindparams(bbox0=bbox[0], bbox1=bbox[1], bbox2=bbox[2], bbox3=bbox[3], snap=snap)
         )
 
+        print(text(
+                """
+                SELECT
+                    ST_AsGeoJSON(ST_Transform(geometry, 4326)) AS geometry,
+                    distance_overtaker,
+                    distance_stationary,
+                    way_id,
+                    direction,
+                    speed,
+                    time_stamp,
+                    course,
+                    zone
+                FROM
+                    layer_obs_events(
+                        ST_Transform(ST_MakeEnvelope(:bbox0, :bbox1, :bbox2, :bbox3, 4326), 3857),
+                        19,
+                        NULL,
+                        '1900-01-01'::timestamp,
+                        '2100-01-01'::timestamp,
+                        :snap
+                    )
+                """
+            ).bindparams(bbox0=bbox[0], bbox1=bbox[1], bbox2=bbox[2], bbox3=bbox[3], snap=snap))
+
         if fmt == ExportFormat.SHAPEFILE:
             with shapefile_zip(basename="events") as (writer, zip_buffer):
                 writer.field("distance_overtaker", "N", decimal=4)
@@ -133,36 +157,37 @@ async def export_events(req):
         if fmt == ExportFormat.GEOJSON:
             features = []
             async for event in events:
-                geom = json.loads(event.geometry)
-                features.append(
-                    {
-                        "type": "Feature",
-                        "geometry": geom,
-                        "properties": {
-                            "distance_overtaker": event.distance_overtaker
-                            if event.distance_overtaker is not None
-                            and not math.isnan(event.distance_overtaker)
-                            else None,
-                            "distance_stationary": event.distance_stationary
-                            if event.distance_stationary is not None
-                            and not math.isnan(event.distance_stationary)
-                            else None,
-                            "direction": event.direction
-                            if event.direction is not None
-                            and not math.isnan(event.direction)
-                            else None,
-                            "way_id": event.way_id,
-                            "course": event.course
-                            if event.course is not None and not math.isnan(event.course)
-                            else None,
-                            "speed": event.speed
-                            if event.speed is not None and not math.isnan(event.speed)
-                            else None,
-                            "time": event.time_stamp,
-                            "zone": event.zone,
-                        },
-                    }
-                )
+                if event.geometry is not None:
+                    geom = json.loads(event.geometry)
+                    features.append(
+                        {
+                            "type": "Feature",
+                            "geometry": geom,
+                            "properties": {
+                                "distance_overtaker": event.distance_overtaker
+                                if event.distance_overtaker is not None
+                                and not math.isnan(event.distance_overtaker)
+                                else None,
+                                "distance_stationary": event.distance_stationary
+                                if event.distance_stationary is not None
+                                and not math.isnan(event.distance_stationary)
+                                else None,
+                                "direction": event.direction
+                                if event.direction is not None
+                                and not math.isnan(event.direction)
+                                else None,
+                                "way_id": event.way_id,
+                                "course": event.course
+                                if event.course is not None and not math.isnan(event.course)
+                                else None,
+                                "speed": event.speed
+                                if event.speed is not None and not math.isnan(event.speed)
+                                else None,
+                                "time": event.time_stamp,
+                                "zone": event.zone,
+                            },
+                        }
+                    )
 
             geojson = {"type": "FeatureCollection", "features": features}
             return json_response(geojson)
