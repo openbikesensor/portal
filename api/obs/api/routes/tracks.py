@@ -1,9 +1,12 @@
+import gzip
 import logging
+import os
 import re
 from datetime import date
-from json import load as jsonload
+from json import loads as jsonloads
 from os.path import join, exists, isfile
 
+from aiogzip import AsyncGzipFile
 from sanic.exceptions import InvalidUsage, NotFound, Forbidden
 from sanic.response import file_stream, empty
 from slugify import slugify
@@ -15,6 +18,28 @@ from obs.api.db import Track, Comment, DuplicateTrackFileError
 from obs.api.utils import tar_of_tracks
 
 log = logging.getLogger(__name__)
+
+TRACK_FILE_BY_KEY = {
+    "events": "events.json.gz",
+    "track": "track.json.gz",
+    "trackRaw": "trackRaw.json.gz",
+    "fullData": "full_data.json.gz"
+}
+
+TRACK_CONTENT_DUMMY = {
+    "fullData": {"latitude": [],
+                 "longitude": [],
+                 "course": [],
+                 "speed": [],
+                 "distance_overtaker": [],
+                 "distance_stationary": [],
+                 "confirmed": [],
+                 "datetime": [],
+                 "longitude_snapped": [],
+                 "latitude_snapped": [],
+                 "way_id": [],
+                 "direction_reversed": []}
+}
 
 
 def normalize_user_agent(user_agent):
@@ -263,27 +288,24 @@ async def delete_track(req, slug: str):
     return empty()
 
 
+
 @api.get("/tracks/<slug:str>/data")
 async def get_track_data(req, slug: str):
     track = await _load_track(req, slug)
 
-    FILE_BY_KEY = {
-        "events": "events.json",
-        "track": "track.json",
-        "trackRaw": "trackRaw.json",
-    }
-
     result = {}
 
-    for key, filename in FILE_BY_KEY.items():
+    for key, filename in TRACK_FILE_BY_KEY.items():
         file_path = join(
             req.app.config.PROCESSING_OUTPUT_DIR, track.file_path, filename
         )
         if not exists(file_path) or not isfile(file_path):
+            if key in TRACK_CONTENT_DUMMY:
+                result[key]=TRACK_CONTENT_DUMMY[key]
             continue
 
-        with open(file_path) as f:
-            result[key] = jsonload(f)
+        async with AsyncGzipFile(file_path, "rt", encoding="utf-8") as f:
+            result[key] = jsonloads(await f.read())
 
     return json(
         result,
@@ -297,8 +319,19 @@ async def download_original_file(req, slug: str):
     if not track.is_visible_to_private(req.ctx.user):
         raise Forbidden()
 
+    track_filename = track.get_original_file_path(req.app.config)
+    track_filename_gz = track_filename + ".gz"
+
+    if os.path.exists(track_filename_gz) and os.path.isfile(track_filename_gz):
+        return await file_stream(
+           track_filename_gz,
+            mime_type="text/csv",
+            filename=f"{slug}.csv",
+            headers={"Content-Encoding": "gzip"}
+        )
+
     return await file_stream(
-        track.get_original_file_path(req.app.config),
+       track_filename,
         mime_type="text/csv",
         filename=f"{slug}.csv",
     )
@@ -319,6 +352,7 @@ async def download_track_gpx(req, slug: str):
         file_path,
         mime_type="application/gpx+xml",
         filename=f"{slug}.gpx",
+        headers={"Content-Encoding": "gzip"},
     )
 
 

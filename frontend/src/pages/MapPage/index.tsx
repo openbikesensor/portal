@@ -1,7 +1,7 @@
 import React, {useState, useCallback, useMemo, useRef} from 'react'
 import {connect} from 'react-redux'
 import {Button} from 'semantic-ui-react'
-import {Layer, Source} from 'react-map-gl'
+import {Layer, Source} from 'react-map-gl/maplibre'
 import produce from 'immer'
 import classNames from 'classnames'
 
@@ -119,7 +119,7 @@ const getRoadsLayer = (colorAttribute, maxCount) =>
       color = COLOR_FREQUENCY
     } else if (colorAttribute.startsWith('distance_')) {
       color = colorByDistance(colorAttribute)
-    } else if (colorAttribute.endsWith('_count') | colorAttribute.endsWith('_length')) {
+    } else if (colorAttribute.endsWith('_count') || colorAttribute.endsWith('_length')) {
       color = colorByCount(colorAttribute, maxCount)
     } else if (colorAttribute.endsWith('zone')) {
       color = COLOR_BY_ZONE
@@ -186,7 +186,8 @@ function MapPage({login}) {
 
   const mapConfig = useMapConfig()
 
-  const viewportRef = useRef()
+  const viewportRef = useRef<ViewPortRef | null>(null)
+
   const mapInfoPortal = useRef()
 
   const onViewportChange = useCallback(
@@ -198,6 +199,7 @@ function MapPage({login}) {
 
   const onClick = useCallback(
     async (e) => {
+
       // check if we clicked inside the mapInfoBox, if so, early exit
       let node = e.target
       while (node) {
@@ -205,6 +207,12 @@ function MapPage({login}) {
           return
         }
         node = node.parentNode
+      }
+
+      const {lngLat} = e;
+
+      if (viewportRef.current === null) {
+        return
       }
 
       const {zoom} = viewportRef.current
@@ -215,8 +223,8 @@ function MapPage({login}) {
       } else {
         const road = await api.get('/mapdetails/road', {
           query: {
-            longitude: e.lngLat[0],
-            latitude: e.lngLat[1],
+            longitude: lngLat.lng,
+            latitude: lngLat.lat,
             radius: 100,
           },
         })
@@ -276,10 +284,14 @@ function MapPage({login}) {
 
   const tiles = obsMapSource?.tiles?.map((tileUrl: string) => {
     const query = new URLSearchParams()
+      if (mapConfig.filters.snapEvents) {
+        query.append('snap', true)
+      }
     if (login) {
       if (mapConfig.filters.currentUser) {
         query.append('user', login.id)
       }
+
 
       if (mapConfig.filters.dateMode === 'range') {
         if (mapConfig.filters.startDate) {

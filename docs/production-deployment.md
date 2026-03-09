@@ -143,7 +143,7 @@ to create a realm and a client now:
 ```bash
 [ -d /opt/jboss ] && export KCBASE=/opt/jboss/keycloak || export KCBASE=/opt/keycloak
 # Login
-$KCBSE/bin/kcadm.sh config credentials --server http://localhost:8080/auth --realm master --user $KEYCLOAK_USER --password $KEYCLOAK_PASSWORD
+$KCBASE/bin/kcadm.sh config credentials --server http://localhost:8080/auth --realm master --user $KEYCLOAK_USER --password $KEYCLOAK_PASSWORD
 
 # Create Realm
 $KCBASE/bin/kcadm.sh create realms -s realm=$OBS_KEYCLOAK_REALM -s enabled=true -o

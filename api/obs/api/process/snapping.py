@@ -23,6 +23,7 @@ from functools import cached_property, partial
 from typing import Optional
 
 import numpy as np
+import pandas as pd
 from pyproj import Transformer
 import shapely
 from shapely.geometry import MultiPoint
@@ -45,16 +46,6 @@ wsg84_to_mercator = partial(
 mercator_to_wsg84 = partial(
     transform, Transformer.from_crs(WEB_MERCATOR, WSG84, always_xy=True).transform
 )
-
-
-def point_feature_collection(df) -> MultiPoint:
-    """
-    Produces a MultiPoint geometry from a dataframe that contains the
-    `latitude` and `longitude` columns. Geometry will be same projection
-    as the input, i.e. usually WGS84.
-    """
-    coordinates = np.dstack((df["longitude"], df["latitude"]))[0]
-    return MultiPoint(coordinates)
 
 
 async def load_roads(session, track_points: MultiPoint, buffer):
@@ -133,10 +124,7 @@ def cost_by_direction_dot(dot, directionality):
     if directionality < 0:
         dot *= -1
 
-    if dot < 0:
-        return (2 + dot) ** 2 * 0.7 + 0.3
-    else:
-        return (2 - dot) ** 2
+    return 2 - dot
 
 
 def cost_by_angle(direction, road_direction, directionality):
@@ -242,8 +230,12 @@ def edge_cost(c1: Candidate, c2: Candidate):
     return c2.cost + cost
 
 
-async def snap_to_roads(session, df, buffer=120.0, choice_count=10):
-    point_count = len(df)
+async def snap_to_roads(session, coordinates, buffer=120.0, choice_count=10):
+    """
+    coordinates: An array of longitude, latitude pairs.
+    """
+
+    point_count = len(coordinates)
     direction_offset = 5
     min_points = 2 * direction_offset + 1
 
@@ -252,7 +244,7 @@ async def snap_to_roads(session, df, buffer=120.0, choice_count=10):
 
     # Create a raw point collection, and change it to the mercator projection,
     # in which we do all our computations
-    track_points = wsg84_to_mercator(point_feature_collection(df))
+    track_points = wsg84_to_mercator(MultiPoint(coordinates))
 
     # Load roads that are within `buffer` meters to any point of the track.
     roads = await load_roads(session, track_points, buffer)
@@ -336,15 +328,13 @@ async def snap_to_roads(session, df, buffer=120.0, choice_count=10):
 
     result_candidates = list(reversed(backwards_path))
 
-    # Extract information
-    df = df.copy()
-
     coordinates_wsg80 = mercator_to_wsg84(
         MultiPoint([c.road_point for c in result_candidates])
     )
 
-    df["longitude_snapped"] = [p.x for p in coordinates_wsg80.geoms]
-    df["latitude_snapped"] = [p.y for p in coordinates_wsg80.geoms]
-    df["way_id"] = [c.road.way_id if c.road else 0 for c in result_candidates]
-    df["direction_reversed"] = [c.road_direction_dot < 0 for c in result_candidates]
-    return df
+    return (
+        [p.x for p in coordinates_wsg80.geoms],
+        [p.y for p in coordinates_wsg80.geoms],
+        [c.road.way_id if c.road else 0 for c in result_candidates],
+        [c.road_direction_dot < 0 for c in result_candidates],
+    )

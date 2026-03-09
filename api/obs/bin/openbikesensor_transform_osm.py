@@ -168,9 +168,10 @@ class OSMHandler(osmium.SimpleHandler):
         vehicle = tags.get("vehicle", None)
         motorroad = tags.get("motorroad", None)
 
-        if (bicycle == "no"
-                or ((access == "no" or vehicle == "no" or motorroad == "yes")
-                    and bicycle not in ["designated", "yes", "permissive", "destination"])):
+        # We allow "bicycle=no" here. Why? Because S-Pedelecs often must drive on roads where "bicycle=no"
+        # and the minimum overtaking distance in Germany is the same vor S-Pedelecs.
+        if  ((access == "no" or vehicle == "no" or motorroad == "yes")
+                    and bicycle not in ["designated", "yes", "permissive", "destination"]):
             return
 
         zone = determine_zone(tags)

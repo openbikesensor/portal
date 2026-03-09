@@ -1,27 +1,33 @@
+import asyncio
+import shutil
+from datetime import datetime
 from functools import partial
+import gzip
+
+import aiofiles
+from aiogzip import AsyncGzipFile
+import hashlib
+import json
 import logging
 import os
-import json
-import asyncio
-import hashlib
-import struct
-import pytz
 from os.path import join
-from datetime import datetime
+import re
+import struct
 
-import numpy
+import pytz
 from shapely import Point
 from shapely.wkb import dumps as dump_wkb
-from sqlalchemy import delete, func, select, and_
-from sqlalchemy.orm import joinedload
+
 from haversine import Unit, haversine_vector
-from geopy import distance
+import numpy
+from sqlalchemy import and_, delete, func, select
+from sqlalchemy.orm import joinedload
 
-from .snapping import snap_to_roads, wsg84_to_mercator
-from .obs_csv import import_csv
-
-from obs.api.db import OvertakingEvent, RoadUsage, Track, UserDevice, make_session
 from obs.api.app import app
+from obs.api.db import OvertakingEvent, RoadUsage, Track, UserDevice, make_session
+from .obs_binary import process_binary
+from .obs_csv import process_csv
+from .snapping import wsg84_to_mercator
 
 log = logging.getLogger(__name__)
 
@@ -107,6 +113,16 @@ async def export_gpx(df, filename, name):
     et.write(filename, encoding="utf-8", xml_declaration=True)
 
 
+async def gzip_original(original_file_path):
+    if original_file_path.endswith("csv"):
+        extension = "t"
+    else:
+        extension = "b"
+    async with aiofiles.open(original_file_path, f"r{extension}") as f:
+        content = await f.read()
+    async with AsyncGzipFile(f"{original_file_path}.gz", f"w{extension}", compresslevel=9) as gz:
+        await gz.write(content)
+
 async def process_track(session, track):
     try:
         track.processing_status = "complete"
@@ -115,31 +131,44 @@ async def process_track(session, track):
 
         original_file_path = track.get_original_file_path(app.config)
 
+        if os.path.isfile(original_file_path):
+            log.info(f"{original_file_path} still uncompressed, gzipping")
+            await gzip_original(original_file_path)
+            log.info(f"gzipping successful, removing uncompressed file {original_file_path}")
+            os.unlink(original_file_path)
+
         output_dir = join(
             app.config.PROCESSING_OUTPUT_DIR, track.author.username, track.slug
         )
         os.makedirs(output_dir, exist_ok=True)
 
-        (
-            df,
-            event_rows,
-            track_metadata,
-            events,
-            track_json,
-            track_raw_json,
-        ) = await process_track_file(session, original_file_path)
+        df, track_metadata = await process_track_file(
+            session, original_file_path, track.original_file_name
+        )
+
+        if os.path.isdir(output_dir):
+            shutil.rmtree(output_dir)
+
+        os.makedirs(output_dir, exist_ok=True)
+
+        event_rows, events, track_json, track_raw_json = convert_result_dataframe(df)
+
+        fdata = json.loads(df.to_json(orient='columns'))
+        full_data = {k:[v for v in fdata[k].values()] for k in fdata.keys()}
 
         for output_filename, data in [
-            ("events.json", events),
-            ("track.json", track_json),
-            ("trackRaw.json", track_raw_json),
+            ("events.json.gz", events),
+            ("track.json.gz", track_json),
+            ("trackRaw.json.gz", track_raw_json),
+            ("full_data.json.gz", full_data)
         ]:
             target = join(output_dir, output_filename)
             log.debug("Writing file %s", target)
-            with open(target, "wt", encoding="utf-8") as fp:
-                json.dump(data, fp, indent=4)
+            async with AsyncGzipFile(target, "wt", encoding="utf-8", compresslevel=9) as fp:
+                await fp.write(json.dumps(data, indent=4))
 
-        await export_gpx(df, join(output_dir, "track.gpx"), track.slug)
+
+        await export_gpx(df, gzip.open(join(output_dir, "track.gpx"),"wb"), track.slug)
 
         log.info("Clear old track data...")
         await clear_track_data(session, track)
@@ -223,13 +252,40 @@ def fix_nan(v):
     return v
 
 
-async def process_track_file(session, track_file):
-    log.info("Load CSV file at %s", track_file)
-    df, track_metadata = import_csv(track_file)
+def guess(track_file, original_file_name):
+    # This is pretty sure a binary file
+    if re.match(r".+\.(obsr?(\.gz)?|protobuf|cobs|bin)$", original_file_name):
+        log.debug("Trying binary import due to filename %r.", original_file_name)
+        return [process_binary]
 
-    # Snap track to roads from the database, adding latitude_snapped and longitude_snapped
-    df = await snap_to_roads(session, df)
+    # This is pretty sure a csv file -maybe compressed
+    if re.match(r".*\.csv(\.gz)?$", original_file_name):
+        log.debug(
+            "Trying CSV import, then binary, due to filename %r.", original_file_name
+        )
+        return [process_csv, process_binary]
 
+    # TODO: see if it looks like a CSV
+    try:
+        with open(track_file, "rb") as f:
+            start = f.read(256)
+            if b"OBSDataFormat" in start:
+                log.debug(
+                    "Trying CSV import due to file strat containing 'OBSDataFormat'."
+                )
+                return [process_csv]
+    except:
+        pass
+
+    # not sure, no magic
+    log.debug(
+        "Trying binary import, then CSV, because nothing else matched the filename %s.",
+        original_file_name,
+    )
+    return [process_binary, process_csv]
+
+
+def convert_result_dataframe(df):
     # remove entries with missing data
     event_rows = df[df["confirmed"] & ~numpy.isnan(df["distance_overtaker"])]
 
@@ -273,7 +329,28 @@ async def process_track_file(session, track_file):
         },
     }
 
-    return df, event_rows, track_metadata, events, track_json, track_raw_json
+    return event_rows, events, track_json, track_raw_json
+
+
+async def process_track_file(session, track_file, original_file_name):
+    log.info(
+        "Loading track file at %s, original file name %r.",
+        track_file,
+        original_file_name,
+    )
+
+    process_functions = guess(track_file, f"{original_file_name}.gz")
+
+    for i, process_function in enumerate(process_functions):
+        try:
+            return await process_function(session, f"{track_file}.gz")
+        except:
+            if i < len(process_functions) - 1:
+                log.warning("Import failed, trying next format.", exc_info=True)
+            else:
+                raise
+
+    raise ValueError("No import successful.")
 
 
 async def clear_track_data(session, track):

@@ -29,6 +29,8 @@ import TrackActions from './TrackActions'
 import TrackComments from './TrackComments'
 import TrackDetails from './TrackDetails'
 import TrackMap from './TrackMap'
+import TrackPlot from './TrackPlot'
+
 
 import styles from './TrackPage.module.less'
 
@@ -78,6 +80,13 @@ function TrackMapLegend() {
 const TrackPage = connect((state) => ({login: state.login}))(function TrackPage({login}) {
   const {slug} = useParams()
   const {t} = useTranslation()
+  const [marker, setMarker] = React.useState({latitude:55, longitude:55, datetime:0})
+  const updateMarker = (dict) => {
+
+    if ((dict.longitude) && (dict.latitude)) {
+      setMarker({latitude:dict.latitude,longitude:dict.longitude})
+      }
+  }//setMarker({latitude:45, longitude:33, datetime:0})}
 
   const [reloadComments, reloadComments$] = useTriggerSubject()
   const history = useHistory()
@@ -224,7 +233,7 @@ const TrackPage = connect((state) => ({login: state.login}))(function TrackPage(
           <div className={styles.stage}>
             <Loader active={loading} />
             <Dimmer.Dimmable blurring dimmed={loading}>
-              <TrackMap {...{track, trackData, showTrack, showEvents}} style={{height: '80vh'}} />
+              <TrackMap {...{track, trackData, marker, showTrack, showEvents, }} style={{height: '50vh'}} />
             </Dimmer.Dimmable>
 
             <div className={styles.details}>
@@ -246,7 +255,9 @@ const TrackPage = connect((state) => ({login: state.login}))(function TrackPage(
               )}
             </div>
           </div>
-
+          { isAuthor && typeof trackData != "undefined" &&
+            <TrackPlot {...{trackData, updateMarker}}/>
+          }
           <Container>
             {track?.description && (
               <>

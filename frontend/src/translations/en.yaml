@@ -92,6 +92,7 @@ ExportPage:
     possible and do not exceed unreasonable poll frequencies.
 
   export: Export
+  snapping: Snap events to OpenStreetMap
   mode:
     label: Mode
     placeholder: Select mode
@@ -175,6 +176,8 @@ MapPage:
 
     obsEvents:
       title: Event points
+      snap: Snap events to road segments
+
 
     obsTracks:
       title: My own tracks
