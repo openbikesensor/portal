@@ -96,7 +96,7 @@ const FORMATS = ['geojson', 'shapefile']
 
 export default function ExportPage() {
   const [mode, setMode] = useState('events')
-  const [snap, setSnap] = useState('snap')
+  const [snap, setSnap] = useState(false)
 
   const [bbox, setBbox] = useState('8.294678,49.651182,9.059601,50.108249')
   const [fmt, setFmt] = useState('geojson')
@@ -133,7 +133,7 @@ export default function ExportPage() {
         <Checkbox
           label={t('ExportPage.snapping')}
           name="snap"
-          value="true"
+          value={snap}
           onChange={(_e, {value}) => setSnap(!snap)}
 
         />
