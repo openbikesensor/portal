@@ -63,7 +63,7 @@ ADD api/alembic.ini /opt/obs/api/
 ADD api/migrations /opt/obs/api/migrations/
 ADD api/obs /opt/obs/api/obs/
 ADD api/tools /opt/obs/api/tools/
-RUN pip install --root-user-action ignore -e /opt/obs/api/
+RUN pip install --root-user-action ignore /opt/obs/api/
 
 COPY --from=frontend-builder /opt/obs/frontend/build /opt/obs/frontend/build
 
