@@ -76,6 +76,7 @@ async def import_osm(connection, filename, import_group=None, overall=None):
 
         # Pass 2: Import
         amount = 0
+        progress.stop_task(t0)
         progress.update(t0, visible=False)
         t1 = progress.add_task(f"Import {import_group:<20}...", total=len(road_ids))
         for items in chunk(read_file(filename), 10000):
@@ -97,6 +98,7 @@ async def import_osm(connection, filename, import_group=None, overall=None):
                             import_group,
                         )
                     )
+        progress.stop_task(t1)
         progress.update(t1, visible=False)
 
 
@@ -111,7 +113,10 @@ async def main():
         file_number = 0
         for filename in sys.argv[1:]:
             await import_osm(connection, filename, overall=overall)
+            file_number += 1
             progress.update(overall, completed=file_number)
+        progress.stop_task(overall)
+        progress.stop()
 
 
 if __name__ == "__main__":
