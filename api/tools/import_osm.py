@@ -106,8 +106,6 @@ async def main():
     url = app.config.POSTGRES_URL
     url = url.replace("+asyncpg", "")
 
-    assert all([isfile(filename) for filename in sys.argv[1:]]), "please only pass filenames of .msgpack files as arguments"
-
     async with await psycopg.AsyncConnection.connect(url) as connection:
         overall = progress.add_task("Importing... ", total=len(sys.argv))
         file_number = 0
