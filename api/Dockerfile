@@ -18,7 +18,7 @@ COPY requirements.txt /opt/obs/api/
 COPY setup.py /opt/obs/api/
 COPY obs /opt/obs/api/obs/
 COPY tools /opt/obs/api/tools
-RUN pip install -r requirements.txt; pip install .
+RUN pip install --root-user-action ignore -r requirements.txt; pip install --root-user-action ignore .
 
 
 EXPOSE 8000
