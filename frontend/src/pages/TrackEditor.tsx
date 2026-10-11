@@ -15,9 +15,8 @@ import {
   Checkbox,
   Header,
 } from 'semantic-ui-react'
-import {useHistory, useParams, Link} from 'react-router-dom'
-import {concat, of, from} from 'rxjs'
-import {pluck, distinctUntilChanged, map, switchMap} from 'rxjs/operators'
+import {useNavigate, useParams, Link} from 'react-router-dom'
+import {concat, of, from, distinctUntilChanged, map, switchMap} from 'rxjs'
 import {useObservable} from 'rxjs-hooks'
 import {findInput} from 'utils'
 import {useForm, Controller} from 'react-hook-form'
@@ -54,20 +53,23 @@ function ReplaceTrackData({slug}) {
   )
 }
 
-const TrackEditor = connect((state) => ({login: state.login}))(function TrackEditor({login}) {
+const TrackEditor = connect((state: any) => ({login: state.login}))(function TrackEditor({login}: {login?: any}) {
   const {t} = useTranslation()
   const [busy, setBusy] = React.useState(false)
   const {register, control, handleSubmit} = useForm()
   const {slug} = useParams()
-  const history = useHistory()
+  const navigate = useNavigate()
 
   const track: null | Track = useObservable(
     (_$, args$) => {
-      const slug$ = args$.pipe(pluck(0), distinctUntilChanged())
+      const slug$ = args$.pipe(
+        map((args) => args[0]),
+        distinctUntilChanged()
+      )
       return slug$.pipe(
         map((slug) => `/tracks/${slug}`),
         switchMap((url) => concat(of(null), from(api.get(url)))),
-        pluck('track')
+        map((res: any) => res?.track)
       )
     },
     null,
@@ -80,9 +82,9 @@ const TrackEditor = connect((state) => ({login: state.login}))(function TrackEdi
   // Navigate to track detials if we are not the author
   React.useEffect(() => {
     if (!login || (track && !isAuthor)) {
-      history.replace(`/tracks/${slug}`)
+      navigate(`/tracks/${slug}`, {replace: true})
     }
-  }, [slug, login, track, isAuthor, history])
+  }, [slug, login, track, isAuthor, navigate])
 
   const onSubmit = React.useMemo(
     () =>
@@ -95,12 +97,12 @@ const TrackEditor = connect((state) => ({login: state.login}))(function TrackEdi
               track: _.pickBy(values, (v) => typeof v !== 'undefined'),
             },
           })
-          history.push(`/tracks/${slug}`)
+          navigate(`/tracks/${slug}`)
         } finally {
           setBusy(false)
         }
       }),
-    [slug, handleSubmit, history]
+    [slug, handleSubmit, navigate]
   )
 
   const [confirmDelete, setConfirmDelete] = React.useState(false)
@@ -109,12 +111,12 @@ const TrackEditor = connect((state) => ({login: state.login}))(function TrackEdi
 
     try {
       await api.delete(`/tracks/${slug}`)
-      history.push('/tracks')
+      navigate('/tracks')
     } finally {
       setConfirmDelete(false)
       setBusy(false)
     }
-  }, [setBusy, setConfirmDelete, slug, history])
+  }, [setBusy, setConfirmDelete, slug, navigate])
 
   const trackTitle: string = track?.title || t('general.unnamedTrack')
   const title = t('TrackEditor.title', {trackTitle})
@@ -126,14 +128,14 @@ const TrackEditor = connect((state) => ({login: state.login}))(function TrackEdi
           <Grid.Column width={10}>
             <Header as="h2">{title}</Header>
             <Form loading={loading} key={track?.slug} onSubmit={onSubmit}>
-              <Ref innerRef={findInput(register)}>
-                <Form.Input label="Title" name="title" defaultValue={track?.title} style={{fontSize: '120%'}} />
+              <Ref innerRef={findInput(register('title'))}>
+                <Form.Input {...register('title')} label="Title" defaultValue={track?.title} style={{fontSize: '120%'}} />
               </Ref>
 
               <Form.Field>
                 <label>{t('TrackEditor.description.label')}</label>
-                <Ref innerRef={register}>
-                  <TextArea name="description" rows={4} defaultValue={track?.description} />
+                <Ref innerRef={findInput(register('description'))}>
+                  <TextArea {...register('description')} rows={4} defaultValue={track?.description} />
                 </Ref>
               </Form.Field>
 
@@ -151,12 +153,12 @@ const TrackEditor = connect((state) => ({login: state.login}))(function TrackEdi
                   name="public"
                   control={control}
                   defaultValue={track?.public}
-                  render={(props) => (
+                  render={({field: {value, onChange}}) => (
                     <Checkbox
                       name="public"
                       label={t('TrackEditor.visibility.checkboxLabel')}
-                      checked={props.value}
-                      onChange={(_, {checked}) => props.onChange(checked)}
+                      checked={value}
+                      onChange={(_, {checked}) => onChange(checked)}
                     />
                   )}
                 />

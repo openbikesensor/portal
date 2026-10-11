@@ -4,10 +4,18 @@ import {Duration} from 'luxon'
 // Wraps the register callback from useForm into a new ref function, such that
 // any child of the provided element that is an input component will be
 // registered.
-export function findInput(register) {
+export function findInput(registration) {
   return (element) => {
-    const found = element ? element.querySelector('input, textarea, select, checkbox') : null
-    register(found)
+    const found = element
+      ? element.matches && element.matches('input, textarea, select, checkbox')
+        ? element
+        : element.querySelector('input, textarea, select, checkbox')
+      : null
+    if (typeof registration === 'function') {
+      registration(found)
+    } else if (registration && typeof registration.ref === 'function') {
+      registration.ref(found)
+    }
   }
 }
 

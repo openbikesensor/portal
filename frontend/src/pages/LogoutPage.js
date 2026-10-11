@@ -1,7 +1,7 @@
 import React from 'react'
 import {Loader} from 'semantic-ui-react'
 import {connect} from 'react-redux'
-import {Redirect} from 'react-router-dom'
+import {Navigate} from 'react-router-dom'
 
 import api from 'api'
 
@@ -13,7 +13,7 @@ const LogoutPage = connect((state) => ({loggedIn: Boolean(state.login)}))(functi
     }
   }, [loggedIn])
 
-  return loggedIn ? <Loader active /> : <Redirect to="/" />
+  return loggedIn ? <Loader active /> : <Navigate to="/" replace />
 })
 
 export default LogoutPage

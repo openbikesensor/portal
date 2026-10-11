@@ -9,6 +9,7 @@ export type MapSource = {
 
 export interface Config {
   apiUrl: string
+  basename?: string
   mapHome: {
     latitude: number
     longitude: number

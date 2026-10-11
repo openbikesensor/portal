@@ -30,7 +30,7 @@ const obsLight = {
     {
       id: 'background',
       type: 'background',
-      paint: {'background-color': 'hsl(0, 0, 98%)'},
+      paint: {'background-color': 'hsl(0, 0%, 98%)'},
     },
     {
       id: 'water',

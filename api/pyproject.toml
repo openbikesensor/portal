@@ -1,0 +1,77 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "openbikesensor-api"
+dynamic = ["version"]
+description = "OpenBikeSensor Portal API"
+authors = [
+    { name = "OpenBikeSensor Contributors" },
+]
+license = { text = "LGPL-3.0" }
+dependencies = [
+    "aabbtree>=2.6.2",
+    "aiohttp>=3.11.11",
+    "aiogzip",
+    "alembic>=1.9.4",
+    "asyncpg",
+    "coloredlogs>=15.0",
+    "geopy>=2.2.0",
+    "gpstime>=0.8.1",
+    "haversine>=2.8.0",
+    "httpx>=0.17.1",
+    "joblib>=1.0.0",
+    "jsons>=1.6.3",
+    "memoization>=0.3.2",
+    "motor>=3.1.1",
+    "msgpack>=1.0.5",
+    "networkx>=3.2.1",
+    "numpy>=1.26.3",
+    "oic>=1.5.0",
+    "openmaptiles-tools @ git+https://github.com/openmaptiles/openmaptiles-tools",
+    "osmium>=4.0.0",
+    "pandas>=2.2.1",
+    "psycopg>=3.1.8",
+    "pyproj>=3.6.1",
+    "pyshp>=2.3.1",
+    "python-slugify>=6.1.2",
+    "pytz>=2023.2",
+    "pyyaml>=5.3.1",
+    "requests>=2.25.1",
+    "sanic>=22.6.2",
+    "sanic-sessions>=0.8.0",
+    "shapely>=2.0.1",
+    "sqlalchemy[asyncio]>=2.0.27",
+    "sqlparse>=0.4.3",
+    "stream-zip>=0.0.50",
+    "transformations>=2024.4.24",
+    "tzwhere>=3.0.3",
+    "websockets<11",
+]
+
+[project.urls]
+Homepage = "https://github.com/openbikesensor/portal"
+
+[project.scripts]
+openbikesensor-api = "obs.bin.openbikesensor_api:main"
+openbikesensor-transform-osm = "obs.bin.openbikesensor_transform_osm:main"
+openbikesensor-face = "obs.bin.obs_face:main"
+openbikesensor-filter-privacy = "obs.bin.obs_filter_privacy:main"
+openbikesensor-process-track = "obs.bin.obs_process_track:main"
+openbikesensor-provision = "obs.bin.obs_provision:main"
+obs-face = "obs.bin.obs_face:main"
+obs-filter-privacy = "obs.bin.obs_filter_privacy:main"
+obs-process-track = "obs.bin.obs_process_track:main"
+obs-provision = "obs.bin.obs_provision:main"
+
+[tool.setuptools.dynamic]
+version = { attr = "obs.__version__" }
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["obs*"]
+
+[tool.pytest.ini_options]
+addopts = "--tb native -v --strict-markers"
+testpaths = ["obs"]

@@ -1,5 +1,5 @@
 import {useMemo} from 'react'
-import {useHistory, useLocation} from 'react-router-dom'
+import {useNavigate, useLocation} from 'react-router-dom'
 
 type QueryValue = string | number
 type QueryParams = {[key: string]: QueryValue}
@@ -51,20 +51,14 @@ export function useQueryParam<T extends QueryValue>(
   defaultValue: T | null = null,
   convert: (t: T | null) => T | null = (x) => x
 ): [T, (newValue: T) => void] {
-  const history = useHistory()
-  useLocation() // to trigger a reload when the url changes
-  const {[name]: value = defaultValue} = (parseQuery(history.location.search) as unknown) as {
+  const navigate = useNavigate()
+  const location = useLocation()
+  const {[name]: value = defaultValue} = (parseQuery(location.search) as unknown) as {
     [name: string]: T
   }
   const setter = useMemo(
     () => (newValue: T) => {
-      // We're re-parsing the query here, because it might have been
-      // changed simulatenously with this call, and the
-      // history.location.search will already be updated, but react might
-      // not have rerendered yet. Yes, this is access to some global
-      // state, but that is okay, since there is just one browser history
-      // at any time.
-      const {[name]: _oldValue, ...queryParams} = parseQuery(history.location.search)
+      const {[name]: _oldValue, ...queryParams} = parseQuery(location.search)
 
       const newQueryParams = {
         ...queryParams,
@@ -72,9 +66,9 @@ export function useQueryParam<T extends QueryValue>(
       }
 
       const queryString = stringifyParams(newQueryParams)
-      history.replace({...history.location, search: '?' + queryString})
+      navigate({...location, search: queryString ? '?' + queryString : ''}, {replace: true})
     },
-    [name, history, defaultValue]
+    [name, navigate, location, defaultValue]
   )
 
   const result: T = (convert(value) ?? defaultValue) as any

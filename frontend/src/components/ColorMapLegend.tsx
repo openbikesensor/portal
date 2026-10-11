@@ -23,7 +23,7 @@ export function DiscreteColorMapLegend({
   max: max_,
 }: {
   map: ColorMap
-  renderValue?: (x: value) => React.ReactNode
+  renderValue?: (x: number) => React.ReactNode
   min?: number
   max?: number
 }) {

@@ -4,7 +4,7 @@
 # Build the frontend AS builder
 #############################################
 
-FROM node:18 AS frontend-builder
+FROM node:24-alpine as frontend-builder
 
 WORKDIR /opt/obs/frontend
 ADD frontend/package.json frontend/package-lock.json /opt/obs/frontend/
@@ -21,7 +21,7 @@ RUN npm run build
 # Build the API and add the built frontend to it
 #############################################
 
-FROM python:3.12-bookworm
+FROM python:3.14.8-trixie
 
 RUN apt-get update &&\
     apt-get install -y \
@@ -38,10 +38,23 @@ RUN apt-get update &&\
     liblua5.3-dev &&\
     rm -rf /var/lib/apt/lists/*
 
+# install protobuf-compiler (protoc) to /opt/protobuf, but don 't use the debian
+# one, as it is horribly outdated
+
+ADD https://github.com/protocolbuffers/protobuf/releases/download/v26.0/protoc-26.0-linux-x86_64.zip /tmp/protoc.zip
+ADD https://github.com/openbikesensor/proto/archive/refs/tags/v1.0.0.tar.gz /tmp/obsproto.tar.gz
+RUN unzip -d /opt/protobuf /tmp/protoc.zip \
+  && tar -zvxf /tmp/obsproto.tar.gz\
+  && mkdir -p /opt/obs\
+  && cp -r proto-1.0.0 /opt/obs/proto
+
+WORKDIR /opt/obs/proto
+
+RUN PATH="/opt/protobuf/bin:${PATH}" make && pip install --root-user-action ignore .
 WORKDIR /opt/obs/api
 
 ADD api/requirements.txt  /opt/obs/api/
-RUN pip install -r requirements.txt
+RUN pip install --root-user-action ignore -r requirements.txt
 
 ADD tile-generator /opt/obs/tile-generator
 
@@ -50,7 +63,7 @@ ADD api/alembic.ini /opt/obs/api/
 ADD api/migrations /opt/obs/api/migrations/
 ADD api/obs /opt/obs/api/obs/
 ADD api/tools /opt/obs/api/tools/
-RUN pip install -e /opt/obs/api/
+RUN pip install --root-user-action ignore /opt/obs/api/
 
 COPY --from=frontend-builder /opt/obs/frontend/build /opt/obs/frontend/build
 
