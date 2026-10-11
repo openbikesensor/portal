@@ -3,7 +3,7 @@ import classnames from 'classnames'
 import _ from 'lodash'
 import {connect} from 'react-redux'
 import ReactMapGl, {ScaleControl, NavigationControl, AttributionControl} from 'react-map-gl/maplibre'
-import WebMercatorViewport from 'viewport-mercator-project'
+import {WebMercatorViewport} from '@math.gl/web-mercator'
 
 import turfBbox from '@turf/bbox'
 import {useNavigate, useLocation} from 'react-router-dom'

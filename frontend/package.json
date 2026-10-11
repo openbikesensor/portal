@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@babel/runtime": "^7.24.0",
+    "@math.gl/web-mercator": "^3.6.3",
     "@turf/bbox": "^7.1.0",
     "classnames": "^2.5.1",
     "colormap": "^2.3.2",
@@ -26,7 +27,6 @@
     "luxon": "^3.5.0",
     "maplibre-gl": "^4.7.1",
     "mini-css-extract-plugin": "^2.9.1",
-    "pkce": "^1.0.0-beta2",
     "postcss-flexbugs-fixes": "^5.0.2",
     "postcss-loader": "^8.1.1",
     "postcss-normalize": "^10.0.1",
@@ -49,7 +49,6 @@
     "semantic-ui-react": "^2.1.5",
     "ts-loader": "^9.5.1",
     "typescript": "^5.4.5",
-    "viewport-mercator-project": "^7.0.4",
     "yaml-loader": "^0.8.0"
   },
   "eslintConfig": {
