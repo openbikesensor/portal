@@ -3,3 +3,6 @@ data
 export
 *.egg-info
 config.overrides.py
+.venv
+.junie
+.idea
