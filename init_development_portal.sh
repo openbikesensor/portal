@@ -38,6 +38,7 @@ then
   echo initializing database
   chmod -R a+rwX local/postgres
   $COMPOSE up -d postgres
+  echo "sleeping 100s for good measure - openmaptiles keycloak will need time to initialize on first run"
   sleep 100
   $COMPOSE run --rm api tools/upgrade.py
 else

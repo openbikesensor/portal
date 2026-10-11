@@ -195,7 +195,7 @@ async def stats(req):
 
 
 @api.route("/stats/regions")
-async def stats(req):
+async def regions_stats(req):
     query = (
         select(
             Region.id,

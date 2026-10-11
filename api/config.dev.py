@@ -28,6 +28,9 @@ DATA_DIR = "/data"
 ADDITIONAL_CORS_ORIGINS = [
     "http://localhost:8880/",  # for maputnik on 8880
     "http://localhost:8888/",  # for maputnik on 8888
+    "http://localhost:3001/",  # frontend
+    "http://localhost:3002/",  # for good measure
+    "http://localhost:3003/",  # keycloak
 ]
 TILE_SEMAPHORE_SIZE = 4
 EXPORT_SEMAPHORE_SIZE = 4

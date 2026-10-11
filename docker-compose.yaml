@@ -15,7 +15,7 @@ services:
     ports:
       - '127.0.0.1:5432:5432'
     volumes:
-    - ./local/postgres/data:/var/lib/postgresql/data
+    - ./local/postgres:/var/lib/postgresql
 
   api:
     image: openbikesensor-api

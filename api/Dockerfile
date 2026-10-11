@@ -1,4 +1,4 @@
-FROM python:3.12.8-bookworm
+FROM python:3.14.8-trixie
 
 # install protobuf-compiler (protoc) to /opt/protobuf, but don't use the debian
 # one, as it is horribly outdated

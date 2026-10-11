@@ -16,7 +16,7 @@ from sanic.response import (
     html as html_response,
 )
 from sanic.exceptions import Unauthorized, SanicException
-from sanic_session import Session, InMemorySessionInterface
+from sanic_sessions import Session, InMemorySessionInterface
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
