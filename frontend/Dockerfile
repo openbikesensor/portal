@@ -1,4 +1,4 @@
-FROM node:17
+FROM node:24-alpine
 
 WORKDIR /opt/obs/frontend
 ADD package.json package-lock.json /opt/obs/frontend/

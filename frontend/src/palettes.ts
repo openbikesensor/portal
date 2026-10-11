@@ -1,10 +1,16 @@
 export class Palette {
-  constructor(p, colorInvalid) {
+  colorInvalid: any
+  a!: number
+  b!: number
+  rgba_sampled!: any[]
+  n!: number
+
+  constructor(p: Record<number | string, any>, colorInvalid: any) {
     this.colorInvalid = colorInvalid
     this.resamplePalette(p, 256)
   }
 
-  rgba(v) {
+  rgba(v: number | null | undefined) {
     if (v == null) {
       return this.colorInvalid
     }
@@ -14,17 +20,17 @@ export class Palette {
     return this.rgba_sampled[i]
   }
 
-  rgba_css(v) {
+  rgba_css(v: number | null | undefined) {
     const color = this.rgba(v)
     return 'rgba(' + [color[0], color[1], color[2], color[3]].join(',') + ')'
   }
 
-  rgb_css(v) {
+  rgb_css(v: number | null | undefined) {
     const color = this.rgba(v)
     return 'rgb(' + [color[0], color[1], color[2]].join(',') + ')'
   }
 
-  rgb_hex(v) {
+  rgb_hex(v: number | null | undefined) {
     const color = this.rgba(v)
 
     const s = '#' + this.hex2digits(color[0]) + this.hex2digits(color[1]) + this.hex2digits(color[2])
@@ -32,24 +38,20 @@ export class Palette {
     return s
   }
 
-  hex2digits(v) {
+  hex2digits(v: number) {
     const hex = v.toString(16)
     return hex.length === 1 ? '0' + hex : hex
   }
 
-  samplePalette(palette, d) {
-    let x = Object.keys(palette)
-
-    for (let i = 0; i < x.length; i++) {
-      x[i] = parseFloat(x[i])
-    }
+  samplePalette(palette: Record<number | string, any>, d: number) {
+    let x: number[] = Object.keys(palette).map((k) => parseFloat(k))
 
     x = x.sort(function (a, b) {
       return a - b
     })
 
     const n = x.length
-    let y
+    let y: number[]
 
     if (d <= x[0]) {
       y = palette[x[0]]
@@ -81,12 +83,8 @@ export class Palette {
     return y
   }
 
-  resamplePalette(palette, n) {
-    const x = Object.keys(palette)
-
-    for (let i = 0; i < x.length; i++) {
-      x[i] = parseFloat(x[i])
-    }
+  resamplePalette(palette: Record<number | string, any>, n: number) {
+    const x: number[] = Object.keys(palette).map((k) => parseFloat(k))
 
     const a = Math.min(...x)
     const b = Math.max(...x)
@@ -94,7 +92,7 @@ export class Palette {
     const p = new Array(n)
 
     for (let i = 0; i < n; i++) {
-      const xi = a + (parseFloat(i) / (n - 1)) * (b - a)
+      const xi = a + (i / (n - 1)) * (b - a)
       p[i] = this.samplePalette(palette, xi)
     }
 

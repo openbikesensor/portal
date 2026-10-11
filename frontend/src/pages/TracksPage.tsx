@@ -3,8 +3,7 @@ import {connect} from 'react-redux'
 import {Button, Message, Item, Header, Loader, Pagination, Icon} from 'semantic-ui-react'
 import {useObservable} from 'rxjs-hooks'
 import {Link} from 'react-router-dom'
-import {of, from, concat} from 'rxjs'
-import {map, switchMap, distinctUntilChanged} from 'rxjs/operators'
+import {of, from, concat, map, switchMap, distinctUntilChanged} from 'rxjs'
 import _ from 'lodash'
 import {useTranslation, Trans as Translate} from 'react-i18next'
 
@@ -127,30 +126,29 @@ export function TrackListItem({track, privateTracks = false}) {
   )
 }
 
-function UploadButton({navigate, ...props}) {
+function UploadButton() {
   const {t} = useTranslation()
-  const onClick = useCallback(
-    (e) => {
-      e.preventDefault()
-      navigate()
-    },
-    [navigate]
-  )
   return (
-    <Button onClick={onClick} {...props} color="green" style={{float: 'right'}}>
+    <Button as={Link} to="/upload" color="green" style={{float: 'right'}}>
       {t('TracksPage.upload')}
     </Button>
   )
 }
 
-const TracksPage = connect((state) => ({login: (state as any).login}))(function TracksPage({login, privateTracks}) {
+const TracksPage = connect((state: any) => ({login: state.login}))(function TracksPage({
+  login,
+  privateTracks = false,
+}: {
+  login?: any
+  privateTracks?: boolean
+}) {
   const {t} = useTranslation()
   const title = privateTracks ? t('TracksPage.titleUser') : t('TracksPage.titlePublic')
 
   return (
     <Page title={title}>
       <Header as="h2">{title}</Header>
-      {privateTracks && <Link component={UploadButton} to="/upload" />}
+      {privateTracks && <UploadButton />}
       <TrackList {...{privateTracks}} />
     </Page>
   )

@@ -2,7 +2,7 @@ import React, {useState, useCallback, useMemo, useRef} from 'react'
 import {connect} from 'react-redux'
 import {Button} from 'semantic-ui-react'
 import {Layer, Source} from 'react-map-gl/maplibre'
-import produce from 'immer'
+import {produce} from 'immer'
 import classNames from 'classnames'
 
 import api from 'api'
@@ -350,4 +350,4 @@ function MapPage({login}) {
   )
 }
 
-export default connect((state) => ({login: state.login}))(MapPage)
+export default connect((state: any) => ({login: state.login}))(MapPage)

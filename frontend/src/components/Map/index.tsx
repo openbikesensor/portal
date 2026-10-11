@@ -1,11 +1,12 @@
 import React, {useState, useCallback, useMemo, useEffect} from 'react'
 import classnames from 'classnames'
+import _ from 'lodash'
 import {connect} from 'react-redux'
 import ReactMapGl, {ScaleControl, NavigationControl, AttributionControl} from 'react-map-gl/maplibre'
 import WebMercatorViewport from 'viewport-mercator-project'
 
 import turfBbox from '@turf/bbox'
-import {useHistory, useLocation} from 'react-router-dom'
+import {useNavigate, useLocation} from 'react-router-dom'
 
 import {useConfig} from 'config'
 
@@ -21,7 +22,7 @@ interface Viewport {
 }
 const EMPTY_VIEWPORT: Viewport = {longitude: 0, latitude: 0, zoom: 0}
 
-export const withBaseMapStyle = connect((state) => ({
+export const withBaseMapStyle = connect((state: any) => ({
   baseMapStyle: state.mapConfig?.baseMap?.style ?? 'obsLight',
 }))
 
@@ -40,14 +41,17 @@ function buildHash(v: Viewport): string {
   return `${v.zoom.toFixed(2)}/${v.latitude}/${v.longitude}`
 }
 
-const setViewportToHash = _.debounce((history, viewport) => {
-  history.replace({
-    hash: buildHash(viewport),
-  })
+const setViewportToHash = _.debounce((navigate, viewport) => {
+  navigate(
+    {
+      hash: '#' + buildHash(viewport),
+    },
+    {replace: true}
+  )
 }, 200)
 
 function useViewportFromUrl(): [Viewport | null, (v: Viewport) => void] {
-  const history = useHistory()
+  const navigate = useNavigate()
   const location = useLocation()
 
   const [cachedValue, setCachedValue] = useState(parseHash(location.hash))
@@ -60,9 +64,9 @@ function useViewportFromUrl(): [Viewport | null, (v: Viewport) => void] {
   const setter = useCallback(
     (v) => {
       setCachedValue(v)
-      setViewportToHash(history, v)
+      setViewportToHash(navigate, v)
     },
-    [history]
+    [navigate]
   )
 
   return [cachedValue || EMPTY_VIEWPORT, setter]
@@ -78,11 +82,12 @@ function Map({
   ...props
 }: {
   viewportFromUrl?: boolean
-  children: React.ReactNode
-  boundsFromJson: GeoJSON.Geometry
+  children?: React.ReactNode
+  boundsFromJson?: GeoJSON.Geometry
   baseMapStyle: string
   hasToolbar?: boolean
-  onViewportChange: (viewport: Viewport) => void
+  onViewportChange?: (viewport: Viewport) => void
+  [key: string]: any
 }) {
   const [viewportState, setViewportState] = useState(EMPTY_VIEWPORT)
   const [viewportUrl, setViewportUrl] = useViewportFromUrl()
@@ -151,12 +156,12 @@ function Map({
       mapStyle={baseMapStyles[baseMapStyle]}
       width="100%"
       height="100%"
-      initialViewState={{viewport}}
+      initialViewState={{...viewport}}
       onMove={onMove}
       {...{transformRequest}}
       {...viewport}
       {...props}
-      className={classnames(styles.map, props.className)}
+      className={classnames(styles.map, props?.className)}
       attributionControl={false}
     >
       <AttributionControl style={{top: 0, right: 0}} />

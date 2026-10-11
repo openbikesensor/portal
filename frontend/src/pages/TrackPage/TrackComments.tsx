@@ -4,6 +4,7 @@ import Markdown from 'react-markdown'
 import {useTranslation} from 'react-i18next'
 
 import {Avatar, FormattedDate} from 'components'
+import type {TrackComment} from 'types'
 
 function CommentForm({onSubmit}) {
   const {t} = useTranslation()

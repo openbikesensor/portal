@@ -37,9 +37,19 @@ function CopyInput({value, ...props}) {
 
 const selectField = findInput((ref) => ref?.select())
 
-const ApiKeySettings = connect((state) => ({login: state.login}), {
+const ApiKeySettings = connect((state: any) => ({login: state.login}), {
   setLogin,
-})(function ApiKeySettings({login, setLogin, setErrors}) {
+})(function ApiKeySettings({
+  login,
+  setLogin,
+  errors,
+  setErrors,
+}: {
+  login?: any
+  setLogin?: any
+  errors?: any
+  setErrors?: any
+}) {
   const {t} = useTranslation()
   const [loading, setLoading] = React.useState(false)
   const config = useConfig()

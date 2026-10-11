@@ -1,14 +1,13 @@
 import {useState, useEffect, useMemo} from 'react'
 import i18next, {TOptions} from 'i18next'
-import {BehaviorSubject, combineLatest} from 'rxjs'
-import {map, distinctUntilChanged} from 'rxjs/operators'
-import HttpBackend, {BackendOptions, RequestCallback} from 'i18next-http-backend'
+import {BehaviorSubject, combineLatest, map, distinctUntilChanged} from 'rxjs'
+import HttpBackend, {HttpBackendOptions, RequestCallback} from 'i18next-http-backend'
 import {initReactI18next} from 'react-i18next'
 import LanguageDetector from 'i18next-browser-languagedetector'
 
 export type AvailableLocales = 'en' | 'de' | 'fr'
 
-async function request(_options: BackendOptions, url: string, _payload: any, callback: RequestCallback) {
+async function request(_options: HttpBackendOptions, url: string, _payload: any, callback: RequestCallback) {
   try {
     const [lng] = url.split('/')
     const locale = await import(`translations/${lng}.yaml`)
@@ -28,7 +27,7 @@ const options: TOptions = {
 
   ns: ['common'],
   defaultNS: 'common',
-  whitelist: AVAILABLE_LOCALES,
+  supportedLngs: AVAILABLE_LOCALES,
 
   // loading via webpack
   backend: {

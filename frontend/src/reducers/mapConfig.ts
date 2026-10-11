@@ -1,6 +1,6 @@
 import {useMemo} from 'react'
 import {useSelector} from 'react-redux'
-import produce from 'immer'
+import {produce} from 'immer'
 import _ from 'lodash'
 
 type BaseMapStyle = 'obsLight' | 'positron' | 'bright' | 'darkmatter'
@@ -86,7 +86,7 @@ export function setMapConfigFlag(flag: string, value: unknown): MapConfigAction 
 }
 
 export function useMapConfig() {
-  const mapConfig = useSelector((state) => state.mapConfig)
+  const mapConfig = useSelector((state: any) => state.mapConfig)
   const result = useMemo(() => _.merge({}, initialState, mapConfig), [mapConfig])
   return result
 }

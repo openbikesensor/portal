@@ -1,12 +1,11 @@
 import React, {useCallback, useMemo, useRef} from 'react'
 import {useObservable} from 'rxjs-hooks'
-import {concat, from, of, Subject} from 'rxjs'
+import {concat, from, of, Subject, startWith, switchMap} from 'rxjs'
 import {Table, Button, Input} from 'semantic-ui-react'
 import {useTranslation} from 'react-i18next'
 
 import api from 'api'
 import {UserDevice} from 'types'
-import {startWith, switchMap} from 'rxjs/operators'
 
 function EditField({value, onEdit}) {
   const [editing, setEditing] = React.useState(false)

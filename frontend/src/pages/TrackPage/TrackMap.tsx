@@ -11,18 +11,22 @@ export default function TrackMap({
   marker,
   showTrack = true,
   showPoints = true,
+  style,
   ...props
 }: {
-  trackData: TrackData
-  showTrack: boolean
-  showPoints: boolean
+  trackData: TrackData & {trackRaw?: any}
+  marker?: any
+  showTrack?: boolean
+  showPoints?: boolean
+  style?: React.CSSProperties
+  [key: string]: any
 }) {
   if (!trackData) {
     return null
   }
 
   return (
-    <div style={props.style}>
+    <div style={style}>
       <Map boundsFromJson={trackData.track}>
         {showTrack && trackData.trackRaw != null && (
           <Source key="trackRaw" id="trackRaw" type="geojson" data={trackData.trackRaw}>

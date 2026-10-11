@@ -445,7 +445,7 @@ function ScoreTable() {
 }
 
 export default connect(
-  (state) => ({
+  (state: any) => ({
     mapConfig: _.merge(
       {},
       defaultMapConfig,
