@@ -79,6 +79,7 @@ function Map({
   baseMapStyle,
   hasToolbar,
   onViewportChange,
+  interactiveLayerIds,
   ...props
 }: {
   viewportFromUrl?: boolean
@@ -87,6 +88,7 @@ function Map({
   baseMapStyle: string
   hasToolbar?: boolean
   onViewportChange?: (viewport: Viewport) => void
+  interactiveLayerIds?: string[]
   [key: string]: any
 }) {
   const [viewportState, setViewportState] = useState(EMPTY_VIEWPORT)
@@ -158,6 +160,7 @@ function Map({
       height="100%"
       initialViewState={{...viewport}}
       onMove={onMove}
+      interactiveLayerIds={interactiveLayerIds}
       {...{transformRequest}}
       {...viewport}
       {...props}

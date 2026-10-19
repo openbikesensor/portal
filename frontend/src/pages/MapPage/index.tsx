@@ -257,6 +257,8 @@ function MapPage({login}) {
     layers.push(...regionLayers)
   }
 
+  const interactiveLayerIds = useMemo(() => (mapConfig.obsRegions.show ? ['region'] : []), [mapConfig.obsRegions.show])
+
   if (mapConfig.obsTracks.show && login) {
     layers.push(getMyTracksLayer(mapConfig.baseMap.style === 'darkmatter'))
   }
@@ -321,7 +323,13 @@ function MapPage({login}) {
           </div>
         )}
         <div className={styles.map}>
-          <Map viewportFromUrl onClick={onClick} hasToolbar onViewportChange={onViewportChange}>
+          <Map
+            viewportFromUrl
+            onClick={onClick}
+            hasToolbar
+            onViewportChange={onViewportChange}
+            interactiveLayerIds={interactiveLayerIds}
+          >
             <div className={styles.mapToolbar}>
               <Button primary icon="bars" active={layerSidebar} onClick={onToggleLayerSidebarButtonClick} />
             </div>
