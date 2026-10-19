@@ -53,18 +53,18 @@ def shapefile_zip(shape_type=shapefile.POINT, basename="events"):
     writer = shapefile.Writer(
         shp=shp, shx=shx, dbf=dbf, shapeType=shape_type, encoding="utf8"
     )
+    try:
+        yield writer, zip_buffer
+    finally:
+        writer.balance()
+        writer.close()
 
-    yield writer, zip_buffer
-
-    writer.balance()
-    writer.close()
-
-    zip_file = zipfile.ZipFile(zip_buffer, "a", zipfile.ZIP_DEFLATED, False)
-    zip_file.writestr(f"{basename}.shp", shp.getbuffer())
-    zip_file.writestr(f"{basename}.shx", shx.getbuffer())
-    zip_file.writestr(f"{basename}.dbf", dbf.getbuffer())
-    zip_file.writestr(f"{basename}.prj", PROJECTION_4326)
-    zip_file.close()
+        zip_file = zipfile.ZipFile(zip_buffer, "a", zipfile.ZIP_DEFLATED, False)
+        zip_file.writestr(f"{basename}.shp", shp.getbuffer())
+        zip_file.writestr(f"{basename}.shx", shx.getbuffer())
+        zip_file.writestr(f"{basename}.dbf", dbf.getbuffer())
+        zip_file.writestr(f"{basename}.prj", PROJECTION_4326)
+        zip_file.close()
 
 
 @api.get(r"/export/events")
