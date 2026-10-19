@@ -54,14 +54,14 @@ RUN PATH="/opt/protobuf/bin:${PATH}" make
 WORKDIR /opt/obs/api
 
 
-ADD tile-generator /opt/obs/tile-generator
+COPY tile-generator /opt/obs/tile-generator
 
-ADD api/pyproject.toml  /opt/obs/api/
-ADD api/uv.lock /opt/obs/api/
-ADD api/alembic.ini /opt/obs/api/
-ADD api/migrations /opt/obs/api/migrations/
-ADD api/obs /opt/obs/api/obs/
-ADD api/tools /opt/obs/api/tools/
+COPY api/pyproject.toml  /opt/obs/api/
+COPY api/uv.lock /opt/obs/api/
+COPY api/alembic.ini /opt/obs/api/
+COPY api/migrations /opt/obs/api/migrations/
+COPY api/obs /opt/obs/api/obs/
+COPY api/tools /opt/obs/api/tools/
 WORKDIR /opt/obs/api
 RUN uv sync --locked
 RUN uv pip install --no-deps /opt/obs/proto
