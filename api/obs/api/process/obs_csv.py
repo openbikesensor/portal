@@ -27,7 +27,7 @@ import pandas
 import numpy
 
 import gpstime
-import pytz
+from zoneinfo import ZoneInfo
 
 from .snapping import snap_to_roads
 
@@ -46,7 +46,7 @@ REJECT_MEASUREMENTS_BEFORE = datetime.datetime(2018, 1, 1, tzinfo=datetime.timez
 
 def convert_gps_to_utc(dt):
     return datetime.datetime.fromtimestamp(
-        gpstime.gps2unix(dt.timestamp() - GPS_UNIX_EPOCH_OFFSET), tz=pytz.UTC
+        gpstime.gps2unix(dt.timestamp() - GPS_UNIX_EPOCH_OFFSET), tz=ZoneInfo("UTC")
     )
 
 

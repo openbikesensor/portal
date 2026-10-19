@@ -14,7 +14,7 @@ from os.path import join
 import re
 import struct
 
-import pytz
+from zoneinfo import ZoneInfo
 from shapely import Point
 from shapely.wkb import dumps as dump_wkb
 
@@ -86,7 +86,7 @@ async def process_tracks(tracks):
 def to_naive_utc(t):
     if t is None:
         return None
-    return t.astimezone(pytz.UTC).replace(tzinfo=None)
+    return t.astimezone(ZoneInfo("UTC")).replace(tzinfo=None)
 
 
 async def export_gpx(df, filename, name):
@@ -394,7 +394,7 @@ async def import_overtaking_events(session, track, event_rows):
             ),
             latitude=row["latitude"],
             longitude=row["longitude"],
-            time=row["datetime"].astimezone(pytz.utc).replace(tzinfo=None),
+            time=row["datetime"].astimezone(ZoneInfo("UTC")).replace(tzinfo=None),
             distance_overtaker=row["distance_overtaker"],
             distance_stationary=row["distance_stationary"],
             course=row["course"],
@@ -452,7 +452,7 @@ async def import_road_usages(session, track, df):
             track_id=track.id,
             hex_hash=hex_hash,
             way_id=way_id,
-            time=time.astimezone(pytz.utc).replace(tzinfo=None),
+            time=time.astimezone(ZoneInfo("UTC")).replace(tzinfo=None),
             direction_reversed=direction_reversed,
         )
     session.add_all(usages.values())
