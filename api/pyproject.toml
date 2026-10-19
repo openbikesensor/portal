@@ -47,7 +47,11 @@ dependencies = [
     "stream-zip>=0.0.50",
     "transformations>=2024.4.24",
     "tzwhere>=3.0.3",
-    "websockets<11",
+    "websockets",
+  # dependencies of "openbikesensor-proto", fixed here so that uv will lock the version.
+    "cobs~=1.2.1",
+    "protobuf~=5.27.3",
+    "pyserial>=3.5,<=3.6"
 ]
 
 [project.urls]

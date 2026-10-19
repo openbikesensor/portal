@@ -1,4 +1,4 @@
-FROM python:3.14.8-trixie
+from ghcr.io/astral-sh/uv:python3.14-trixie
 
 # install protobuf-compiler (protoc) to /opt/protobuf, but don't use the debian
 # one, as it is horribly outdated
@@ -10,17 +10,20 @@ RUN unzip -d /opt/protobuf /tmp/protoc.zip \
   && cp -r proto-1.0.0 /opt/obs/proto
 
 WORKDIR /opt/obs/proto
-RUN PATH="/opt/protobuf/bin:${PATH}" make && pip install .
+RUN PATH="/opt/protobuf/bin:${PATH}" make
 
 WORKDIR /opt/obs/api
 
-COPY requirements.txt /opt/obs/api/
-COPY setup.py /opt/obs/api/
+COPY pyproject.toml /opt/obs/api/
+COPY uv.lock /opt/obs/api/
 COPY obs /opt/obs/api/obs/
 COPY tools /opt/obs/api/tools
-RUN pip install --root-user-action ignore -r requirements.txt; pip install --root-user-action ignore .
+RUN uv sync --locked
+RUN uv pip install --no-deps /opt/obs/proto
+RUN uv pip install --no-deps .
 
 
 EXPOSE 8000
+ENV PATH=/opt/obs/api/.venv/bin:/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 
 CMD ["openbikesensor-api"]

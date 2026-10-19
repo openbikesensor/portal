@@ -4,7 +4,7 @@
 # Build the frontend AS builder
 #############################################
 
-FROM node:24-alpine as frontend-builder
+FROM node:24-alpine AS frontend-builder
 
 WORKDIR /opt/obs/frontend
 ADD frontend/package.json frontend/package-lock.json /opt/obs/frontend/
@@ -21,7 +21,7 @@ RUN npm run build
 # Build the API and add the built frontend to it
 #############################################
 
-FROM python:3.14.8-trixie
+FROM ghcr.io/astral-sh/uv:python3.14-trixie
 
 RUN apt-get update &&\
     apt-get install -y \
@@ -50,20 +50,22 @@ RUN unzip -d /opt/protobuf /tmp/protoc.zip \
 
 WORKDIR /opt/obs/proto
 
-RUN PATH="/opt/protobuf/bin:${PATH}" make && pip install --root-user-action ignore .
+RUN PATH="/opt/protobuf/bin:${PATH}" make
 WORKDIR /opt/obs/api
 
-ADD api/requirements.txt  /opt/obs/api/
-RUN pip install --root-user-action ignore -r requirements.txt
 
 ADD tile-generator /opt/obs/tile-generator
 
-ADD api/setup.py  /opt/obs/api/
+ADD api/pyproject.toml  /opt/obs/api/
+ADD api/uv.lock /opt/obs/api/
 ADD api/alembic.ini /opt/obs/api/
 ADD api/migrations /opt/obs/api/migrations/
 ADD api/obs /opt/obs/api/obs/
 ADD api/tools /opt/obs/api/tools/
-RUN pip install --root-user-action ignore /opt/obs/api/
+WORKDIR /opt/obs/api
+RUN uv sync --locked
+RUN uv pip install --no-deps /opt/obs/proto
+RUN uv pip install --no-deps .
 
 COPY --from=frontend-builder /opt/obs/frontend/build /opt/obs/frontend/build
 
