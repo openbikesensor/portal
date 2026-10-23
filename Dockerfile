@@ -71,4 +71,5 @@ COPY --from=frontend-builder /opt/obs/frontend/build /opt/obs/frontend/build
 
 EXPOSE 3000
 
+ENV PATH=/opt/obs/api/.venv/bin:/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 CMD ["openbikesensor-api"]
