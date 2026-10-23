@@ -14,6 +14,9 @@ RUN PATH="/opt/protobuf/bin:${PATH}" make
 
 WORKDIR /opt/obs/api
 
+
+# Notice in the development compose file, we mount a bunch of things in here via volumes to
+# not have to build the container for every change...
 COPY pyproject.toml /opt/obs/api/
 COPY uv.lock /opt/obs/api/
 COPY obs /opt/obs/api/obs/
