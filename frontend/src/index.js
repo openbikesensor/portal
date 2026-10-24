@@ -1,6 +1,6 @@
 import React, {Suspense} from 'react'
 import {Settings} from 'luxon'
-import ReactDOM from 'react-dom'
+import {createRoot} from 'react-dom/client'
 import 'fomantic-ui-less/semantic.less'
 
 import './index.less'
@@ -16,11 +16,12 @@ import './i18n'
 // TODO: remove
 Settings.defaultLocale = 'de-DE'
 
-ReactDOM.render(
+const container = document.getElementById('root')
+const root = createRoot(container)
+root.render(
   <Provider store={store}>
     <Suspense fallback={null}>
       <App />
     </Suspense>
-  </Provider>,
-  document.getElementById('root')
+  </Provider>
 )

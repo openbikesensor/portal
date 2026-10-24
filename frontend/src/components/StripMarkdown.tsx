@@ -3,36 +3,34 @@ import Markdown from 'react-markdown'
 
 const _noop = ({children}) => <>{children}</>
 const _space = () => <> </>
-const _spaced = ({children}) => (
-  <>
-    {children.map((child, i) => (
-      <React.Fragment key={i}>{child} </React.Fragment>
-    ))}
-  </>
-)
+const _spaced = ({children}) => <>{children} </>
 
-const stripMarkdownNodes = {
-  root: _noop,
-  text: _noop,
-  break: _space,
-  paragraph: _spaced,
-  emphasis: _noop,
+const components = {
+  p: _spaced,
+  span: _noop,
   strong: _noop,
-  thematicBreak: _space,
+  em: _noop,
+  a: _noop,
+  ul: _spaced,
+  ol: _spaced,
+  li: _noop,
   blockquote: _noop,
-  link: _noop,
-  list: _spaced,
-  listItem: _noop,
-  definition: _noop,
-  heading: _noop,
-  inlineCode: _noop,
+  h1: _noop,
+  h2: _noop,
+  h3: _noop,
+  h4: _noop,
+  h5: _noop,
+  h6: _noop,
   code: _noop,
+  pre: _noop,
+  hr: _space,
+  br: _space,
 }
-const stripTypes = Array.from(Object.keys(stripMarkdownNodes))
 
-export default function StripMarkdown({children}) {
+export default function StripMarkdown({children}: {children: string | null}) {
+  if (!children) return null
   return (
-    <Markdown allowedTypes={stripTypes} renderers={stripMarkdownNodes}>
+    <Markdown components={components}>
       {children}
     </Markdown>
   )

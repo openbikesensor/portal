@@ -2,16 +2,16 @@
 # Build the frontend AS builder
 #############################################
 
-FROM node:14 as builder
+FROM node:24-alpine AS builder
 
 WORKDIR /opt/obs/frontend
-ADD package.json package-lock.json /opt/obs/frontend/
+COPY package.json package-lock.json /opt/obs/frontend/
 RUN echo update-notifier=false >> ~/.npmrc
-RUN npm ci
+RUN npm ci --ignore-scripts
 
-ADD tsconfig.json webpack.config.js /opt/obs/frontend/
-ADD public/ /opt/obs/frontend/public/
-ADD src/ /opt/obs/frontend/src/
+COPY tsconfig.json webpack.config.js /opt/obs/frontend/
+COPY public/ /opt/obs/frontend/public/
+COPY src/ /opt/obs/frontend/src/
 
 # [Optional] Add the URL prefix. It must also be set in the docker-compose.yml
 # ENV PUBLIC_URL=/prefix

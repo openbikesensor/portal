@@ -2,10 +2,9 @@ import React from 'react'
 import classnames from 'classnames'
 import {connect} from 'react-redux'
 import {List, Grid, Container, Menu, Header, Dropdown} from 'semantic-ui-react'
-import {BrowserRouter as Router, Switch, Route, Link} from 'react-router-dom'
+import {BrowserRouter as Router, Routes, Route, Link} from 'react-router-dom'
 import {useObservable} from 'rxjs-hooks'
-import {from} from 'rxjs'
-import {pluck} from 'rxjs/operators'
+import {from, map} from 'rxjs'
 import {Helmet} from 'react-helmet'
 import {useTranslation} from 'react-i18next'
 
@@ -31,7 +30,7 @@ import {
 import {Avatar, LoginButton} from 'components'
 import api from 'api'
 
-function Banner({text, style = 'warning'}: {text: string; style: 'warning' | 'info'}) {
+function Banner({text, style = 'warning'}: {text: string; style?: 'warning' | 'info'}) {
   return <div className={classnames(styles.banner, styles[style])}>{text}</div>
 }
 
@@ -41,10 +40,10 @@ const LOCALE_NAMES = {
   fr: 'Français',
 } as const
 
-const App = connect((state) => ({login: state.login}))(function App({login}) {
+const App = connect((state: any) => ({login: state.login}))(function App({login}: {login?: any}) {
   const {t} = useTranslation()
   const config = useConfig()
-  const apiVersion = useObservable(() => from(api.get('/info')).pipe(pluck('version')))
+  const apiVersion = useObservable(() => from(api.get('/info')).pipe(map((res: any) => res?.version)))
 
   const hasMap = Boolean(config?.obsMapSource)
 
@@ -111,51 +110,25 @@ const App = connect((state) => ({login: state.login}))(function App({login}) {
         </Container>
       </Menu>
 
-      <Switch>
-        <Route path="/" exact>
-          <HomePage />
-        </Route>
-        {hasMap && (
-          <Route path="/map" exact>
-            <MapPage />
-          </Route>
+      <Routes>
+        <Route path="/" element={<HomePage />} />
+        {hasMap && <Route path="/map" element={<MapPage />} />}
+        <Route path="/tracks" element={<TracksPage />} />
+        <Route path="/my/tracks" element={<MyTracksPage />} />
+        <Route path="/tracks/:slug" element={<TrackPage />} />
+        <Route path="/tracks/:slug/edit" element={<TrackEditor />} />
+        <Route path="/export" element={<ExportPage />} />
+        <Route path="/acknowledgements" element={<AcknowledgementsPage />} />
+        <Route path="/redirect" element={<LoginRedirectPage />} />
+        <Route path="/logout" element={<LogoutPage />} />
+        {login && (
+          <>
+            <Route path="/upload" element={<UploadPage />} />
+            <Route path="/settings" element={<SettingsPage />} />
+          </>
         )}
-        <Route path="/tracks" exact>
-          <TracksPage />
-        </Route>
-        <Route path="/my/tracks" exact>
-          <MyTracksPage />
-        </Route>
-        <Route path={`/tracks/:slug`} exact>
-          <TrackPage />
-        </Route>
-        <Route path={`/tracks/:slug/edit`} exact>
-          <TrackEditor />
-        </Route>
-        <Route path="/export" exact>
-          <ExportPage />
-        </Route>
-        <Route path="/acknowledgements" exact>
-          <AcknowledgementsPage />
-        </Route>
-        <Route path="/redirect" exact>
-          <LoginRedirectPage />
-        </Route>
-        <Route path="/logout" exact>
-          <LogoutPage />
-        </Route>
-        {login && [
-          <Route path="/upload" key="/upload" exact>
-            <UploadPage />
-          </Route>,
-          <Route path="/settings" key="/settings" exact>
-            <SettingsPage />
-          </Route>,
-        ]}
-        <Route>
-          <NotFoundPage />
-        </Route>
-      </Switch>
+        <Route path="*" element={<NotFoundPage />} />
+      </Routes>
 
       <div className={styles.footer}>
         <Container>

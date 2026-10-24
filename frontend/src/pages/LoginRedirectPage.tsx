@@ -1,19 +1,19 @@
 import React from 'react'
 import {connect} from 'react-redux'
-import {Redirect, useLocation, useHistory} from 'react-router-dom'
+import {Navigate, useLocation, useNavigate} from 'react-router-dom'
 import {Icon, Message} from 'semantic-ui-react'
 import {useObservable} from 'rxjs-hooks'
-import {switchMap, pluck, distinctUntilChanged} from 'rxjs/operators'
+import {switchMap, map, distinctUntilChanged} from 'rxjs'
 import {useTranslation} from 'react-i18next'
 
 import {Page} from 'components'
 import api from 'api'
 
-const LoginRedirectPage = connect((state) => ({
+const LoginRedirectPage = connect((state: any) => ({
   loggedIn: Boolean(state.login),
-}))(function LoginRedirectPage({loggedIn}) {
+}))(function LoginRedirectPage({loggedIn}: {loggedIn?: boolean}) {
   const location = useLocation()
-  const history = useHistory()
+  const navigate = useNavigate()
   const {search} = location
   const {t} = useTranslation()
 
@@ -25,12 +25,12 @@ const LoginRedirectPage = connect((state) => ({
   const searchParams = React.useMemo(() => Object.fromEntries(new URLSearchParams(search).entries()), [])
 
   React.useEffect(() => {
-    history.replace({...location, search: ''})
+    navigate({...location, search: ''}, {replace: true})
   }, [])
   /* eslint-enable react-hooks/exhaustive-deps */
 
   if (loggedIn) {
-    return <Redirect to="/" />
+    return <Navigate to="/" replace />
   }
 
   const {error, error_description: errorDescription, code} = searchParams
@@ -64,7 +64,7 @@ function ExchangeAuthCode({code}) {
   const result = useObservable(
     (_$, args$) =>
       args$.pipe(
-        pluck(0),
+        map((args) => args[0]),
         distinctUntilChanged(),
         switchMap((code) => api.exchangeAuthorizationCode(code))
       ),
@@ -84,7 +84,7 @@ function ExchangeAuthCode({code}) {
       </Message>
     )
   } else if (result === true) {
-    content = <Redirect to="/" />
+    content = <Navigate to="/" replace />
   } else {
     const {error, error_description: errorDescription} = result
     content = <LoginError errorText={errorDescription || error} />

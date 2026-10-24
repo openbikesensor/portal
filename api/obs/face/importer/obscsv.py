@@ -18,7 +18,7 @@
 # <http://www.gnu.org/licenses/>.
 
 import csv
-import pytz
+from zoneinfo import ZoneInfo
 import datetime
 import math
 import gzip
@@ -42,7 +42,7 @@ from obs.face.mapping import AzimuthalEquidistant as LocalMap
 GPS_UNIX_EPOCH_OFFSET = 315964800
 
 def convert_gps_to_utc(dt):
-    return datetime.datetime.fromtimestamp(gpstime.gps2unix(dt.timestamp() - GPS_UNIX_EPOCH_OFFSET), tz=pytz.UTC)
+    return datetime.datetime.fromtimestamp(gpstime.gps2unix(dt.timestamp() - GPS_UNIX_EPOCH_OFFSET), tz=ZoneInfo("UTC"))
 
 class ImportMeasurementsCsv:
     def __init__(self,
@@ -195,13 +195,9 @@ class ImportMeasurementsCsv:
                     # no timezone is found, keep UTC
                     log.error("ERROR: no timezone found for coordinates (%s, %s) in %s", lat, lon, m["measurement_id"])
                 else:
-                    timezone = pytz.timezone(timezone_name)
-                    # this timezone conversion is required, as the pytz.timezone object could not be
-                    # exported using jsons
-                    timezone2 = datetime.timezone(timezone.utcoffset(t.replace(tzinfo=None)),
-                                                  name=timezone_name)
+                    timezone = ZoneInfo(timezone_name)
                     # now correct the timezone
-                    m["time"] = t.astimezone(timezone2)
+                    m["time"] = t.astimezone(timezone)
 
     def derive_velocity(self, measurements, log):
         n = len(measurements)

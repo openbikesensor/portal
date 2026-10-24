@@ -17,8 +17,7 @@ import {
 } from 'semantic-ui-react'
 import {useObservable} from 'rxjs-hooks'
 import {Link} from 'react-router-dom'
-import {of, from, concat, BehaviorSubject, combineLatest} from 'rxjs'
-import {map, switchMap, distinctUntilChanged} from 'rxjs/operators'
+import {of, from, concat, BehaviorSubject, combineLatest, map, switchMap, distinctUntilChanged} from 'rxjs'
 import _ from 'lodash'
 import {useTranslation} from 'react-i18next'
 
@@ -244,7 +243,7 @@ function TracksTable({title}) {
             <Dropdown.Item onClick={() => setShowBulkDelete(true)}>Delete</Dropdown.Item>
           </Dropdown.Menu>
         </Dropdown>
-        <Link component={UploadButton} to="/upload" />
+        <UploadButton />
       </div>
 
       <Header as="h1">{title}</Header>
@@ -342,23 +341,16 @@ function TracksTable({title}) {
   )
 }
 
-function UploadButton({navigate, ...props}) {
+function UploadButton() {
   const {t} = useTranslation()
-  const onClick = useCallback(
-    (e) => {
-      e.preventDefault()
-      navigate()
-    },
-    [navigate]
-  )
   return (
-    <Button onClick={onClick} {...props} color="green">
+    <Button as={Link} to="/upload" color="green">
       {t('TracksPage.upload')}
     </Button>
   )
 }
 
-const MyTracksPage = connect((state) => ({login: (state as any).login}))(function MyTracksPage({login}) {
+const MyTracksPage = connect((state: any) => ({login: state.login}))(function MyTracksPage({login}: {login?: any}) {
   const {t} = useTranslation()
 
   const title = t('TracksPage.titleUser')

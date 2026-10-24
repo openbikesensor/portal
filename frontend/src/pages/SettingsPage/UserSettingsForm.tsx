@@ -8,9 +8,19 @@ import {setLogin} from 'reducers/login'
 import api from 'api'
 import {findInput} from 'utils'
 
-const UserSettingsForm = connect((state) => ({login: state.login}), {
+const UserSettingsForm = connect((state: any) => ({login: state.login}), {
   setLogin,
-})(function UserSettingsForm({login, setLogin, errors, setErrors}) {
+})(function UserSettingsForm({
+  login,
+  setLogin,
+  errors,
+  setErrors,
+}: {
+  login?: any
+  setLogin?: any
+  errors?: any
+  setErrors?: any
+}) {
   const {t} = useTranslation()
   const {register, handleSubmit} = useForm()
   const [loading, setLoading] = React.useState(false)
@@ -36,8 +46,8 @@ const UserSettingsForm = connect((state) => ({login: state.login}), {
       <Form onSubmit={handleSubmit(onSave)} loading={loading}>
         <Form.Field error={errors?.username}>
           <label>{t('SettingsPage.profile.username.label')}</label>
-          <Ref innerRef={findInput(register)}>
-            <Input name="username" defaultValue={login.username} disabled />
+          <Ref innerRef={findInput(register('username'))}>
+            <Input {...register('username')} defaultValue={login.username} disabled />
           </Ref>
           <small>{t('SettingsPage.profile.username.hint')}</small>
         </Form.Field>
@@ -48,22 +58,22 @@ const UserSettingsForm = connect((state) => ({login: state.login}), {
 
         <Form.Field error={errors?.displayName}>
           <label>{t('SettingsPage.profile.displayName.label')}</label>
-          <Ref innerRef={findInput(register)}>
-            <Input name="displayName" defaultValue={login.displayName} placeholder={login.username} />
+          <Ref innerRef={findInput(register('displayName'))}>
+            <Input {...register('displayName')} defaultValue={login.displayName} placeholder={login.username} />
           </Ref>
           <small>{t('SettingsPage.profile.displayName.fallbackNotice')}</small>
         </Form.Field>
 
         <Form.Field error={errors?.bio}>
           <label>{t('SettingsPage.profile.bio.label')}</label>
-          <Ref innerRef={register}>
-            <TextArea name="bio" rows={4} defaultValue={login.bio} />
+          <Ref innerRef={findInput(register('bio'))}>
+            <TextArea {...register('bio')} rows={4} defaultValue={login.bio} />
           </Ref>
         </Form.Field>
         <Form.Field error={errors?.image}>
           <label>{t('SettingsPage.profile.avatarUrl.label')}</label>
-          <Ref innerRef={findInput(register)}>
-            <Input name="image" defaultValue={login.image} />
+          <Ref innerRef={findInput(register('image'))}>
+            <Input {...register('image')} defaultValue={login.image} />
           </Ref>
         </Form.Field>
 
