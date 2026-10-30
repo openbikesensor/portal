@@ -492,7 +492,7 @@ async def delete_track_comment(req, slug: str, uid: str):
         await req.ctx.db.execute(
             select(Comment)
             .options(joinedload(Comment.author))
-            .where(Comment.track_id == track.id and Comment.uid == uid)
+            .where(Comment.track_id == track.id, Comment.uid == uid)
             .limit(1)
         )
     ).scalar()

@@ -1,6 +1,6 @@
 import asyncio
 import shutil
-from datetime import datetime
+from datetime import datetime, timezone
 from functools import partial
 import gzip
 
@@ -126,7 +126,7 @@ async def gzip_original(original_file_path):
 async def process_track(session, track):
     try:
         track.processing_status = "complete"
-        track.processed_at = datetime.utcnow()
+        track.processed_at = datetime.now(timezone.utc)
         await session.commit()
 
         original_file_path = track.get_original_file_path(app.config)
@@ -228,7 +228,7 @@ async def process_track(session, track):
         track.num_measurements = len(event_rows)  # not distinguished anymore
         track.num_valid = len(event_rows)  # not distinguished anymore
         track.processing_status = "complete"
-        track.processed_at = datetime.utcnow()
+        track.processed_at = datetime.now(timezone.utc)
         track.geometry = func.ST_Transform(
             func.ST_GeomFromGeoJSON(json.dumps(track_raw_json["geometry"])),
             3857,
@@ -240,7 +240,7 @@ async def process_track(session, track):
         await clear_track_data(session, track)
         track.processing_status = "error"
         track.processing_log = str(e)
-        track.processed_at = datetime.utcnow()
+        track.processed_at = datetime.now(timezone.utc)
 
         await session.commit()
         raise
