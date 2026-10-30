@@ -1,13 +1,13 @@
 #!/bin/bash
-if [[ -f `which docker-compose` ]]
+if [[ -f $(which docker-compose) ]]
 then
-export COMPOSE=`which docker-compose`
+export COMPOSE=$(which docker-compose)
 else
-export COMPOSE=`which docker`\ compose
+export COMPOSE=$(which docker)\ compose
 fi
 echo using docker compose command $COMPOSE
 
-if [[ `$COMPOSE ps|wc -l` -gt 1 ]]
+if [[ $($COMPOSE ps | wc -l) -gt 1 ]]
 then
   echo "there are already containers running for this folder name. Either you have a different development setup active in the same folder name, or you have already initialized from this folder - aborting to not break stuff."
   echo "this is the output of $COMPOSE ps:"
@@ -24,7 +24,7 @@ mkdir -p local
 if mkdir local/keycloak
 then
   echo initializing keycloak and creating api/config.overrides.py
-  chmod -R a+rwX local/keycloak
+  chmod -R gu+rwX local/keycloak
   $COMPOSE up -d keycloak
   echo "waiting 120s for keycloak start"
   sleep 120
@@ -36,7 +36,7 @@ fi
 if mkdir local/postgres
 then
   echo initializing database
-  chmod -R a+rwX local/postgres
+  chmod -R gu+rwX local/postgres
   $COMPOSE up -d postgres
   echo "sleeping 100s for good measure - openmaptiles keycloak will need time to initialize on first run"
   sleep 100
