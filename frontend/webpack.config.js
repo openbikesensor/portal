@@ -31,7 +31,15 @@ module.exports = function (webpackEnv) {
       {
         loader: require.resolve('css-loader'),
         options: {
-          modules,
+          url: {
+            filter: (url) => !url.startsWith('data:'),
+          },
+          modules: modules
+            ? {
+                namedExport: false,
+                exportLocalsConvention: 'asIs',
+              }
+            : false,
           importLoaders: withLess ? 2 : 1,
           sourceMap,
         },
@@ -81,6 +89,7 @@ module.exports = function (webpackEnv) {
           options: {
             lessOptions: {
               math: 'always',
+              javascriptEnabled: true,
             },
             // sourceMap: true,
           },
@@ -159,12 +168,12 @@ module.exports = function (webpackEnv) {
       client: {
         webSocketURL: `ws://0.0.0.0:${port}/ws`,
       },
-      proxy: {
-        '/config.json': apiUrl,
-        '/api': apiUrl,
-        '/login': apiUrl,
-        '/tiles': apiUrl,
-      },
+      proxy: [
+        {
+          context: ['/config.json', '/api', '/login', '/tiles'],
+          target: apiUrl,
+        },
+      ],
     },
     module: {
       rules: [
@@ -240,11 +249,6 @@ module.exports = function (webpackEnv) {
 
         {
           test: /\.(woff|woff2|eot|ttf|otf)$/i,
-          type: 'asset/resource',
-        },
-
-        {
-          scheme: 'data',
           type: 'asset/resource',
         },
       ],

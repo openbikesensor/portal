@@ -91,6 +91,7 @@ ExportPage:
     rechenaufwändig ist, nutze ihn daher nur so häufig wie nötig und nur in
     begrenzten geografischen Bereichen, je nach Bedarf.
   export: Exportieren
+  snapping: Events auf die zugeordneten Straßensegmente "snappen"
   mode:
     label: Modus
     placeholder: Modus wählen
@@ -173,6 +174,7 @@ MapPage:
 
     obsEvents:
       title: Überholvorgänge
+      snap: Events auf Straßen "snappen"
 
     obsTracks:
       title: Meine eigenen Fahrten

@@ -9,6 +9,7 @@ export type MapSource = {
 
 export interface Config {
   apiUrl: string
+  basename?: string
   mapHome: {
     latitude: number
     longitude: number
@@ -37,7 +38,7 @@ export function useConfig() {
   const [config, setConfig] = React.useState<Config>(_configCache)
   React.useEffect(() => {
     if (!_configCache) {
-      _configPromise.then(setConfig)
+      void _configPromise.then(setConfig)
     }
   }, [])
   return config

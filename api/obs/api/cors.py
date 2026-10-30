@@ -57,12 +57,11 @@ async def options_handler(request, methods) -> response.HTTPResponse:
 
 
 def setup_options(app: Sanic, _):
-    app.router.reset()
     needs_options = _compile_routes_needing_options(app.router.routes_all)
     for uri, methods in needs_options.items():
         app.add_route(
             _options_wrapper(options_handler, methods),
             uri,
             methods=["OPTIONS"],
+            name=f"options_{uri}",
         )
-    app.router.finalize()

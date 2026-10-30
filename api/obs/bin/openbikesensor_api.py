@@ -1,16 +1,11 @@
 #!/usr/bin/env python3
 
-import math
-import sys
-import os
-import argparse
-import asyncio
 import logging
+import math
 
 import coloredlogs
 
 from obs.api.app import app
-from obs.api.db import connect_db
 
 log = logging.getLogger(__name__)
 
@@ -37,11 +32,9 @@ class AccessLogFilter(logging.Filter):
         return True
 
 
-def main():
-    debug = app.config.DEBUG
-
+def setup_logging(debug=True):
     coloredlogs.install(
-        level=logging.DEBUG if app.config.get("VERBOSE", debug) else logging.INFO,
+        level=logging.DEBUG,  # if app.config.get("VERBOSE", debug) else logging.INFO,
         milliseconds=True,
         isatty=True,
     )
@@ -52,6 +45,12 @@ def main():
             l.removeHandler(h)
 
     logging.getLogger("sanic.access").addFilter(AccessLogFilter())
+
+
+def main():
+    debug = app.config.DEBUG
+
+    setup_logging(debug=debug)
 
     app.run(
         host=app.config.HOST,

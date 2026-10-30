@@ -1,7 +1,6 @@
 import React from 'react'
 import {connect} from 'react-redux'
 import {Header, Tab} from 'semantic-ui-react'
-import {useForm} from 'react-hook-form'
 import {useTranslation} from 'react-i18next'
 
 import {setLogin} from 'reducers/login'
@@ -13,9 +12,14 @@ import ApiKeySettings from './ApiKeySettings'
 import UserSettingsForm from './UserSettingsForm'
 import DeviceList from './DeviceList'
 
-const SettingsPage = connect((state) => ({login: state.login}), {setLogin})(function SettingsPage({login, setLogin}) {
+const SettingsPage = connect((state: any) => ({login: state.login}), {setLogin})(function SettingsPage({
+  login,
+  setLogin,
+}: {
+  login?: any
+  setLogin?: any
+}) {
   const {t} = useTranslation()
-  const {register, handleSubmit} = useForm()
   const [loading, setLoading] = React.useState(false)
   const [errors, setErrors] = React.useState(null)
 

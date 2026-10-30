@@ -13,9 +13,8 @@ import {
   Confirm,
   Container,
 } from 'semantic-ui-react'
-import {useParams, useHistory} from 'react-router-dom'
-import {concat, combineLatest, of, from, Subject} from 'rxjs'
-import {pluck, distinctUntilChanged, map, switchMap, startWith, catchError} from 'rxjs/operators'
+import {useParams, useNavigate} from 'react-router-dom'
+import {concat, combineLatest, of, from, Subject, distinctUntilChanged, map, switchMap, startWith, catchError} from 'rxjs'
 import {useObservable} from 'rxjs-hooks'
 import Markdown from 'react-markdown'
 import {useTranslation} from 'react-i18next'
@@ -29,11 +28,13 @@ import TrackActions from './TrackActions'
 import TrackComments from './TrackComments'
 import TrackDetails from './TrackDetails'
 import TrackMap from './TrackMap'
+import TrackPlot from './TrackPlot'
+
 
 import styles from './TrackPage.module.less'
 
-function useTriggerSubject() {
-  const subject$ = React.useMemo(() => new Subject(), [])
+function useTriggerSubject(): [() => void, Subject<any>] {
+  const subject$ = React.useMemo(() => new Subject<any>(), [])
   const trigger = React.useCallback(() => subject$.next(null), [subject$])
   return [trigger, subject$]
 }
@@ -75,12 +76,18 @@ function TrackMapLegend() {
   )
 }
 
-const TrackPage = connect((state) => ({login: state.login}))(function TrackPage({login}) {
+const TrackPage = connect((state: any) => ({login: state.login}))(function TrackPage({login}: {login?: any}) {
   const {slug} = useParams()
   const {t} = useTranslation()
+  const [marker, setMarker] = React.useState({latitude: 55, longitude: 55, datetime: 0})
+  const updateMarker = (dict) => {
+    if (dict.longitude && dict.latitude) {
+      setMarker({latitude: dict.latitude, longitude: dict.longitude, datetime: dict.datetime ?? 0})
+    }
+  }
 
   const [reloadComments, reloadComments$] = useTriggerSubject()
-  const history = useHistory()
+  const navigate = useNavigate()
 
   const data: {
     track: null | Track
@@ -88,7 +95,10 @@ const TrackPage = connect((state) => ({login: state.login}))(function TrackPage(
     comments: null | TrackComment[]
   } | null = useObservable(
     (_$, args$) => {
-      const slug$ = args$.pipe(pluck(0), distinctUntilChanged())
+      const slug$ = args$.pipe(
+        map((args) => args[0]),
+        distinctUntilChanged()
+      )
       const track$ = slug$.pipe(
         map((slug) => `/tracks/${slug}`),
         switchMap((url) =>
@@ -96,12 +106,13 @@ const TrackPage = connect((state) => ({login: state.login}))(function TrackPage(
             of(null),
             from(api.get(url)).pipe(
               catchError(() => {
-                history.replace('/tracks')
+                navigate('/tracks', {replace: true})
+                return of(null)
               })
             )
           )
         ),
-        pluck('track')
+        map((res: any) => res?.track)
       )
 
       const trackData$ = slug$.pipe(
@@ -130,7 +141,7 @@ const TrackPage = connect((state) => ({login: state.login}))(function TrackPage(
             })
           )
         ),
-        pluck('comments'),
+        map((res: any) => res?.comments),
         startWith(null) // show track infos before comments are loaded
       )
 
@@ -224,7 +235,7 @@ const TrackPage = connect((state) => ({login: state.login}))(function TrackPage(
           <div className={styles.stage}>
             <Loader active={loading} />
             <Dimmer.Dimmable blurring dimmed={loading}>
-              <TrackMap {...{track, trackData, showTrack, showEvents}} style={{height: '80vh'}} />
+              <TrackMap {...{track, trackData, marker, showTrack, showEvents, }} style={{height: '50vh'}} />
             </Dimmer.Dimmable>
 
             <div className={styles.details}>
@@ -246,7 +257,9 @@ const TrackPage = connect((state) => ({login: state.login}))(function TrackPage(
               )}
             </div>
           </div>
-
+          { isAuthor && typeof trackData != "undefined" &&
+            <TrackPlot {...{trackData, updateMarker}}/>
+          }
           <Container>
             {track?.description && (
               <>

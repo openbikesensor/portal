@@ -2,3 +2,10 @@ local
 data
 export
 *.egg-info
+config.overrides.py
+.venv
+.junie
+.idea
+api/config.py
+api/config.overrides.py
+api/obs/api/config.py

@@ -1,8 +1,7 @@
 import React from 'react'
 import {Grid, Loader, Header, Item} from 'semantic-ui-react'
 import {useObservable} from 'rxjs-hooks'
-import {of, from} from 'rxjs'
-import {map, switchMap} from 'rxjs/operators'
+import {of, from, map, switchMap} from 'rxjs'
 import {useTranslation} from 'react-i18next'
 
 import api from 'api'

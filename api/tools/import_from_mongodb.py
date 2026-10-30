@@ -3,7 +3,7 @@ import argparse
 import asyncio
 import logging
 import json
-from datetime import datetime
+from datetime import datetime, timezone
 from uuid import uuid4
 
 from sqlalchemy import select
@@ -82,8 +82,8 @@ async def import_users(mongo, session, keycloak_users_file, keep_api_keys):
             bio=user.get("bio"),
             image=user.get("image"),
             are_tracks_visible_for_all=user.get("areTracksVisibleForAll") or False,
-            created_at=user.get("createdAt") or datetime.utcnow(),
-            updated_at=user.get("updatedAt") or datetime.utcnow(),
+            created_at=user.get("createdAt") or datetime.now(timezone.utc),
+            updated_at=user.get("updatedAt") or datetime.now(timezone.utc),
             match_by_username_email=True,
         )
 
@@ -137,8 +137,8 @@ async def import_tracks(mongo, session, user_id_map):
     async for track in mongo.tracks.find({}):
         stats = track.get("statistics") or {}
         new_track = Track(
-            created_at=parse_datetime(track.get("createdAt")) or datetime.utcnow(),
-            updated_at=parse_datetime(track.get("updatedAt")) or datetime.utcnow(),
+            created_at=parse_datetime(track.get("createdAt")) or datetime.now(timezone.utc),
+            updated_at=parse_datetime(track.get("updatedAt")) or datetime.now(timezone.utc),
             slug=track["slug"],
             title=track.get("title"),
             processing_status=track.get("processingStatus") or "pending",
@@ -168,9 +168,9 @@ async def import_tracks(mongo, session, user_id_map):
             async for comment in mongo.comments.find({"_id": {"$in": comment_ids}}):
                 new_comment = Comment(
                     created_at=parse_datetime(comment.get("createdAt"))
-                    or datetime.utcnow(),
+                    or datetime.now(timezone.utc),
                     updated_at=parse_datetime(comment.get("updatedAt"))
-                    or datetime.utcnow(),
+                    or datetime.now(timezone.utc),
                     body=comment.get("body"),
                     author_id=user_id_map[comment["author"]],
                 )

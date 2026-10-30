@@ -29,11 +29,12 @@ EXTRA_ARGS = [
     ("user_id", "integer", "NULL"),
     ("min_time", "timestamp", "NULL"),
     ("max_time", "timestamp", "NULL"),
+    ("snap", "boolean", "false"),
 ]
 
 
 class CustomMvtGenerator(MvtGenerator):
-    def generate_sqltomvt_func(self, fname, extra_args: List[Tuple[str, str]]) -> str:
+    def generate_sqltomvt_func(self, fname, extra_args: List[Tuple[str, str, str]]) -> str:
         """
         Creates a SQL function that returns a single bytea value or null. This
         method is overridden to allow for custom arguments in the created function

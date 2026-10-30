@@ -1,16 +1,15 @@
 import hashlib
-from contextvars import ContextVar
 from contextlib import asynccontextmanager
-from datetime import datetime
+from datetime import datetime, timezone
 import os
 from os.path import exists, join, dirname
 from json import loads
 import re
 import math
-import aiofiles
-import random
 import string
 import secrets
+
+from aiogzip import AsyncGzipFile
 from slugify import slugify
 import logging
 
@@ -75,7 +74,7 @@ async def init_models():
 
 def random_string(length):
     letters = string.ascii_lowercase + string.digits
-    return "".join(random.choice(letters) for _ in range(length))
+    return "".join(secrets.choice(letters) for _ in range(length))
 
 
 @asynccontextmanager
@@ -344,9 +343,9 @@ class Track(Base):
             select(func.count())
             .select_from(Track)
             .where(
-                Track.original_file_hash == hex_hash
-                and Track.author_id == self.author_id
-                and Track.id != self.id
+                Track.original_file_hash == hex_hash,
+                Track.author_id == self.author_id,
+                Track.id != self.id,
             )
         )
 
@@ -360,12 +359,12 @@ class Track(Base):
 
         target = self.get_original_file_path(config)
         os.makedirs(dirname(target), exist_ok=True)
-        async with aiofiles.open(target, mode=mode) as f:
+        async with AsyncGzipFile(f"{target}.gz", mode=mode, compresslevel=9) as f:
             await f.write(body)
 
     def queue_processing(self):
         self.processing_status = "queued"
-        self.processing_queued_at = datetime.utcnow()
+        self.processing_queued_at = datetime.now(timezone.utc)
 
     def auto_generate_title(self):
         if self.customized_title:

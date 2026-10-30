@@ -1,10 +1,23 @@
-import {compose, createStore} from 'redux'
-import persistState from 'redux-localstorage'
-
+import {createStore} from 'redux'
 import rootReducer from './reducers'
 
-const enhancer = compose(persistState(['login', 'mapConfig']))
+const loadState = () => {
+  try {
+    const serialized = localStorage.getItem('redux')
+    return serialized ? JSON.parse(serialized) : undefined
+  } catch (e) {
+    return undefined
+  }
+}
 
-const store = createStore(rootReducer, undefined, enhancer)
+const saveState = (state) => {
+  try {
+    const toPersist = {login: state.login, mapConfig: state.mapConfig}
+    localStorage.setItem('redux', JSON.stringify(toPersist))
+  } catch (e) {}
+}
+
+const store = createStore(rootReducer, loadState())
+store.subscribe(() => saveState(store.getState()))
 
 export default store

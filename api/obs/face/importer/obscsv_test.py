@@ -1,4 +1,4 @@
-import pytz
+from zoneinfo import ZoneInfo
 from os.path import join
 from datetime import datetime
 
@@ -11,7 +11,7 @@ def test_gps_time(test_data_dir):
         dataset_id="dummy",
     )
     gps_leap_seconds = 18
-    actual_time = datetime(2021, 6, 26, 14, 39, 39 - gps_leap_seconds, tzinfo=pytz.UTC)
+    actual_time = datetime(2021, 6, 26, 14, 39, 39 - gps_leap_seconds, tzinfo=ZoneInfo("UTC"))
     assert measurements[0]['time'] == actual_time
 
 def test_empty_metadata(test_data_dir):

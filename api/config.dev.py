@@ -7,7 +7,7 @@ SECRET = "!!!!!!!!!!!!CHANGE ME!!!!!!!!!!!!"
 POSTGRES_URL = "postgresql+asyncpg://obs:obs@postgres/obs"
 POSTGRES_POOL_SIZE = 20
 POSTGRES_MAX_OVERFLOW = 2 * POSTGRES_POOL_SIZE
-KEYCLOAK_URL = "http://keycloak:8080/auth/realms/obs-dev/"
+KEYCLOAK_URL = "http://keycloak:8080/realms/obs-dev/"
 KEYCLOAK_CLIENT_ID = "portal"
 KEYCLOAK_CLIENT_SECRET = "c385278e-bd2e-4f13-9937-34b0c0f44c2d"
 DEDICATED_WORKER = True
@@ -28,6 +28,9 @@ DATA_DIR = "/data"
 ADDITIONAL_CORS_ORIGINS = [
     "http://localhost:8880/",  # for maputnik on 8880
     "http://localhost:8888/",  # for maputnik on 8888
+    "http://localhost:3001/",  # frontend
+    "http://localhost:3002/",  # for good measure
+    "http://localhost:3003/",  # keycloak
 ]
 TILE_SEMAPHORE_SIZE = 4
 EXPORT_SEMAPHORE_SIZE = 4
