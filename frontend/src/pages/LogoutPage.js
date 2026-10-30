@@ -9,7 +9,7 @@ const LogoutPage = connect((state) => ({loggedIn: Boolean(state.login)}))(functi
   React.useEffect(() => {
     // no await, just trigger it
     if (loggedIn) {
-      api.logout()
+      void api.logout()
     }
   }, [loggedIn])
 

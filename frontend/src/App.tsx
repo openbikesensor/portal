@@ -48,7 +48,7 @@ const App = connect((state: any) => ({login: state.login}))(function App({login}
   const hasMap = Boolean(config?.obsMapSource)
 
   React.useEffect(() => {
-    api.loadUser()
+    void api.loadUser()
   }, [])
 
   return config ? (

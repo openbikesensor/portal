@@ -13,8 +13,8 @@ export function parseValue(value: string): null | QueryValue {
   // `isNaN` understands numeric strings as numbers, but also detects empty
   // strings and `null` as such. We only want to parse strings that are
   // numeric and not empty, therefore this check is a bit more complicated.
-  if (typeof value === 'string' && value !== '' && !isNaN(Number(value))) {
-    return parseFloat(value)
+  if (typeof value === 'string' && value !== '' && !Number.isNaN(Number(value))) {
+    return Number.parseFloat(value)
   }
 
   return value

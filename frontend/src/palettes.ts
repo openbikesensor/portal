@@ -44,7 +44,7 @@ export class Palette {
   }
 
   samplePalette(palette: Record<number | string, any>, d: number) {
-    let x: number[] = Object.keys(palette).map((k) => parseFloat(k))
+    let x: number[] = Object.keys(palette).map((k) => Number.parseFloat(k))
 
     x = x.sort(function (a, b) {
       return a - b
@@ -84,7 +84,7 @@ export class Palette {
   }
 
   resamplePalette(palette: Record<number | string, any>, n: number) {
-    const x: number[] = Object.keys(palette).map((k) => parseFloat(k))
+    const x: number[] = Object.keys(palette).map((k) => Number.parseFloat(k))
 
     const a = Math.min(...x)
     const b = Math.max(...x)
